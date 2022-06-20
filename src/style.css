@@ -1,0 +1,35 @@
+.program-panel button{
+    display: block;
+}
+
+.tool-buttons button {
+    display: block;
+    width: 90%;
+    /* border: 1px solid gray; */
+    /* margin: 6px; */
+    /* margin: 0px;
+    border-radius: 0px; */
+}
+
+.toolbar {
+    width: 100%;
+    height: 100%;
+    padding: 10px;
+}
+
+.parent {
+    display: grid;
+    grid-template-columns: 1fr 1000px 1fr;
+    /* grid-template-rows: 1fr 6fr repeat(2, 1fr); */
+    grid-column-gap: 0px;
+    grid-row-gap: 0px;
+    background-color:#dbdbdb;
+    padding: 20px;
+    }
+
+.top-menu { grid-area: 1 / 1 / 2 / 4; }
+.toolbar { grid-area: 2 / 1 / 3 / 2; }
+.drawing-panel { grid-area: 2 / 2 / 3 / 3; }
+.code-panel { grid-area: 2 / 3 / 3 / 4; }
+.options-bar { grid-area: 3 / 2 / 4 / 3; }
+.footer { grid-area: 4 / 1 / 5 / 4; }
