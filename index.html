@@ -1,51 +1,53 @@
 <!DOCTYPE html>
-<html lang="">
+<html lang="en">
+  <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.sound.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="./src/style.css">
+    <meta charset="utf-8" />
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Coming+Soon&family=Delius+Swash+Caps&family=Short+Stack&family=Walter+Turncoat&display=swap" rel="stylesheet">
 
-<head>
-  <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yegor256/tacit@gh-pages/tacit-css-1.5.5.min.css"/> -->
-  <link rel="stylesheet" href="./src/style.css"/>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>p5.js example</title>
-  <script src="./lib/p5.js"></script>
-  <script src="./src/sketch.js"></script>
-  <!-- <script src="../addons/p5.sound.js"></script> -->
-  
-</head>
+  </head>
+  <body>
 
-<body>
 
     <div class="parent">
 
         <div class="top-menu">
             <!-- let's put somet stuff here that will be a top menu -->
+            header / top menu
         </div>
 
-    <div class="toolbar">
-        <div class="tool-buttons">
-        <button>move</button>
-        <button>shapes</button>
-        <button>fill</button>
-        <button>effects</button>
-        <button>pen</button>
-        <button>stencil</button>
-        <button>patterns</button>
-        </div>
-        <div class="move-buttons">
-            <button>left</button>
-            <button>right</button>
-            <button>up</button>
-            <button>down</button>
+        <div class="toolbar">
+            <div class="tool-buttons">
+            <button>move</button>
+            <button>shapes</button>
+            <button>fill</button>
+            <button>effects</button>
+            <button>pen</button>
+            <button>stencil</button>
+            <button>patterns</button>
+            </div>
+            <div class="move-buttons">
+                <button>left</button>
+                <button>right</button>
+                <button>up</button>
+                <button>down</button>
+            </div>
+            
         </div>
         
-    </div>
-
     <div class="drawing-panel">
         <main>
+            <script src="./src/sketch.js"></script>
         </main>
     </div>
 
     <div class="program-panel">
+        <div class="code-panel" id="code-panel"></div>
         <div class="program-buttons">
             <button>undo</button>
             <button>delete</button>
@@ -62,17 +64,28 @@
         </div>
     </div>
 
-    <div class="options-bar">
-        <button>stamp1</button>
+    <div class="options-bar" id="options-bar">
+        <!-- <button>stamp1</button>
         <button>stamp2</button>
         <button>not a slider</button>
-        <button>not a color picker</button>
+        <button>not a color picker</button> -->
     </div>
 
     <div class="footer">
+        footer
+        <label for="stencil">Stencil:</label>
+        <select name="stencil" id="stencil">
+          <option value="dress">dress</option>
+          <option value="shirt and pants">shirt and pants</option>
+          <option value="fishbowl">fishbowl</option>
+          <option value="cake">cake</option>
+        </select>
     </div>
-</div>
+    
+    
+    <div id="current-effect-params"></div>
 
-</body>
 
+    </div>
+  </body>
 </html>
