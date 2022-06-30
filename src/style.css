@@ -4,7 +4,7 @@
 
 .parent {
     display: grid;
-    grid-template-columns: 1fr 1000px 1fr;
+    grid-template-columns: 1fr 750px 1fr;
     /* grid-template-rows: 1fr 6fr repeat(2, 1fr); */
     grid-column-gap: 0px;
     grid-row-gap: 0px;
@@ -13,7 +13,7 @@
     margin-left: auto;
     margin-right: auto;
     /* align-items: center; */
-    justify-items: center;
+    /* justify-items: center; */
  }
 
 .top-menu { grid-area: 1 / 1 / 2 / 4; }
@@ -27,46 +27,53 @@
     /* width: 100%;
      height: 100%; */
     padding: 10px;
-    background-color: blue;
-    max-width: 75px;
+    /* background-color: blue; */
+    /* max-width: 75px; */
 }
 
-.tool-buttons button {
+.tool-buttons {
     display: block;
-    width: 90%;
-        /* border: 1px solid gray; */
-        /* margin: 6px; */
-        /* margin: 0px;
-        border-radius: 0px; */
 }
 
-canvas {
-    margin: 10px;
+.tool-button {
+    width: 70px;
+    height: 70px;
 }
+
+#brushes-button { background-color: #EC6B2C }
+#stamps-button { background-color: #6D8EF7 }
+#effects-button { background-color: #CA3A7E }
+#patterns-button { background-color: #F3B33E }
+#stencils-button { background-color: #7BC56E }
+#favorites-button { background-color: #a53ffd }
 
 .footer {
-    background-color: red;
+    /* background-color: red; */
 }
 
 .top-menu {
-    background-color: green;
+    /* background-color: green; */
 }
 
 .drawing-panel {
-    background-color: pink;
+    /* background-color: pink; */
 }
 
 .program-panel {
-    background-color: orange;
+    /* background-color: orange; */
 }
 
-.code-panel {
-    background-color: white;
-    margin: 20px;
+.program-buttons {
+    display:flex;
+}
+
+.save-buttons {
+    display: flex;
+    margin-top: 20px;
 }
 
 .options-bar {
-    background-color: lightblue;
+    /* background-color: lightblue; */
 }
 
 html, body {
@@ -76,8 +83,10 @@ html, body {
     font-size: 16px;
     box-sizing: border-box;
   }
+
   canvas {
     display: block;
+    margin: 10px;
   }
 
   input[type="button"], button {
@@ -86,22 +95,24 @@ html, body {
     padding: 5px 10px 5px 10px;
     margin: 6px;
     cursor: pointer;
+    background-color: #e9e9e9;
   /*   padding: 10px;
     border-radius: 5px;
     background-color: #C0C0C0; */
   }
   
   #code-panel {
+    background-color: white;
     border-width: 1px;
     border-style: solid;
     border-color: #8B8B8B;
-    padding: 6px;
     overflow-y: scroll;
-    width: 200px;
+    width: 300px;
     height:350px;
 }
   
   .code-line {
+    background-color: white;
   /*   font-family: "Courier New", monospace; */
   /*   font-family: 'Coming Soon', cursive; */
     font-family: 'Delius Swash Caps', cursive;
@@ -109,6 +120,10 @@ html, body {
   /*   font-family: 'Walter Turncoat', cursive; */
     line-height: 20px;
     cursor: pointer;
+    border-width: 0.5px;
+    border-color: #8B8B8B;
+    border-style: solid;
+    padding: 6px;
   /*   display: inline-block; */
   }
   
@@ -131,7 +146,5 @@ html, body {
   }
   
   #current-effect-params {
-    position: fixed;
-    top: 630px;
-    left: 610px;
+
   }

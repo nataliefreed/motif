@@ -2,7 +2,6 @@
 <html lang="en">
   <head>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.sound.min.js"></script>
     <link rel="stylesheet" type="text/css" href="./src/style.css">
     <meta charset="utf-8" />
     
@@ -23,19 +22,12 @@
 
         <div class="toolbar">
             <div class="tool-buttons">
-            <button>move</button>
-            <button>shapes</button>
-            <button>fill</button>
-            <button>effects</button>
-            <button>pen</button>
-            <button>stencil</button>
-            <button>patterns</button>
-            </div>
-            <div class="move-buttons">
-                <button>left</button>
-                <button>right</button>
-                <button>up</button>
-                <button>down</button>
+                <button class="tool-button" id="brushes-button">brushes</button>
+                <button class="tool-button" id="stamps-button">stamps</button>
+                <button class="tool-button" id="effects-button">effects</button>
+                <button class="tool-button" id="patterns-button">patterns</button>
+                <button class="tool-button" id="stencils-button">stencils</button>
+                <button class="tool-button" id="favorites-button">favorites</button>
             </div>
             
         </div>
@@ -49,11 +41,10 @@
     <div class="program-panel">
         <div class="code-panel" id="code-panel"></div>
         <div class="program-buttons">
-            <button>undo</button>
-            <button>delete</button>
-            <button>multiselect</button>
-            <button>repeat</button>
-            <button>select same</button>
+            <button id="delete-button">delete</button>
+            <button id="move-up-button">move up</button>
+            <button id="move-down-button">move down</button>
+            <button id="clear-all-button">clear all</button>
         </div>
 
         <div class="save-buttons">
@@ -62,6 +53,8 @@
             <button>print</button>
             <button>cut</button>
         </div>
+
+        <div id="current-effect-params"></div>
     </div>
 
     <div class="options-bar" id="options-bar">
@@ -72,7 +65,6 @@
     </div>
 
     <div class="footer">
-        footer
         <label for="stencil">Stencil:</label>
         <select name="stencil" id="stencil">
           <option value="dress">dress</option>
@@ -81,9 +73,6 @@
           <option value="cake">cake</option>
         </select>
     </div>
-    
-    
-    <div id="current-effect-params"></div>
 
 
     </div>
