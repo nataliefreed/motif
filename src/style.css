@@ -107,7 +107,7 @@ html, body {
     border-style: solid;
     border-color: #8B8B8B;
     overflow-y: scroll;
-    width: 300px;
+    width: 600px;
     height:350px;
 }
   
@@ -124,13 +124,14 @@ html, body {
     border-color: #8B8B8B;
     border-style: solid;
     padding: 6px;
+    display: block;
   /*   display: inline-block; */
   }
   
   .param {
     font-size: 10px;
     margin: 0px 10px 0px 10px;
-    display: inline-block;
+    display: inline;
   }
   
   .code-line:hover {
@@ -145,6 +146,19 @@ html, body {
     background-color: #FFE664;
   }
   
-  #current-effect-params {
+  /* #current-effect-params {
 
+  } */
+
+  .preview-thumbnail {
+    width: 50px;
+    height: 50px;
+    background-color: green;
+    display: inline;
+    margin: 0px;
+  }
+
+  .code-with-params {
+    display: inline;
+    margin-left: 10px;
   }

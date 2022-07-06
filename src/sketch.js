@@ -33,6 +33,8 @@ function setup() {
 
   drawingCanvas = createGraphics(height, height);
   drawingCanvas.background(200);
+
+  renderAll();
 }
 
 /* 
@@ -46,25 +48,45 @@ _|"""""|_|"""""|_|"""""|_|"""""|
 */
 
 function draw() {
+  if(app.shouldRerender()) {
+
+/*
+each event can set a flag saying it has changed
+shouldRerender checks the event list
+*/
+    renderAll();
+  }
+}
+
+function renderAll() {
   background(255);
   drawingCanvas.background(200);
 
-  app.render(drawingCanvas);
+  let thumbnails = app.render(drawingCanvas);
+  var thumbnailCanvases = document.getElementsByClassName("preview-thumbnail");
+  for(let i=0;i<thumbnails.length;i++) {
+    let ctx = thumbnailCanvases[i].getContext("2d");
+    ctx.drawImage(thumbnails[i].canvas, 0, 0, 300, 150);
+  }
 
   image(drawingCanvas, 0, 0); //main drawing area
-  image(getMaskedImage(), 610, 450, 150, 150); // small preview
+  image(getMaskedImage(), 610, 450, 150, 150); //small preview
 }
 
 function mouseDragged() {
   if (isOnCanvas()) {
     app.logMouseEvent();
+    app.updateCodePanel();
   }
+  renderAll();
 }
 
 function mousePressed() {
   if (isOnCanvas()) {
     app.logMouseEvent();
+    app.updateCodePanel();
   }
+  renderAll();
 }
 
 function mouseReleased() {
@@ -135,7 +157,7 @@ class MotifApp {
   }
 
   render(p5) {
-    this.eventList.render(p5, this.getSelectedLineNum());
+    return this.eventList.render(p5, this.getSelectedLineNum());
   }
 
   loadEffects() {
@@ -254,7 +276,6 @@ class MotifApp {
       if(activeEffect) {
         this.currentEvent = activeEffect.createEvent(createVector(mouseX, mouseY), millis());
         this.eventList.addDrawingEvent(this.currentEvent);
-        this.updateCodePanel();
       }
     }
   }
@@ -354,12 +375,14 @@ class EventList {
   }
 
   render(p5, lineNum) {
+    let images = [];
     if (this.length() > 0) {
       for(let i=0;i<=lineNum;i++) {
         let event = this.events[i];
-        event.render(p5);
+        images.push(event.render(p5));
       }
     }
+    return images;
   }
 
   updateEffectSetting(lineNum, name, value) {
@@ -417,6 +440,7 @@ class DrawingEvent {
   render(p5) {
     let points = this.pointsByTime(millis());
     this.effect.applyEffect(p5, points, this.settings);
+    return pGraphicsToPImage(p5);
   }
   
   // //create a settings object - just names and values
@@ -450,14 +474,21 @@ class DrawingEvent {
     let id = "code-line-" + index;
     let eventDiv = document.createElement('div');
     eventDiv.setAttribute("id", id);
-    eventDiv.innerText = this.effect.getName();
     eventDiv.classList.add("code-line");
   
     // eventDiv.addEventListener("click", (e) => {
     //   markSelectedById("code-line", id);
     // });
+    let previewCanvas = document.createElement('canvas');
+    previewCanvas.classList.add("preview-thumbnail");
+    eventDiv.appendChild(previewCanvas);
+
+    let code = document.createElement('div');
+    code.classList.add("code-with-params");
+    code.innerText = this.effect.getName();
+    eventDiv.appendChild(code);
     for (const name in this.settings) {
-      eventDiv.appendChild(this.settings[name].createDiv((e) => {
+      code.appendChild(this.settings[name].createDiv((e) => {
         this.settings[name].update(e.target.value);
       }));
     }
