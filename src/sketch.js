@@ -1,3 +1,5 @@
+import p5 from 'p5';
+
 let code = [];
 let codePanel;
 let drawingCanvas;
@@ -5,94 +7,93 @@ let stencils = {};
 
 let line = null;
 let lines = [];
-
 let app;
 
-function preload() {
-  stencils["dress"] = loadImage("./src/assets/no sleeve dress.png");
-  stencils["shirt and pants"] = loadImage("./src/assets/shirt and pants.png");
-  stencils["fishbowl"] = loadImage("./src/assets/fishbowl.png");
-  stencils["cake"] = loadImage("./src/assets/cake.png");
-}
-
-/*
-                   _               _ __  
-   ___     ___    | |_    _  _    | '_ \ 
-  (_-<    / -_)   |  _|  | +| |   | .__/ 
-  /__/_   \___|   _\__|   \_,_|   |_|__  
-_|"""""|_|"""""|_|"""""|_|"""""|_|"""""| 
-"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-' 
-
-*/
-
-function setup() {
-  createCanvas(1100, 600);
-  background(255);
-
+window.addEventListener('load', (event) => {
   app = new MotifApp();
-
-  drawingCanvas = createGraphics(height, height);
-  drawingCanvas.background(200);
-
-  renderAll();
-}
-
-/* 
-     _                            
-  __| |     _ _   __ _   __ __ __ 
- / _` |    | '_| / _` |  \ V  V / 
- \__,_|   _|_|_  \__,_|   \_/\_/  
-_|"""""|_|"""""|_|"""""|_|"""""|  
-"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'  
-
-*/
-
-function draw() {
-  if(app.shouldRerender()) {
+});
 
 /*
-each event can set a flag saying it has changed
-shouldRerender checks the event list
+   _ __    ___   
+  | '_ \  | __|  
+  | .__/  |__ \  
+  |_|__   |___/  
+_|"""""|_|"""""| 
+"`-0-0-'"`-0-0-' 
 */
+
+const sketch = (s) => {
+
+  s.preload = () => {
+    stencils["dress"] = s.loadImage("./src/assets/no sleeve dress.png");
+    stencils["shirt and pants"] = s.loadImage("./src/assets/shirt and pants.png");
+    stencils["fishbowl"] = s.loadImage("./src/assets/fishbowl.png");
+    stencils["cake"] = s.loadImage("./src/assets/cake.png");
+  }
+
+  s.setup = () => {
+    s.createCanvas(1100, 600);
+    s.background(255);
+  
+    drawingCanvas = s.createGraphics(height, height);
+    drawingCanvas.background(200);
+  
     renderAll();
   }
-}
 
-function renderAll() {
-  background(255);
-  drawingCanvas.background(200);
+  s.draw = () => {
+      // if(app.shouldRerender()) {
 
-  let thumbnails = app.render(drawingCanvas);
-  var thumbnailCanvases = document.getElementsByClassName("preview-thumbnail");
-  for(let i=0;i<thumbnails.length;i++) {
-    let ctx = thumbnailCanvases[i].getContext("2d");
-    ctx.drawImage(thumbnails[i].canvas, 0, 0, 300, 150);
+    /*
+    each event can set a flag saying it has changed
+    shouldRerender checks the event list
+    */
+    renderAll();
+    // }
   }
 
-  image(drawingCanvas, 0, 0); //main drawing area
-  image(getMaskedImage(), 610, 450, 150, 150); //small preview
-}
+  s.renderAll = () => {
+    s.background(255);
+    drawingCanvas.background(200);
 
-function mouseDragged() {
-  if (isOnCanvas()) {
-    app.logMouseEvent();
-    app.updateCodePanel();
+    let thumbnails = app.render(drawingCanvas);
+    var thumbnailCanvases = document.getElementsByClassName("preview-thumbnail");
+    for(let i=0;i<thumbnails.length;i++) {
+      let ctx = thumbnailCanvases[i].getContext("2d");
+      ctx.drawImage(thumbnails[i].canvas, 0, 0, 300, 150);
+    }
+
+    let gestureThumbnails = app.eventList.renderPoints(createGraphics(50, 50), app.eventList.length());
+    // let gestureThumbnails = app.eventList.renderPoints(drawingCanvas, app.eventList.length());
+    var gestureCanvases = document.getElementsByClassName("gesture-thumbnail");
+    for(let i=0;i<gestureThumbnails.length;i++) {
+      let ctx = gestureCanvases[i].getContext("2d");
+      ctx.drawImage(gestureThumbnails[i].canvas, 0, 0, 300, 150);
+    }
+
+    s.image(drawingCanvas, 0, 0); //main drawing area
+    s.image(getMaskedImage(), 610, 450, 150, 150); //small preview
   }
-  renderAll();
-}
 
-function mousePressed() {
-  if (isOnCanvas()) {
-    app.logMouseEvent();
-    app.updateCodePanel();
+  s.mousePressed = () => {
+    if (isOnCanvas()) {
+      app.logMouseEvent();
+      app.updateCodePanel();
+    }
+    renderAll();
   }
-  renderAll();
-}
 
-function mouseReleased() {
-  app.endCurrentEvent();
-}
+  s.mouseDragged = () => {
+    if (isOnCanvas()) {
+      app.logMouseEvent();
+      app.updateCodePanel();
+    }
+    renderAll();
+  }
 
+  s.mouseReleased = () => {
+    app.endCurrentEvent();
+  }
 /*
 
                     _                               _ __    _ __  
@@ -112,6 +113,7 @@ class MotifApp {
     this.initUI();
     this.codePanel = document.getElementById('code-panel');
     this.currentEvent = null;
+    const sketchInstance = new p5(sketch, 'p5sketch');
   }
 
   initUI() {
@@ -377,9 +379,20 @@ class EventList {
   render(p5, lineNum) {
     let images = [];
     if (this.length() > 0) {
-      for(let i=0;i<=lineNum;i++) {
+      for(let i=0;i<=lineNum;i++) { //less than or equal to - that's odd
         let event = this.events[i];
         images.push(event.render(p5));
+      }
+    }
+    return images;
+  }
+
+  renderPoints(p5, lineNum) {
+    let images = [];
+    if (this.length() > 0) {
+      for(let i=0;i<lineNum;i++) {
+        let line = this.events[i].line;
+        images.push(line.render(p5));
       }
     }
     return images;
@@ -492,6 +505,11 @@ class DrawingEvent {
         this.settings[name].update(e.target.value);
       }));
     }
+
+    let gestureCanvas = document.createElement('canvas');
+    gestureCanvas.classList.add("gesture-thumbnail");
+    eventDiv.appendChild(gestureCanvas);
+
     return eventDiv;
   }
 }
@@ -506,6 +524,19 @@ class DrawnLine {
 
   addPoint(point, time) {
     this.points.push({ position: point, time: time - this.startTime });
+  }
+
+  render(pg) {
+    pg.background(255);
+    pg.noFill();
+    pg.stroke(0);
+    pg.strokeWeight(2);
+    for(let i=0;i<this.points.length;i++) {
+      let x = map(this.points[i].position.x, 0, 600, 0, pg.width);
+      let y = map(this.points[i].position.y, 0, 600, 0, pg.height);
+      pg.point(x, y);
+    }
+    return pGraphicsToPImage(pg);
   }
 
   renderByPoints(n) {

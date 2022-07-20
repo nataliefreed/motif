@@ -31,14 +31,14 @@
     /* max-width: 75px; */
 }
 
-.tool-buttons {
+/* .tool-buttons {
     display: block;
 }
 
 .tool-button {
     width: 70px;
     height: 70px;
-}
+} */
 
 #brushes-button { background-color: #EC6B2C }
 #stamps-button { background-color: #6D8EF7 }
@@ -107,7 +107,7 @@ html, body {
     border-style: solid;
     border-color: #8B8B8B;
     overflow-y: scroll;
-    width: 600px;
+    width: 650px;
     height:350px;
 }
   
@@ -154,6 +154,16 @@ html, body {
     width: 50px;
     height: 50px;
     background-color: green;
+    display: inline;
+    margin: 0px;
+  }
+
+  .gesture-thumbnail {
+    width: 50px;
+    height: 50px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: black;
     display: inline;
     margin: 0px;
   }
