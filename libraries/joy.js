@@ -616,7 +616,6 @@ Math.TAU = 2*Math.PI;
 
 // Deep clone
 var _clone = function(json){
-	console.log(json);
 	return JSON.parse(JSON.stringify(json));
 };
 
@@ -2498,8 +2497,6 @@ Joy.add({
 			options: actionOptions,
 			onchange: function(value){
 				_addAction(value);
-				// console.log("add action " + value);
-				// console.log(this);
 				self.update(); // You oughta know!
 			},
 			styles: ["joy-bullet"]
