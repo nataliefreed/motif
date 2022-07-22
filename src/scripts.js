@@ -30,61 +30,92 @@
 // 	}
 // });
 
+
+// Joy.add({
+// 	name: "Fill",
+// 	type: "motif/solid fill",
+// 	tags: ["motif", "action"],
+
+// 	init: "Fill with {id:'color', type:'color', placeholder:[50, 0.8, 1.0]}",
+
+// 	// Callback
+// 	onact: function(my){
+// 		my.target.addFill(my.data.color); // "my.target" will be the p5 canvas
+// 	}
+// });
+// Joy.add({
+// 	name: "Add polka dot",
+// 	type: "motif/dot",
+// 	tags: ["motif", "action"],
+
+// 	init: `Add polka dot of radius {id:'radius', type:'number', placeholder:20} in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
+// 	at ({id:'x', type:'number', placeholder:200}, {id:'y', type:'number', placeholder:200})`,
+
+// 	// Callback
+// 	onact: function(my){
+// 		// my.target.background(my.data.color);
+// 		// color = my.data.color;
+// 		my.target.addCircle(my.data.color, my.data.x, my.data.y, my.data.radius);
+// 		// my.target.fill(my.data.color); // "my.target" will be the p5 canvas
+// 	},
+// });
+
+
 window.addEventListener('load', e => {
 	const effectList = [
 		{
 			name: 'solid fill',
-			category: 'Fill',
+			dropdownName: 'Solid Fill',
+			category: 'Background',
+			init: "Fill with {id:'color', type:'color', placeholder:[50, 0.8, 1.0]}",
 			cursor: './assets/cursors/fill-drip-solid.svg',
-			params: {
-
-			},
-			applyEffect: (sketch, points, settings) => {
+			onact: (my) => {
+				my.target.addFill(my.data.color);
 			}
 		},
 		{
-			name: 'gradient fill',
-			category: 'Fill',
+			name: 'gradient',
+			dropdownName: 'Gradient',
+			category: 'Background',
+			init: "Fill with {id:'color', type:'color', placeholder:[50, 0.8, 1.0]}",
 			cursor: './assets/cursors/fill-drip-solid.svg',
-			params: {
-
-			},
-			applyEffect: (sketch, points, settings) => {
+			onact: (my) => {
+				my.target.addFill(my.data.color);
 			}
 		},
 		{
-			name: 'dot',
+			name: 'circle',
+			dropdownName: 'Circle',
 			category: 'Shape',
+			init: `Add polka dot of radius {id:'radius', type:'number', placeholder:20} in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
+			at ({id:'x', type:'number', placeholder:200}, {id:'y', type:'number', placeholder:200})`,
 			cursor: './assets/cursors/star-solid.svg',
-			params: {
-
-			},
-			applyEffect: (sketch, points, settings) => {
-
+			onact: (my) => {
+				my.target.addCircle(my.data.color, my.data.x, my.data.y, my.data.radius);
 			}
 		},
 		{
 			name: 'square',
+			dropdownName: 'Square',
 			category: 'Shape',
+			init: `Add square of radius {id:'radius', type:'number', placeholder:20} in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
+			at ({id:'x', type:'number', placeholder:200}, {id:'y', type:'number', placeholder:200})`,
 			cursor: './assets/cursors/star-solid.svg',
-			params: {
-
-			},
-			applyEffect: (sketch, points, settings) => {
-
+			onact: (my) => {
+				my.target.addCircle(my.data.color, my.data.x, my.data.y, my.data.radius);
 			}
-		},	
+		},
 		{
 			name: 'polygon',
+			dropdownName: 'Polygon',
 			category: 'Shape',
+			init: `Add polygon of radius {id:'radius', type:'number', placeholder:20} in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
+			at ({id:'x', type:'number', placeholder:200}, {id:'y', type:'number', placeholder:200})`,
 			cursor: './assets/cursors/star-solid.svg',
-			params: {
-
-			},
-			applyEffect: (sketch, points, settings) => {
-
+			onact: (my) => {
+				my.target.addCircle(my.data.color, my.data.x, my.data.y, my.data.radius);
 			}
-		},	
+		},
 	]
 
 	const app = new MotifApp(effectList);
@@ -169,32 +200,17 @@ class MotifApp {
 
 		let hexColor = document.getElementById('color-picker').value;
 		let hslColor = _rgbToHsl(_hexToRgb(hexColor));
+		console.log(hslColor);
 
 		//TODO: make this match effect params
 		let params = {
 			// color: { type:'color', value:[50, 0.5, 1.0]},
-			color: { type:'color', value:[hslColor[0], hslColor[1], 1 - hslColor[2]]},
+			color: { type:'color', value:[hslColor[0], hslColor[1], hslColor[2]]},
 			x: { type:'number', value: Math.round(settings.x)},
 			y: {type:'number', value: Math.round(settings.y)}
 		}
 		this.joy.actions.addAction('motif/'+effectName, undefined, params);
 		this.joy.actions.update();
-		// switch(effectName) {
-		// 	case "solid fill":
-		// 		this.joy.actions.addAction('motif/fill', undefined, {color:{ type:'color', value:[50, 0.5, 1.0]}});
-		// 		this.joy.actions.update();
-		// 		break;
-		// 	case "dot":
-		// 		let params = {
-		// 			color: { type:'color', value:[50, 0.5, 1.0]},
-		// 			x: { type:'number', value: Math.round(settings.x)},
-		// 			y: {type:'number', value: Math.round(settings.y)}
-		// 		}
-		// 		this.joy.actions.addAction('motif/dot',undefined, params);
-		// 		this.joy.actions.update();
-		// 		break;
-		// 	default: break;
-		// }
 	}
 
 	getSelectedEffect() {
@@ -241,18 +257,6 @@ class MotifApp {
 	}
 
 	initP5() {
-		// return new p5(s => {
-		// 	s.setup = () => {
-		// 		s.createCanvas(600, 600);
-		// 		s.background(255);
-		// 		s.setupFinished = true;
-		// 	}
-		// 	s.draw = () => { };
-		// 	s.clear = () => {
-		// 		if(!s.setupFinished) return;
-		// 		s.background(255);
-		// 	}
-		// }, 'drawingCanvas');
 		return new p5(s => {
 			let x = 100;
 			let y = 100;
@@ -294,57 +298,71 @@ class MotifApp {
 
 	initJoy() {
 		let data = Joy.loadFromURL();
+		let sketch = this.sketch;
+		let effects = this.effects;
 
 		Joy.module("motif", function() {
-			Joy.add({
-				name: "Fill",
-				type: "motif/solid fill",
-				tags: ["motif", "action"],
-			
-				init: "Fill with {id:'color', type:'color', placeholder:[50, 0.8, 1.0]}",
-			
-				// Callback
-				onact: function(my){
-					my.target.addFill(my.data.color); // "my.target" will be the p5 canvas
-				}
+
+			//Add from effects list
+			Object.values(effects).forEach(effect => {
+				console.log(effect);
+				Joy.add({
+					name: effect.dropdownName,
+					type: "motif/" + effect.name,
+					tags: ["motif", "action"],
+					init: effect.init,
+					onact: effect.onact
+				});
 			});
-			Joy.add({
-				name: "Add polka dot",
-				type: "motif/dot",
-				tags: ["motif", "action"],
+
+			// Joy.add({
+			// 	name: "Fill",
+			// 	type: "motif/solid fill",
+			// 	tags: ["motif", "action"],
 			
-				init: `Add polka dot of radius {id:'radius', type:'number', placeholder:20} in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
-				at ({id:'x', type:'number', placeholder:200}, {id:'y', type:'number', placeholder:200})`,
+			// 	init: "Fill with {id:'color', type:'color', placeholder:[50, 0.8, 1.0]}",
 			
-				// Callback
-				onact: function(my){
-					// my.target.background(my.data.color);
-					// color = my.data.color;
-					my.target.addCircle(my.data.color, my.data.x, my.data.y, my.data.radius);
-					// my.target.fill(my.data.color); // "my.target" will be the p5 canvas
-				},
-			});
+			// 	// Callback
+			// 	onact: function(my){
+			// 		my.target.addFill(my.data.color); // "my.target" will be the p5 canvas
+			// 	}
+			// });
+			// Joy.add({
+			// 	name: "Add polka dot",
+			// 	type: "motif/dot",
+			// 	tags: ["motif", "action"],
+			
+			// 	init: `Add polka dot of radius {id:'radius', type:'number', placeholder:20} in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
+			// 	at ({id:'x', type:'number', placeholder:200}, {id:'y', type:'number', placeholder:200})`,
+			
+			// 	// Callback
+			// 	onact: function(my){
+			// 		// my.target.background(my.data.color);
+			// 		// color = my.data.color;
+			// 		my.target.addCircle(my.data.color, my.data.x, my.data.y, my.data.radius);
+			// 		// my.target.fill(my.data.color); // "my.target" will be the p5 canvas
+			// 	},
+			// });
 		
-			Joy.add({
-				name: "Brush",
-				type: "motif/brush",
-				tags: ["motif", "action"],
+			// Joy.add({
+			// 	name: "Brush",
+			// 	type: "motif/brush",
+			// 	tags: ["motif", "action"],
 			
-				init: "Brush {id:'choose', type:'choose', options:['a','b','c'], placeholder:'a'} in color {id:'color', type:'color', placeholder:[150, 0.8, 1.0]}",
+			// 	init: "Brush {id:'choose', type:'choose', options:['a','b','c'], placeholder:'a'} in color {id:'color', type:'color', placeholder:[150, 0.8, 1.0]}",
 			
-				// Callback
-				onact: function(my){
-					// my.target.background(my.data.color);
-					color = my.data.color;
-					my.target.addCircle(my.data.color, my.data.x, my.data.y, my.data.radius);
-					// my.target.fill(my.data.color); // "my.target" will be the p5 canvas
-					//TODO: this is going to need a list of points
-				},
-			});
+			// 	// Callback
+			// 	onact: function(my){
+			// 		// my.target.background(my.data.color);
+			// 		color = my.data.color;
+			// 		my.target.addCircle(my.data.color, my.data.x, my.data.y, my.data.radius);
+			// 		// my.target.fill(my.data.color); // "my.target" will be the p5 canvas
+			// 		//TODO: this is going to need a list of points
+			// 	},
+			// });
 		});
 
-		let sketch = this.sketch;
-		let foo = this.foo;
+		
 
 		let joy = Joy({
 			// Where the Joy editor goes:

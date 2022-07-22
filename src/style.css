@@ -165,3 +165,8 @@ button {
     padding: 15px;
     cursor: pointer;
 }
+
+#color-picker {
+    float: right;
+    border-radius: 10px;
+}
