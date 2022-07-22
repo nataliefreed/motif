@@ -7,95 +7,35 @@
 	<script src="./libraries/p5.js"></script>
 </head>
 	<body>
-
 			<div class="frame">
-
-
 				<div class = "categories-and-settings">
-			<div class="category-toolbar">
-					<!-- <button class="tool-button" id="brushes-button">brushes</button>
-					<button class="tool-button" id="stamps-button">stamps</button>
-					<button class="tool-button" id="effects-button">effects</button>
-					<button class="tool-button" id="patterns-button">patterns</button>
-					<button class="tool-button" id="stencils-button">stencils</button>
-					<button class="tool-button" id="favorites-button">favorites</button> -->
-					<!-- <button class="category-button"><i class="fa-solid fa-xl fa-paintbrush"></i></button>
-					<button class="category-button"><i class="fa-solid fa-xl fa-wand-sparkles"></i></button>
-					<button class="category-button"><i class="fa-solid fa-xl fa-stamp"></i></button> -->
-					
+					<input type="color" id="color-picker" value="#ffaaff">
+					<div class="category-toolbar"></div>
 				</div>
-				<input type="color" id="color-picker" value="#ffaaff">
-			</div>
+				<div class="drawing-toolbar"></div>
+				<div class="middle-row">
+					<div id="drawing-canvas"></div>
 
-				
+					<div class="program-panel">
+						<div id="joy"></div>
 
-				<div class="drawing-toolbar">
-					<!-- <button class="effect-button" id="fill-button">fill</button>
-					<button class="effect-button" id="dot-button">polka dot</button>  -->
+						<div class="bottom-instructions">
+							<label for="stencil">Place stencil:</label>
+							<select name="stencil" id="stencil">
+								<option value="dress">dress</option>
+								<option value="shirt and pants">shirt and pants</option>
+								<option value="fishbowl">fishbowl</option>
+								<option value="cake">cake</option>
+							</select>
+							<p id="print-instruction"><a href="">Print</a> and then cut out!</p>
+						</div>
+					</div>
 				</div>
-				
-			
-
-			<div class="middle-row">
-			<!-- <canvas id='drawing-canvas' width="1" height="1"></canvas> -->
-			<div id="drawing-canvas"></div>
-			
-			
-		<!-- <div class="drawing-panel">
-			
-		</div> -->
-
-		<div class="program-panel">
-			<div id="joy"></div>
-
-			<div class="bottom-instructions">
-			<label for="stencil">Place stencil:</label>
-			<select name="stencil" id="stencil">
-			  <option value="dress">dress</option>
-			  <option value="shirt and pants">shirt and pants</option>
-			  <option value="fishbowl">fishbowl</option>
-			  <option value="cake">cake</option>
-			</select>
-			
-				<p id="print-instruction"><a href="">Print</a> and then cut out!</p>
 			</div>
-
-		</div>
-	</div>
-
-		
-
-	
-
-</div>
-
-	
-	<!-- <div id="turtle"></div> -->
-
-		<!-- <div class="options-bar" id="options-bar">
-			options bar
-		</div>
-
-		<div class="footer">
-			<label for="stencil">Stencil:</label>
-			<select name="stencil" id="stencil">
-			  <option value="dress">dress</option>
-			  <option value="shirt and pants">shirt and pants</option>
-			  <option value="fishbowl">fishbowl</option>
-			  <option value="cake">cake</option>
-			</select>
-		</div> -->
-
-			
-		
-
-
-		
-
 		</div>
 	</body>
 </html>
 
 <script src="./libraries/joy.js"></script>
-<script src="./turtle.js"></script>
+<!-- <script src="./turtle.js"></script> -->
 <script type="module" src="./src/scripts.js"></script>
