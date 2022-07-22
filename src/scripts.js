@@ -165,22 +165,36 @@ class MotifApp {
 	}
 
 	addEvent(effectName, settings) {
-		switch(effectName) {
-			case "solid fill":
-				this.joy.actions.addAction('motif/fill',undefined, {color:{ type:'color', value:[50, 0.5, 1.0]}});
-				this.joy.actions.update();
-				break;
-			case "dot":
-				let params = {
-					color: { type:'color', value:[50, 0.5, 1.0]},
-					x: { type:'number', value: Math.round(settings.x)},
-					y: {type:'number', value: Math.round(settings.y)}
-				}
-				this.joy.actions.addAction('motif/dot',undefined, params);
-				this.joy.actions.update();
-				break;
-			default: break;
+		let effect = this.effects[effectName];
+
+		let hexColor = document.getElementById('color-picker').value;
+		let hslColor = _rgbToHsl(_hexToRgb(hexColor));
+
+		//TODO: make this match effect params
+		let params = {
+			// color: { type:'color', value:[50, 0.5, 1.0]},
+			color: { type:'color', value:[hslColor[0], hslColor[1], 1 - hslColor[2]]},
+			x: { type:'number', value: Math.round(settings.x)},
+			y: {type:'number', value: Math.round(settings.y)}
 		}
+		this.joy.actions.addAction('motif/'+effectName, undefined, params);
+		this.joy.actions.update();
+		// switch(effectName) {
+		// 	case "solid fill":
+		// 		this.joy.actions.addAction('motif/fill', undefined, {color:{ type:'color', value:[50, 0.5, 1.0]}});
+		// 		this.joy.actions.update();
+		// 		break;
+		// 	case "dot":
+		// 		let params = {
+		// 			color: { type:'color', value:[50, 0.5, 1.0]},
+		// 			x: { type:'number', value: Math.round(settings.x)},
+		// 			y: {type:'number', value: Math.round(settings.y)}
+		// 		}
+		// 		this.joy.actions.addAction('motif/dot',undefined, params);
+		// 		this.joy.actions.update();
+		// 		break;
+		// 	default: break;
+		// }
 	}
 
 	getSelectedEffect() {
@@ -284,7 +298,7 @@ class MotifApp {
 		Joy.module("motif", function() {
 			Joy.add({
 				name: "Fill",
-				type: "motif/fill",
+				type: "motif/solid fill",
 				tags: ["motif", "action"],
 			
 				init: "Fill with {id:'color', type:'color', placeholder:[50, 0.8, 1.0]}",
@@ -360,8 +374,58 @@ class MotifApp {
 
 		return joy;
 	}
-
 }
+
+let _rgbToHsl = rgb => {
+	// const [r, g, b] = rgbStr.slice(4, -1).split(',').map(Number);
+	const [r, g, b] = Object.values(rgb);
+	const max = Math.max(r, g, b)
+	const min = Math.min(r, g, b)
+	const l = Math.floor((max + min) / ((0xff * 2) / 100))
+  
+	if (max === min) return [0, 0, l / 100]
+	const d = max - min
+	const s = Math.floor((d / (l > 50 ? 0xff * 2 - max - min : max + min)) * 100)
+  
+	if (max === r) return [Math.floor(((g - b) / d + (g < b && 6)) * 60), s / 100, l / 100]
+	return max === g
+	  ? [Math.floor(((b - r) / d + 2) * 60), s / 100, l / 100]
+	  : [Math.floor(((r - g) / d + 4) * 60), s / 100, l / 100]
+  }
+
+
+/* https://gist.github.com/mjackson/5311256 by kigiri*/
+let _rgbStrToHsl = rgbStr => {
+	const [r, g, b] = rgbStr.slice(4, -1).split(',').map(Number)
+	const max = Math.max(r, g, b)
+	const min = Math.min(r, g, b)
+	const l = Math.floor((max + min) / ((0xff * 2) / 100))
+	
+	if (max === min) return [0, 0, l]
+	const d = max - min
+	const s = Math.floor((d / (l > 50 ? 0xff * 2 - max - min : max + min)) * 100)
+	
+	if (max === r) return [Math.floor(((g - b) / d + (g < b && 6)) * 60), s, l]
+	return max === g
+		? [Math.floor(((b - r) / d + 2) * 60), s, l]
+		: [Math.floor(((r - g) / d + 4) * 60), s, l]
+	}
+
+	/* https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb */
+	let _hexToRgb = hex => {
+	// Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+	var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+	hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+		return r + r + g + g + b + b;
+	});
+	
+	var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+	return result ? {
+		r: parseInt(result[1], 16),
+		g: parseInt(result[2], 16),
+		b: parseInt(result[3], 16)
+	} : null;
+	}
 
 // class Effect {
 // 	constructor(name, applyEffect, settings, category) {
