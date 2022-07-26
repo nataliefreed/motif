@@ -100,8 +100,8 @@ body {
 #drawing-canvas {
     /* display: block; */
     background-color: #ffffff;
-    width: 600px;
-    height: 600px;
+    width: 599px;
+    height: 599px;
     border-width: 0.5px;
     border-style: solid;
     border-color: #bbbbbb;

@@ -6,6 +6,7 @@ window.addEventListener('load', e => {
 			category: 'Backgrounds',
 			init: "Fill with {id:'color', type:'color', placeholder:[50, 0.8, 1.0]}",
 			cursor: './assets/cursors/fill-drip-solid.svg',
+			mouseActionType: 'click',
 			onact: (my) => {
 				my.target.addFill(my.data.color);
 			}
@@ -16,30 +17,20 @@ window.addEventListener('load', e => {
 			category: 'Backgrounds',
 			init: "Gradient from {id:'color1', type:'color', placeholder:[50, 0.8, 1.0]} to {id:'color2', type:'color', placeholder:[100, 0.8, 1.0]}",
 			cursor: './assets/cursors/fill-drip-solid.svg',
+			mouseActionType: 'click',
 			onact: (my) => {
 				my.target.gradient(my.data.color1, my.data.color2);
 			}
 		},
 		{
-			name: 'paper doll',
-			dropdownName: 'Paper doll',
-			category: 'Stencils',
-			init: `Paper doll with radius {id:'radius', type:'number', placeholder:20} in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
-			at ({id:'x', type:'number', placeholder:200}, {id:'y', type:'number', placeholder:200})`,
-			cursor: './assets/cursors/star-solid.svg',
+			name: 'stripes',
+			dropdownName: 'Stripes',
+			category: 'Backgrounds',
+			init: "Stripes of width {id:'stripeWidth', type:'number', placeholder:50} from {id:'color1', type:'color', placeholder:[0, 0.7, 0.8]} to {id:'color2', type:'color', placeholder:[200, 0.7, 0.9]}",
+			cursor: './assets/cursors/fill-drip-solid.svg',
+			mouseActionType: 'click',
 			onact: (my) => {
-				my.target.addCircle(my.data.color, my.data.x, my.data.y, my.data.radius);
-			}
-		},
-		{
-			name: 'box',
-			dropdownName: 'Box',
-			category: 'Stencils',
-			init: `Box with radius {id:'radius', type:'number', placeholder:20} in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
-			at ({id:'x', type:'number', placeholder:200}, {id:'y', type:'number', placeholder:200})`,
-			cursor: './assets/cursors/star-solid.svg',
-			onact: (my) => {
-				my.target.addCircle(my.data.color, my.data.x, my.data.y, my.data.radius);
+				my.target.stripes(my.data.stripeWidth, my.data.color1, my.data.color2);
 			}
 		},
 		{
@@ -49,6 +40,7 @@ window.addEventListener('load', e => {
 			init: `Circle of radius {id:'radius', type:'number', placeholder:20} in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
 			at ({id:'x', type:'number', placeholder:200}, {id:'y', type:'number', placeholder:200})`,
 			cursor: './assets/cursors/star-solid.svg',
+			mouseActionType: 'click',
 			onact: (my) => {
 				my.target.addCircle(my.data.color, my.data.x, my.data.y, my.data.radius);
 			}
@@ -60,6 +52,7 @@ window.addEventListener('load', e => {
 			init: `Square of size {id:'size', type:'number', placeholder:40} in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
 			at ({id:'x', type:'number', placeholder:200}, {id:'y', type:'number', placeholder:200})`,
 			cursor: './assets/cursors/star-solid.svg',
+			mouseActionType: 'click',
 			onact: (my) => {
 				my.target.addSquare(my.data.color, my.data.x, my.data.y, my.data.size);
 			}
@@ -71,6 +64,7 @@ window.addEventListener('load', e => {
 			init: `Polygon with {id:'nsides', type:'number', placeholder:6} sides and radius {id:'radius', type:'number', placeholder:20} in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
 			at ({id:'x', type:'number', placeholder:200}, {id:'y', type:'number', placeholder:200})`,
 			cursor: './assets/cursors/star-solid.svg',
+			mouseActionType: 'click',
 			onact: (my) => {
 				my.target.polygon(my.data.color, my.data.x, my.data.y, my.data.radius, my.data.nsides);
 			}
@@ -93,19 +87,23 @@ window.addEventListener('load', e => {
 			init: `Heart of size {id:'size', type:'number', placeholder:40} in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
 			at ({id:'x', type:'number', placeholder:200}, {id:'y', type:'number', placeholder:200})`,
 			cursor: './assets/cursors/star-solid.svg',
+			mouseActionType: 'click',
 			onact: (my) => {
 				my.target.heart(my.data.color, my.data.x, my.data.y, my.data.size);
 			}
 		},
 		{
 			name: 'marker',
-			dropdownName: 'Marker',
+			dropdownName: 'marker',
 			category: 'Brushes',
-			init: `Marker with radius {id:'radius', type:'number', placeholder:20} in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
-			at ({id:'x', type:'number', placeholder:200}, {id:'y', type:'number', placeholder:200})`,
+			init: `Line from ({id:'x1', type:'number', placeholder:100}, {id:'y1', type:'number', placeholder:100})
+			to ({id:'x2', type:'number', placeholder:200}, {id:'y2', type:'number', placeholder:200})
+			in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}
+			with width {id: 'lineWidth', type: 'number', placeholder: 5}`,
 			cursor: './assets/cursors/star-solid.svg',
+			mouseActionType: 'drag',
 			onact: (my) => {
-				my.target.addCircle(my.data.color, my.data.x, my.data.y, my.data.radius);
+				my.target.addLine(my.data.color, my.data.lineWidth, my.data.x1, my.data.y1, my.data.x2, my.data.y2, my.data.radius);
 			}
 		},
 		{
@@ -115,6 +113,7 @@ window.addEventListener('load', e => {
 			init: `Rainbow brush with radius {id:'radius', type:'number', placeholder:20} in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
 			at ({id:'x', type:'number', placeholder:200}, {id:'y', type:'number', placeholder:200})`,
 			cursor: './assets/cursors/star-solid.svg',
+			mouseActionType: 'click',
 			onact: (my) => {
 				my.target.addCircle(my.data.color, my.data.x, my.data.y, my.data.radius);
 			}
@@ -126,26 +125,51 @@ window.addEventListener('load', e => {
 			init: `Add swirl of radius {id:'radius', type:'number', placeholder:20} in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
 			at ({id:'x', type:'number', placeholder:200}, {id:'y', type:'number', placeholder:200})`,
 			cursor: './assets/cursors/star-solid.svg',
+			mouseActionType: 'click',
 			onact: (my) => {
 				my.target.addCircle(my.data.color, my.data.x, my.data.y, my.data.radius);
 			}
 		},
 		{
-			name: 'filter',
-			dropdownName: 'Filter',
+			name: 'invert',
+			dropdownName: 'Invert',
 			category: 'Effects',
-			init: `Color shift of type {id:'filter', type:'choose', options:['gray','threshold','opaque', 'invert', 'posterize', 'dilate', 'blur', 'erode'], placeholder:'invert'}`,
+			init: `Color shift of type {id:'filter', type:'choose', options:['invert','threshold', 'gray', 'dilate', 'blur'], placeholder:'invert'}`,
 			cursor: './assets/cursors/star-solid.svg',
+			mouseActionType: 'click',
 			onact: (my) => {
 				my.target.applyFilter(my.data.filter);
 			}
 		},
 		{
-			name: 'tidy',
-			dropdownName: 'Tidy',
+			name: 'grayscale',
+			dropdownName: 'Grayscale',
 			category: 'Effects',
-			init: `Tidy`,
+			init: `Color shift of type {id:'filter', type:'choose', options:['invert','threshold', 'gray', 'dilate', 'blur'], placeholder:'gray'}`,
 			cursor: './assets/cursors/star-solid.svg',
+			mouseActionType: 'click',
+			onact: (my) => {
+				my.target.applyFilter(my.data.filter);
+			}
+		},
+		{
+			name: 'threshold',
+			dropdownName: 'Threshold',
+			category: 'Effects',
+			init: `Color shift of type {id:'filter', type:'choose', options:['invert','threshold', 'gray', 'dilate', 'blur'], placeholder:'threshold'}`,
+			cursor: './assets/cursors/star-solid.svg',
+			mouseActionType: 'click',
+			onact: (my) => {
+				my.target.applyFilter(my.data.filter);
+			}
+		},
+		{
+			name: 'grid',
+			dropdownName: 'grid',
+			category: 'Patterns',
+			init: `Repeat in grid with rows and columns`,
+			cursor: './assets/cursors/star-solid.svg',
+			mouseActionType: 'click',
 			onact: (my) => {
 				my.target.addCircle(my.data.color, my.data.x, my.data.y, my.data.radius);
 			}
@@ -163,10 +187,16 @@ class MotifApp {
 		this.sketch.clear('#aaaaaa');
 		this.joy = this.initJoy();
 		this.initUI();
+
+		this.joy.actions.addAction('stencils/paperdoll', undefined, {});
+		this.joy.actions.update();
 	}
 
 	initP5() {
 		return new p5(s => {
+			
+			let points = null;
+
 			s.setup = () => {
 			  s.createCanvas(600, 600);
 			  s.background(255);
@@ -175,6 +205,9 @@ class MotifApp {
 			};
 		  
 			s.draw = () => {
+				if(points) {
+					points.render(s);
+				}
 			};
 		
 			s.clear = () => {
@@ -249,6 +282,24 @@ class MotifApp {
 				}
 			}
 
+			s.stripes = (stripeWidth, color1, color2) => {
+				if(!s.setupFinished) return;
+				s.push();
+				s.translate(0, stripeWidth/2); //so that top stripe is fully shown
+				let pcolor1 = s.color(color1);
+				let pcolor2 = s.color(color2);
+				s.noFill();
+				s.strokeWeight(stripeWidth);
+				for(let i=0;i<s.height+stripeWidth;i+=stripeWidth) {
+					let c = s.lerpColor(pcolor1, pcolor2, i/s.height);
+					console.log(c);
+					s.stroke(c);
+					s.line(0, i, s.width, i);
+				}
+				s.pop();
+			}
+
+			//by Mithru: https://editor.p5js.org/Mithru/sketches/Hk1N1mMQg
 			s.heart = (color, x, y, size) => {
 				if(!s.setupFinished) return;
 				s.push();
@@ -267,9 +318,56 @@ class MotifApp {
 				s.filter(s[filter.toUpperCase()]);
 			}
 
+			s.stencil = (name, params) => {
+
+			}
+
+			s.startPoints = (x, y) => {
+				points = new DrawnLine(x, y);
+				console.log("inside start points function", points);
+				s.loop();
+			}
+
+			s.addPoint = (x, y) => {
+				points.addPoint(x, y);
+			}
+
+			s.endPoints = () => {
+				points = null;
+				s.noLoop();
+			}
+
+			s.getPoint = (index) => {
+				return points.points[index];
+			}
+
+			s.getLastPoint = () => {
+				return points.points[points.points.length-1];
+			}
+
+			s.mouseDragged = () => {
+				if(points) {
+					points.addPoint(s.mouseX, s.mouseY);
+				}
+			}
+
+			// s.renderPoints = (points) => {
+			// 	points.forEach(point => {
+
+			// 	});
+			// }
+
+			s.addLine = (color, lineWeight, x1, y1, x2, y2) => {
+				if(!s.setupFinished) return;
+				s.strokeWeight(lineWeight);
+				s.noFill();
+				s.stroke(color);
+				s.line(x1, y1, x2, y2);
+			}
+
 		  }, 'drawing-canvas');
 	}
-
+	
 	initUI() {
 		this.categories = [...new Set(Object.values(this.effects).map(a => a.category))]; //get unique categories from effect list
 		let categoryToolbar = document.getElementsByClassName('category-toolbar')[0];
@@ -319,12 +417,16 @@ class MotifApp {
 			let activeEffect = this.getSelectedEffect();
 			console.log(activeEffect);
 			if(activeEffect) {
-				this.addEvent(activeEffect, {
-				x: this.sketch.mouseX,
-				y: this.sketch.mouseY
-				});
+				if(activeEffect == "marker") {
+					this.sketch.startPoints(this.sketch.mouseX, this.sketch.mouseY);
+					console.log("on mouse down", this.sketch.getPoint(0));
+				} else {
+					this.addEvent(activeEffect, {
+						x: this.sketch.mouseX,
+						y: this.sketch.mouseY
+						});
+				}
 			}
-
 		});
 
 		document.getElementById('drawing-canvas').addEventListener('mousemove', e => {
@@ -337,6 +439,21 @@ class MotifApp {
 		document.getElementById('drawing-canvas').addEventListener('mouseup', e => {
 			// console.log(drag ? 'drag' : 'click');
 			mouseDownOverCanvas = false;
+
+			let activeEffect = this.getSelectedEffect();
+			if(activeEffect) {
+				if(activeEffect == "marker") {
+					this.sketch.addPoint(this.sketch.mouseX, this.sketch.mouseY);
+					console.log("on mouse up", this.sketch.getPoint(1));
+					this.addEvent(activeEffect, {
+						x1: this.sketch.getPoint(0).x,
+						y1: this.sketch.getPoint(0).y,
+						x2: this.sketch.getLastPoint().x,
+						y2: this.sketch.getLastPoint().y,
+					});
+					this.sketch.endPoints();
+				}
+			}
 		});
 
 	}
@@ -353,7 +470,11 @@ class MotifApp {
 			// color: { type:'color', value:[hslColor[0], hslColor[1], hslColor[2]]},
 			color: { type:'color', value:[Math.random()*360, 0.8, 0.8]},
 			x: { type:'number', value: Math.round(settings.x)},
-			y: {type:'number', value: Math.round(settings.y)}
+			y: {type:'number', value: Math.round(settings.y)},
+			x1: { type:'number', value: Math.round(settings.x1)},
+			y1: {type:'number', value: Math.round(settings.y1)},
+			x2: { type:'number', value: Math.round(settings.x2)},
+			y2: {type:'number', value: Math.round(settings.y2)}
 		}
 		this.joy.actions.addAction('motif/'+effectName, undefined, params);
 		this.joy.actions.update();
@@ -422,6 +543,48 @@ class MotifApp {
 			});
 		});
 
+		Joy.module("stencils", function() {
+			Joy.add({
+				name: "Paper Doll",
+				type: "stencils/paperdoll",
+				tags: ["stencils", "action"],
+			
+				// What the action does is EMBEDDED IN A PLAIN-LANGUAGE SENTENCE
+				init: "Use stencil paper doll with clothing {id:'outfit', type:'choose', options:['dress','pants','shirt'], placeholder:'dress'}",
+			
+				// Callback
+				onact: function(my){
+					my.target.stencil('paperdoll', my.data.outfit);
+				}
+			});
+		});
+
+
+		// {
+		// 	name: 'paper doll',
+		// 	dropdownName: 'Paper doll',
+		// 	category: 'Stencils',
+		// 	init: `Paper doll with radius {id:'radius', type:'number', placeholder:20} in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
+		// 	at ({id:'x', type:'number', placeholder:200}, {id:'y', type:'number', placeholder:200})`,
+		// 	cursor: './assets/cursors/star-solid.svg',
+		// 	onact: (my) => {
+		// 		my.target.addCircle(my.data.color, my.data.x, my.data.y, my.data.radius);
+		// 	}
+		// },
+		// {
+		// 	name: 'box',
+		// 	dropdownName: 'Box',
+		// 	category: 'Stencils',
+		// 	init: `Box with radius {id:'radius', type:'number', placeholder:20} in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
+		// 	at ({id:'x', type:'number', placeholder:200}, {id:'y', type:'number', placeholder:200})`,
+		// 	cursor: './assets/cursors/star-solid.svg',
+		// 	onact: (my) => {
+		// 		my.target.addCircle(my.data.color, my.data.x, my.data.y, my.data.radius);
+		// 	}
+		// },
+
+
+
 		let joy = Joy({
 			// Where the Joy editor goes:
 			container: "#joy",
@@ -436,7 +599,7 @@ class MotifApp {
 			data: data,
 		
 			// Actions to include:
-			modules: ["motif", "instructions", "math"],
+			modules: ["motif", "instructions", "math", "stencils"],
 		
 			previewActions: true,
 			previewNumbers: true,
@@ -467,7 +630,7 @@ let _rgbToHsl = rgb => {
 	return max === g
 	  ? [Math.floor(((b - r) / d + 2) * 60), s / 100, l / 100]
 	  : [Math.floor(((r - g) / d + 4) * 60), s / 100, l / 100]
-  }
+}
 
 
 /* https://gist.github.com/mjackson/5311256 by kigiri*/
@@ -485,10 +648,10 @@ let _rgbStrToHsl = rgbStr => {
 	return max === g
 		? [Math.floor(((b - r) / d + 2) * 60), s, l]
 		: [Math.floor(((r - g) / d + 4) * 60), s, l]
-	}
+}
 
-	/* https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb */
-	let _hexToRgb = hex => {
+/* https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb */
+let _hexToRgb = hex => {
 	// Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
 	var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
 	hex = hex.replace(shorthandRegex, function(m, r, g, b) {
@@ -501,4 +664,26 @@ let _rgbStrToHsl = rgbStr => {
 		g: parseInt(result[2], 16),
 		b: parseInt(result[3], 16)
 	} : null;
+}
+
+
+class DrawnLine {
+	constructor(x, y) {
+		this.points = [];
+		this.addPoint(x, y);
 	}
+	
+	addPoint(x, y) {
+		this.points.push({ x: x, y: y });
+	}
+	
+	render(s) {
+		s.push();
+		s.strokeWeight(5);
+		s.stroke(0);
+		this.points.forEach(p => {
+			s.point(p.x, p.y);
+		});
+		s.pop();
+	}
+}
