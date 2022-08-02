@@ -1036,6 +1036,9 @@ ui.Scrubber = function(config){
 	// Config...
 	var min = config.min;
 	var max = config.max;
+
+	// console.log(config);
+
 	self.value = config.value;
 
 	// DOM
@@ -1098,6 +1101,7 @@ ui.Scrubber = function(config){
 	var _boundNumber = function(newValue){
 		if(min!==undefined && newValue<min) newValue=min;
 		if(max!==undefined && newValue>max) newValue=max;
+		// console.log("min ", min, " max ", max);
 		return newValue;
 	};
 	var _onmouseup = function(){
@@ -2827,11 +2831,17 @@ Joy.module("math", function(){
 					// Make it
 					var chainActor;
 					var type = chainItem.type;
+					var options = {};
+					var isFirst = (atIndex === undefined) ? (self.chainActors.length == 0) : (atIndex == 0); 
+					if (isFirst && self.options !== undefined) {
+						options.min = self.options.min;
+						options.max = self.options.max;
+					}
 					switch(type){
 
 						// Elements
 						case "number_raw":
-							chainActor = self.addChild({type:type}, chainItem);
+							chainActor = self.addChild({type:type, ...options}, chainItem);
 							break;
 						case "variableName":
 							chainActor = self.addChild({
