@@ -12,7 +12,8 @@ Created by Nicky Case http://ncase.me/
 function Joy(options){
 
 	// You can call this as "new Joy()" or just "Joy()" 
-	var self = (this==window) ? {} : this;
+	// var self = (this==window) ? {} : this;
+	var self = {}; //NF changed with module import
 
 	// Modules to import?
 	if(options.modules){
@@ -1470,6 +1471,7 @@ Chooser's config:
 	position: "below" // default is "below"
 };
 ********************/
+
 modal.Chooser = function(config){
 
 	var self = {}; // just an obj to scope this stuff
@@ -3423,3 +3425,5 @@ Joy.module("random", function(){
 	});
 
 });
+
+export default Joy;

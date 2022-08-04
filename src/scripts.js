@@ -1,10 +1,13 @@
+import Joy from '../libraries/joy.js';
+// import p5 from '../libraries/p5.js'
+
 window.addEventListener('load', e => {
 	const effectList = [
 		{
 			name: 'solid fill',
 			dropdownName: 'Solid Fill',
 			category: 'Backgrounds',
-			init: "Fill with {id:'color', type:'color', placeholder:[50, 0.8, 1.0]}",
+			init: "Fill with {id:'color', type:'color', placeholder:[50, 0.8, 1.0]} and {id: 'whatever', type:'list'}",
 			cursor: './assets/cursors/fill-drip-solid.svg',
 			mouseActionType: 'single-click',
 			onact: (my) => {
@@ -26,7 +29,7 @@ window.addEventListener('load', e => {
 			name: 'stripes',
 			dropdownName: 'Stripes',
 			category: 'Backgrounds',
-			init: `Stripes of width {id:'stripeWidth', type:'number', min:1, max:300, placeholder:50}
+			init: `Stripes {id:'something', type:'motif/solid fill'} of width {id:'stripeWidth', type:'number', min:1, max:300, placeholder:50}
 				from {id:'color1', type:'color', placeholder:[0, 0.7, 0.8]} 
 				to {id:'color2', type:'color', placeholder:[200, 0.7, 0.9]}`,
 			cursor: './assets/cursors/fill-drip-solid.svg',
@@ -113,7 +116,7 @@ window.addEventListener('load', e => {
 			name: 'brush',
 			dropdownName: 'Brush',
 			category: 'Brushes',
-			init: `Brush in {id:'color', type:'color', placeholder:[20, 0.8, 1.0]} with width {id: 'lineWidth', type: 'number', placeholder: 5} along path {id:'pointsList', type:'string', placeholder:'20,50,200,250'}`,
+			init: `Brush in {id:'color', type:'color', placeholder:[20, 0.8, 1.0]} with width {id: 'lineWidth', type: 'number', placeholder: 8} along path {id:'pointsList', type:'string', placeholder:'20,50,200,250'}`,
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'drag',
 			onact: (my) => {
@@ -203,12 +206,16 @@ class MotifApp {
 
 		this.joy.actions.addAction('stencils/paperdoll', undefined, {});
 		this.joy.actions.update();
+
+		//TODO: add global effect settings such as line weight, color, etc to pass into current events that have a "preview"
 	}
 
 	initP5() {
 		return new p5(s => {
 			
 			let points = null;
+			let strokeColor = 0;
+			let strokeWeight = 5;
 
 			s.setup = () => {
 			  s.createCanvas(600, 600);
@@ -219,7 +226,7 @@ class MotifApp {
 		  
 			s.draw = () => {
 				if(points) {
-					points.renderLine(s);
+					points.renderLine(s, strokeColor, strokeWeight); //TODO: rethink this way of passing in preview line settings
 				}
 			};
 		
@@ -250,6 +257,7 @@ class MotifApp {
 				s.noStroke();
 				s.rect(0, 0, s.width, s.height);
 			}
+
 			s.star = (color, x, y, r1, r2, npoints) => {
 				if(!s.setupFinished) return;
 				let angle = s.TWO_PI / npoints;
@@ -335,11 +343,20 @@ class MotifApp {
 
 			}
 
+			// s.setStrokeColor = (color) => {
+			// 	strokeColor = color;
+			// }
+
+			// s.setStrokeWeight = (weight) => {
+			// 	strokeWeight = weight;
+			// }
+
 			s.startPoints = (x, y) => {
 				points = new DrawnLine(x, y);
 				console.log("inside start points function", points);
 				s.loop();
 			}
+
 			s.addPoint = (x, y) => {
 				points.addPoint(x, y);
 			}
@@ -444,8 +461,8 @@ class MotifApp {
 			let activeEffect = this.getSelectedEffect();
 			if(activeEffect) {
 				if(this.effects[activeEffect].mouseActionType == 'drag') {
+					this.sketch.set
 					this.sketch.startPoints(this.sketch.mouseX, this.sketch.mouseY);
-					console.log("on mouse down", this.sketch.getPoint(0));
 				} else {
 					this.addEvent(activeEffect, {
 							x: { type:'number', value: Math.round(this.sketch.mouseX)},
@@ -458,7 +475,6 @@ class MotifApp {
 		document.getElementById('drawing-canvas').addEventListener('mousemove', e => {
 			if(mouseDownOverCanvas) {
 				dragging = true;
-				// console.log("draggin");
 			}
 		});
 
@@ -470,7 +486,6 @@ class MotifApp {
 			if(activeEffect) {
 				if(this.effects[activeEffect].mouseActionType == 'drag') {
 					this.sketch.addPoint(this.sketch.mouseX, this.sketch.mouseY);
-					console.log("on mouse up", this.sketch.getPoint(1));
 					if(activeEffect == 'straight line') {
 						this.addEvent(activeEffect, {
 							x1: { type:'number', value: Math.round(this.sketch.getPoint(0).x) },
@@ -619,6 +634,19 @@ class MotifApp {
 		// 	}
 		// },
 
+		Joy.add({
+			type: "list",
+			tags: ["ui"],
+			initWidget: function(self){
+				self.dom = document.createElement("input");
+				self.dom.setAttribute("type", "button");
+				self.dom.value = "list";
+			},
+			onget: function(my){
+				return 3;
+			},
+		});
+
 
 
 		let joy = Joy({
@@ -733,10 +761,10 @@ class DrawnLine {
 		s.pop();
 	}
 
-	renderLine(s) {
+	renderLine(s, strokeColor, strokeWeight) {
 		s.push();
-		s.strokeWeight(5);
-		s.stroke(0);
+		s.strokeWeight(strokeWeight);
+		s.stroke(strokeColor);
 		s.noFill();
 		s.beginShape();
 		this.points.forEach(p => {
