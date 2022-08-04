@@ -417,7 +417,7 @@ class MotifApp {
 		let categoryToolbar = document.getElementsByClassName('category-toolbar')[0];
 		let drawingToolbar = document.getElementsByClassName('drawing-toolbar')[0];
 		this.categories.forEach((c) => {
-			// Create a button for the category and add it to the toolbar
+			// Create a button for the category (tab) and add it to the toolbar
 			let categoryButton = this.createButton(c, c, ['category-button']);
 			categoryToolbar.appendChild(categoryButton);
 			
@@ -447,6 +447,7 @@ class MotifApp {
 				drawingTools.classList.remove('hidden');
 				this.markSelectedById("effect-button", drawingTools.firstChild.id);
 			});
+			document.getElementsByClassName('category-button')[0].click(); //Is this bad practice?
 		});
 
 		//Mouse event listeners
