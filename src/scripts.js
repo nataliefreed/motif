@@ -135,6 +135,28 @@ window.addEventListener('load', e => {
 			}
 		},
 		{
+			name: 'shift',
+			dropdownName: 'Shift',
+			category: 'Effects',
+			init: `Shift with height {id:'height', type:'number', placeholder:50} and offset {id:'offset', type:'number', placeholder:20}`,
+			cursor: './assets/cursors/star-solid.svg',
+			mouseActionType: 'single-click',
+			onact: (my) => {
+				my.target.shift(my.data.height, my.data.offset);
+			}
+		},
+		{
+			name: 'wobble',
+			dropdownName: 'Wobble',
+			category: 'Effects',
+			init: `Wobble with height {id:'height', type:'number', placeholder:20} and width {id:'width', type:'number', placeholder:20}`,
+			cursor: './assets/cursors/star-solid.svg',
+			mouseActionType: 'single-click',
+			onact: (my) => {
+				my.target.wobble(my.data.height, my.data.width);
+			}
+		},
+		{
 			name: 'swirl',
 			dropdownName: 'Swirl',
 			category: 'Effects',
@@ -318,6 +340,24 @@ class MotifApp {
 					s.line(0, i, s.width, i);
 				}
 				s.pop();
+			}
+
+			s.shift = (lineHeight, offset) => {
+				s.loadPixels();
+				let d = s.pixelDensity();
+				let slice = 4 * (s.width * d) * ((lineHeight / 2) * d);
+			  
+				for (let j=0; j<s.height*d/lineHeight;j++) {
+				  if (j % 2 == 0) {
+					for (let i = j*slice; i < (j+1)*slice; i += 4) {
+					  s.pixels[i] = s.pixels[i + 4 * offset];
+					  s.pixels[i + 1] = s.pixels[i + 4 * offset + 1];
+					  s.pixels[i + 2] = s.pixels[i + 4 * offset + 2];
+					  s.pixels[i + 3] = s.pixels[i + 4 * offset + 3];
+					}
+				  }
+				}
+				s.updatePixels();
 			}
 
 			//by Mithru: https://editor.p5js.org/Mithru/sketches/Hk1N1mMQg
