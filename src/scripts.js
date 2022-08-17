@@ -343,21 +343,28 @@ class MotifApp {
 			}
 
 			s.shift = (lineHeight, offset) => {
-				s.loadPixels();
-				let d = s.pixelDensity();
-				let slice = 4 * (s.width * d) * ((lineHeight / 2) * d);
+				// s.loadPixels();
+				// let d = s.pixelDensity();
+				// let slice = 4 * (s.width * d) * ((lineHeight / 2) * d);
 			  
-				for (let j=0; j<s.height*d/lineHeight;j++) {
-				  if (j % 2 == 0) {
-					for (let i = j*slice; i < (j+1)*slice; i += 4) {
-					  s.pixels[i] = s.pixels[i + 4 * offset];
-					  s.pixels[i + 1] = s.pixels[i + 4 * offset + 1];
-					  s.pixels[i + 2] = s.pixels[i + 4 * offset + 2];
-					  s.pixels[i + 3] = s.pixels[i + 4 * offset + 3];
+				// for (let j=0; j<s.height*d/lineHeight;j++) {
+				//   if (j % 2 == 0) {
+				// 	for (let i = j*slice; i < (j+1)*slice; i += 4) {
+				// 	  s.pixels[i] = s.pixels[i + 4 * offset];
+				// 	  s.pixels[i + 1] = s.pixels[i + 4 * offset + 1];
+				// 	  s.pixels[i + 2] = s.pixels[i + 4 * offset + 2];
+				// 	  s.pixels[i + 3] = s.pixels[i + 4 * offset + 3];
+				// 	}
+				//   }
+				// }
+				// s.updatePixels();
+				//image(img, dx, dy, dWidth, dHeight, sx, sy, [sWidth], [sHeight])
+				for(let i=0;i<s.height/lineHeight;i++) {
+					if(i%2 == 0) {
+						s.image(s, offset, i*lineHeight, s.width, lineHeight, 0, i*lineHeight, s.width, lineHeight);
+						s.image(s, 0, i*lineHeight, offset, lineHeight, s.width - offset, i*lineHeight, offset, lineHeight); //wrap
 					}
-				  }
 				}
-				s.updatePixels();
 			}
 
 			//by Mithru: https://editor.p5js.org/Mithru/sketches/Hk1N1mMQg
