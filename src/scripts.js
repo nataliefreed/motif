@@ -138,11 +138,11 @@ window.addEventListener('load', e => {
 			name: 'shift',
 			dropdownName: 'Shift',
 			category: 'Effects',
-			init: `Shift with height {id:'height', type:'number', placeholder:50} and offset {id:'offset', type:'number', placeholder:20}`,
+			init: `{id:'orientation', type:'choose', options:['vertical','horizontal'], placeholder:'vertical'} shift with height {id:'height', type:'number', placeholder:50} and offset {id:'offset', type:'number', placeholder:20}`,
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'single-click',
 			onact: (my) => {
-				my.target.shift(my.data.height, my.data.offset);
+				my.target.shift(my.data.height, my.data.offset, my.data.orientation);
 			}
 		},
 		{
@@ -342,27 +342,21 @@ class MotifApp {
 				s.pop();
 			}
 
-			s.shift = (lineHeight, offset) => {
-				// s.loadPixels();
-				// let d = s.pixelDensity();
-				// let slice = 4 * (s.width * d) * ((lineHeight / 2) * d);
-			  
-				// for (let j=0; j<s.height*d/lineHeight;j++) {
-				//   if (j % 2 == 0) {
-				// 	for (let i = j*slice; i < (j+1)*slice; i += 4) {
-				// 	  s.pixels[i] = s.pixels[i + 4 * offset];
-				// 	  s.pixels[i + 1] = s.pixels[i + 4 * offset + 1];
-				// 	  s.pixels[i + 2] = s.pixels[i + 4 * offset + 2];
-				// 	  s.pixels[i + 3] = s.pixels[i + 4 * offset + 3];
-				// 	}
-				//   }
-				// }
-				// s.updatePixels();
-				//image(img, dx, dy, dWidth, dHeight, sx, sy, [sWidth], [sHeight])
-				for(let i=0;i<s.height/lineHeight;i++) {
-					if(i%2 == 0) {
-						s.image(s, offset, i*lineHeight, s.width, lineHeight, 0, i*lineHeight, s.width, lineHeight);
-						s.image(s, 0, i*lineHeight, offset, lineHeight, s.width - offset, i*lineHeight, offset, lineHeight); //wrap
+			s.shift = (lineHeight, offset, orientation) => {
+				if(orientation == "horizontal") {
+					for(let i=0;i<s.height/lineHeight;i++) {
+						if(i%2 == 0) {
+							s.image(s, offset, i*lineHeight, s.width, lineHeight, 0, i*lineHeight, s.width, lineHeight);
+							s.image(s, 0, i*lineHeight, offset, lineHeight, s.width - offset, i*lineHeight, offset, lineHeight); //wrap
+						}
+					}
+				}
+				else if(orientation == "vertical") {
+					for(let i=0;i<s.height/lineHeight;i++) {
+						if(i%2 == 0) {
+							s.image(s, i*lineHeight, offset, lineHeight, s.height, i*lineHeight, 0, lineHeight, s.height);
+							s.image(s, i*lineHeight, 0, lineHeight, offset, i*lineHeight, s.width - offset, lineHeight, offset); //wrap
+						}
 					}
 				}
 			}
