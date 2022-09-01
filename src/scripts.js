@@ -7,7 +7,7 @@ window.addEventListener('load', e => {
 			name: 'solid fill',
 			dropdownName: 'Solid Fill',
 			category: 'Backgrounds',
-			init: "Fill with {id:'color', type:'color', placeholder:[50, 0.8, 1.0]} and {id: 'whatever', type:'list'}",
+			init: "Fill with {id:'color', type:'color', placeholder:[50, 0.8, 1.0]}",
 			cursor: './assets/cursors/fill-drip-solid.svg',
 			mouseActionType: 'single-click',
 			onact: (my) => {
@@ -116,7 +116,7 @@ window.addEventListener('load', e => {
 			name: 'brush',
 			dropdownName: 'Brush',
 			category: 'Brushes',
-			init: `Brush in {id:'color', type:'color', placeholder:[20, 0.8, 1.0]} with width {id: 'lineWidth', type: 'number', placeholder: 8} along path {id:'pointsList', type:'string', placeholder:'20,50,200,250'}`,
+			init: `Brush in {id:'color', type:'color', placeholder:[20, 0.8, 1.0]} with width {id: 'lineWidth', type: 'number', placeholder: 8} along path {id:'pointsList', type:'xycoords', placeholder:'20,50,200,250'}`,
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'drag',
 			onact: (my) => {
@@ -145,29 +145,29 @@ window.addEventListener('load', e => {
 				my.target.shift(my.data.height, my.data.offset, my.data.orientation);
 			}
 		},
-		{
-			name: 'wobble',
-			dropdownName: 'Wobble',
-			category: 'Effects',
-			init: `Wobble with height {id:'height', type:'number', placeholder:20} and width {id:'width', type:'number', placeholder:20}`,
-			cursor: './assets/cursors/star-solid.svg',
-			mouseActionType: 'single-click',
-			onact: (my) => {
-				my.target.wobble(my.data.height, my.data.width);
-			}
-		},
-		{
-			name: 'swirl',
-			dropdownName: 'Swirl',
-			category: 'Effects',
-			init: `Add swirl of radius {id:'radius', type:'number', placeholder:20} in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
-			at ({id:'x', type:'number', placeholder:200}, {id:'y', type:'number', placeholder:200})`,
-			cursor: './assets/cursors/star-solid.svg',
-			mouseActionType: 'single-click',
-			onact: (my) => {
-				my.target.addCircle(my.data.color, my.data.x, my.data.y, my.data.radius);
-			}
-		},
+		// {
+		// 	name: 'wobble',
+		// 	dropdownName: 'Wobble',
+		// 	category: 'Effects',
+		// 	init: `Wobble with height {id:'height', type:'number', placeholder:20} and width {id:'width', type:'number', placeholder:20}`,
+		// 	cursor: './assets/cursors/star-solid.svg',
+		// 	mouseActionType: 'single-click',
+		// 	onact: (my) => {
+		// 		my.target.wobble(my.data.height, my.data.width);
+		// 	}
+		// },
+		// {
+		// 	name: 'swirl',
+		// 	dropdownName: 'Swirl',
+		// 	category: 'Effects',
+		// 	init: `Add swirl of radius {id:'radius', type:'number', placeholder:20} in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
+		// 	at ({id:'x', type:'number', placeholder:200}, {id:'y', type:'number', placeholder:200})`,
+		// 	cursor: './assets/cursors/star-solid.svg',
+		// 	mouseActionType: 'single-click',
+		// 	onact: (my) => {
+		// 		my.target.addCircle(my.data.color, my.data.x, my.data.y, my.data.radius);
+		// 	}
+		// },
 		{
 			name: 'invert',
 			dropdownName: 'Invert',
@@ -212,6 +212,34 @@ window.addEventListener('load', e => {
 				my.target.addCircle(my.data.color, my.data.x, my.data.y, my.data.radius);
 			}
 		},
+		{
+			name: 'box',
+			dropdownName: 'Box',
+			category: 'Stencils',
+			init: `Box with length 
+			{id:'length', type:'number', placeholder:120, min:10}, 
+			width {id:'width', type:'number', placeholder:120, min:10}, 
+			height {id:'height', type:'number', placeholder:120, min:10}`,
+			cursor: './assets/cursors/star-solid.svg',
+			mouseActionType: 'single-click',
+			onact: (my) => {
+				my.target.box(my.data.length, my.data.width, my.data.height);
+			}
+		},
+		{
+			name: 'paper doll',
+			dropdownName: 'Doll',
+			category: 'Stencils',
+			init: `Paper doll with length 
+			{id:'length', type:'number', placeholder:120, min:10}, 
+			width {id:'width', type:'number', placeholder:120, min:10}, 
+			height {id:'height', type:'number', placeholder:120, min:10}`,
+			cursor: './assets/cursors/star-solid.svg',
+			mouseActionType: 'single-click',
+			onact: (my) => {
+				my.target.box(my.data.length, my.data.width, my.data.height);
+			}
+		},
 	]
 
 	const app = new MotifApp(effectList);
@@ -226,7 +254,7 @@ class MotifApp {
 		this.joy = this.initJoy();
 		this.initUI();
 
-		this.joy.actions.addAction('stencils/paperdoll', undefined, {});
+		// this.joy.actions.addAction('stencils/paperdoll', undefined, {});
 		this.joy.actions.update();
 
 		//TODO: add global effect settings such as line weight, color, etc to pass into current events that have a "preview"
@@ -405,6 +433,66 @@ class MotifApp {
 			s.endPoints = () => {
 				points = null;
 				s.noLoop();
+			}
+
+			s.box = (l, w, h) => {
+				s.push();
+				s.translate(s.width/4-w/2, s.height/4-l/2);
+				s.noFill();
+				s.stroke(0);
+				s.strokeWeight(2);
+				const dc = [l, w, l, w];
+				const dr = [l, h, l];
+				const r = [10];
+				const c = [10];
+				for(const d of dr) { r.push(r[r.length - 1] + d); }
+				for(const d of dc) { c.push(c[c.length - 1] + d); }
+				const cut = (r0, c0, r1, c1) => {
+					s.stroke(0);
+					s.line(r[r0], c[c0], r[r1], c[c1]);
+				}
+				const fold = (r0, c0, r1, c1) => {
+					s.stroke(128);
+					s.line(r[r0], c[c0], r[r1], c[c1]);
+				}
+				const tab = (r0, c0, r1, c1) => {
+					s.stroke(0);
+					const u = [r[r1] - r[r0], c[c1] - c[c0]];
+					const v = [-u[1], u[0]];
+					var prev = [0,0]; 
+					for(const [du, dv] of [
+						[0.1, 0.2],
+						[0.9, 0.2],
+						[1.0, 0.0]]) {
+						s.line(r[r0] + u[0] * prev[0] + v[0] * prev[1],
+							   c[c0] + u[1] * prev[0] + v[1] * prev[1],
+							   r[r0] + u[0] * du + v[0] * dv,
+							   c[c0] + u[1] * du + v[1] * dv);
+						prev = [du, dv];						
+					}
+					fold(r0, c0, r1, c1);
+				}
+				tab(1,0,1,1);
+				cut(1,1,0,1);
+				cut(0,1,0,2);
+				cut(0,2,1,2);
+				tab(1,2,1,3);
+				tab(1,3,1,4);
+				cut(1,4,2,4);
+				tab(2,4,2,3);
+				tab(2,3,2,2);
+				cut(2,2,3,2);
+				cut(3,2,3,1);
+				cut(3,1,2,1);
+				tab(2,1,2,0);
+				tab(2,0,1,0);
+				// extra folds that aren't for tabs
+				fold(1,1,1,2);
+				fold(1,2,2,2);
+				fold(2,2,2,1);
+				fold(2,1,1,1);
+				fold(1,3,2,3);
+				s.pop();
 			}
 
 			s.getPoint = (index) => {
@@ -705,7 +793,7 @@ class MotifApp {
 			data: data,
 		
 			// Actions to include:
-			modules: ["motif", "instructions", "stencils", "math"], //TODO: 'math' module removes min and max settings on Scrubber - see line 1032 and 2813
+			modules: ["motif", "instructions", "math"], //TODO: 'math' module removes min and max settings on Scrubber - see line 1032 and 2813
 		
 			previewActions: true,
 			previewNumbers: true,
@@ -714,6 +802,7 @@ class MotifApp {
 			onupdate: function(my) {
 				sketch.clear();
 				my.actions.act(sketch);
+				// add end actions here
 			}
 		});
 

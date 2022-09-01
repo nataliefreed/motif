@@ -1290,6 +1290,92 @@ ui.String = function(config){
 };
 
 /********************
+String's config:
+{
+	prefix: "[",
+	suffix: "]",
+	color:"whatever",
+	value: data.value,
+	onchange: function(value){
+		data.value = value;
+		self.update();
+	},
+	styles: ["comment"]
+}
+********************/
+ui.XYCoordinates = function(config){
+	
+	var self = this;
+
+	// DOM
+	var dom = document.createElement("div");
+	dom.className = "joy-xycoords";
+	self.dom = dom;
+	
+	// The Actual Part that's Content Editable
+	var input = document.createElement("span");
+	input.contentEditable = true;
+	input.spellcheck = false;
+
+	// Prefix & Suffix & Color: entirely cosmetic
+	var prefixDOM = document.createElement("span");
+	var suffixDOM = document.createElement("span");
+	prefixDOM.innerHTML = config.prefix || "";
+	suffixDOM.innerHTML = config.suffix || "";
+	dom.appendChild(prefixDOM);
+	dom.appendChild(input);
+	dom.appendChild(suffixDOM);
+
+	// On input!
+	input.oninput = function(event){
+		_fixStringInput(input);
+		var value = input.innerText; // NOT innerHTML
+		config.onchange(value); // callback!
+	};
+
+	// On focus, select all
+	input.onfocus = function(){
+		_selectAll(input);
+	};
+	input.onblur = function(){
+		_unselectAll();
+	};
+	_preventWeirdCopyPaste(input);
+
+	// On pressing <enter>, DON'T line break, just blur
+	input.onkeypress = function(e){
+		if(e.which == 13){
+			input.blur();
+			return false;
+		}
+		return true;
+	};
+
+	// Set String
+	self.setString = function(value){
+		// input.innerText = value;
+		input.innerText = value.substring(0, 8) + "...";
+		_fixStringInput(input);
+	};
+
+	// Set Color, why not
+	self.setColor = function(color){
+		color = _forceToRGB(color);
+		dom.style.color = color;
+		dom.style.borderColor = color;
+	}
+	if(config.color) self.setColor(config.color);
+
+	// Styles
+	self.styles = config.styles || [];
+	for(var i=0; i<self.styles.length; i++) dom.classList.add(self.styles[i]);
+
+	// Start with the current value
+	self.setString(config.value);
+
+};
+
+/********************
 TextLine's config:
 {
 	multiline: true,
@@ -2149,6 +2235,45 @@ Joy.add({
 		self.onDataChange = function(){
 			var value = self.getData("value");
 			self.stringUI.setString(value);
+		};
+
+	},
+	onget: function(my){
+		return my.data.value;
+	},
+	placeholder: "???"
+});
+
+/****************
+
+A widget to set xy coordinates!
+
+Widget Options:
+{name:'name', type:'xycoords', prefix:'&ldquo;', suffix:'&rdquo;', color:"whatever"}
+
+****************/
+Joy.add({
+	type: "xycoords",
+	tags: ["ui"],
+	initWidget: function(self){
+
+		// String *IS* DOM
+		var o = self.options;
+		self.xycoordsUI = new Joy.ui.XYCoordinates({
+			prefix: o.prefix,
+			suffix: o.suffix,
+			color: o.color,
+			value: self.getData("value"),
+			onchange: function(value){
+				self.setData("value", value);
+			}
+		});
+		self.dom = self.xycoordsUI.dom;
+
+		// When data's changed, externally
+		self.onDataChange = function(){
+			var value = self.getData("value");
+			self.xycoordsUI.setString(value);
 		};
 
 	},
