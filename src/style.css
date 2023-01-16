@@ -1,0 +1,192 @@
+.category-toolbar {
+    background-color: #cccccc;
+    padding: 5px;
+}
+
+.drawing-toolbar {
+    background-color: #eeeeee;
+    padding: 5px;
+}
+
+.top-menu {
+    background-color: green;
+}
+
+.program-panel {
+    background-color: #cccccc;
+    /* background-image: url("./grid-paper.png"); */
+    /* background-size: 550px 600px; */
+    padding: 10px;
+}
+
+.options-bar {
+    background-color: lightblue;
+}
+
+.category-button {
+    background-color: darkgrey;
+    margin: 5px 5px -5px 5px;
+    padding: 10px;
+    border-radius: 10px 10px 0px 0px;
+    /* box-shadow: 0px 3px 0px 0px; */
+    border: solid;
+    border-bottom: #ffffff;
+    border-width: 1px;
+    cursor: pointer;
+    font-family: 'FuturaHandwritten';
+    font-size: 16px;
+  }
+  
+  .effect-button {
+    background-color: white;
+    margin: 5px 5px 5px 5px;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0px 3px 0px 0px;
+    border: solid;
+    border-width: 1px;
+    cursor: pointer;
+    font-family: 'FuturaHandwritten';
+    font-size: 14px;
+  }
+
+  .effect-button.selected {
+    background-color: rgb(255, 205, 40);
+  }
+
+  .category-button.selected {
+    background-color: rgb(238, 238, 238);
+  }
+  
+  .category-button:hover, .effect-button:hover {
+    background-color: gray;
+  }
+
+.category-button:active, .drawing-tool-button:active {
+  transform: translate(0px, 5px);
+  -webkit-transform: translate(0px, 5px);
+  box-shadow: 0px 1px 0px 0px;
+}
+
+.program-buttons {
+    display:block;
+}
+
+.save-buttons {
+    display: flex;
+    margin-top: 20px;
+}
+
+body {
+    /* background-color: purple; */
+    padding: 25px;
+}
+  
+.frame {
+    background-color: #cccccc;
+  /*   display: flex; */
+    margin: auto;
+  /*   border-color: #020887;
+    border-width: 1px;
+    border-style: solid; */
+    width: 1150px;
+    height: 750px;
+}
+
+.middle-row {
+    display: flex;
+}
+
+#drawing-canvas {
+    /* display: block; */
+    background-color: #ffffff;
+    width: 599px;
+    height: 599px;
+    border-width: 0.5px;
+    border-style: solid;
+    border-color: #bbbbbb;
+    margin: 10px 10px 10px 10px;
+    box-shadow: 5px 5px 5px gray;
+    cursor: url('./assets/cursors/paintbrush-solid.svg') 0 28, pointer;
+  }
+  
+@font-face{ 
+    font-family: 'FuturaHandwritten';
+    font-style: normal;
+    src: url('./assets/FuturaHandwritten.ttf') format('truetype');
+}
+
+select {
+    font-family: 'FuturaHandwritten';
+    font-style: normal;
+    padding: 5px;
+}
+
+body{
+    margin: 0;
+    font-size: 15px;
+    font-family: 'FuturaHandwritten';
+    font-weight: 100;
+    line-height: 1.7em;
+}
+
+#turtle {
+    width:400px; height:400px;
+    /* float:left; */
+}
+
+#joy{
+    width:500px;
+    height:492px;
+    /* margin: 10px 10px 10px; */
+    background: #ffffff;
+    overflow: scroll;
+}
+
+.hidden {
+    display: none;
+}
+
+.bottom-instructions {
+    background-color: #ffffff;
+    padding: 0px 25px 1px 25px;
+}
+
+/* #print-instruction {
+    margin-bottom: 10px;
+    background-color: blue;
+} */
+
+hr{
+    border: none;
+    border-bottom: 2px dashed #ccc;
+    margin: 1.5em 0;
+}
+.cursor-grab{
+    cursor: -webkit-grab;
+    cursor: -moz-grab;
+    cursor: -ms-grab;
+    cursor: grab;
+}
+.cursor-grabbing{
+    cursor: -webkit-grabbing;
+    cursor: -moz-grabbing;
+    cursor: -ms-grabbing;
+    cursor: grabbing;
+}
+
+#move-button {
+    margin: 10px;
+}
+
+button {
+    margin: 10px;
+    padding: 15px;
+    cursor: pointer;
+}
+
+#color-picker {
+    float: right;
+    border-radius: 10px;
+    margin: 10px;
+}

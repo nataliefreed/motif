@@ -1,0 +1,305 @@
+.joy-master, .joy-actions, .joy-button, .joy-scrubber, .joy-modal-chooser {
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: default;
+}
+
+.joy-master {
+  margin: 1.5em;
+  display: block;
+}
+
+.joy-actions {
+  margin-top: .5em;
+  margin-bottom: .5em;
+  position: relative;
+}
+
+.joy-actions #joy-list > div {
+  display: flex;
+  overflow: hidden;
+}
+
+.joy-actions #joy-list > div #joy-bullet-container {
+  width: 1.5em;
+  text-align: left;
+  flex: 1;
+}
+
+.joy-actions #joy-list > div #joy-widget {
+  width: calc(100% - 2em);
+  margin-bottom: .3em;
+}
+
+.joy-save {
+  position: relative;
+}
+
+.joy-save input {
+  width: calc(100% - 80px);
+  display: block;
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.joy-save #joy-save-info {
+  font-size: 12px;
+  line-height: 1em;
+  position: absolute;
+  bottom: 0;
+  left: 81px;
+}
+
+.joy-button {
+  cursor: pointer;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  padding: 0 .3em;
+  line-height: 1.5em;
+  display: inline-block;
+}
+
+.joy-button.joy-bullet {
+  width: 1.5em;
+  height: 1.5em;
+  text-align: center;
+  color: #b7b7b7;
+  background: none;
+  border: 1px solid #bebebe;
+  border-radius: 1000px;
+  padding: 0;
+}
+
+.joy-button.joy-bullet:hover {
+  color: #333;
+  background: #fff;
+}
+
+.joy-button.joy-color {
+  width: 1.5em;
+  height: 1.5em;
+  border-color: #0000001a;
+  border-radius: 1000px;
+  padding: 0;
+}
+
+.joy-button.joy-more {
+  width: 10px;
+  height: 1em;
+  border: none;
+  padding: 0;
+  position: relative;
+  top: .1em;
+}
+
+.joy-button.joy-more:before {
+  content: "";
+  width: 4px;
+  height: 4px;
+  background: #bebebe;
+  border-radius: 4px;
+  position: absolute;
+  top: .24em;
+  right: 3px;
+  box-shadow: 0 6px #bebebe, 0 12px #bebebe;
+}
+
+.joy-button.joy-math {
+  width: 1em;
+  text-align: center;
+  border: none;
+  border-radius: 1000px;
+  margin: 0 .1em;
+  padding: 0;
+  line-height: 1em;
+}
+
+.joy-button.joy-math:hover {
+  background: #0000001a;
+}
+
+.joy-textbox {
+  width: 100%;
+  border: 1px solid #0003;
+  border-radius: 5px;
+  font-size: .6em;
+}
+
+.joy-textbox.box {
+  color: #fff;
+  font-family: inherit;
+  font-size: inherit;
+  background: #333;
+  padding: .3em .4em;
+  font-size: .85em;
+  display: block;
+}
+
+textarea.joy-textbox {
+  resize: none;
+}
+
+.joy-number > span {
+  display: inline-block;
+}
+
+.joy-scrubber {
+  cursor: col-resize;
+  min-width: .8em;
+  text-align: center;
+  border-bottom: 2px solid #bbb;
+  padding-bottom: 0;
+  display: inline;
+  position: relative;
+}
+
+.joy-scrubber:before {
+  content: "↔";
+  opacity: 0;
+  color: inherit;
+  width: 90%;
+  height: 0;
+  text-align: center;
+  font-size: .6em;
+  position: absolute;
+  top: -1.5em;
+}
+
+.joy-scrubber:hover:before {
+  opacity: 1;
+}
+
+.joy-string {
+  cursor: text;
+  border-bottom: 2px solid #bbb;
+  padding-bottom: 0;
+  display: inline;
+  position: relative;
+}
+
+.joy-string:focus {
+  outline: none;
+}
+
+#joy-modal {
+  z-index: 99999;
+  width: 100%;
+  height: 100%;
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+#joy-modal #joy-bg {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+}
+
+#joy-modal #joy-box {
+  color: #000;
+  min-width: 50px;
+  max-width: 400px;
+  border-radius: .5em;
+  padding: .2em 0;
+  font-size: .69em;
+  line-height: 1.3em;
+  position: absolute;
+}
+
+.joy-modal-chooser > div {
+  overflow: hidden;
+}
+
+.joy-modal-chooser > div > div {
+  margin: .2em 0;
+  overflow: hidden;
+}
+
+.joy-modal-chooser > div > div:nth-last-child(n+2) {
+  border-bottom: 1px solid #ccc;
+  margin-bottom: .4em;
+  padding-bottom: .4em;
+}
+
+.joy-modal-chooser > div > div > div {
+  cursor: pointer;
+  padding: 0 .65em;
+  display: block;
+}
+
+.joy-modal-chooser > div > div > div:hover {
+  background: #e6e6e6;
+}
+
+.joy-modal-chooser > div > div.single-column > div {
+  padding: 0 .5em;
+  display: block;
+}
+
+.joy-modal-color {
+  position: relative;
+}
+
+.joy-modal-color > canvas {
+  position: absolute;
+}
+
+.arrow_box {
+  background: #fff;
+  border: 2px solid #ccc;
+  position: relative;
+}
+
+.arrow_box:after, .arrow_box:before {
+  content: " ";
+  height: 0;
+  width: 0;
+  pointer-events: none;
+  border: solid #0000;
+  position: absolute;
+}
+
+.arrow_box:after {
+  border-width: 14px;
+  border-color: #fff0;
+}
+
+.arrow_box:before {
+  border-width: 17px;
+  border-color: #ddd0;
+}
+
+.arrow_box[position="below"]:after, .arrow_box[position="below"]:before {
+  bottom: 100%;
+  left: 50%;
+}
+
+.arrow_box[position="below"]:after {
+  border-bottom-color: #fff;
+  margin-left: -14px;
+}
+
+.arrow_box[position="below"]:before {
+  border-bottom-color: #ccc;
+  margin-left: -17px;
+}
+
+.arrow_box[position="left"]:after, .arrow_box[position="left"]:before {
+  top: 50%;
+  left: 100%;
+}
+
+.arrow_box[position="left"]:after {
+  border-left-color: #fff;
+  margin-top: -14px;
+}
+
+.arrow_box[position="left"]:before {
+  border-left-color: #ccc;
+  margin-top: -17px;
+}
+
+/*# sourceMappingURL=index.0b2532d9.css.map */

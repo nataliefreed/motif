@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+	<link rel="stylesheet" type="text/css" href="./libraries/joy.css">
+	<link rel="stylesheet" type="text/css" href="./src/style.css">
+	<script src="https://kit.fontawesome.com/7ce97ca89e.js" crossorigin="anonymous"></script>
+	<script src="./libraries/p5.js"></script>
+</head>
+	<body>
+			<div class="frame">
+				<div class = "categories-and-settings">
+					<!-- <input type="color" id="color-picker" value="#ffaaff"> -->
+					<div class="category-toolbar"></div>
+				</div>
+				<div class="drawing-toolbar"></div>
+				<div class="middle-row">
+					<div id="drawing-canvas"></div>
+
+					<div class="program-panel">
+						<div id="joy"></div>
+
+						<div class="bottom-instructions">
+							<label for="stencil">Place stencil:</label>
+							<select name="stencil" id="stencil">
+								<option value="dress">dress</option>
+								<option value="shirt and pants">shirt and pants</option>
+								<option value="fishbowl">fishbowl</option>
+								<option value="cake">cake</option>
+							</select>
+							<p id="print-instruction"><a href="">Print</a> and then cut out!</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
+
+<!-- <script src="./libraries/joy.js"></script> -->
+<!-- <script src="./turtle.js"></script> -->
+<script type="module" src="./src/scripts.js"></script>
