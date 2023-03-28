@@ -116,7 +116,7 @@ window.addEventListener('load', e => {
 			name: 'brush',
 			dropdownName: 'Brush',
 			category: 'Brushes',
-			init: `Brush in {id:'color', type:'color', placeholder:[20, 0.8, 1.0]} with width {id: 'lineWidth', type: 'number', placeholder: 8} along path {id:'pointsList', type:'xycoords', placeholder:'20,50,200,250'}`,
+			init: `Brush in {id:'color', type:'color', placeholder:[20, 0.8, 1.0]} with width {id: 'lineWidth', type: 'number', placeholder: 8} along path {id:'pointsList', type:'string', placeholder:'20,50,200,250'}`,
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'drag',
 			onact: (my) => {
@@ -127,11 +127,11 @@ window.addEventListener('load', e => {
 			name: 'rainbow brush',
 			dropdownName: 'Rainbow Brush',
 			category: 'Brushes',
-			init: `Rainbow brush with points {id:'pointsList', type:'string', placeholder:'20,50,200,250'}`,
+			init: `Rainbow brush in size {id: 'minSize', type: 'number', placeholder: 4} to {id: 'maxSize', type: 'number', placeholder: 10} along path {id:'pointsList', type:'string', placeholder:'20,50,200,250'}`,
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'drag',
 			onact: (my) => {
-				my.target.addBrushStroke(my.data.pointsList);
+				my.target.addRainbowBrush(my.data.minSize, my.data.maxSize, my.data.pointsList);
 			}
 		},
 		{
@@ -538,6 +538,35 @@ class MotifApp {
 				s.pop();
 			}
 
+			s.addRainbowBrush = (minSize, maxSize, pointsString) => {
+				if(!s.setupFinished) return;
+				s.push();
+				s.noStroke();
+				s.strokeWeight(minSize);
+				s.colorMode(s.HSB);
+				s.strokeJoin(s.ROUND);
+
+				let hue = 0;
+				let size = minSize;
+				let hueIncrement = 10;
+				let sizeIncrement = 1;
+				
+				let points = pointsString.split(','); //structure of this string is x1,y1,x2,y2,...
+				for(let i=0;i<points.length-1;i+=2) {
+					s.fill(hue, 50, 50);
+					s.circle(points[i], points[i+1], size);
+					hue += hueIncrement;
+					size += sizeIncrement;
+					if(hue > 255 || hue < 0) {
+						hueIncrement *= -1;
+					}
+					if(size > maxSize || size < minSize) {
+						sizeIncrement *= -1;
+					}
+				}
+				s.pop();
+			}
+
 		  }, 'drawing-canvas');
 	}
 	
@@ -624,7 +653,7 @@ class MotifApp {
 							y2: { type:'number', value: Math.round(this.sketch.getLastPoint().y) },
 						});
 					}
-					else if(activeEffect == 'brush') {
+					else if(activeEffect == 'brush' || activeEffect == "rainbow brush") { //TODO: make this more general
 						this.addEvent(activeEffect, { pointsList: { type:'number', value: this.sketch.pointsAsString()} });
 					}
 					
