@@ -29,7 +29,7 @@ window.addEventListener('load', e => {
 			name: 'stripes',
 			dropdownName: 'Stripes',
 			category: 'Backgrounds',
-			init: `Stripes {id:'something', type:'motif/solid fill'} of width {id:'stripeWidth', type:'number', min:1, max:300, placeholder:50}
+			init: `Stripes of width {id:'stripeWidth', type:'number', min:1, max:300, placeholder:50}
 				from {id:'color1', type:'color', placeholder:[0, 0.7, 0.8]} 
 				to {id:'color2', type:'color', placeholder:[200, 0.7, 0.9]}`,
 			cursor: './assets/cursors/fill-drip-solid.svg',
@@ -39,11 +39,14 @@ window.addEventListener('load', e => {
 			}
 		},
 		{
+			//TODO: variable for screen size in min/max
 			name: 'circle',
 			dropdownName: 'Circle',
 			category: 'Shapes',
-			init: `Circle of radius {id:'radius', type:'number', min:1, max:600, placeholder:20} in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
-			at ({id:'x', type:'number', placeholder:200}, {id:'y', type:'number', placeholder:200})`,
+			init: `Circle of radius {id:'radius', type:'number', min:1, max:600, placeholder:20}
+			in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
+			at ({id:'x', type:'number', min:0, max:600, placeholder:200},
+			{id:'y', type:'number', min:0, max:600, placeholder:200})`,
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'single-click',
 			onact: (my) => {
@@ -54,8 +57,10 @@ window.addEventListener('load', e => {
 			name: 'square',
 			dropdownName: 'Square',
 			category: 'Shapes',
-			init: `Square of size {id:'size', type:'number', min:1, max:600, placeholder:40} in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
-			at ({id:'x', type:'number', placeholder:200}, {id:'y', type:'number', placeholder:200})`,
+			init: `Square of size {id:'size', type:'number', min:1, max:600, placeholder:40}
+			in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
+			at ({id:'x', type:'number', min:0, max:600, placeholder:200},
+			{id:'y', type:'number', min:0, max:600, placeholder:200})`,
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'single-click',
 			onact: (my) => {
@@ -66,8 +71,11 @@ window.addEventListener('load', e => {
 			name: 'polygon',
 			dropdownName: 'Polygon',
 			category: 'Shapes',
-			init: `Polygon with {id:'nsides', type:'number', placeholder:6} sides and radius {id:'radius', type:'number', placeholder:20} in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
-			at ({id:'x', type:'number', placeholder:200}, {id:'y', type:'number', placeholder:200})`,
+			init: `Polygon with {id:'nsides', type:'number', min:3, max:50, placeholder:6} sides 
+			and radius {id:'radius', type:'number', min:1, max:600, placeholder:20} 
+			in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
+			at ({id:'x', type:'number', min:0, max:600, placeholder:200},
+			{id:'y', type:'number', min:0, max:600, placeholder:200})`,
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'single-click',
 			onact: (my) => {
@@ -78,8 +86,12 @@ window.addEventListener('load', e => {
 			name: 'star',
 			dropdownName: 'Star',
 			category: 'Shapes',
-			init: `Star with {id:'npoints', type:'number', placeholder:7} points, outer {id:'r1', type:'number', placeholder:20}, inner {id:'r2', type:'number', placeholder:10} in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
-			at ({id:'x', type:'number', placeholder:200}, {id:'y', type:'number', placeholder:200})`,
+			init: `Star with {id:'npoints', type:'number', min:3, max:200, placeholder:7} points, 
+			outer {id:'r1', type:'number', min:1, max:600, placeholder:20}, 
+			inner {id:'r2', type:'number', min:1, max:600, placeholder:10} 
+			in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
+			at ({id:'x', type:'number', min:0, max:600, placeholder:200}, 
+			{id:'y', type:'number', min:0, max:600, placeholder:200})`,
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'single-click',
 			onact: (my) => {
@@ -90,8 +102,10 @@ window.addEventListener('load', e => {
 			name: 'heart',
 			dropdownName: 'Heart',
 			category: 'Shapes',
-			init: `Heart of size {id:'size', type:'number', placeholder:40} in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
-			at ({id:'x', type:'number', placeholder:200}, {id:'y', type:'number', placeholder:200})`,
+			init: `Heart of size {id:'size', type:'number', min:-600, max:600, placeholder:40} 
+			in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
+			at ({id:'x', type:'number', min:0, max:600, placeholder:200}, 
+			{id:'y', type:'number', min:0, max:600, placeholder:200})`,
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'single-click',
 			onact: (my) => {
@@ -102,10 +116,12 @@ window.addEventListener('load', e => {
 			name: 'straight line',
 			dropdownName: 'straight line',
 			category: 'Brushes',
-			init: `Straight line from ({id:'x1', type:'number', placeholder:100}, {id:'y1', type:'number', placeholder:100})
-			to ({id:'x2', type:'number', placeholder:200}, {id:'y2', type:'number', placeholder:200})
+			init: `Straight line from ({id:'x1', type:'number', min:0, max:600, placeholder:100}, 
+			{id:'y1', type:'number', min:0, max:600, placeholder:100})
+			to ({id:'x2', type:'number', min:0, max:600, placeholder:200}, 
+			{id:'y2', type:'number', min:0, max:600, placeholder:200})
 			in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}
-			with width {id: 'lineWidth', type: 'number', placeholder: 5}`,
+			with width {id: 'lineWidth', type: 'number', min:1, max:600, placeholder: 5}`,
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'drag',
 			onact: (my) => {
@@ -116,7 +132,9 @@ window.addEventListener('load', e => {
 			name: 'brush',
 			dropdownName: 'Brush',
 			category: 'Brushes',
-			init: `Brush in {id:'color', type:'color', placeholder:[20, 0.8, 1.0]} with width {id: 'lineWidth', type: 'number', placeholder: 8} along path {id:'pointsList', type:'string', placeholder:'20,50,200,250'}`,
+			init: `Brush in {id:'color', type:'color', placeholder:[20, 0.8, 1.0]} 
+			with width {id: 'lineWidth', type: 'number', min:1, max:600, placeholder: 8} 
+			along path {id:'pointsList', type:'string', placeholder:'20,50,200,250'}`,
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'drag',
 			onact: (my) => {
@@ -127,7 +145,9 @@ window.addEventListener('load', e => {
 			name: 'rainbow brush',
 			dropdownName: 'Rainbow Brush',
 			category: 'Brushes',
-			init: `Rainbow brush in size {id: 'minSize', type: 'number', placeholder: 4} to {id: 'maxSize', type: 'number', placeholder: 10} along path {id:'pointsList', type:'string', placeholder:'20,50,200,250'}`,
+			init: `Rainbow brush in size {id: 'minSize', type: 'number', min:1, max:600, placeholder: 4} 
+			to {id: 'maxSize', type: 'number', min:1, max:600, placeholder: 10} 
+			along path {id:'pointsList', type:'string', placeholder:'20,50,200,250'}`,
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'drag',
 			onact: (my) => {
@@ -138,7 +158,9 @@ window.addEventListener('load', e => {
 			name: 'shift',
 			dropdownName: 'Shift',
 			category: 'Effects',
-			init: `{id:'orientation', type:'choose', options:['vertical','horizontal'], placeholder:'vertical'} shift with height {id:'height', type:'number', placeholder:50} and offset {id:'offset', type:'number', placeholder:20}`,
+			init: `{id:'orientation', type:'choose', options:['vertical','horizontal'], placeholder:'vertical'} shift 
+			with height {id:'height', type:'number', min:1, max:600, placeholder:50} 
+			and offset {id:'offset', type:'number', min:1, max:600, placeholder:20}`,
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'single-click',
 			onact: (my) => {
@@ -217,9 +239,9 @@ window.addEventListener('load', e => {
 			dropdownName: 'Box',
 			category: 'Stencils',
 			init: `Box with length 
-			{id:'length', type:'number', placeholder:120, min:10}, 
-			width {id:'width', type:'number', placeholder:120, min:10}, 
-			height {id:'height', type:'number', placeholder:120, min:10}`,
+			{id:'length', type:'number', placeholder:120, min:20}, 
+			width {id:'width', type:'number', placeholder:120, min:20}, 
+			height {id:'height', type:'number', placeholder:120, min:20}`,
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'single-click',
 			onact: (my) => {
