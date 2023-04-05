@@ -51,6 +51,11 @@ function Joy(options){
 	Joy.modal.init(self);
 
 	// Update!
+	/*
+	Helps improve performance by pre-evaluating data beforehand
+	and provides a convenient way to access the "self" object's
+	data and children in the "onupdate" function.
+	*/
 	self.onupdate = self.onupdate || function(my){};
 	self.update = function(){
 
@@ -2622,10 +2627,32 @@ Joy.add({
 			}
 		}
 
+		console.log(self.modules);
+		
+
+	    // NF: Add only actions in specified modules to chooser menu
+		// TODO: merge with previous filter code
+		var modules = self.modules || [];
+		var moduleOptions = [];
+		modules.forEach((module) => {
+			var moduleActors = Joy.getTemplatesByTag(module);
+			console.log(moduleActors);
+			moduleActors.forEach((moduleActor) => {
+				var notActionTag = moduleActor.tags.filter(function(tag){
+					return tag!="action";
+				})[0];
+				moduleOptions.push({
+					label: moduleActor.name,
+					value: moduleActor.type,
+					category: notActionTag
+				});
+			});
+		});
+
 		// "+" Button: When clicked, prompt what actions to add!
 		var addButton = new Joy.ui.ChooserButton({
 			staticLabel: "+",
-			options: actionOptions,
+			options: moduleOptions,
 			onchange: function(value){
 				_addAction(value);
 				self.update(); // You oughta know!

@@ -245,6 +245,7 @@ window.addEventListener('load', e => {
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'single-click',
 			onact: (my) => {
+				// my.target.addStencil();
 				my.target.box(my.data.length, my.data.width, my.data.height);
 			}
 		},
@@ -274,7 +275,7 @@ class MotifApp {
 		this.sketch.addFill('#aaaaaa');
 		this.sketch.clear('#aaaaaa');
 		this.joy = this.initJoy();
-		this.initUI();
+		this.initUI(); //categories and brush/effect buttons
 
 		// this.joy.actions.addAction('stencils/paperdoll', undefined, {});
 		this.joy.actions.update();
@@ -289,6 +290,8 @@ class MotifApp {
 			let strokeColor = 0;
 			let strokeWeight = 5;
 
+			let stencils = [];
+
 			s.setup = () => {
 			  s.createCanvas(600, 600);
 			  s.background(255);
@@ -301,6 +304,13 @@ class MotifApp {
 					points.renderLine(s, strokeColor, strokeWeight); //TODO: rethink this way of passing in preview line settings
 				}
 			};
+
+			s.drawStencils = () => {
+				stencils.forEach((stencil) => { 
+					s.box(s.random(10, 100), s.random(10, 100), s.random(10, 100));
+					console.log("adding stencil");
+				});
+			}
 		
 			s.clear = () => {
 				if(!s.setupFinished) return;
@@ -430,10 +440,6 @@ class MotifApp {
 				s.filter(s[filter.toUpperCase()]);
 			}
 
-			s.stencil = (name, params) => {
-
-			}
-
 			// s.setStrokeColor = (color) => {
 			// 	strokeColor = color;
 			// }
@@ -455,6 +461,20 @@ class MotifApp {
 			s.endPoints = () => {
 				points = null;
 				s.noLoop();
+			}
+
+			s.addStencil = () => {
+				stencils.push("box");
+			}
+
+			class Stencil {
+				constructor(render) {
+					this.render = render;
+				}
+
+				draw() {
+					render();
+				}
 			}
 
 			s.box = (l, w, h) => {
@@ -642,14 +662,22 @@ class MotifApp {
 			let activeEffect = this.getSelectedEffect();
 			if(activeEffect) {
 				if(this.effects[activeEffect].mouseActionType == 'drag') {
-					this.sketch.set
+					this.sketch.set //what is this?
 					this.sketch.startPoints(this.sketch.mouseX, this.sketch.mouseY);
-				} else {
-					this.addEvent(activeEffect, {
+				} else if(this.effects[activeEffect].category == "Stencils") {
+					this.addEvent('stencils', activeEffect, {
+						x: { type:'number', value: Math.round(this.sketch.mouseX)},
+						y: { type:'number', value: Math.round(this.sketch.mouseY)}
+					});
+				}
+				else {
+					//if action type is not "drag", event added on mousedown
+					this.addEvent('motif', activeEffect, {
 							x: { type:'number', value: Math.round(this.sketch.mouseX)},
 							y: { type:'number', value: Math.round(this.sketch.mouseY)}
 						});
 				}
+
 			}
 		});
 
@@ -668,7 +696,7 @@ class MotifApp {
 				if(this.effects[activeEffect].mouseActionType == 'drag') {
 					this.sketch.addPoint(this.sketch.mouseX, this.sketch.mouseY);
 					if(activeEffect == 'straight line') {
-						this.addEvent(activeEffect, {
+						this.addEvent('motif',activeEffect, {
 							x1: { type:'number', value: Math.round(this.sketch.getPoint(0).x) },
 							y1: { type:'number', value: Math.round(this.sketch.getPoint(0).y) },
 							x2: { type:'number', value: Math.round(this.sketch.getLastPoint().x) },
@@ -676,7 +704,7 @@ class MotifApp {
 						});
 					}
 					else if(activeEffect == 'brush' || activeEffect == "rainbow brush") { //TODO: make this more general
-						this.addEvent(activeEffect, { pointsList: { type:'number', value: this.sketch.pointsAsString()} });
+						this.addEvent('motif',activeEffect, { pointsList: { type:'number', value: this.sketch.pointsAsString()} });
 					}
 					
 					this.sketch.endPoints();
@@ -686,7 +714,7 @@ class MotifApp {
 
 	}
 
-	addEvent(effectName, settings) {
+	addEvent(category, effectName, settings) {
 		let effect = this.effects[effectName];
 
 		settings.color = { type:'color', value:[Math.random()*360, 0.8, 0.8]};
@@ -708,7 +736,13 @@ class MotifApp {
 		// 	x2: { type:'number', value: Math.round(settings.x2)},
 		// 	y2: {type:'number', value: Math.round(settings.y2)}
 		// }
-		this.joy.actions.addAction('motif/'+effectName, undefined, settings);
+		//why does the category get added to the name here?
+		if(category == "motif") {
+			this.joy.actions.addAction(category+'/'+effectName, undefined, settings);
+		} else if(category == "stencils") {
+			this.joy.stencils.addAction(category+'/'+effectName, undefined, settings);
+		}
+		
 		this.joy.actions.update();
 	}
 
@@ -761,10 +795,12 @@ class MotifApp {
 		let effects = this.effects;
 
 		Joy.module("motif", function() {
-
 			//Add from effects list
-			Object.values(effects).forEach(effect => {
-				console.log(effect);
+			let motifEffects = Object.values(effects).filter((e) => {
+				console.log(e);
+				return e.category != "Stencils";
+			})
+			motifEffects.forEach(effect => {
 				Joy.add({
 					name: effect.dropdownName,
 					type: "motif/" + effect.name,
@@ -776,18 +812,19 @@ class MotifApp {
 		});
 
 		Joy.module("stencils", function() {
-			Joy.add({
-				name: "Paper Doll",
-				type: "stencils/paperdoll",
-				tags: ["stencils", "action"],
-			
-				// What the action does is EMBEDDED IN A PLAIN-LANGUAGE SENTENCE
-				init: "Use stencil paper doll with clothing {id:'outfit', type:'choose', options:['dress','pants','shirt'], placeholder:'dress'}",
-			
-				// Callback
-				onact: function(my){
-					my.target.stencil('paperdoll', my.data.outfit);
-				}
+			//Add from effects list
+			let motifEffects = Object.values(effects).filter((e) => {
+				return e.category == "Stencils";
+			})
+			motifEffects.forEach(effect => {
+				console.log(effect);
+				Joy.add({
+					name: effect.dropdownName,
+					type: "stencils/" + effect.name,
+					tags: ["stencils", "action"],
+					init: effect.init,
+					onact: effect.onact
+				});
 			});
 		});
 
@@ -815,20 +852,19 @@ class MotifApp {
 		// 	}
 		// },
 
-		Joy.add({
-			type: "list",
-			tags: ["ui"],
-			initWidget: function(self){
-				self.dom = document.createElement("input");
-				self.dom.setAttribute("type", "button");
-				self.dom.value = "list";
-			},
-			onget: function(my){
-				return 3;
-			},
-		});
-
-
+		//what does this do?
+		// Joy.add({
+		// 	type: "list",
+		// 	tags: ["ui"],
+		// 	initWidget: function(self){
+		// 		self.dom = document.createElement("input");
+		// 		self.dom.setAttribute("type", "button");
+		// 		self.dom.value = "list";
+		// 	},
+		// 	onget: function(my){
+		// 		return 3;
+		// 	},
+		// });
 
 		let joy = Joy({
 			// Where the Joy editor goes:
@@ -836,15 +872,17 @@ class MotifApp {
 		
 			// The words and widgets inside the editor:
 			init: "To create my design: "+
-				  "{id:'actions', type:'actions'} "+ // a list of actions
+				  "{id:'actions', type:'actions', modules:['motif']} "+ // a list of actions
 				//   "Fill with {id:'color', type:'color', placeholder:[0.3, 0.8, 1.0]}" +
-				  "<hr> {type:'save'}", // a save button!
+				"With stencils: "+
+				"{id: 'stencils', type:'actions', modules:['stencils']} "+  
+				"<hr> {type:'save'}", // a save button!
 			
 			// Load data from URL, otherwise blank:
 			data: data,
 		
 			// Actions to include:
-			modules: ["motif", "instructions", "math"], //TODO: 'math' module removes min and max settings on Scrubber - see line 1032 and 2813
+			modules: ["motif", "stencils", "instructions", "math"], //TODO: 'math' module removes min and max settings on Scrubber - see line 1032 and 2813
 		
 			previewActions: true,
 			previewNumbers: true,
@@ -853,6 +891,7 @@ class MotifApp {
 			onupdate: function(my) {
 				sketch.clear();
 				my.actions.act(sketch);
+				my.stencils.act(sketch);
 				// add end actions here
 			}
 		});
