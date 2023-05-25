@@ -134,7 +134,7 @@ window.addEventListener('load', e => {
 			category: 'Brushes',
 			init: `Brush in {id:'color', type:'color', placeholder:[20, 0.8, 1.0]} 
 			with width {id: 'lineWidth', type: 'number', min:1, max:600, placeholder: 8} 
-			along path {id:'pointsList', type:'string', placeholder:'20,50,200,250'}`,
+			along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'drag',
 			onact: (my) => {
@@ -263,7 +263,7 @@ window.addEventListener('load', e => {
 				my.target.box(my.data.length, my.data.width, my.data.height);
 			}
 		},
-	]
+	];
 
 	const app = new MotifApp(effectList);
 });
@@ -595,7 +595,7 @@ class MotifApp {
 				
 				let points = pointsString.split(','); //structure of this string is x1,y1,x2,y2,...
 				for(let i=0;i<points.length-1;i+=2) {
-					s.fill(hue, 50, 50);
+					s.fill(hue, 150, 100);
 					s.circle(points[i], points[i+1], size);
 					hue += hueIncrement;
 					size += sizeIncrement;
@@ -651,7 +651,6 @@ class MotifApp {
 		});
 
 		//Mouse event listeners
-
 		let dragging = false;
 		let mouseDownOverCanvas = false; //TODO: doesn't work if you leave canvas with mouse down
 
@@ -872,17 +871,17 @@ class MotifApp {
 		
 			// The words and widgets inside the editor:
 			init: "To create my design: "+
-				  "{id:'actions', type:'actions', modules:['motif']} "+ // a list of actions
+				  "{id:'actions', type:'actions', modules:['motif', 'math']} "+ // a list of actions
 				//   "Fill with {id:'color', type:'color', placeholder:[0.3, 0.8, 1.0]}" +
 				"With stencils: "+
-				"{id: 'stencils', type:'actions', modules:['stencils']} "+  
+				"{id: 'stencils', type:'actions', modules:['stencils', 'instructions']} "+  
 				"<hr> {type:'save'}", // a save button!
 			
 			// Load data from URL, otherwise blank:
 			data: data,
 		
 			// Actions to include:
-			modules: ["motif", "stencils", "instructions", "math"], //TODO: 'math' module removes min and max settings on Scrubber - see line 1032 and 2813
+			modules: ['motif', 'stencils', 'instructions', 'math'], //TODO: 'math' module removes min and max settings on Scrubber - see line 1032 and 2813
 		
 			previewActions: true,
 			previewNumbers: true,
