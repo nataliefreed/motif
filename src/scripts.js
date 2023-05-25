@@ -11,7 +11,7 @@ window.addEventListener('load', e => {
 			cursor: './assets/cursors/fill-drip-solid.svg',
 			mouseActionType: 'single-click',
 			onact: (my) => {
-				my.target.addFill(my.data.color);
+				my.target.addFill({color: my.data.color});
 			}
 		},
 		{
@@ -22,7 +22,7 @@ window.addEventListener('load', e => {
 			cursor: './assets/cursors/fill-drip-solid.svg',
 			mouseActionType: 'single-click',
 			onact: (my) => {
-				my.target.gradient(my.data.color1, my.data.color2);
+				my.target.gradient({ color1: my.data.color1, color2: my.data.color2 });
 			}
 		},
 		{
@@ -35,7 +35,7 @@ window.addEventListener('load', e => {
 			cursor: './assets/cursors/fill-drip-solid.svg',
 			mouseActionType: 'single-click',
 			onact: (my) => {
-				my.target.stripes(my.data.stripeWidth, my.data.color1, my.data.color2);
+				my.target.stripes({ stripeWidth: my.data.stripeWidth, color1: my.data.color1, color2: my.data.color2 });
 			}
 		},
 		{
@@ -50,7 +50,7 @@ window.addEventListener('load', e => {
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'single-click',
 			onact: (my) => {
-				my.target.addCircle(my.data.color, my.data.x, my.data.y, my.data.radius);
+				my.target.addCircle({ color: my.data.color, x: my.data.x, y: my.data.y, r: my.data.radius });
 			}
 		},
 		{
@@ -64,7 +64,7 @@ window.addEventListener('load', e => {
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'single-click',
 			onact: (my) => {
-				my.target.addSquare(my.data.color, my.data.x, my.data.y, my.data.size);
+				my.target.addSquare({ color: my.data.color, x: my.data.x, y: my.data.y, size: my.data.size });
 			}
 		},
 		{
@@ -79,7 +79,7 @@ window.addEventListener('load', e => {
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'single-click',
 			onact: (my) => {
-				my.target.polygon(my.data.color, my.data.x, my.data.y, my.data.radius, my.data.nsides);
+				my.target.polygon({ color: my.data.color, x: my.data.x, y: my.data.y, r: my.data.radius, nsides: my.data.nsides });
 			}
 		},
 		{
@@ -95,7 +95,7 @@ window.addEventListener('load', e => {
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'single-click',
 			onact: (my) => {
-				my.target.star(my.data.color, my.data.x, my.data.y, my.data.r1, my.data.r2, my.data.npoints);
+				my.target.star({color: my.data.color, x: my.data.x, y: my.data.y, r1: my.data.r1, r2: my.data.r2, npoints: my.data.npoints});
 			}
 		},
 		{
@@ -109,7 +109,7 @@ window.addEventListener('load', e => {
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'single-click',
 			onact: (my) => {
-				my.target.heart(my.data.color, my.data.x, my.data.y, my.data.size);
+				my.target.heart({ color: my.data.color, x: my.data.x, y: my.data.y, size: my.data.size });
 			}
 		},
 		{
@@ -121,11 +121,11 @@ window.addEventListener('load', e => {
 			to ({id:'x2', type:'number', min:0, max:600, placeholder:200}, 
 			{id:'y2', type:'number', min:0, max:600, placeholder:200})
 			in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}
-			with width {id: 'lineWidth', type: 'number', min:1, max:600, placeholder: 5}`,
+			with width {id: 'lineWeight', type: 'number', min:1, max:600, placeholder: 5}`,
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'drag',
 			onact: (my) => {
-				my.target.addLine(my.data.color, my.data.lineWidth, my.data.x1, my.data.y1, my.data.x2, my.data.y2, my.data.radius);
+				my.target.addLine({ color: my.data.color, lineWeight: my.data.lineWeight, x1: my.data.x1, y1: my.data.y1, x2: my.data.x2, y2: my.data.y2});
 			}
 		},
 		{
@@ -133,12 +133,12 @@ window.addEventListener('load', e => {
 			dropdownName: 'Brush',
 			category: 'Brushes',
 			init: `Brush in {id:'color', type:'color', placeholder:[20, 0.8, 1.0]} 
-			with width {id: 'lineWidth', type: 'number', min:1, max:600, placeholder: 8} 
+			with width {id: 'lineWeight', type: 'number', min:1, max:600, placeholder: 8} 
 			along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'drag',
 			onact: (my) => {
-				my.target.addBrushStroke(my.data.color, my.data.lineWidth, my.data.pointsList);
+				my.target.addBrushStroke({ color: my.data.color, lineWeight: my.data.lineWeight, pointsList: my.data.pointsList });
 			}
 		},
 		{
@@ -151,7 +151,7 @@ window.addEventListener('load', e => {
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'drag',
 			onact: (my) => {
-				my.target.addRainbowBrush(my.data.minSize, my.data.maxSize, my.data.pointsList);
+				my.target.addRainbowBrush({ minSize: my.data.minSize, maxSize: my.data.maxSize, pointsList: my.data.pointsList });
 			}
 		},
 		{
@@ -164,32 +164,9 @@ window.addEventListener('load', e => {
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'single-click',
 			onact: (my) => {
-				my.target.shift(my.data.height, my.data.offset, my.data.orientation);
+				my.target.shift({ height: my.data.height, offset: my.data.offset, orientation: my.data.orientation });
 			}
 		},
-		// {
-		// 	name: 'wobble',
-		// 	dropdownName: 'Wobble',
-		// 	category: 'Effects',
-		// 	init: `Wobble with height {id:'height', type:'number', placeholder:20} and width {id:'width', type:'number', placeholder:20}`,
-		// 	cursor: './assets/cursors/star-solid.svg',
-		// 	mouseActionType: 'single-click',
-		// 	onact: (my) => {
-		// 		my.target.wobble(my.data.height, my.data.width);
-		// 	}
-		// },
-		// {
-		// 	name: 'swirl',
-		// 	dropdownName: 'Swirl',
-		// 	category: 'Effects',
-		// 	init: `Add swirl of radius {id:'radius', type:'number', placeholder:20} in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
-		// 	at ({id:'x', type:'number', placeholder:200}, {id:'y', type:'number', placeholder:200})`,
-		// 	cursor: './assets/cursors/star-solid.svg',
-		// 	mouseActionType: 'single-click',
-		// 	onact: (my) => {
-		// 		my.target.addCircle(my.data.color, my.data.x, my.data.y, my.data.radius);
-		// 	}
-		// },
 		{
 			name: 'invert',
 			dropdownName: 'Invert',
@@ -198,7 +175,7 @@ window.addEventListener('load', e => {
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'single-click',
 			onact: (my) => {
-				my.target.applyFilter(my.data.filter);
+				my.target.applyFilter({ filter: my.data.filter });
 			}
 		},
 		{
@@ -209,7 +186,7 @@ window.addEventListener('load', e => {
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'single-click',
 			onact: (my) => {
-				my.target.applyFilter(my.data.filter);
+				my.target.applyFilter({ filter: my.data.filter });
 			}
 		},
 		{
@@ -220,7 +197,7 @@ window.addEventListener('load', e => {
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'single-click',
 			onact: (my) => {
-				my.target.applyFilter(my.data.filter);
+				my.target.applyFilter({ filter: my.data.filter });
 			}
 		},
 		{
@@ -231,7 +208,7 @@ window.addEventListener('load', e => {
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'single-click',
 			onact: (my) => {
-				my.target.addCircle(my.data.color, my.data.x, my.data.y, my.data.radius);
+				// my.target.addCircle({ color: my.data.color, x: my.data.x, y: my.data.y, r: my.data.radius });
 			}
 		},
 		{
@@ -246,7 +223,7 @@ window.addEventListener('load', e => {
 			mouseActionType: 'single-click',
 			onact: (my) => {
 				// my.target.addStencil();
-				my.target.box(my.data.length, my.data.width, my.data.height);
+				my.target.box({ length: my.data.length, width: my.data.width, height: my.data.height });
 			}
 		},
 		{
@@ -260,7 +237,7 @@ window.addEventListener('load', e => {
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'single-click',
 			onact: (my) => {
-				my.target.box(my.data.length, my.data.width, my.data.height);
+				my.target.box({ length: my.data.length, width: my.data.width, height: my.data.height });
 			}
 		},
 	];
@@ -272,7 +249,7 @@ class MotifApp {
 	constructor(effectList) {
 		this.effects = this.reindex(effectList, 'name');
 		this.sketch = this.initP5();
-		this.sketch.addFill('#aaaaaa');
+		this.sketch.addFill({color:'#aaaaaa'});
 		this.sketch.clear('#aaaaaa');
 		this.joy = this.initJoy();
 		this.initUI(); //categories and brush/effect buttons
@@ -290,8 +267,6 @@ class MotifApp {
 			let strokeColor = 0;
 			let strokeWeight = 5;
 
-			let stencils = [];
-
 			s.setup = () => {
 			  s.createCanvas(600, 600);
 			  s.background(255);
@@ -302,49 +277,49 @@ class MotifApp {
 			s.draw = () => {
 				if(points) {
 					points.renderLine(s, strokeColor, strokeWeight); //TODO: rethink this way of passing in preview line settings
+					// s.addRainbowBrush(4, 10, points.toString());
 				}
 			};
-
-			s.drawStencils = () => {
-				stencils.forEach((stencil) => { 
-					s.box(s.random(10, 100), s.random(10, 100), s.random(10, 100));
-					console.log("adding stencil");
-				});
-			}
 		
 			s.clear = () => {
 				if(!s.setupFinished) return;
 				s.background(255);
 			}
 		
-			s.addCircle = (color, x, y, r) => {
+			s.addCircle = (params) => {
 				if(!s.setupFinished) return;
-				s.fill(color);
+				s.fill(params.color);
 				s.noStroke();
-				s.circle(x, y, r*2);
+				console.log(params.color, params.x, params.y, params.r);
+				s.circle(params.x, params.y, params.r*2);
 			}
 
-			s.addSquare = (color, x, y, size) => {
+			s.addSquare = (params) => {
 				s.push();
 				s.rectMode(s.CENTER);
-				s.fill(color);
+				s.fill(params.color);
 				s.noStroke();
-				s.rect(x, y, size, size);
+				s.rect(params.x, params.y, params.size, params.size);
 				s.pop();
 			}
 		
-			s.addFill = (color) => {
+			s.addFill = (params) => {
 				if(!s.setupFinished) return;
-				s.fill(color);
+				console.log(params.color);
+				s.fill(params.color);
 				s.noStroke();
 				s.rect(0, 0, s.width, s.height);
 			}
-
-			s.star = (color, x, y, r1, r2, npoints) => {
+	
+			s.star = (params) => {
 				if(!s.setupFinished) return;
-				let angle = s.TWO_PI / npoints;
+				let x = params.x;
+				let y = params.y;
+				let r1 = params.r1;
+				let r2 = params.r2;
+				let angle = s.TWO_PI / params.npoints;
 				let halfAngle = angle / 2.0;
-				s.fill(color);
+				s.fill(params.color);
 				s.noStroke();
 				s.beginShape();
 				for (let a = 0; a < s.TWO_PI; a += angle) {
@@ -358,25 +333,25 @@ class MotifApp {
 				s.endShape(s.CLOSE);
 			}
 
-			s.polygon = (color, x, y, r, nsides) => {
+			s.polygon = (params) => {
 				if(!s.setupFinished) return;
-				nsides = Math.abs(nsides);
-				s.fill(color);
+				let nsides = Math.abs(params.nsides);
+				s.fill(params.color);
 				s.noStroke();
 				let angle = s.TWO_PI / nsides;
 				s.beginShape();
 				for (let a = 0; a < s.TWO_PI; a += angle) {
-				  let sx = x + s.cos(a) * r;
-				  let sy = y + s.sin(a) * r;
+				  let sx = params.x + s.cos(a) * params.r;
+				  let sy = params.y + s.sin(a) * params.r;
 				  s.vertex(sx, sy);
 				}
 				s.endShape(s.CLOSE);
 			}
 
-			s.gradient = (color1, color2) => {
+			s.gradient = (params) => {
 				if(!s.setupFinished) return;
-				let pcolor1 = s.color(color1);
-				let pcolor2 = s.color(color2);
+				let pcolor1 = s.color(params.color1);
+				let pcolor2 = s.color(params.color2);
 				s.noFill();
 				s.strokeWeight(1);
 				for(let i=0;i<s.height;i++) {
@@ -385,25 +360,27 @@ class MotifApp {
 				}
 			}
 
-			s.stripes = (stripeWidth, color1, color2) => {
+			s.stripes = (params) => {
 				if(!s.setupFinished) return;
+				let stripeWidth = params.stripeWidth;
 				s.push();
 				s.translate(0, stripeWidth/2); //so that top stripe is fully shown
-				let pcolor1 = s.color(color1);
-				let pcolor2 = s.color(color2);
+				let pcolor1 = s.color(params.color1);
+				let pcolor2 = s.color(params.color2);
 				s.noFill();
 				s.strokeWeight(stripeWidth);
 				for(let i=0;i<s.height;i+=stripeWidth) {
 					let c = s.lerpColor(pcolor1, pcolor2, i/(s.height-stripeWidth));
-					console.log(c);
 					s.stroke(c);
 					s.line(0, i, s.width, i);
 				}
 				s.pop();
 			}
 
-			s.shift = (lineHeight, offset, orientation) => {
-				if(orientation == "horizontal") {
+			s.shift = (params) => {
+				let lineHeight = params.height;
+				let offset = params.offset;
+				if(params.orientation == "horizontal") {
 					for(let i=0;i<s.height/lineHeight;i++) {
 						if(i%2 == 0) {
 							s.image(s, offset, i*lineHeight, s.width, lineHeight, 0, i*lineHeight, s.width, lineHeight);
@@ -411,7 +388,7 @@ class MotifApp {
 						}
 					}
 				}
-				else if(orientation == "vertical") {
+				else if(params.orientation == "vertical") {
 					for(let i=0;i<s.height/lineHeight;i++) {
 						if(i%2 == 0) {
 							s.image(s, i*lineHeight, offset, lineHeight, s.height, i*lineHeight, 0, lineHeight, s.height);
@@ -421,12 +398,15 @@ class MotifApp {
 				}
 			}
 
-			//by Mithru: https://editor.p5js.org/Mithru/sketches/Hk1N1mMQg
-			s.heart = (color, x, y, size) => {
+			//heart by Mithru: https://editor.p5js.org/Mithru/sketches/Hk1N1mMQg
+			s.heart = (params) => {
 				if(!s.setupFinished) return;
+				let x = params.x;
+				let y = params.y;
+				let size = params.size;
 				s.push();
 				s.translate(0, -size/2);
-				s.fill(color);
+				s.fill(params.color);
 				s.noStroke();
 				s.beginShape();
 				s.vertex(x, y);
@@ -436,8 +416,8 @@ class MotifApp {
 				s.pop();
 			}
 
-			s.applyFilter = (filter) => {
-				s.filter(s[filter.toUpperCase()]);
+			s.applyFilter = (params) => {
+				s.filter(s[params.filter.toUpperCase()]);
 			}
 
 			// s.setStrokeColor = (color) => {
@@ -448,37 +428,11 @@ class MotifApp {
 			// 	strokeWeight = weight;
 			// }
 
-			s.startPoints = (x, y) => {
-				points = new DrawnLine(x, y);
-				console.log("inside start points function", points);
-				s.loop();
-			}
-
-			s.addPoint = (x, y) => {
-				points.addPoint(x, y);
-			}
-
-			s.endPoints = () => {
-				points = null;
-				s.noLoop();
-			}
-
-			s.addStencil = () => {
-				stencils.push("box");
-			}
-
-			class Stencil {
-				constructor(render) {
-					this.render = render;
-				}
-
-				draw() {
-					render();
-				}
-			}
-
-			s.box = (l, w, h) => {
+			s.box = (params) => {
 				s.push();
+				let l = params.length;
+				let w = params.width;
+				let h = params.height;
 				s.translate(s.width/4-w/2, s.height/4-l/2);
 				s.noFill();
 				s.stroke(0);
@@ -537,6 +491,75 @@ class MotifApp {
 				s.pop();
 			}
 
+			s.addLine = (params) => {
+				if(!s.setupFinished) return;
+				s.strokeWeight(params.lineWeight);
+				s.noFill();
+				s.stroke(params.color);
+				s.line(params.x1, params.y1, params.x2, params.y2);
+				console.log(params);
+			}
+
+			s.addBrushStroke = (params) => {
+				if(!s.setupFinished) return;
+				s.push();
+				s.noFill();
+				s.strokeWeight(params.lineWeight);
+				s.stroke(params.color);
+				s.strokeJoin(s.ROUND);
+				
+				let points = params.pointsList.split(',');
+				s.beginShape();
+				for(let i=0;i<points.length-1;i+=2) {
+					s.vertex(points[i], points[i+1]);
+				}
+				s.endShape();
+				s.pop();
+			}
+
+			s.addRainbowBrush = (params) => {
+				if(!s.setupFinished) return;
+				s.push();
+				s.noStroke();
+				s.strokeWeight(params.minSize);
+				s.colorMode(s.HSB);
+				s.strokeJoin(s.ROUND);
+
+				let hue = 0;
+				let size = params.minSize;
+				let hueIncrement = 10;
+				let sizeIncrement = 1;
+				
+				let points = params.pointsList.split(','); //structure of this string is x1,y1,x2,y2,...
+				for(let i=0;i<points.length-1;i+=2) {
+					s.fill(hue, 150, 100);
+					s.circle(points[i], points[i+1], size);
+					hue += hueIncrement;
+					size += sizeIncrement;
+					if(hue > 255 || hue < 0) {
+						hueIncrement *= -1;
+					}
+					if(size > params.maxSize || size < params.minSize) {
+						sizeIncrement *= -1;
+					}
+				}
+				s.pop();
+			}
+
+			s.startPoints = (x, y) => {
+				points = new DrawnLine(x, y);
+				s.loop();
+			}
+
+			s.addPoint = (x, y) => {
+				points.addPoint(x, y);
+			}
+
+			s.endPoints = () => {
+				points = null;
+				s.noLoop();
+			}
+
 			s.getPoint = (index) => {
 				return points.points[index];
 			}
@@ -555,61 +578,7 @@ class MotifApp {
 				}
 			}
 
-			s.addLine = (color, lineWeight, x1, y1, x2, y2) => {
-				if(!s.setupFinished) return;
-				s.strokeWeight(lineWeight);
-				s.noFill();
-				s.stroke(color);
-				s.line(x1, y1, x2, y2);
-			}
-
-			s.addBrushStroke = (color, lineWeight, pointsString) => {
-				if(!s.setupFinished) return;
-				s.push();
-				s.noFill();
-				s.strokeWeight(lineWeight);
-				s.stroke(color);
-				s.strokeJoin(s.ROUND);
-				
-				let points = pointsString.split(',');
-				s.beginShape();
-				for(let i=0;i<points.length-1;i+=2) {
-					s.vertex(points[i], points[i+1]);
-				}
-				s.endShape();
-				s.pop();
-			}
-
-			s.addRainbowBrush = (minSize, maxSize, pointsString) => {
-				if(!s.setupFinished) return;
-				s.push();
-				s.noStroke();
-				s.strokeWeight(minSize);
-				s.colorMode(s.HSB);
-				s.strokeJoin(s.ROUND);
-
-				let hue = 0;
-				let size = minSize;
-				let hueIncrement = 10;
-				let sizeIncrement = 1;
-				
-				let points = pointsString.split(','); //structure of this string is x1,y1,x2,y2,...
-				for(let i=0;i<points.length-1;i+=2) {
-					s.fill(hue, 150, 100);
-					s.circle(points[i], points[i+1], size);
-					hue += hueIncrement;
-					size += sizeIncrement;
-					if(hue > 255 || hue < 0) {
-						hueIncrement *= -1;
-					}
-					if(size > maxSize || size < minSize) {
-						sizeIncrement *= -1;
-					}
-				}
-				s.pop();
-			}
-
-		  }, 'drawing-canvas');
+		}, 'drawing-canvas');
 	}
 	
 	initUI() {
@@ -661,7 +630,6 @@ class MotifApp {
 			let activeEffect = this.getSelectedEffect();
 			if(activeEffect) {
 				if(this.effects[activeEffect].mouseActionType == 'drag') {
-					this.sketch.set //what is this?
 					this.sketch.startPoints(this.sketch.mouseX, this.sketch.mouseY);
 				} else if(this.effects[activeEffect].category == "Stencils") {
 					this.addEvent('stencils', activeEffect, {
@@ -703,7 +671,7 @@ class MotifApp {
 						});
 					}
 					else if(activeEffect == 'brush' || activeEffect == "rainbow brush") { //TODO: make this more general
-						this.addEvent('motif',activeEffect, { pointsList: { type:'number', value: this.sketch.pointsAsString()} });
+						this.addEvent('motif', activeEffect, { pointsList: { type:'number', value: this.sketch.pointsAsString()} });
 					}
 					
 					this.sketch.endPoints();

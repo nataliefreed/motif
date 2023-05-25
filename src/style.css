@@ -37,7 +37,7 @@
     font-size: 16px;
   }
   
-  .effect-button {
+.effect-button {
     background-color: white;
     margin: 5px 5px 5px 5px;
     padding: 10px;
@@ -48,19 +48,19 @@
     cursor: pointer;
     font-family: 'FuturaHandwritten';
     font-size: 14px;
-  }
+}
 
-  .effect-button.selected {
+.effect-button.selected {
     background-color: rgb(255, 205, 40);
-  }
+}
 
-  .category-button.selected {
+.category-button.selected {
     background-color: rgb(238, 238, 238);
-  }
+}
   
-  .category-button:hover, .effect-button:hover {
+.category-button:hover, .effect-button:hover {
     background-color: gray;
-  }
+}
 
 .category-button:active, .drawing-tool-button:active {
   transform: translate(0px, 5px);
@@ -109,6 +109,14 @@ body {
     box-shadow: 5px 5px 5px gray;
     cursor: url('./assets/cursors/paintbrush-solid.svg') 0 28, pointer;
   }
+
+.joy-path {
+    display: inline-block;
+}
+
+.thumbnail-canvas {
+    display:inline-block;
+}
   
 @font-face{ 
     font-family: 'FuturaHandwritten';
