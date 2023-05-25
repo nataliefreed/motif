@@ -1,7 +1,10 @@
 import Joy from '../libraries/joy.js';
 // import p5 from '../libraries/p5.js'
+let currentColorRGB, currentColorHSV;
+let currentLineWeight = 6;
 
 window.addEventListener('load', e => {
+	randomizeCurrentColor();
 	const effectList = [
 		{
 			name: 'solid fill',
@@ -147,7 +150,7 @@ window.addEventListener('load', e => {
 			category: 'Brushes',
 			init: `Rainbow brush in size {id: 'minSize', type: 'number', min:1, max:600, placeholder: 4} 
 			to {id: 'maxSize', type: 'number', min:1, max:600, placeholder: 10} 
-			along path {id:'pointsList', type:'string', placeholder:'20,50,200,250'}`,
+			along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'drag',
 			onact: (my) => {
@@ -264,6 +267,7 @@ class MotifApp {
 		return new p5(s => {
 			
 			let points = null;
+			let activeEffectName = "";
 			let strokeColor = 0;
 			let strokeWeight = 5;
 
@@ -274,10 +278,22 @@ class MotifApp {
 			  s.noLoop();
 			};
 		  
-			s.draw = () => {
+			s.draw = () => { //show a preview of brush strokes while actively dragging mouse
 				if(points) {
-					points.renderLine(s, strokeColor, strokeWeight); //TODO: rethink this way of passing in preview line settings
-					// s.addRainbowBrush(4, 10, points.toString());
+					switch(activeEffectName) {
+						case 'rainbow brush':
+						  s.addRainbowBrush({ minSize: currentLineWeight, maxSize: currentLineWeight*2, pointsList: points.toString() });
+						  break;
+						case 'brush':
+							s.addBrushStroke({color:currentColorRGB, lineWeight: currentLineWeight, pointsList: points.toString() });
+							break;
+						case 'straight line brush':
+							s.addLine({ color:currentColorRGB, lineWeight: currentLineWeight, x1: s.getPoint(0).x, y1: s.getPoint(0).y, x2: s.getLastPoint().x, y2: s.getLastPoint().y}); 
+							break;
+						default: break;
+					}
+					// points.renderLine(s, strokeColor, strokeWeight); //TODO: rethink this way of passing in preview line settings
+				// 	console.log(currentEffect);
 				}
 			};
 		
@@ -290,7 +306,6 @@ class MotifApp {
 				if(!s.setupFinished) return;
 				s.fill(params.color);
 				s.noStroke();
-				console.log(params.color, params.x, params.y, params.r);
 				s.circle(params.x, params.y, params.r*2);
 			}
 
@@ -305,7 +320,6 @@ class MotifApp {
 		
 			s.addFill = (params) => {
 				if(!s.setupFinished) return;
-				console.log(params.color);
 				s.fill(params.color);
 				s.noStroke();
 				s.rect(0, 0, s.width, s.height);
@@ -497,7 +511,6 @@ class MotifApp {
 				s.noFill();
 				s.stroke(params.color);
 				s.line(params.x1, params.y1, params.x2, params.y2);
-				console.log(params);
 			}
 
 			s.addBrushStroke = (params) => {
@@ -507,6 +520,8 @@ class MotifApp {
 				s.strokeWeight(params.lineWeight);
 				s.stroke(params.color);
 				s.strokeJoin(s.ROUND);
+
+				console.log(params.color);
 				
 				let points = params.pointsList.split(',');
 				s.beginShape();
@@ -546,8 +561,9 @@ class MotifApp {
 				s.pop();
 			}
 
-			s.startPoints = (x, y) => {
+			s.startPoints = (x, y, activeEffect) => {
 				points = new DrawnLine(x, y);
+				activeEffectName = activeEffect;
 				s.loop();
 			}
 
@@ -630,7 +646,7 @@ class MotifApp {
 			let activeEffect = this.getSelectedEffect();
 			if(activeEffect) {
 				if(this.effects[activeEffect].mouseActionType == 'drag') {
-					this.sketch.startPoints(this.sketch.mouseX, this.sketch.mouseY);
+					this.sketch.startPoints(this.sketch.mouseX, this.sketch.mouseY, activeEffect);
 				} else if(this.effects[activeEffect].category == "Stencils") {
 					this.addEvent('stencils', activeEffect, {
 						x: { type:'number', value: Math.round(this.sketch.mouseX)},
@@ -663,28 +679,34 @@ class MotifApp {
 				if(this.effects[activeEffect].mouseActionType == 'drag') {
 					this.sketch.addPoint(this.sketch.mouseX, this.sketch.mouseY);
 					if(activeEffect == 'straight line') {
-						this.addEvent('motif',activeEffect, {
+						this.addEvent('motif', activeEffect, {
 							x1: { type:'number', value: Math.round(this.sketch.getPoint(0).x) },
 							y1: { type:'number', value: Math.round(this.sketch.getPoint(0).y) },
 							x2: { type:'number', value: Math.round(this.sketch.getLastPoint().x) },
 							y2: { type:'number', value: Math.round(this.sketch.getLastPoint().y) },
+							lineWeight: {type:'number', value: currentLineWeight},
 						});
 					}
 					else if(activeEffect == 'brush' || activeEffect == "rainbow brush") { //TODO: make this more general
-						this.addEvent('motif', activeEffect, { pointsList: { type:'number', value: this.sketch.pointsAsString()} });
+						this.addEvent('motif', activeEffect, { 
+							pointsList: { type:'number', value: this.sketch.pointsAsString()},
+							lineWeight: {type:'number', value: currentLineWeight},
+						  minSize: {type:'number', value: currentLineWeight},
+						  maxSize: {type:'number', value: currentLineWeight*2}
+						});
 					}
 					
 					this.sketch.endPoints();
 				}
 			}
+			randomizeCurrentColor();
 		});
-
 	}
 
 	addEvent(category, effectName, settings) {
 		let effect = this.effects[effectName];
 
-		settings.color = { type:'color', value:[Math.random()*360, 0.8, 0.8]};
+		settings.color = { type:'color', value:currentColorHSV};
 		
 		// let hexColor = document.getElementById('color-picker').value;
 		// let hslColor = _rgbToHsl(_hexToRgb(hexColor));
@@ -764,7 +786,6 @@ class MotifApp {
 		Joy.module("motif", function() {
 			//Add from effects list
 			let motifEffects = Object.values(effects).filter((e) => {
-				console.log(e);
 				return e.category != "Stencils";
 			})
 			motifEffects.forEach(effect => {
@@ -784,7 +805,6 @@ class MotifApp {
 				return e.category == "Stencils";
 			})
 			motifEffects.forEach(effect => {
-				console.log(effect);
 				Joy.add({
 					name: effect.dropdownName,
 					type: "stencils/" + effect.name,
@@ -884,7 +904,6 @@ let _rgbToHsl = rgb => {
 	  : [Math.floor(((r - g) / d + 4) * 60), s / 100, l / 100]
 }
 
-
 /* https://gist.github.com/mjackson/5311256 by kigiri*/
 let _rgbStrToHsl = rgbStr => {
 	const [r, g, b] = rgbStr.slice(4, -1).split(',').map(Number)
@@ -918,6 +937,41 @@ let _hexToRgb = hex => {
 	} : null;
 }
 
+function _HSVToRGBString(h,s,v){ //duplicate from Joy.js
+  if(arguments.length===1) {
+        s=h[1], v=h[2], h=h[0]; // cast to different vars
+    }
+  var rgb = _HSVtoRGB(h,s,v);
+  return "rgb("+rgb[0]+","+rgb[1]+","+rgb[2]+")";
+}
+
+function _HSVtoRGB(h, s, v) { //duplicate from Joy.js
+	var r, g, b, i, f, p, q, t;
+	if (arguments.length === 1) {
+			s = h.s, v = h.v, h = h.h;
+	}
+	h /= 360; // convert, yo.
+	i = Math.floor(h * 6);
+	f = h * 6 - i;
+	p = v * (1 - s);
+	q = v * (1 - f * s);
+	t = v * (1 - (1 - f) * s);
+	switch (i % 6) {
+			case 0: r = v, g = t, b = p; break;
+			case 1: r = q, g = v, b = p; break;
+			case 2: r = p, g = v, b = t; break;
+			case 3: r = p, g = q, b = v; break;
+			case 4: r = t, g = p, b = v; break;
+			case 5: r = v, g = p, b = q; break;
+	}
+	return [Math.round(r*255), Math.round(g*255), Math.round(b*255)];
+}
+
+let randomizeCurrentColor = ()=> {
+	currentColorHSV = [Math.random()*360, 0.8, 0.8];
+	currentColorRGB = _HSVToRGBString(currentColorHSV);
+	
+}
 
 class DrawnLine {
 	constructor(x, y) {
