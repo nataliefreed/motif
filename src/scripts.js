@@ -158,6 +158,19 @@ window.addEventListener('load', e => {
 			}
 		},
 		{
+			name: 'porcupine brush',
+			dropdownName: 'Porcupine Brush',
+			category: 'Brushes',
+			init: `Porcupine brush in {id:'color', type:'color', placeholder:[20, 0.8, 1.0]} 
+			with width {id: 'lineWeight', type: 'number', min:1, max:600, placeholder: 8} 
+			along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
+			cursor: './assets/cursors/star-solid.svg',
+			mouseActionType: 'drag',
+			onact: (my) => {
+				my.target.porcupineBrush({ minSize: my.data.minSize, maxSize: my.data.maxSize, pointsList: my.data.pointsList });
+			}
+		},
+		{
 			name: 'shift',
 			dropdownName: 'Shift',
 			category: 'Effects',
@@ -264,52 +277,65 @@ class MotifApp {
 	}
 
 	initP5() {
-		return new p5(s => {
+		return new p5(p => {
 			
 			let points = null;
 			let activeEffectName = "";
 			let strokeColor = 0;
 			let strokeWeight = 5;
+			let s, t; //buffer canvases
 
-			s.setup = () => {
-			  s.createCanvas(600, 600);
-			  s.background(255);
-			  s.setupFinished = true;
-			  s.noLoop();
+			p.setup = () => {
+			  p.createCanvas(600, 600);
+				s = p.createGraphics(p.width, p.height);
+				t = p.createGraphics(p.width, p.height);
+			  p.background(255);
+			  p.setupFinished = true;
+			  p.noLoop();		
 			};
 		  
-			s.draw = () => { //show a preview of brush strokes while actively dragging mouse
+			p.draw = () => { //show a preview of brush strokes while actively dragging mouse
 				if(points) {
 					switch(activeEffectName) {
 						case 'rainbow brush':
-						  s.addRainbowBrush({ minSize: currentLineWeight, maxSize: currentLineWeight*2, pointsList: points.toString() });
+						  p.addRainbowBrush({ minSize: currentLineWeight, maxSize: currentLineWeight*2, pointsList: points.toString() });
 						  break;
 						case 'brush':
-							s.addBrushStroke({color:currentColorRGB, lineWeight: currentLineWeight, pointsList: points.toString() });
+							p.addBrushStroke({color:currentColorRGB, lineWeight: currentLineWeight, pointsList: points.toString() });
 							break;
-						case 'straight line brush':
-							s.addLine({ color:currentColorRGB, lineWeight: currentLineWeight, x1: s.getPoint(0).x, y1: s.getPoint(0).y, x2: s.getLastPoint().x, y2: s.getLastPoint().y}); 
+						case 'straight line':
+							t.clear();
+							p.addPreviewLine({color:currentColorRGB, lineWeight: currentLineWeight, x1: p.getPoint(0).x, y1: p.getPoint(0).y, x2: p.getLastPoint().x, y2: p.getLastPoint().y}, t); 
+							break;
+						case 'porcupine brush':
+							p.addLine({ color:currentColorRGB, lineWeight: currentLineWeight, x1: p.getPoint(0).x, y1: p.getPoint(0).y, x2: p.getLastPoint().x, y2: p.getLastPoint().y}); 
 							break;
 						default: break;
 					}
-					// points.renderLine(s, strokeColor, strokeWeight); //TODO: rethink this way of passing in preview line settings
-				// 	console.log(currentEffect);
 				}
+				p.image(s, 0, 0);
+				p.image(t, 0, 0);
 			};
-		
-			s.clear = () => {
-				if(!s.setupFinished) return;
-				s.background(255);
+
+			p.render = () => {
+				p.image(s, 0, 0);
 			}
 		
-			s.addCircle = (params) => {
-				if(!s.setupFinished) return;
+			p.clear = () => {
+				if(!p.setupFinished) return;
+				p.background(255);
+				s.background(255);
+				t.clear();
+			}
+		
+			p.addCircle = (params) => {
+				if(!p.setupFinished) return;
 				s.fill(params.color);
 				s.noStroke();
 				s.circle(params.x, params.y, params.r*2);
 			}
 
-			s.addSquare = (params) => {
+			p.addSquare = (params) => {
 				s.push();
 				s.rectMode(s.CENTER);
 				s.fill(params.color);
@@ -318,15 +344,15 @@ class MotifApp {
 				s.pop();
 			}
 		
-			s.addFill = (params) => {
-				if(!s.setupFinished) return;
+			p.addFill = (params) => {
+				if(!p.setupFinished) return;
 				s.fill(params.color);
 				s.noStroke();
-				s.rect(0, 0, s.width, s.height);
+				s.rect(0, 0, p.width, p.height);
 			}
 	
-			s.star = (params) => {
-				if(!s.setupFinished) return;
+			p.star = (params) => {
+				if(!p.setupFinished) return;
 				let x = params.x;
 				let y = params.y;
 				let r1 = params.r1;
@@ -347,8 +373,8 @@ class MotifApp {
 				s.endShape(s.CLOSE);
 			}
 
-			s.polygon = (params) => {
-				if(!s.setupFinished) return;
+			p.polygon = (params) => {
+				if(!p.setupFinished) return;
 				let nsides = Math.abs(params.nsides);
 				s.fill(params.color);
 				s.noStroke();
@@ -362,20 +388,20 @@ class MotifApp {
 				s.endShape(s.CLOSE);
 			}
 
-			s.gradient = (params) => {
-				if(!s.setupFinished) return;
+			p.gradient = (params) => {
+				if(!p.setupFinished) return;
 				let pcolor1 = s.color(params.color1);
 				let pcolor2 = s.color(params.color2);
 				s.noFill();
 				s.strokeWeight(1);
-				for(let i=0;i<s.height;i++) {
-					s.stroke(s.lerpColor(pcolor1, pcolor2, i/s.height));
-					s.line(0, i, s.width, i);
+				for(let i=0;i<p.height;i++) {
+					s.stroke(s.lerpColor(pcolor1, pcolor2, i/p.height));
+					s.line(0, i, p.width, i);
 				}
 			}
 
-			s.stripes = (params) => {
-				if(!s.setupFinished) return;
+			p.stripes = (params) => {
+				if(!p.setupFinished) return;
 				let stripeWidth = params.stripeWidth;
 				s.push();
 				s.translate(0, stripeWidth/2); //so that top stripe is fully shown
@@ -383,38 +409,38 @@ class MotifApp {
 				let pcolor2 = s.color(params.color2);
 				s.noFill();
 				s.strokeWeight(stripeWidth);
-				for(let i=0;i<s.height;i+=stripeWidth) {
-					let c = s.lerpColor(pcolor1, pcolor2, i/(s.height-stripeWidth));
+				for(let i=0;i<p.height;i+=stripeWidth) {
+					let c = s.lerpColor(pcolor1, pcolor2, i/(p.height-stripeWidth));
 					s.stroke(c);
-					s.line(0, i, s.width, i);
+					s.line(0, i, p.width, i);
 				}
 				s.pop();
 			}
 
-			s.shift = (params) => {
-				let lineHeight = params.height;
+			p.shift = (params) => {
+				let lineHeight = paramp.height;
 				let offset = params.offset;
 				if(params.orientation == "horizontal") {
-					for(let i=0;i<s.height/lineHeight;i++) {
+					for(let i=0;i<p.height/lineHeight;i++) {
 						if(i%2 == 0) {
-							s.image(s, offset, i*lineHeight, s.width, lineHeight, 0, i*lineHeight, s.width, lineHeight);
-							s.image(s, 0, i*lineHeight, offset, lineHeight, s.width - offset, i*lineHeight, offset, lineHeight); //wrap
+							s.image(s, offset, i*lineHeight, p.width, lineHeight, 0, i*lineHeight, p.width, lineHeight);
+							s.image(s, 0, i*lineHeight, offset, lineHeight, p.width - offset, i*lineHeight, offset, lineHeight); //wrap
 						}
 					}
 				}
 				else if(params.orientation == "vertical") {
-					for(let i=0;i<s.height/lineHeight;i++) {
+					for(let i=0;i<p.height/lineHeight;i++) {
 						if(i%2 == 0) {
-							s.image(s, i*lineHeight, offset, lineHeight, s.height, i*lineHeight, 0, lineHeight, s.height);
-							s.image(s, i*lineHeight, 0, lineHeight, offset, i*lineHeight, s.width - offset, lineHeight, offset); //wrap
+							s.image(s, i*lineHeight, offset, lineHeight, p.height, i*lineHeight, 0, lineHeight, p.height);
+							s.image(s, i*lineHeight, 0, lineHeight, offset, i*lineHeight, p.width - offset, lineHeight, offset); //wrap
 						}
 					}
 				}
 			}
 
 			//heart by Mithru: https://editor.p5js.org/Mithru/sketches/Hk1N1mMQg
-			s.heart = (params) => {
-				if(!s.setupFinished) return;
+			p.heart = (params) => {
+				if(!p.setupFinished) return;
 				let x = params.x;
 				let y = params.y;
 				let size = params.size;
@@ -430,24 +456,16 @@ class MotifApp {
 				s.pop();
 			}
 
-			s.applyFilter = (params) => {
+			p.applyFilter = (params) => {
 				s.filter(s[params.filter.toUpperCase()]);
 			}
 
-			// s.setStrokeColor = (color) => {
-			// 	strokeColor = color;
-			// }
-
-			// s.setStrokeWeight = (weight) => {
-			// 	strokeWeight = weight;
-			// }
-
-			s.box = (params) => {
+			p.box = (params) => {
 				s.push();
 				let l = params.length;
-				let w = params.width;
-				let h = params.height;
-				s.translate(s.width/4-w/2, s.height/4-l/2);
+				let w = paramp.width;
+				let h = paramp.height;
+				s.translate(p.width/4-w/2, p.height/4-l/2);
 				s.noFill();
 				s.stroke(0);
 				s.strokeWeight(2);
@@ -505,16 +523,24 @@ class MotifApp {
 				s.pop();
 			}
 
-			s.addLine = (params) => {
-				if(!s.setupFinished) return;
+			p.addLine = (params) => {
+				if(!p.setupFinished) return;
 				s.strokeWeight(params.lineWeight);
 				s.noFill();
 				s.stroke(params.color);
 				s.line(params.x1, params.y1, params.x2, params.y2);
 			}
 
-			s.addBrushStroke = (params) => {
-				if(!s.setupFinished) return;
+			p.addPreviewLine = (params, c) => { //TODO: integrate choosing canvas into all drawing functions
+				if(!p.setupFinished) return;
+				c.strokeWeight(params.lineWeight);
+				c.noFill();
+				c.stroke(params.color);
+				c.line(params.x1, params.y1, params.x2, params.y2);
+			}
+
+			p.addBrushStroke = (params) => {
+				if(!p.setupFinished) return;
 				s.push();
 				s.noFill();
 				s.strokeWeight(params.lineWeight);
@@ -532,8 +558,8 @@ class MotifApp {
 				s.pop();
 			}
 
-			s.addRainbowBrush = (params) => {
-				if(!s.setupFinished) return;
+			p.addRainbowBrush = (params) => {
+				if(!p.setupFinished) return;
 				s.push();
 				s.noStroke();
 				s.strokeWeight(params.minSize);
@@ -561,36 +587,40 @@ class MotifApp {
 				s.pop();
 			}
 
-			s.startPoints = (x, y, activeEffect) => {
-				points = new DrawnLine(x, y);
-				activeEffectName = activeEffect;
-				s.loop();
+			p.porcupineBrush = (params) => {
+
 			}
 
-			s.addPoint = (x, y) => {
+			p.startPoints = (x, y, activeEffect) => {
+				points = new DrawnLine(x, y);
+				activeEffectName = activeEffect;
+				p.loop();
+			}
+
+			p.addPoint = (x, y) => {
 				points.addPoint(x, y);
 			}
 
-			s.endPoints = () => {
+			p.endPoints = () => {
 				points = null;
-				s.noLoop();
+				p.noLoop();
 			}
 
-			s.getPoint = (index) => {
+			p.getPoint = (index) => {
 				return points.points[index];
 			}
 
-			s.getLastPoint = () => {
+			p.getLastPoint = () => {
 				return points.points[points.points.length-1];
 			}
 
-			s.pointsAsString = () => {
+			p.pointsAsString = () => {
 				return points.toString();
 			}
 
-			s.mouseDragged = () => {
+			p.mouseDragged = () => {
 				if(points) {
-					s.addPoint(s.mouseX, s.mouseY);
+					p.addPoint(p.mouseX, p.mouseY);
 				}
 			}
 
@@ -879,6 +909,7 @@ class MotifApp {
 				sketch.clear();
 				my.actions.act(sketch);
 				my.stencils.act(sketch);
+				sketch.render();
 				// add end actions here
 			}
 		});
