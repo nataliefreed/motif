@@ -167,7 +167,7 @@ window.addEventListener('load', e => {
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'drag',
 			onact: (my) => {
-				my.target.porcupineBrush({ minSize: my.data.minSize, maxSize: my.data.maxSize, pointsList: my.data.pointsList });
+				my.target.porcupineBrush({ color: my.data.color, lineWeight: my.data.lineWeight, pointsList: my.data.pointsList });
 			}
 		},
 		{
@@ -181,6 +181,21 @@ window.addEventListener('load', e => {
 			mouseActionType: 'single-click',
 			onact: (my) => {
 				my.target.shift({ height: my.data.height, offset: my.data.offset, orientation: my.data.orientation });
+			}
+		},
+		{
+			name: 'tile',
+			dropdownName: 'Tile',
+			category: 'Effects',
+			init: `{id:'tiling', type:'choose', options:['straight grid', 'brick', 'half drop', 'checkerboard'], placeholder:'straight grid'} 
+			with width {id:'width', type:'number', min:1, max:600, placeholder:50} 
+			and height {id:'height', type:'number', min:1, max:600, placeholder:20}
+			at ({id:'x', type:'number', min:0, max:600, placeholder:200}, 
+			{id:'y', type:'number', min:0, max:600, placeholder:200})`,
+			cursor: './assets/cursors/star-solid.svg',
+			mouseActionType: 'single-click',
+			onact: (my) => {
+				my.target.tile({ width: my.data.width, height: my.data.height, tiling: my.data.tiling, x: my.data.x, y: my.data.y });
 			}
 		},
 		{
@@ -283,7 +298,7 @@ class MotifApp {
 			let activeEffectName = "";
 			let strokeColor = 0;
 			let strokeWeight = 5;
-			let s, t; //buffer canvases
+			let s, t; //p is main sketch, s is static canvas, t is temporary for animations
 
 			p.setup = () => {
 			  p.createCanvas(600, 600);
@@ -418,7 +433,7 @@ class MotifApp {
 			}
 
 			p.shift = (params) => {
-				let lineHeight = paramp.height;
+				let lineHeight = params.height;
 				let offset = params.offset;
 				if(params.orientation == "horizontal") {
 					for(let i=0;i<p.height/lineHeight;i++) {
@@ -437,6 +452,105 @@ class MotifApp {
 					}
 				}
 			}
+
+
+			// p.tile = (params) => {
+			//   let w = params.width;
+			// 	let h = params.height;
+			// 	let type = params.type;
+			// 	let x = params.x;
+			// 	let y = params.y;
+
+			// 	switch(type) {
+			// 		case 'straight grid':
+			// 			// take a w * h rectangle centered at x, y and repeat it in a straight grid pattern across the full width and height of the canvas
+			// 			// Use image(img, dx, dy, dWidth, dHeight, sx, sy) to do the tiling, where d is destination, s is source
+			// 		  break;
+			// 		case 'brick':
+			// 			// every other row should be shifted over by half the width of each unit
+			// 			break;
+			// 		case 'half-drop':
+			// 			// every other column should be shifted down by half the height of each unit
+			// 			break;
+			// 		case 'checkerboard':
+			// 			//only tile every other unit, shift over for next row like a checkerboard
+			// 		default:
+			// 			break;
+			// 	}
+			// }
+
+			p.tile = (params) => {
+				let w = params.width;
+				let h = params.height;
+				let tiling = params.tiling;
+				let x = params.x;
+				let y = params.y;
+			
+				let sx = x - w / 2;
+				let sy = y - h / 2;
+
+				s.noFill();
+				s.stroke(100);
+
+				let snapshot = p.createGraphics(w, h); // for captured rectangle
+				snapshot.image(s, 0, 0, w, h, sx, sy, w, h); // w * h rectangle centered at x, y 
+
+				s.stroke(0);
+				s.noFill();
+			
+				switch (tiling) {
+					case 'straight grid': // take a and repeat it in a straight grid pattern across the full width and height of the canvas
+						for (let dx = 0; dx < s.width; dx += w) {
+							for (let dy = 0; dy < s.height; dy += h) {
+								s.image(snapshot, dx, dy, w, h, 0, 0, w, h);
+								// s.rect(dx, dy, w-5, h-5);
+							}
+						}
+						break;
+					case 'brick':
+						// every other row should be shifted over by half the width of each unit
+						let shiftRow = false;
+						for (let dy = 0; dy < p.height; dy += h) {
+							let startX = shiftRow ? - w / 2 : 0;
+							for (let dx = startX; dx < p.width; dx += w) {
+								s.image(snapshot, dx, dy, w, h, 0, 0, w, h);
+							}
+							shiftRow = !shiftRow;
+						}
+						break;
+					case 'half drop':
+						// every other column should be shifted down by half the height of each unit
+						let halfColumnHeight = h / 2;
+						let shiftColumn = false;
+						for (let dx = 0; dx < p.width; dx += w) {
+							let startY = shiftColumn ? -halfColumnHeight : 0;
+							console.log(startY);
+							for (let dy = startY; dy < p.height; dy += h) {
+								s.image(snapshot, dx, dy, w, h, 0, 0, w, h);
+								s.rect(dx, dy, w-5, h-5);
+							}
+							shiftColumn = !shiftColumn;
+						}
+						break;
+					case 'checkerboard':
+						// only tile every other unit, shift over for the next row like a checkerboard
+						for (let dy = 0; dy < p.height; dy += h) {
+							let isEvenRow = dy / h % 2 === 0;
+							for (let dx = 0; dx < p.width; dx += w) {
+								let isEvenColumn = dx / w % 2 === 0;
+								if (isEvenRow !== isEvenColumn) {
+									s.image(snapshot, dx, dy, w, h, 0, 0, w, h);
+								}
+							}
+						}
+						break;
+					default:
+						break;
+				}
+			}
+			
+
+
 
 			//heart by Mithru: https://editor.p5js.org/Mithru/sketches/Hk1N1mMQg
 			p.heart = (params) => {
@@ -463,8 +577,8 @@ class MotifApp {
 			p.box = (params) => {
 				s.push();
 				let l = params.length;
-				let w = paramp.width;
-				let h = paramp.height;
+				let w = params.width;
+				let h = params.height;
 				s.translate(p.width/4-w/2, p.height/4-l/2);
 				s.noFill();
 				s.stroke(0);
@@ -546,8 +660,6 @@ class MotifApp {
 				s.strokeWeight(params.lineWeight);
 				s.stroke(params.color);
 				s.strokeJoin(s.ROUND);
-
-				console.log(params.color);
 				
 				let points = params.pointsList.split(',');
 				s.beginShape();
@@ -588,7 +700,15 @@ class MotifApp {
 			}
 
 			p.porcupineBrush = (params) => {
+				if(!p.setupFinished) return;
+				s.strokeWeight(params.lineWeight);
+				s.noFill();
+				s.stroke(params.color);
 
+				let points = params.pointsList.split(',');
+				for(let i=0;i<points.length-1;i++) {
+					s.line(points[i], points[i+1], points[i+2], points[i+3]);
+				}
 			}
 
 			p.startPoints = (x, y, activeEffect) => {
@@ -717,7 +837,7 @@ class MotifApp {
 							lineWeight: {type:'number', value: currentLineWeight},
 						});
 					}
-					else if(activeEffect == 'brush' || activeEffect == "rainbow brush") { //TODO: make this more general
+					else if(activeEffect == 'brush' || activeEffect == "rainbow brush" || activeEffect == "porcupine brush") { //TODO: make this more general
 						this.addEvent('motif', activeEffect, { 
 							pointsList: { type:'number', value: this.sketch.pointsAsString()},
 							lineWeight: {type:'number', value: currentLineWeight},
