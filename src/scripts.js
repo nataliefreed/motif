@@ -524,10 +524,8 @@ class MotifApp {
 						let shiftColumn = false;
 						for (let dx = 0; dx < p.width; dx += w) {
 							let startY = shiftColumn ? -halfColumnHeight : 0;
-							console.log(startY);
 							for (let dy = startY; dy < p.height; dy += h) {
 								s.image(snapshot, dx, dy, w, h, 0, 0, w, h);
-								s.rect(dx, dy, w-5, h-5);
 							}
 							shiftColumn = !shiftColumn;
 						}
@@ -706,8 +704,8 @@ class MotifApp {
 				s.stroke(params.color);
 
 				let points = params.pointsList.split(',');
-				for(let i=0;i<points.length-1;i++) {
-					s.line(points[i], points[i+1], points[i+2], points[i+3]);
+				for(let i=0;i<points.length-1;i+=2) {
+					s.line(points[0], points[1], points[i+2], points[i+3]);
 				}
 			}
 
@@ -1025,17 +1023,34 @@ class MotifApp {
 			previewNumbers: true,
 		
 			// What to do when the user makes a change:
+			// bookmark - work on skip if not done rendering
 			onupdate: function(my) {
-				sketch.clear();
-				my.actions.act(sketch);
-				my.stencils.act(sketch);
-				sketch.render();
-				// add end actions here
+				if(Date.now() > targetTime && !isRendering) {
+					isRendering = true;
+					render(sketch, my);
+				}
 			}
 		});
 
 		return joy;
 	}
+}
+
+let renderStartTime;
+let targetTime = 0;
+let isRendering = false;
+
+let render = (sketch, my) => {
+	renderStartTime = Date.now();
+	
+	sketch.clear();
+	my.actions.act(sketch);
+	my.stencils.act(sketch);
+	sketch.render();
+	
+	let renderTime = Date.now() - renderStartTime;
+	targetTime = Date.now() + 2*renderTime;
+	isRendering = false;
 }
 
 let _rgbToHsl = rgb => {

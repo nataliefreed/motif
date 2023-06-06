@@ -262,6 +262,8 @@ Joy.Actor = function(options, parent, data){
   // ACTOR <-> PLAYER: "TARGETS" //
   /////////////////////////////////
 
+  // bookmark - act function
+
   // Actors can ACT ON targets...
   self.onact = self.onact || function(){};
   self.act = function(target, altData){
@@ -1478,7 +1480,6 @@ class PathUI {
 // }
 
 // bookmark - the widget for xy coords
-// where I left off - putting the coordinate string in here
 /****************
 
 A widget to set xy coordinates!
@@ -2729,15 +2730,12 @@ Joy.add({
       }
     }
 
-    console.log(self.modules);
-
       // NF: Add only actions in specified modules to chooser menu
     // TODO: merge with previous filter code
     var modules = self.modules || [];
     var moduleOptions = [];
     modules.forEach((module) => {
       var moduleActors = Joy.getTemplatesByTag(module);
-      console.log(moduleActors);
       moduleActors.forEach((moduleActor) => {
         var notActionTag = moduleActor.tags.filter(function(tag){
           return tag!="action";
