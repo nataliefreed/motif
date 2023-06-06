@@ -50,6 +50,23 @@
     font-size: 14px;
 }
 
+.light-button {
+    background-color: white;
+    margin: 10px 5px 10px 5px;
+    padding: 7px;
+    border-radius: 5px;
+    border: solid;
+    border-width: 2px;
+    border-color: gray;
+    cursor: pointer;
+    font-family: 'FuturaHandwritten';
+    font-size: 14px;
+}
+
+.code-button {
+    margin: 10px 2px 10px 2px;
+}
+
 .effect-button.selected {
     background-color: rgb(255, 205, 40);
 }
@@ -58,7 +75,7 @@
     background-color: rgb(238, 238, 238);
 }
   
-.category-button:hover, .effect-button:hover {
+.category-button:hover, .effect-button:hover, .light-button:hover {
     background-color: gray;
 }
 
@@ -75,6 +92,12 @@
 .save-buttons {
     display: flex;
     margin-top: 20px;
+}
+
+#export-button, #undo-button, #redo-button {
+    float: right;
+    padding: 10px;
+    margin: 5px;
 }
 
 body {
