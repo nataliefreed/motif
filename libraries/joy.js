@@ -2474,7 +2474,7 @@ Joy.add({
 
     // List
     var list = document.createElement("list");
-    list.id = "joy-list";
+    list.id = "joy-list"; //NF TODO: make this a class or unique id because there can be more than one list
     dom.appendChild(list);
 
     // Preview Variables?
@@ -2594,7 +2594,19 @@ Joy.add({
       // New entry
       var entry = {};
       var entryDOM = document.createElement("div");
+      entryDOM.classList.add('joy-list-item');
       if(atIndex===undefined) atIndex = self.entries.length;
+
+      // If entries selected, insert after last selected entry
+      if (self.entries.some(function(entry) { return entry.selected; })) {
+        // Find the index of the last selected entry
+        var lastSelectedIndex = self.entries.reduce(function(index, entry, currentIndex) {
+          return entry.selected ? currentIndex : index;
+        }, -1);
+    
+        atIndex = lastSelectedIndex + 1;
+      }
+
       self.entries.splice(atIndex, 0, entry);
       list.insertBefore(entryDOM, list.children[atIndex]);
 
@@ -2619,6 +2631,7 @@ Joy.add({
       entry.actor = newActor;
       entry.widget = newWidget;
       entry.actionData = actionData;
+      entry.selected = false;
 
       // PREVIEW ON HOVER
       // Also tell the action "_PREVIEW": how far in the action to go?
@@ -2669,11 +2682,44 @@ Joy.add({
         }
       };
 
+      // select or deselect when clicked
+      entryDOM.addEventListener('click', function() {
+        entry.selected = !entry.selected;
+        entryDOM.classList.toggle('selected');
+      });
+
       return entry;
 
     };
     // add all INITIAL actions as widgets
     for(var i=0;i<actions.length;i++) _addEntry(actions[i]);
+
+    ///////////////////////////////////////
+    // Reorder Entries - NF added /////////
+    ///////////////////////////////////////
+
+    var moveEntry = function(index, spaces) {
+      if (index < 0 || index >= self.entries.length) {
+        // Invalid index, return without moving
+        return;
+      }
+    
+      var newIndex = index + spaces;
+      if (newIndex < 0) {
+        newIndex = 0; // Stop at the top of the list
+      } else if (newIndex >= self.entries.length) {
+        newIndex = self.entries.length - 1; // Stop at the bottom of the list
+      }
+    
+      var entry = self.entries.splice(index, 1)[0];
+      self.entries.splice(newIndex, 0, entry);
+    
+      // Reorder the corresponding DOM elements
+      // var list = document.getElementById('your-list-id');
+      // var entryDOM = entry.dom;
+      // list.removeChild(entryDOM);
+      // list.insertBefore(entryDOM, list.children[newIndex]);
+    };
 
     ///////////////////////////////////////
     // Add Action /////////////////////////

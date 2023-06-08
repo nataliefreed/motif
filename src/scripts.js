@@ -171,6 +171,19 @@ window.addEventListener('load', e => {
 			}
 		},
 		{
+			name: 'lines brush',
+			dropdownName: 'Lines Brush',
+			category: 'Brushes',
+			init: `Lines brush in {id:'color', type:'color', placeholder:[20, 0.8, 1.0]} 
+			with width {id: 'lineWeight', type: 'number', min:1, max:600, placeholder: 8} 
+			along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
+			cursor: './assets/cursors/star-solid.svg',
+			mouseActionType: 'drag',
+			onact: (my) => {
+				my.target.linesBrush({ color: my.data.color, lineWeight: my.data.lineWeight, pointsList: my.data.pointsList });
+			}
+		},
+		{
 			name: 'shift',
 			dropdownName: 'Shift',
 			category: 'Effects',
@@ -188,8 +201,8 @@ window.addEventListener('load', e => {
 			dropdownName: 'Tile',
 			category: 'Effects',
 			init: `{id:'tiling', type:'choose', options:['straight grid', 'brick', 'half drop', 'checkerboard'], placeholder:'straight grid'} 
-			with width {id:'width', type:'number', min:1, max:600, placeholder:50} 
-			and height {id:'height', type:'number', min:1, max:600, placeholder:20}
+			with width {id:'width', type:'number', min:1, max:600, placeholder:100} 
+			and height {id:'height', type:'number', min:1, max:600, placeholder:100}
 			at ({id:'x', type:'number', min:0, max:600, placeholder:200}, 
 			{id:'y', type:'number', min:0, max:600, placeholder:200})`,
 			cursor: './assets/cursors/star-solid.svg',
@@ -316,15 +329,19 @@ class MotifApp {
 						  p.addRainbowBrush({ minSize: currentLineWeight, maxSize: currentLineWeight*2, pointsList: points.toString() });
 						  break;
 						case 'brush':
-							p.addBrushStroke({color:currentColorRGB, lineWeight: currentLineWeight, pointsList: points.toString() });
+							p.addBrushStroke({ color:currentColorRGB, lineWeight: currentLineWeight, pointsList: points.toString() });
 							break;
 						case 'straight line':
 							t.clear();
-							p.addPreviewLine({color:currentColorRGB, lineWeight: currentLineWeight, x1: p.getPoint(0).x, y1: p.getPoint(0).y, x2: p.getLastPoint().x, y2: p.getLastPoint().y}, t); 
+							p.addPreviewLine({ color:currentColorRGB, lineWeight: currentLineWeight, x1: p.getPoint(0).x, y1: p.getPoint(0).y, x2: p.getLastPoint().x, y2: p.getLastPoint().y }, t); 
 							break;
 						case 'porcupine brush':
-							p.addLine({ color:currentColorRGB, lineWeight: currentLineWeight, x1: p.getPoint(0).x, y1: p.getPoint(0).y, x2: p.getLastPoint().x, y2: p.getLastPoint().y}); 
+							t.clear();
+							p.porcupineBrush({ color:currentColorRGB, lineWeight: currentLineWeight, pointsList: points.toString() }, t);
 							break;
+						case 'lines brush':
+							t.clear();
+							p.linesBrush({ color:currentColorRGB, lineWeight: currentLineWeight, pointsList: points.toString() }, t);
 						default: break;
 					}
 				}
@@ -546,9 +563,6 @@ class MotifApp {
 						break;
 				}
 			}
-			
-
-
 
 			//heart by Mithru: https://editor.p5js.org/Mithru/sketches/Hk1N1mMQg
 			p.heart = (params) => {
@@ -697,15 +711,33 @@ class MotifApp {
 				s.pop();
 			}
 
-			p.porcupineBrush = (params) => {
+			p.porcupineBrush = (params, c) => {
 				if(!p.setupFinished) return;
-				s.strokeWeight(params.lineWeight);
-				s.noFill();
-				s.stroke(params.color);
+				if(!c) c = s; //if no canvas specified
+				c.strokeWeight(params.lineWeight);
+				c.strokeWeight(4);
+				c.noFill();
+				c.stroke(params.color);
 
 				let points = params.pointsList.split(',');
+				for(let i=0;i<points.length-2;i+=2) {
+					c.line(points[0], points[1], points[i+2], points[i+3]);
+				}
+			}
+
+			p.linesBrush = (params, c) => {
+				if(!p.setupFinished) return;
+				if(!c) c = s; //if no canvas specified
+				c.strokeWeight(params.lineWeight);
+				c.noFill();
+				let strokeColor = c.color(params.color);
+
+				let points = params.pointsList.split(',');
+				let n = 100;
 				for(let i=0;i<points.length-1;i+=2) {
-					s.line(points[0], points[1], points[i+2], points[i+3]);
+					strokeColor.setAlpha(c.map(c.noise(n), 0, 1, 10, 200));
+					c.stroke(strokeColor);
+					c.line(points[i], 0, points[i+1], p.height);
 				}
 			}
 
@@ -835,7 +867,9 @@ class MotifApp {
 							lineWeight: {type:'number', value: currentLineWeight},
 						});
 					}
-					else if(activeEffect == 'brush' || activeEffect == "rainbow brush" || activeEffect == "porcupine brush") { //TODO: make this more general
+					else { //TODO: make this more general
+						console.log(activeEffect);
+						console.log("line weight: " + currentLineWeight);
 						this.addEvent('motif', activeEffect, { 
 							pointsList: { type:'number', value: this.sketch.pointsAsString()},
 							lineWeight: {type:'number', value: currentLineWeight},
@@ -845,35 +879,104 @@ class MotifApp {
 					}
 					
 					this.sketch.endPoints();
+					console.log("end points");
 				}
 			}
 			randomizeCurrentColor();
 		});
+
+		/* bookmark - add code button handlers here
+
+function moveSelectedCodeLineUp() {
+  let lineNum = getSelectedLineNumber();
+  if(lineNum < history.length) {
+    if(lineNum > 0) {
+      let line = history[lineNum];
+      history.splice(lineNum, 1);
+      history.splice(lineNum-1, 0, line);
+      updateCode();
+      let newLineNum = lineNum - 1;
+      markSelected("code-line", "code-line-" + newLineNum);
+    }
+  }
+}
+
+function deleteSelectedCodeLine() {
+  let lineNum = getSelectedLineNumber();
+  if(lineNum < history.length) {
+    //add to undo/redo here
+    history.splice(lineNum, 1);
+    updateCode();
+    if(history.length > 0) {
+      if(lineNum > 0 && lineNum < history.length) {
+        markSelected("code-line", "code-line-" + lineNum);
+      }
+      else if(lineNum == 0) {
+        markSelected("code-line", "code-line-0");
+      }
+    }
+  }
+}
+		*/
+
+		document.getElementById('undo-button').addEventListener("click", (e) => {
+			console.log("undo");
+	  });
+
+		document.getElementById('redo-button').addEventListener("click", (e) => {
+				console.log("redo");
+		});
+		
+		document.getElementById('clear-all-button').addEventListener("click", (e) => {
+				console.log("clear all");
+		});
+		
+		document.getElementById('download-button').addEventListener("click", (e) => {
+			this.sketch.save('my drawing.jpg');
+		});
+		
+		document.getElementById('move-up-button').addEventListener("click", (e) => {
+				console.log("move up");
+		});
+		
+		document.getElementById('move-down-button').addEventListener("click", (e) => {
+				console.log("move down");
+		});
+		
+		document.getElementById('add-above-button').addEventListener("click", (e) => {
+				console.log("add above");
+		});
+		
+		document.getElementById('add-below-button').addEventListener("click", (e) => {
+				console.log("add below");
+		});
+		
+		document.getElementById('remix-button').addEventListener("click", (e) => {
+				console.log("remix");
+		});
+		
+		document.getElementById('shuffle-button').addEventListener("click", (e) => {
+				console.log("shuffle");
+		});
+		
+		document.getElementById('group-button').addEventListener("click", (e) => {
+				console.log("group");
+		});
+		
+		document.getElementById('delete-button').addEventListener("click", (e) => {
+				console.log("delete");
+		});
+	
+	
 	}
 
 	addEvent(category, effectName, settings) {
 		let effect = this.effects[effectName];
-
-		settings.color = { type:'color', value:currentColorHSV};
 		
-		// let hexColor = document.getElementById('color-picker').value;
-		// let hslColor = _rgbToHsl(_hexToRgb(hexColor));
-
 		//TODO: make this match effect params
 		// let params = ...settings;
+		settings.color = { type:'color', value:currentColorHSV};
 		
-		// {
-		// 	// color: { type:'color', value:[50, 0.5, 1.0]},
-		// 	// color: { type:'color', value:[hslColor[0], hslColor[1], hslColor[2]]},
-		// 	color: { type:'color', value:[Math.random()*360, 0.8, 0.8]},
-		// 	x: { type:'number', value: Math.round(settings.x)},
-		// 	y: {type:'number', value: Math.round(settings.y)},
-		// 	x1: { type:'number', value: Math.round(settings.x1)},
-		// 	y1: {type:'number', value: Math.round(settings.y1)},
-		// 	x2: { type:'number', value: Math.round(settings.x2)},
-		// 	y2: {type:'number', value: Math.round(settings.y2)}
-		// }
-		//why does the category get added to the name here?
 		if(category == "motif") {
 			this.joy.actions.addAction(category+'/'+effectName, undefined, settings);
 		} else if(category == "stencils") {
@@ -1103,7 +1206,7 @@ let _hexToRgb = hex => {
 	} : null;
 }
 
-function _HSVToRGBString(h,s,v){ //duplicate from Joy.js
+function _HSVToRGBString(h,s,v) { //duplicate from Joy.js
   if(arguments.length===1) {
         s=h[1], v=h[2], h=h[0]; // cast to different vars
     }
@@ -1111,7 +1214,7 @@ function _HSVToRGBString(h,s,v){ //duplicate from Joy.js
   return "rgb("+rgb[0]+","+rgb[1]+","+rgb[2]+")";
 }
 
-function _HSVtoRGB(h, s, v) { //duplicate from Joy.js
+function _HSVtoRGB(h,s,v) { //duplicate from Joy.js
 	var r, g, b, i, f, p, q, t;
 	if (arguments.length === 1) {
 			s = h.s, v = h.v, h = h.h;
@@ -1133,7 +1236,7 @@ function _HSVtoRGB(h, s, v) { //duplicate from Joy.js
 	return [Math.round(r*255), Math.round(g*255), Math.round(b*255)];
 }
 
-let randomizeCurrentColor = ()=> {
+let randomizeCurrentColor = () => {
 	currentColorHSV = [Math.random()*360, 0.8, 0.8];
 	currentColorRGB = _HSVToRGBString(currentColorHSV);
 	
