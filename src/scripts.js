@@ -274,14 +274,14 @@ window.addEventListener('load', e => {
 			name: 'paper doll',
 			dropdownName: 'Doll',
 			category: 'Stencils',
-			init: `Paper doll with length 
-			{id:'length', type:'number', placeholder:120, min:10}, 
-			width {id:'width', type:'number', placeholder:120, min:10}, 
-			height {id:'height', type:'number', placeholder:120, min:10}`,
+			init: `Paper doll with skin tone 
+			{id:'skinTone', type:'color', placeholder:[25, 0.75, 0.4]}, 
+			hairstyle {id:'hairstyle', type:'choose', options:['1'], placeholder:'1'},
+			outfit set {id:'outfit', type:'choose', options:['1'], placeholder:'1'}`,
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'single-click',
 			onact: (my) => {
-				my.target.box({ length: my.data.length, width: my.data.width, height: my.data.height });
+				my.target.paperdoll({ skinTone: my.data.skinTone, hairstyle: my.data.hairstyle, outfit: my.data.outfit});
 			}
 		},
 	];
@@ -293,6 +293,7 @@ class MotifApp {
 	constructor(effectList) {
 		this.effects = this.reindex(effectList, 'name');
 		this.sketch = this.initP5();
+		this.sketch.loadStencils();
 		this.sketch.addFill({color:'#aaaaaa'});
 		this.sketch.clear('#aaaaaa');
 		this.joy = this.initJoy();
@@ -312,6 +313,12 @@ class MotifApp {
 			let strokeColor = 0;
 			let strokeWeight = 5;
 			let s, t; //p is main sketch, s is static canvas, t is temporary for animations
+
+			let paperdolls = { // paper doll stencils
+				outfits: [],
+				hairstyles: [],
+				dollFill: null
+			};
 
 			p.setup = () => {
 			  p.createCanvas(600, 600);
@@ -648,6 +655,162 @@ class MotifApp {
 				fold(1,3,2,3);
 				s.pop();
 			}
+
+			p.loadStencils = () => {
+				let outfitNames = ['01'];
+				let hairstyleNames = ['01'];
+			
+				// Load doll fill
+				paperdolls.dollFill = p.loadImage(`src/assets/stencils/paper-dolls/outfits/doll-fill.png`);
+			
+				// Load all outfit and hairstyle files
+				for (let name of outfitNames) {
+					let outfit = {
+						number: parseInt(name),
+						outline: p.loadImage(`src/assets/stencils/paper-dolls/outfits/outlines/${name}.png`),
+						fill: p.loadImage(`src/assets/stencils/paper-dolls/outfits/fills/${name}.png`)
+					};
+					paperdolls.outfits.push(outfit);
+				}
+			
+				for (let name of hairstyleNames) {
+					let hairstyle = {
+						number: parseInt(name),
+						outline: p.loadImage(`src/assets/stencils/paper-dolls/hairstyles/outlines/${name}.png`),
+						fill: p.loadImage(`src/assets/stencils/paper-dolls/hairstyles/fills/${name}.png`)
+					};
+					paperdolls.hairstyles.push(hairstyle);
+				}
+
+				console.log("loaded images");
+			}
+
+			// p.paperdoll = (params) => {
+			// 	s.image(paperdolls.dollFill, 0, 0, p.width, p.height);
+			// }
+
+			p.paperdoll = (params) => {
+				// Get the color value from params.
+				let c = s.color(params.skinTone);
+				
+				// Parse the outfit and hairstyle numbers from params
+				let outfitNumber = parseInt(params.outfit);
+				let hairstyleNumber = parseInt(params.hairstyle);
+			
+				// Find the corresponding outfit and hairstyle objects in paperdolls
+				let outfit = paperdolls.outfits.find(o => o.number === outfitNumber);
+				let hairstyle = paperdolls.hairstyles.find(h => h.number === hairstyleNumber);
+			
+				if (!outfit || !hairstyle) {
+					console.error('Could not find outfit and/or hairstyle:', outfitNumber, hairstyleNumber);
+					return;
+				}
+			
+				// Create a new graphics object to draw the paper doll and its outfit and hairstyle fills
+				let dollCanvas = p.createGraphics(p.width, p.height);
+				let outfitCanvas = p.createGraphics(p.width, p.height);
+				let hairstyleCanvas = p.createGraphics(p.width, p.height);
+			
+				//Tint and then draw the doll fill
+				dollCanvas.tint(c); // Apply the tint for the doll's fill image
+				dollCanvas.image(paperdolls.dollFill, 0, 0, p.width, p.height); // Draw the doll's fill image
+				dollCanvas.noTint(); // Remove the tint before drawing the other images
+
+				// Prepare the outfit fill as a mask
+        outfitCanvas.image(outfit.fill, 0, 0, p.width, p.height);
+        outfitCanvas.drawingContext.globalCompositeOperation = 'source-in';
+        outfitCanvas.image(s, 0, 0, p.width, p.height);
+      
+        // Prepare the hairstyle fill as a mask
+        hairstyleCanvas.image(hairstyle.fill, 0, 0, p.width, p.height);
+        hairstyleCanvas.drawingContext.globalCompositeOperation = 'source-in';
+        hairstyleCanvas.image(s, 0, 0, p.width, p.height);
+      
+        // Lighten the original painting
+        s.noStroke();
+        s.fill(255, 220);
+        s.rect(0, 0, p.width, p.height);
+
+				// Draw the doll fill
+        s.image(dollCanvas, 0, 0);
+
+				// Draw the outfit fill
+        s.image(outfitCanvas, 0, 0);
+
+        // Draw the outfit outline
+        if(outfit.outline){
+          s.image(outfit.outline, 0, 0, s.width, s.height);
+        }
+
+				// Draw the hair fill
+        s.image(hairstyleCanvas, 0, 0);
+      
+				// Draw the hair outline
+        if(hairstyle.outline){
+          s.image(hairstyle.outline, 0, 0, s.width, s.height);
+        }
+
+				// // s.image(g, 0, 0);
+				
+				// // Apply the outfit fill as a mask
+				// outfitCanvas.image(outfit.fill, 0, 0, p.width, p.height);
+        // outfitCanvas.drawingContext.globalCompositeOperation = 'source-in';
+        // outfitCanvas.image(s, 0, 0, p.width, p.height);
+				
+				// // Lighten everything that is not within the mask, then draw the masked image
+				// s.noStroke();
+				// s.fill(255, 220);
+				// s.rect(0, 0, p.width, p.height);
+				// s.image(dollCanvas, 0, 0);
+				// s.image(outfitCanvas, 0, 0);
+      
+        // // Draw the outfit's outline image
+        // if(outfit.outline){
+        //   s.image(outfit.outline, 0, 0, s.width, s.height);
+        // }
+}
+
+			
+			// p.paperdoll = (params) => {
+			// 	let c = s.color(params.color);
+				
+			// 	// Parse the outfit and hairstyle numbers from params
+			// 	let outfitNumber = parseInt(params.outfit);
+			// 	let hairstyleNumber = parseInt(params.hairstyle);
+			
+			// 	// Find the corresponding outfit and hairstyle objects in paperdolls
+			// 	let outfit = paperdolls.outfits.find(o => o.number === outfitNumber);
+			// 	let hairstyle = paperdolls.hairstyles.find(h => h.number === hairstyleNumber);
+			
+			// 	if (!outfit || !hairstyle) {
+			// 		console.error('Could not find outfit and/or hairstyle:', outfitNumber, hairstyleNumber);
+			// 		return;
+			// 	}
+			
+			// 	// Draw the images in the correct order
+			// 	s.tint(c); // Apply the tint for the doll's fill image
+			// 	s.image(paperdolls.dollFill, 0, 0, p.width, p.height); // Draw the doll's fill image
+			// 	s.noTint(); // Remove the tint before drawing the other images
+				
+			// 	if(outfit.fill){
+			// 		s.image(outfit.fill, 0, 0, s.width, s.height); // Draw the outfit's fill image
+			// 	}
+			
+			// 	if(outfit.outline){
+			// 		s.image(outfit.outline, 0, 0, s.width, s.height); // Draw the outfit's outline image
+			// 	}
+				
+			// 	if(hairstyle.fill){
+			// 		s.tint(255); // Apply white tint to prevent color from previous tint interfering
+			// 		s.image(hairstyle.fill, 0, 0, s.width, s.height); // Draw the hairstyle's fill image
+			// 		s.noTint(); // Remove the tint before drawing the other images
+			// 	}
+			
+			// 	if(hairstyle.outline){
+			// 		s.image(hairstyle.outline, 0, 0, s.width, s.height); // Draw the hairstyle's outline image
+			// 	}
+			// }
+			
 
 			p.addLine = (params) => {
 				if(!p.setupFinished) return;
