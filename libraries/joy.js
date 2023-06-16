@@ -2474,7 +2474,9 @@ Joy.add({
 
     // List
     var list = document.createElement("list");
-    list.id = "joy-list"; //NF TODO: make this a class or unique id because there can be more than one list
+    // list.id = "joylist"; //NF TODO: make this a class or unique id because there can be more than one list
+    list.classList.add('joy-list');
+    list.id = self.id + "-joy-list";
     dom.appendChild(list);
 
     // Preview Variables?
@@ -2683,10 +2685,10 @@ Joy.add({
       };
 
       // select or deselect when clicked
-      entryDOM.addEventListener('click', function() {
-        entry.selected = !entry.selected;
-        entryDOM.classList.toggle('selected');
-      });
+      // entryDOM.addEventListener('click', function() {
+      //   entry.selected = !entry.selected;
+      //   entryDOM.classList.toggle('selected');
+      // });
 
       return entry;
 
@@ -2694,32 +2696,15 @@ Joy.add({
     // add all INITIAL actions as widgets
     for(var i=0;i<actions.length;i++) _addEntry(actions[i]);
 
-    ///////////////////////////////////////
-    // Reorder Entries - NF added /////////
-    ///////////////////////////////////////
-
-    var moveEntry = function(index, spaces) {
-      if (index < 0 || index >= self.entries.length) {
-        // Invalid index, return without moving
-        return;
-      }
-    
-      var newIndex = index + spaces;
-      if (newIndex < 0) {
-        newIndex = 0; // Stop at the top of the list
-      } else if (newIndex >= self.entries.length) {
-        newIndex = self.entries.length - 1; // Stop at the bottom of the list
-      }
-    
-      var entry = self.entries.splice(index, 1)[0];
-      self.entries.splice(newIndex, 0, entry);
-    
-      // Reorder the corresponding DOM elements
-      // var list = document.getElementById('your-list-id');
-      // var entryDOM = entry.dom;
-      // list.removeChild(entryDOM);
-      // list.insertBefore(entryDOM, list.children[newIndex]);
-    };
+    // ///////////////////////////////////////
+    // // Reorder Entries - NF added /////////
+    // ///////////////////////////////////////
+    self.moveEntry = function(oldIndex, newIndex) {
+      var item = self.entries.splice(oldIndex, 1)[0];
+      self.entries.splice(newIndex, 0, item);
+      self.update();
+      _updateBullets();
+    }
 
     ///////////////////////////////////////
     // Add Action /////////////////////////
@@ -2776,7 +2761,7 @@ Joy.add({
       }
     }
 
-      // NF: Add only actions in specified modules to chooser menu
+    // NF: Add only actions in specified modules to chooser menu
     // TODO: merge with previous filter code
     var modules = self.modules || [];
     var moduleOptions = [];
