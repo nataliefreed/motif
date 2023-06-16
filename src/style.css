@@ -134,7 +134,8 @@ body {
 }
 
 .joy-list-item.selected {
-    border: 2px solid blue;
+    border: 1px solid gray;
+    background-color: lightgray;
 }
 
 .joy-path {

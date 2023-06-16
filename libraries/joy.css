@@ -25,10 +25,10 @@ More prefixing to avoid NAME COLLISIONS
 	position: relative;
 }
 
-.joy-actions #joy-list{}
+.joy-actions .joy-list{}
 
 /* Entry */
-.joy-actions #joy-list > div{
+.joy-actions .joy-list > div{
 
 	overflow: hidden;
 
@@ -40,7 +40,7 @@ More prefixing to avoid NAME COLLISIONS
 	display: flex;
 
 }
-.joy-actions #joy-list > div #joy-bullet-container{
+.joy-actions .joy-list > div #joy-bullet-container{
 	/*float: left;*/
 	-webkit-box-flex: 1;
 	-moz-box-flex: 1;
@@ -50,7 +50,7 @@ More prefixing to avoid NAME COLLISIONS
 	flex: 1;
 	text-align: left;
 }
-.joy-actions #joy-list > div #joy-widget{
+.joy-actions .joy-list > div #joy-widget{
 	/*float: right;*/
 	width: calc(100% - 2em);
 	margin-bottom: 0.3em;

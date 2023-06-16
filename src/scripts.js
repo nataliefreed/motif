@@ -1,5 +1,6 @@
 import Joy from '../libraries/joy.js';
 // import p5 from '../libraries/p5.js'
+import { Sortable, MultiDrag } from 'sortablejs';
 let currentColorRGB, currentColorHSV;
 let currentLineWeight = 6;
 
@@ -941,6 +942,19 @@ class MotifApp {
 	}
 	
 	initUI() {
+		//List sorting
+    Sortable.mount(new MultiDrag());
+		let sortablelist = document.getElementById('actions-joy-list');
+    new Sortable(sortablelist, {
+	    animation: 150,
+	    ghostClass: 'sortable-ghost',
+			multiDrag: true,
+			selectedClass: 'selected',
+			onUpdate: (evt) => {
+				this.joy.actions.moveEntry(evt.oldIndex, evt.newIndex);
+			}
+    });
+
 		this.categories = [...new Set(Object.values(this.effects).map(a => a.category))]; //get unique categories from effect list
 		let categoryToolbar = document.getElementsByClassName('category-toolbar')[0];
 		let drawingToolbar = document.getElementsByClassName('drawing-toolbar')[0];
@@ -1283,7 +1297,7 @@ function deleteSelectedCodeLine() {
 			data: data,
 		
 			// Actions to include:
-			modules: ['motif', 'stencils', 'instructions', 'math'], //TODO: 'math' module removes min and max settings on Scrubber - see line 1032 and 2813
+			modules: ['motif', 'stencils', 'instructions'], //TODO: 'math' module removes min and max settings on Scrubber - see line 1032 and 2813
 		
 			previewActions: true,
 			previewNumbers: true,
