@@ -1,10 +1,12 @@
 import Joy from '../libraries/joy.js';
-// import p5 from '../libraries/p5.js'
 import * as brushes from './brushes.js'; 
+import * as utilities from './utilities.js'; 
 import { Sortable, MultiDrag } from 'sortablejs';
+
 let currentColorRGB, currentColorHSV;
 let currentLineWeight = 6;
-let brushstrokes = [];
+
+const brushstrokeManager = new brushes.BrushstrokeManager();
 
 window.addEventListener('load', e => {
 	randomizeCurrentColor();
@@ -1383,7 +1385,7 @@ function deleteSelectedCodeLine() {
 		let effects = this.effects;
 
 		Joy.module("motif", function() {
-			//Add from effects list
+			//Add from effects list, but filter out stencils
 			let motifEffects = Object.values(effects).filter((e) => {
 				return e.category != "Stencils";
 			})
@@ -1398,6 +1400,7 @@ function deleteSelectedCodeLine() {
 			});
 		});
 
+		//Add stencils to their own list
 		Joy.module("stencils", function() {
 			//Add from effects list
 			let motifEffects = Object.values(effects).filter((e) => {
@@ -1495,7 +1498,7 @@ let render = (sketch, my) => {
 	renderStartTime = Date.now();
 	
 	sketch.clear();
-	my.actions.act(sketch);
+	my.actions.act(sketch); //this is where sketch is passed in as target
 	my.stencils.act(sketch);
 	sketch.render();
 	
@@ -1504,89 +1507,9 @@ let render = (sketch, my) => {
 	isRendering = false;
 }
 
-let _rgbToHsl = rgb => {
-	// const [r, g, b] = rgbStr.slice(4, -1).split(',').map(Number);
-	const [r, g, b] = Object.values(rgb);
-	const max = Math.max(r, g, b)
-	const min = Math.min(r, g, b)
-	const l = Math.floor((max + min) / ((0xff * 2) / 100))
-  
-	if (max === min) return [0, 0, l / 100]
-	const d = max - min
-	const s = Math.floor((d / (l > 50 ? 0xff * 2 - max - min : max + min)) * 100)
-  
-	if (max === r) return [Math.floor(((g - b) / d + (g < b && 6)) * 60), s / 100, l / 100]
-	return max === g
-	  ? [Math.floor(((b - r) / d + 2) * 60), s / 100, l / 100]
-	  : [Math.floor(((r - g) / d + 4) * 60), s / 100, l / 100]
-}
-
-/* https://gist.github.com/mjackson/5311256 by kigiri*/
-let _rgbStrToHsl = rgbStr => {
-	const [r, g, b] = rgbStr.slice(4, -1).split(',').map(Number)
-	const max = Math.max(r, g, b)
-	const min = Math.min(r, g, b)
-	const l = Math.floor((max + min) / ((0xff * 2) / 100))
-	
-	if (max === min) return [0, 0, l]
-	const d = max - min
-	const s = Math.floor((d / (l > 50 ? 0xff * 2 - max - min : max + min)) * 100)
-	
-	if (max === r) return [Math.floor(((g - b) / d + (g < b && 6)) * 60), s, l]
-	return max === g
-		? [Math.floor(((b - r) / d + 2) * 60), s, l]
-		: [Math.floor(((r - g) / d + 4) * 60), s, l]
-}
-
-/* https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb */
-let _hexToRgb = hex => {
-	// Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
-	var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-	hex = hex.replace(shorthandRegex, function(m, r, g, b) {
-		return r + r + g + g + b + b;
-	});
-	
-	var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-	return result ? {
-		r: parseInt(result[1], 16),
-		g: parseInt(result[2], 16),
-		b: parseInt(result[3], 16)
-	} : null;
-}
-
-function _HSVToRGBString(h,s,v) { //duplicate from Joy.js
-  if(arguments.length===1) {
-        s=h[1], v=h[2], h=h[0]; // cast to different vars
-    }
-  var rgb = _HSVtoRGB(h,s,v);
-  return "rgb("+rgb[0]+","+rgb[1]+","+rgb[2]+")";
-}
-
-function _HSVtoRGB(h,s,v) { //duplicate from Joy.js
-	var r, g, b, i, f, p, q, t;
-	if (arguments.length === 1) {
-			s = h.s, v = h.v, h = h.h;
-	}
-	h /= 360; // convert, yo.
-	i = Math.floor(h * 6);
-	f = h * 6 - i;
-	p = v * (1 - s);
-	q = v * (1 - f * s);
-	t = v * (1 - (1 - f) * s);
-	switch (i % 6) {
-			case 0: r = v, g = t, b = p; break;
-			case 1: r = q, g = v, b = p; break;
-			case 2: r = p, g = v, b = t; break;
-			case 3: r = p, g = q, b = v; break;
-			case 4: r = t, g = p, b = v; break;
-			case 5: r = v, g = p, b = q; break;
-	}
-	return [Math.round(r*255), Math.round(g*255), Math.round(b*255)];
-}
-
 let randomizeCurrentColor = () => {
 	currentColorHSV = [Math.random()*360, 0.8, 0.8];
-	currentColorRGB = _HSVToRGBString(currentColorHSV);
+	currentColorRGB = utilities.HSVToRGBString(currentColorHSV);
 	
 }
 
