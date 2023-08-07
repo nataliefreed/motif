@@ -1,8 +1,10 @@
 import Joy from '../libraries/joy.js';
 // import p5 from '../libraries/p5.js'
+import * as brushes from './brushes.js'; 
 import { Sortable, MultiDrag } from 'sortablejs';
 let currentColorRGB, currentColorHSV;
 let currentLineWeight = 6;
+let brushstrokes = [];
 
 window.addEventListener('load', e => {
 	randomizeCurrentColor();
@@ -146,6 +148,130 @@ window.addEventListener('load', e => {
 			}
 		},
 		{
+			name: 'star brush',
+			dropdownName: 'Star Brush',
+			category: 'NewBrushes',
+			init: `Star brush in {id:'color', type:'color', placeholder:[20, 0.8, 1.0]} 
+			with scale {id: 'scale', type: 'number', min:1, max:600, placeholder: 20}% 
+			along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
+			cursor: './assets/cursors/star-solid.svg',
+			mouseActionType: 'drag',
+			onact: (my) => {
+				// console.log(my.data.brushstroke);
+				// // console.log(my.data.brushstroke instanceof brushes.Brushstroke);
+				// try {
+				// 	brushstrokes[0].renderFinal();
+				// 	// my.data.brushstroke.renderFinal();
+				// } catch (error) {
+				// 	console.log('Error calling renderFinal: ', error);
+				// 	console.log('myObject is: ', my.data.brushstroke);
+				// }
+				
+				console.log("rendered");
+				my.target.metaBrush({
+					scale: my.data.scale,
+					pointsList: my.data.pointsList, 
+					shapes:
+					[
+						(x, y, size, c) => {
+							c.star({color: my.data.color, x: x, y: y, r1: size, r2: size/2, npoints: 5});
+						},
+					],
+					sizes: [10, 20, 30, 40, 50, 40, 30, 20],
+					colors:
+					[
+						[255, 165,   0], // Orange
+						[255, 215,   0], // Gold
+					],
+					alpha: 0.75,
+				}, my.target.s);
+			}
+		},
+		{
+			name: 'mosaic brush',
+			dropdownName: 'Mosaic Brush',
+			category: 'NewBrushes',
+			init: `Mosaic brush with scale {id: 'scale', type: 'number', min:25, max:600, placeholder: 100} 
+			% along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
+			cursor: './assets/cursors/star-solid.svg',
+			mouseActionType: 'drag',
+			onact: (my) => {
+				// my.data.stroke.render
+				my.target.metaBrush({
+					scale: my.data.scale,
+					pointsList: my.data.pointsList, 
+				  shapes:
+					[
+						(x, y, size, pg) => {
+							pg.ellipse(x, y, size, size);
+						},
+						(x, y, size, pg) => {
+							pg.rect(x, y, size, size);
+						},
+						(x, y, size, pg) => {
+							pg.triangle(
+								x + size / 2,
+								y + size / 2,
+								x - size / 2,
+								y + size / 2,
+								x,
+								y - size / 2
+							);
+						},
+					],
+				  sizes: [10, 20, 15, 8],
+          colors:
+					[
+						[255,   0,   0], // Red
+						[255, 165,   0], // Orange
+						[255, 215,   0], // Gold
+						[128, 128,   0], // Olive
+						[  0, 128,   0], // Green
+						[ 38, 162, 224], // Light blue
+						[  0,   0, 255], // Blue
+						[ 75,   0, 130], // Indigo
+						[128,   0, 128], // Purple
+						[238, 130, 238], // Violet
+						[255, 192, 203], // Pink
+					],
+					alpha: 0.75,
+				});
+			}
+		},
+		{
+			name: 'stripe brush',
+			dropdownName: 'Stripe Brush',
+			category: 'NewBrushes',
+			init: `Stripe brush with scale {id: 'scale', type: 'number', min:25, max:600, placeholder: 100} 
+			% along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
+			cursor: './assets/cursors/star-solid.svg',
+			mouseActionType: 'drag',
+			onact: (my) => {
+				// my.data.stroke.render
+				my.target.metaBrush({
+					scale: my.data.scale,
+					pointsList: my.data.pointsList, 
+				  shapes:
+					[
+						(x, y, size, pg) => {
+							pg.noStroke();
+							pg.rect(x, y, Math.abs(size), size*5);
+						}
+					],
+				  sizes: [10, -20, 15, -8, 4, -20, 15, -10, 9, -12, 8, -15, 20],
+          colors:
+					[
+						[255,   0,   0], // Red
+						[255, 165,   0], // Orange
+						[128,   0, 128], // Purple
+						[238, 130, 238], // Violet
+						[255, 192, 203], // Pink
+					],
+					alpha: 0.75,
+				});
+			}
+		},
+		{
 			name: 'rainbow brush',
 			dropdownName: 'Rainbow Brush',
 			category: 'Brushes',
@@ -185,22 +311,9 @@ window.addEventListener('load', e => {
 			}
 		},
 		{
-			name: 'shift',
-			dropdownName: 'Shift',
-			category: 'Effects',
-			init: `{id:'orientation', type:'choose', options:['vertical','horizontal'], placeholder:'vertical'} shift 
-			with height {id:'height', type:'number', min:1, max:600, placeholder:50} 
-			and offset {id:'offset', type:'number', min:1, max:600, placeholder:20}`,
-			cursor: './assets/cursors/star-solid.svg',
-			mouseActionType: 'single-click',
-			onact: (my) => {
-				my.target.shift({ height: my.data.height, offset: my.data.offset, orientation: my.data.orientation });
-			}
-		},
-		{
 			name: 'tile',
 			dropdownName: 'Tile',
-			category: 'Effects',
+			category: 'Patterns',
 			init: `{id:'tiling', type:'choose', options:['straight grid', 'brick', 'half drop', 'checkerboard'], placeholder:'straight grid'} 
 			with width {id:'width', type:'number', min:1, max:600, placeholder:100} 
 			and height {id:'height', type:'number', min:1, max:600, placeholder:100}
@@ -210,6 +323,19 @@ window.addEventListener('load', e => {
 			mouseActionType: 'single-click',
 			onact: (my) => {
 				my.target.tile({ width: my.data.width, height: my.data.height, tiling: my.data.tiling, x: my.data.x, y: my.data.y });
+			}
+		},
+		{
+			name: 'shift',
+			dropdownName: 'Shift',
+			category: 'Patterns',
+			init: `{id:'orientation', type:'choose', options:['vertical','horizontal'], placeholder:'vertical'} shift 
+			with height {id:'height', type:'number', min:1, max:600, placeholder:50} 
+			and offset {id:'offset', type:'number', min:1, max:600, placeholder:20}`,
+			cursor: './assets/cursors/star-solid.svg',
+			mouseActionType: 'single-click',
+			onact: (my) => {
+				my.target.shift({ height: my.data.height, offset: my.data.offset, orientation: my.data.orientation });
 			}
 		},
 		{
@@ -246,17 +372,6 @@ window.addEventListener('load', e => {
 			}
 		},
 		{
-			name: 'grid',
-			dropdownName: 'grid',
-			category: 'Patterns',
-			init: `Repeat in grid with rows and columns`,
-			cursor: './assets/cursors/star-solid.svg',
-			mouseActionType: 'single-click',
-			onact: (my) => {
-				// my.target.addCircle({ color: my.data.color, x: my.data.x, y: my.data.y, r: my.data.radius });
-			}
-		},
-		{
 			name: 'box',
 			dropdownName: 'Box',
 			category: 'Stencils',
@@ -267,7 +382,6 @@ window.addEventListener('load', e => {
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'single-click',
 			onact: (my) => {
-				// my.target.addStencil();
 				my.target.box({ length: my.data.length, width: my.data.width, height: my.data.height });
 			}
 		},
@@ -321,10 +435,19 @@ class MotifApp {
 				dollFill: null
 			};
 
+			p.getPreviewCanvas = () => {
+				return t;
+			}
+
+			p.getStaticCanvas = () => {
+				return s;
+			}
+
 			p.setup = () => {
 			  p.createCanvas(600, 600);
 				s = p.createGraphics(p.width, p.height);
 				t = p.createGraphics(p.width, p.height);
+				console.log("s, t", s, t);
 			  p.background(255);
 			  p.setupFinished = true;
 			  p.noLoop();		
@@ -350,6 +473,25 @@ class MotifApp {
 						case 'lines brush':
 							t.clear();
 							p.linesBrush({ color:currentColorRGB, lineWeight: currentLineWeight, pointsList: points.toString() }, t);
+						// case 'star brush':
+						// 	p.metaBrush({
+						// 		scale: 100,
+						// 		pointsList: points.toString(), 
+						// 		shapes:
+						// 		[
+						// 			(x, y, size, c) => {
+						// 				c.star({color: my.data.color, x: x, y: y, r1: size, r2: size/2, npoints: 5});
+						// 			},
+						// 		],
+						// 		sizes: [10, 20, 30, 40, 50, 40, 30, 20],
+						// 		colors:
+						// 		[
+						// 			[255, 165,   0], // Orange
+						// 			[255, 215,   0], // Gold
+						// 		],
+						// 		alpha: 0.75,
+						// 	}, t);
+							break;
 						default: break;
 					}
 				}
@@ -391,26 +533,28 @@ class MotifApp {
 				s.rect(0, 0, p.width, p.height);
 			}
 	
-			p.star = (params) => {
+			p5.prototype.star = function(params) {
 				if(!p.setupFinished) return;
+				this.push(); // Save current drawing style
 				let x = params.x;
 				let y = params.y;
 				let r1 = params.r1;
 				let r2 = params.r2;
-				let angle = s.TWO_PI / params.npoints;
+				let angle = this.TWO_PI / params.npoints;
 				let halfAngle = angle / 2.0;
-				s.fill(params.color);
-				s.noStroke();
-				s.beginShape();
+				this.fill(params.color);
+				this.noStroke();
+				this.beginShape();
 				for (let a = 0; a < s.TWO_PI; a += angle) {
-				  let sx = x + s.cos(a) * r2;
-				  let sy = y + s.sin(a) * r2;
-				  s.vertex(sx, sy);
-				  sx = x + s.cos(a + halfAngle) * r1;
-				  sy = y + s.sin(a + halfAngle) * r1;
-				  s.vertex(sx, sy);
+				  let sx = x + this.cos(a) * r2;
+				  let sy = y + this.sin(a) * r2;
+				  this.vertex(sx, sy);
+				  sx = x + this.cos(a + halfAngle) * r1;
+				  sy = y + this.sin(a + halfAngle) * r1;
+				  this.vertex(sx, sy);
 				}
-				s.endShape(s.CLOSE);
+				this.endShape(this.CLOSE);
+				this.pop(); // Restore original drawing style
 			}
 
 			p.polygon = (params) => {
@@ -478,31 +622,40 @@ class MotifApp {
 				}
 			}
 
+			p._convertToVectors = (pointString) => {
+				let points = pointString.split(',');
+				let vectors = [];
+				// Iterate over the point list with a step of 2
+				for (let i = 0; i < points.length; i += 2) {
+					let x = parseInt(points[i]);
+					let y = parseInt(points[i + 1]);
+					vectors.push(p.createVector(x, y));
+				}
+				return vectors;
+			}
 
-			// p.tile = (params) => {
-			//   let w = params.width;
-			// 	let h = params.height;
-			// 	let type = params.type;
-			// 	let x = params.x;
-			// 	let y = params.y;
+			p.metaBrush = (params, c) => {
+				s.noStroke();
+				let points = p._convertToVectors(params.pointsList);
+				for (let i = 0; i < params.colors.length; i++) {
+					params.colors[i] = p.color(params.colors[i]);
+					params.colors[i].setAlpha(p.map(params.alpha, 0, 1, 0, 255));
+				}
+					let shapeCount = 0; // Count of shapes drawn
 
-			// 	switch(type) {
-			// 		case 'straight grid':
-			// 			// take a w * h rectangle centered at x, y and repeat it in a straight grid pattern across the full width and height of the canvas
-			// 			// Use image(img, dx, dy, dWidth, dHeight, sx, sy) to do the tiling, where d is destination, s is source
-			// 		  break;
-			// 		case 'brick':
-			// 			// every other row should be shifted over by half the width of each unit
-			// 			break;
-			// 		case 'half-drop':
-			// 			// every other column should be shifted down by half the height of each unit
-			// 			break;
-			// 		case 'checkerboard':
-			// 			//only tile every other unit, shift over for next row like a checkerboard
-			// 		default:
-			// 			break;
-			// 	}
-			// }
+					for (let i = 1; i < points.length; i++) {
+						let point = points[i];
+
+						let x = point.x;
+						let y = point.y;
+
+						s.fill(params.colors[i % params.colors.length]);
+						let size = parseFloat(params.scale) / 100.0 * parseFloat(params.sizes[i % params.sizes.length]);
+						params.shapes[i % params.shapes.length].apply(null, [x, y, size, s]);
+
+						shapeCount++;
+				}
+			}
 
 			p.tile = (params) => {
 				let w = params.width;
@@ -1042,6 +1195,24 @@ class MotifApp {
 							x2: { type:'number', value: Math.round(this.sketch.getLastPoint().x) },
 							y2: { type:'number', value: Math.round(this.sketch.getLastPoint().y) },
 							lineWeight: {type:'number', value: currentLineWeight},
+						});
+					}
+					else if(this.effects[activeEffect].category == "NewBrushes") {
+						console.log("adding event: " + activeEffect);
+						console.log("star brush: ", brushes.starBrush);
+						// let brushstroke = new brushes.Brushstroke(
+						// 	brushes.starBrush,
+						// 	this.sketch.pointsAsString(),
+						// 	currentColorHSV,
+						// 	this.sketch);
+						// brushstrokes.push(brushstroke);
+						this.addEvent('motif', activeEffect, { 
+							pointsList: { type:'number', value: this.sketch.pointsAsString()},
+							lineWeight: {type:'number', value: currentLineWeight},
+						  minSize: {type:'number', value: currentLineWeight},
+						  maxSize: {type:'number', value: currentLineWeight*2},
+							test: "this is test data",
+							// brushstroke: brushstroke
 						});
 					}
 					else { //TODO: make this more general

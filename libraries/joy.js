@@ -2721,6 +2721,9 @@ Joy.add({
       }
       var entry = _addEntry(newAction, atIndex);
 
+      // if(data.brushstroke) console.log(data.brushstroke);
+      // data.brushstroke.renderFinal();
+
       // Focus on that entry's widget!
       // entry.widget.focus();
     };
