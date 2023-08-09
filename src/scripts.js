@@ -159,6 +159,9 @@ window.addEventListener('load', e => {
 			cursor: './assets/cursors/star-solid.svg',
 			mouseActionType: 'drag',
 			onact: (my) => {
+				 //find brushstroke by id, generate and call its onact function
+				let brushAction = brushstrokeManager.getOnActByID(my.data.id);
+				brushAction(my.data);
 				// console.log(my.data.brushstroke);
 				// // console.log(my.data.brushstroke instanceof brushes.Brushstroke);
 				// try {
@@ -169,24 +172,23 @@ window.addEventListener('load', e => {
 				// 	console.log('myObject is: ', my.data.brushstroke);
 				// }
 				
-				console.log("rendered");
-				my.target.metaBrush({
-					scale: my.data.scale,
-					pointsList: my.data.pointsList, 
-					shapes:
-					[
-						(x, y, size, c) => {
-							c.star({color: my.data.color, x: x, y: y, r1: size, r2: size/2, npoints: 5});
-						},
-					],
-					sizes: [10, 20, 30, 40, 50, 40, 30, 20],
-					colors:
-					[
-						[255, 165,   0], // Orange
-						[255, 215,   0], // Gold
-					],
-					alpha: 0.75,
-				}, my.target.s);
+				// my.target.metaBrush({
+				// 	scale: my.data.scale,
+				// 	pointsList: my.data.pointsList, 
+				// 	shapes:
+				// 	[
+				// 		(x, y, size, c) => {
+				// 			c.star({color: my.data.color, x: x, y: y, r1: size, r2: size/2, npoints: 5});
+				// 		},
+				// 	],
+				// 	sizes: [10, 20, 30, 40, 50, 40, 30, 20],
+				// 	colors:
+				// 	[
+				// 		[255, 165,   0], // Orange
+				// 		[255, 215,   0], // Gold
+				// 	],
+				// 	alpha: 0.75,
+				// }, my.target.s);
 			}
 		},
 		{
@@ -416,11 +418,33 @@ class MotifApp {
 		this.joy = this.initJoy();
 		this.initUI(); //categories and brush/effect buttons
 
-		// this.joy.actions.addAction('stencils/paperdoll', undefined, {});
 		this.joy.actions.update();
+
+		this.brushstroke = null;
 
 		//TODO: add global effect settings such as line weight, color, etc to pass into current events that have a "preview"
 	}
+
+	// p.startPoints = (x, y, activeEffect) => {
+	// 	points = new brushes.Path(x, y);
+	// 	activeEffectName = activeEffect;
+	// 	p.loop();
+	// }
+
+	// p.addPoint = (x, y) => {
+	// 	points.addPoint(x, y);
+	// }
+
+	// p.endPoints = () => {
+	// 	points = null;
+	// 	p.noLoop();
+	// }
+
+	// p.mouseDragged = () => {
+	// 	if(points) {
+	// 		p.addPoint(p.mouseX, p.mouseY);
+	// 	}
+	// }
 
 	initP5() {
 		return new p5(p => {
@@ -456,49 +480,50 @@ class MotifApp {
 			};
 		  
 			p.draw = () => { //show a preview of brush strokes while actively dragging mouse
-				if(points) {
-					switch(activeEffectName) {
-						case 'rainbow brush':
-						  p.addRainbowBrush({ minSize: currentLineWeight, maxSize: currentLineWeight*2, pointsList: points.toString() });
-						  break;
-						case 'brush':
-							p.addBrushStroke({ color:currentColorRGB, lineWeight: currentLineWeight, pointsList: points.toString() });
-							break;
-						case 'straight line':
-							t.clear();
-							p.addPreviewLine({ color:currentColorRGB, lineWeight: currentLineWeight, x1: p.getPoint(0).x, y1: p.getPoint(0).y, x2: p.getLastPoint().x, y2: p.getLastPoint().y }, t); 
-							break;
-						case 'porcupine brush':
-							t.clear();
-							p.porcupineBrush({ color:currentColorRGB, lineWeight: currentLineWeight, pointsList: points.toString() }, t);
-							break;
-						case 'lines brush':
-							t.clear();
-							p.linesBrush({ color:currentColorRGB, lineWeight: currentLineWeight, pointsList: points.toString() }, t);
-						// case 'star brush':
-						// 	p.metaBrush({
-						// 		scale: 100,
-						// 		pointsList: points.toString(), 
-						// 		shapes:
-						// 		[
-						// 			(x, y, size, c) => {
-						// 				c.star({color: my.data.color, x: x, y: y, r1: size, r2: size/2, npoints: 5});
-						// 			},
-						// 		],
-						// 		sizes: [10, 20, 30, 40, 50, 40, 30, 20],
-						// 		colors:
-						// 		[
-						// 			[255, 165,   0], // Orange
-						// 			[255, 215,   0], // Gold
-						// 		],
-						// 		alpha: 0.75,
-						// 	}, t);
-							break;
-						default: break;
-					}
-				}
-				p.image(s, 0, 0);
 				p.image(t, 0, 0);
+				// if(points) {
+				// 	switch(activeEffectName) {
+				// 		case 'rainbow brush':
+				// 		  p.addRainbowBrush({ minSize: currentLineWeight, maxSize: currentLineWeight*2, pointsList: points.toString() });
+				// 		  break;
+				// 		case 'brush':
+				// 			p.addBrushStroke({ color:currentColorRGB, lineWeight: currentLineWeight, pointsList: points.toString() });
+				// 			break;
+				// 		case 'straight line':
+				// 			t.clear();
+				// 			p.addPreviewLine({ color:currentColorRGB, lineWeight: currentLineWeight, x1: p.getPoint(0).x, y1: p.getPoint(0).y, x2: p.getLastPoint().x, y2: p.getLastPoint().y }, t); 
+				// 			break;
+				// 		case 'porcupine brush':
+				// 			t.clear();
+				// 			p.porcupineBrush({ color:currentColorRGB, lineWeight: currentLineWeight, pointsList: points.toString() }, t);
+				// 			break;
+				// 		case 'lines brush':
+				// 			t.clear();
+				// 			p.linesBrush({ color:currentColorRGB, lineWeight: currentLineWeight, pointsList: points.toString() }, t);
+				// 		// case 'star brush':
+				// 		// 	p.metaBrush({
+				// 		// 		scale: 100,
+				// 		// 		pointsList: points.toString(), 
+				// 		// 		shapes:
+				// 		// 		[
+				// 		// 			(x, y, size, c) => {
+				// 		// 				c.star({color: my.data.color, x: x, y: y, r1: size, r2: size/2, npoints: 5});
+				// 		// 			},
+				// 		// 		],
+				// 		// 		sizes: [10, 20, 30, 40, 50, 40, 30, 20],
+				// 		// 		colors:
+				// 		// 		[
+				// 		// 			[255, 165,   0], // Orange
+				// 		// 			[255, 215,   0], // Gold
+				// 		// 		],
+				// 		// 		alpha: 0.75,
+				// 		// 	}, t);
+				// 			break;
+				// 		default: break;
+				// 	}
+				// }
+				// p.image(s, 0, 0);
+				
 			};
 
 			p.render = () => {
@@ -509,7 +534,7 @@ class MotifApp {
 				if(!p.setupFinished) return;
 				p.background(255);
 				s.background(255);
-				t.clear();
+				// t.clear();
 			}
 		
 			p.addCircle = (params) => {
@@ -624,21 +649,21 @@ class MotifApp {
 				}
 			}
 
-			p._convertToVectors = (pointString) => {
-				let points = pointString.split(',');
-				let vectors = [];
-				// Iterate over the point list with a step of 2
-				for (let i = 0; i < points.length; i += 2) {
-					let x = parseInt(points[i]);
-					let y = parseInt(points[i + 1]);
-					vectors.push(p.createVector(x, y));
-				}
-				return vectors;
-			}
+			// p._convertToVectors = (pointString) => {
+			// 	let points = pointString.split(',');
+			// 	let vectors = [];
+			// 	// Iterate over the point list with a step of 2
+			// 	for (let i = 0; i < points.length; i += 2) {
+			// 		let x = parseInt(points[i]);
+			// 		let y = parseInt(points[i + 1]);
+			// 		vectors.push(p.createVector(x, y));
+			// 	}
+			// 	return vectors;
+			// }
 
 			p.metaBrush = (params, c) => {
 				s.noStroke();
-				let points = p._convertToVectors(params.pointsList);
+				let points = params.pointsList;
 				for (let i = 0; i < params.colors.length; i++) {
 					params.colors[i] = p.color(params.colors[i]);
 					params.colors[i].setAlpha(p.map(params.alpha, 0, 1, 0, 255));
@@ -992,10 +1017,10 @@ class MotifApp {
 				s.stroke(params.color);
 				s.strokeJoin(s.ROUND);
 				
-				let points = params.pointsList.split(',');
+				let points = params.pointsList;
 				s.beginShape();
-				for(let i=0;i<points.length-1;i+=2) {
-					s.vertex(points[i], points[i+1]);
+				for(let i=0;i<points.length;i++) {
+					s.vertex(points[i].x, points[i].y);
 				}
 				s.endShape();
 				s.pop();
@@ -1014,10 +1039,10 @@ class MotifApp {
 				let hueIncrement = 10;
 				let sizeIncrement = 1;
 				
-				let points = params.pointsList.split(','); //structure of this string is x1,y1,x2,y2,...
-				for(let i=0;i<points.length-1;i+=2) {
+				let points = params.pointsList; //structure of this string is x1,y1,x2,y2,...
+				for(let i=0;i<points.length;i++) {
 					s.fill(hue, 150, 100);
-					s.circle(points[i], points[i+1], size);
+					s.circle(points[i].x, points[i].y, size);
 					hue += hueIncrement;
 					size += sizeIncrement;
 					if(hue > 255 || hue < 0) {
@@ -1038,9 +1063,9 @@ class MotifApp {
 				c.noFill();
 				c.stroke(params.color);
 
-				let points = params.pointsList.split(',');
-				for(let i=0;i<points.length-2;i+=2) {
-					c.line(points[0], points[1], points[i+2], points[i+3]);
+				let points = params.pointsList;
+				for(let i=0;i<points.length-1;i+=2) {
+					c.line(points[0].x, points[0].y, points[i+1].x, points[i+1].y);
 				}
 			}
 
@@ -1051,45 +1076,12 @@ class MotifApp {
 				c.noFill();
 				let strokeColor = c.color(params.color);
 
-				let points = params.pointsList.split(',');
+				let points = params.pointsList;
 				let n = 100;
 				for(let i=0;i<points.length-1;i+=2) {
 					strokeColor.setAlpha(c.map(c.noise(n), 0, 1, 10, 200));
 					c.stroke(strokeColor);
 					c.line(points[i], 0, points[i+1], p.height);
-				}
-			}
-
-			p.startPoints = (x, y, activeEffect) => {
-				points = new DrawnLine(x, y);
-				activeEffectName = activeEffect;
-				p.loop();
-			}
-
-			p.addPoint = (x, y) => {
-				points.addPoint(x, y);
-			}
-
-			p.endPoints = () => {
-				points = null;
-				p.noLoop();
-			}
-
-			p.getPoint = (index) => {
-				return points.points[index];
-			}
-
-			p.getLastPoint = () => {
-				return points.points[points.points.length-1];
-			}
-
-			p.pointsAsString = () => {
-				return points.toString();
-			}
-
-			p.mouseDragged = () => {
-				if(points) {
-					p.addPoint(p.mouseX, p.mouseY);
 				}
 			}
 
@@ -1158,8 +1150,24 @@ class MotifApp {
 			let activeEffect = this.getSelectedEffect();
 			if(activeEffect) {
 				if(this.effects[activeEffect].mouseActionType == 'drag') {
-					this.sketch.startPoints(this.sketch.mouseX, this.sketch.mouseY, activeEffect);
-				} else if(this.effects[activeEffect].category == "Stencils") {
+					if(!this.brushstroke) {
+						this.brushstroke = new brushes.Brushstroke(
+							brushes.starBrush,
+							{x: this.sketch.mouseX, y: this.sketch.mouseY},
+							currentColorHSV,
+							this.sketch);
+						brushstrokeManager.addBrushstroke(this.brushstroke);
+					}
+					this.addEvent('motif', activeEffect, { 
+						pointsList: { type:'path', value: this.brushstroke.getPoints()},
+						lineWeight: {type:'path', value: currentLineWeight},
+						minSize: {type:'number', value: currentLineWeight},
+						maxSize: {type:'number', value: currentLineWeight*2},
+						id: this.brushstroke.getID()
+					});
+					this.sketch.loop(); //render preview of brushstroke
+				} 
+				else if(this.effects[activeEffect].category == "Stencils") {
 					this.addEvent('stencils', activeEffect, {
 						x: { type:'number', value: Math.round(this.sketch.mouseX)},
 						y: { type:'number', value: Math.round(this.sketch.mouseY)}
@@ -1179,57 +1187,58 @@ class MotifApp {
 		document.getElementById('drawing-canvas').addEventListener('mousemove', e => {
 			if(mouseDownOverCanvas) {
 				dragging = true;
+				try {
+					this.brushstroke.addPoint({x: this.sketch.mouseX, y: this.sketch.mouseY});
+					this.brushstroke.renderPreview({}); //current canvas settings go here
+				} catch(e) {
+					console.log("No brushstroke found", e);f
+				}
 			}
 		});
 
 		document.getElementById('drawing-canvas').addEventListener('mouseup', e => {
-			// console.log(drag ? 'drag' : 'click');
 			mouseDownOverCanvas = false;
 
 			let activeEffect = this.getSelectedEffect();
 			if(activeEffect) {
 				if(this.effects[activeEffect].mouseActionType == 'drag') {
-					this.sketch.addPoint(this.sketch.mouseX, this.sketch.mouseY);
+					this.brushstroke.addPoint({x: this.sketch.mouseX, y: this.sketch.mouseY});
 					if(activeEffect == 'straight line') {
 						this.addEvent('motif', activeEffect, {
-							x1: { type:'number', value: Math.round(this.sketch.getPoint(0).x) },
-							y1: { type:'number', value: Math.round(this.sketch.getPoint(0).y) },
-							x2: { type:'number', value: Math.round(this.sketch.getLastPoint().x) },
-							y2: { type:'number', value: Math.round(this.sketch.getLastPoint().y) },
+							x1: { type:'number', value: Math.round(this.mousePath.getPoint(0).x) },
+							y1: { type:'number', value: Math.round(this.mousePath.getPoint(0).y) },
+							x2: { type:'number', value: Math.round(this.mousePath.getLastPoint().x) },
+							y2: { type:'number', value: Math.round(this.mousePath.getLastPoint().y) },
 							lineWeight: {type:'number', value: currentLineWeight},
 						});
 					}
+					// "new brushes"
 					else if(this.effects[activeEffect].category == "NewBrushes") {
-						console.log("adding event: " + activeEffect);
-						console.log("star brush: ", brushes.starBrush);
-						// let brushstroke = new brushes.Brushstroke(
-						// 	brushes.starBrush,
-						// 	this.sketch.pointsAsString(),
-						// 	currentColorHSV,
-						// 	this.sketch);
-						// brushstrokes.push(brushstroke);
-						this.addEvent('motif', activeEffect, { 
-							pointsList: { type:'number', value: this.sketch.pointsAsString()},
-							lineWeight: {type:'number', value: currentLineWeight},
-						  minSize: {type:'number', value: currentLineWeight},
-						  maxSize: {type:'number', value: currentLineWeight*2},
-							test: "this is test data",
-							// brushstroke: brushstroke
-						});
+					// 	// console.log("adding event: " + activeEffect);
+					// 	// console.log("star brush: ", brushes.starBrush);
+
+					// 	if(this.brushstroke) {
+					// 		this.addEvent('motif', activeEffect, { 
+					// 			pointsList: { type:'path', value: this.brushstroke.getPoints()},
+					// 			lineWeight: {type:'path', value: currentLineWeight},
+					// 			minSize: {type:'number', value: currentLineWeight},
+					// 			maxSize: {type:'number', value: currentLineWeight*2},
+					// 			id: this.brushstroke.getID()
+					// 		});
+					// 	}
 					}
+					//NOT "new brushes"
 					else { //TODO: make this more general
-						console.log(activeEffect);
-						console.log("line weight: " + currentLineWeight);
 						this.addEvent('motif', activeEffect, { 
-							pointsList: { type:'number', value: this.sketch.pointsAsString()},
+							pointsList: { type:'number', value: this.brushstroke.getPoints()},
 							lineWeight: {type:'number', value: currentLineWeight},
 						  minSize: {type:'number', value: currentLineWeight},
 						  maxSize: {type:'number', value: currentLineWeight*2}
 						});
 					}
-					
-					this.sketch.endPoints();
-					console.log("end points");
+					this.brushstroke.finalizePath();
+					this.brushstroke = null;
+					this.sketch.noLoop();
 				}
 			}
 			randomizeCurrentColor();
@@ -1316,7 +1325,6 @@ function deleteSelectedCodeLine() {
 		document.getElementById('delete-button').addEventListener("click", (e) => {
 				console.log("delete");
 		});
-	
 	
 	}
 
@@ -1417,44 +1425,6 @@ function deleteSelectedCodeLine() {
 			});
 		});
 
-
-		// {
-		// 	name: 'paper doll',
-		// 	dropdownName: 'Paper doll',
-		// 	category: 'Stencils',
-		// 	init: `Paper doll with radius {id:'radius', type:'number', placeholder:20} in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
-		// 	at ({id:'x', type:'number', placeholder:200}, {id:'y', type:'number', placeholder:200})`,
-		// 	cursor: './assets/cursors/star-solid.svg',
-		// 	onact: (my) => {
-		// 		my.target.addCircle(my.data.color, my.data.x, my.data.y, my.data.radius);
-		// 	}
-		// },
-		// {
-		// 	name: 'box',
-		// 	dropdownName: 'Box',
-		// 	category: 'Stencils',
-		// 	init: `Box with radius {id:'radius', type:'number', placeholder:20} in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
-		// 	at ({id:'x', type:'number', placeholder:200}, {id:'y', type:'number', placeholder:200})`,
-		// 	cursor: './assets/cursors/star-solid.svg',
-		// 	onact: (my) => {
-		// 		my.target.addCircle(my.data.color, my.data.x, my.data.y, my.data.radius);
-		// 	}
-		// },
-
-		//what does this do?
-		// Joy.add({
-		// 	type: "list",
-		// 	tags: ["ui"],
-		// 	initWidget: function(self){
-		// 		self.dom = document.createElement("input");
-		// 		self.dom.setAttribute("type", "button");
-		// 		self.dom.value = "list";
-		// 	},
-		// 	onget: function(my){
-		// 		return 3;
-		// 	},
-		// });
-
 		let joy = Joy({
 			// Where the Joy editor goes:
 			container: "#joy",
@@ -1496,6 +1466,7 @@ let isRendering = false;
 
 let render = (sketch, my) => {
 	renderStartTime = Date.now();
+	console.log("rendering");
 	
 	sketch.clear();
 	my.actions.act(sketch); //this is where sketch is passed in as target
@@ -1511,48 +1482,4 @@ let randomizeCurrentColor = () => {
 	currentColorHSV = [Math.random()*360, 0.8, 0.8];
 	currentColorRGB = utilities.HSVToRGBString(currentColorHSV);
 	
-}
-
-class DrawnLine {
-	constructor(x, y) {
-		this.points = [];
-		this.addPoint(x, y);
-	}
-	
-	addPoint(x, y) {
-		this.points.push({ x: x, y: y });
-	}
-
-	toString() {
-		let a = [];
-		this.points.forEach(p => {
-			a.push(Math.round(p.x));
-			a.push(Math.round(p.y));
-		});
-		return a.toString();
-	}
-	
-	renderPoints(s) {
-		s.push();
-		s.strokeWeight(5);
-		s.noFill();
-		s.stroke(0);
-		this.points.forEach(p => {
-			s.point(p.x, p.y);
-		});
-		s.pop();
-	}
-
-	renderLine(s, strokeColor, strokeWeight) {
-		s.push();
-		s.strokeWeight(strokeWeight);
-		s.stroke(strokeColor);
-		s.noFill();
-		s.beginShape();
-		this.points.forEach(p => {
-			s.vertex(p.x, p.y);
-		});
-		s.endShape();
-		s.pop();
-	}
 }

@@ -1351,12 +1351,13 @@ class PathUI {
       return true;
     });
   
-    this.setString = function (value) {
-  	  input.innerText = value.substring(0, 8) + "...";
-  	  _fixStringInput(input);
-      this.points = this._parse(value);
-      let thumbnail_canvas = this.getCanvas(25, 25, 599, 599);
+    this.setPath = function(points) {
+  	  // input.innerText = value.substring(0, 8) + "...";
+  	  // // _fixStringInput(input);
+      // this.points = this._parse(value);
+      let thumbnail_canvas = this.getCanvas(points, 25, 25, 599, 599);
       thumbnail_canvas.classList.add('thumbnail-canvas');
+      this.dom.getElementsByClassName('thumbnail-canvas').forEach(e => e.remove());
       this.dom.appendChild(thumbnail_canvas);
     };
   
@@ -1375,26 +1376,10 @@ class PathUI {
   	this.dom.classList.add(style);
     });
   
-    this.setString(config.value);
+    this.setPath(config.value);
   }
 
-  _parse(coordinates_string) {
-    const points = coordinates_string.split(",");
-    const result = [];
-  
-    for (let i = 0; i < points.length; i += 2) {
-      const x = parseInt(points[i].trim());
-      const y = parseInt(points[i + 1].trim());
-  
-      if (!isNaN(x) && !isNaN(y)) {
-        result.push({ x, y });
-      }
-    }
-  
-    return result;
-  }
-
-  getCanvas(width, height, originWidth, originHeight) {
+  getCanvas(points, width, height, originWidth, originHeight) {
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
@@ -1405,12 +1390,12 @@ class PathUI {
     ctx.clearRect(0, 0, width, height);
     ctx.scale(width/originWidth, height/originHeight);
     
-    const firstPoint = this.points[0];
+    const firstPoint = points[0];
     ctx.beginPath();
     ctx.moveTo(firstPoint.x, firstPoint.y);
     
-    for (let i = 1; i < this.points.length; i++) {
-  	  const { x, y } = this.points[i];
+    for (let i = 1; i < points.length; i++) {
+  	  const { x, y } = points[i];
   	  ctx.lineTo(x, y);
     }
     
@@ -1479,7 +1464,6 @@ class PathUI {
 //   }  
 // }
 
-// bookmark - the widget for xy coords
 /****************
 
 A widget to set xy coordinates!
@@ -1509,7 +1493,7 @@ Joy.add({
     // When data's changed, externally
     self.onDataChange = function(){
       var value = self.getData("value");
-      self.pathUI.setString(value);
+      self.pathUI.setPath(value);
     };
 
   },
@@ -2721,9 +2705,6 @@ Joy.add({
       }
       var entry = _addEntry(newAction, atIndex);
 
-      // if(data.brushstroke) console.log(data.brushstroke);
-      // data.brushstroke.renderFinal();
-
       // Focus on that entry's widget!
       // entry.widget.focus();
     };
@@ -2731,7 +2712,6 @@ Joy.add({
 
     // Actions you can add:
     // TODO: INCLUDE ALIASED ACTIONS
-    // NF: What does this do?
     var actionOptions = [];
 
     //TODO: refactor into functions
