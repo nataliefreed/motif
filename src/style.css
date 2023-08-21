@@ -3,7 +3,7 @@
     padding: 5px;
 }
 
-.drawing-toolbar {
+.effect-button-bar {
     background-color: #eeeeee;
     padding: 5px;
 }
@@ -23,7 +23,7 @@
     background-color: lightblue;
 }
 
-.category-button {
+.category-tab {
     background-color: darkgrey;
     margin: 5px 5px -5px 5px;
     padding: 10px;
@@ -36,6 +36,20 @@
     font-family: 'FuturaHandwritten';
     font-size: 16px;
   }
+  
+.category-tab:hover, .effect-button:hover, .light-button:hover {
+    background-color: gray;
+}
+
+.category-tab.selected {
+    background-color: rgb(238, 238, 238);
+}
+
+.category-tab:active, .drawing-tool-button:active {
+  transform: translate(0px, 5px);
+  -webkit-transform: translate(0px, 5px);
+  box-shadow: 0px 1px 0px 0px;
+}
   
 .effect-button {
     background-color: white;
@@ -69,20 +83,6 @@
 
 .effect-button.selected {
     background-color: rgb(255, 205, 40);
-}
-
-.category-button.selected {
-    background-color: rgb(238, 238, 238);
-}
-  
-.category-button:hover, .effect-button:hover, .light-button:hover {
-    background-color: gray;
-}
-
-.category-button:active, .drawing-tool-button:active {
-  transform: translate(0px, 5px);
-  -webkit-transform: translate(0px, 5px);
-  box-shadow: 0px 1px 0px 0px;
 }
 
 .program-buttons {

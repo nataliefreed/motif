@@ -1327,11 +1327,11 @@ class PathUI {
     input.contentEditable = true;
     input.spellcheck = false;
   
-    // this.dom.appendChild(input);
+    this.dom.appendChild(input);
   
     input.addEventListener("input", (event) => {
       _fixStringInput(input);
-      const value = input.innerText;
+      const value = input.innerText; //todo - might be issue, expecting a string
       config.onchange(value);
     });
   
@@ -1355,10 +1355,11 @@ class PathUI {
   	  // input.innerText = value.substring(0, 8) + "...";
   	  // // _fixStringInput(input);
       // this.points = this._parse(value);
-      let thumbnail_canvas = this.getCanvas(points, 25, 25, 599, 599);
-      thumbnail_canvas.classList.add('thumbnail-canvas');
-      this.dom.getElementsByClassName('thumbnail-canvas').forEach(e => e.remove());
-      this.dom.appendChild(thumbnail_canvas);
+      console.log("points", points);
+      // let thumbnail_canvas = this.getCanvas(points, 25, 25, 599, 599);
+      // thumbnail_canvas.classList.add('thumbnail-canvas');
+      // this.dom.getElementsByClassName('thumbnail-canvas').forEach(e => e.remove());
+      // this.dom.appendChild(thumbnail_canvas);
     };
   
     this.setColor = function (color) {
@@ -1380,6 +1381,9 @@ class PathUI {
   }
 
   getCanvas(points, width, height, originWidth, originHeight) {
+    
+    console.log(points);
+    
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
@@ -1493,6 +1497,8 @@ Joy.add({
     // When data's changed, externally
     self.onDataChange = function(){
       var value = self.getData("value");
+      console.log("value: ", value);
+      console.log("self ", self);
       self.pathUI.setPath(value);
     };
 
