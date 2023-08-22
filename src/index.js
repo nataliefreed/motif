@@ -233,37 +233,39 @@ function deleteSelectedCodeLine() {
 			this.canvasRenderer.save('my drawing.jpg');
 		});
 		
-		document.getElementById('move-up-button').addEventListener("click", (e) => {
-				console.log("move up");
-		});
+		// document.getElementById('move-up-button').addEventListener("click", (e) => {
+		// 		console.log("move up");
+		// });
 		
-		document.getElementById('move-down-button').addEventListener("click", (e) => {
-				console.log("move down");
-		});
+		// document.getElementById('move-down-button').addEventListener("click", (e) => {
+		// 		console.log("move down");
+		// });
 		
-		document.getElementById('add-above-button').addEventListener("click", (e) => {
-				console.log("add above");
-		});
+		// document.getElementById('add-above-button').addEventListener("click", (e) => {
+		// 		console.log("add above");
+		// });
 		
-		document.getElementById('add-below-button').addEventListener("click", (e) => {
-				console.log("add below");
-		});
+		// document.getElementById('add-below-button').addEventListener("click", (e) => {
+		// 		console.log("add below");
+		// });
 		
 		// document.getElementById('remix-button').addEventListener("click", (e) => {
 		// 		console.log("remix");
 		// });
 		
 		document.getElementById('shuffle-button').addEventListener("click", (e) => {
-				console.log("shuffle");
+				console.log("shuffle all");
 		});
+
+		document.getElementById('shuffle-button').addEventListener("click", (e) => {
+			console.log("remix all");
+	});
 		
 		// document.getElementById('group-button').addEventListener("click", (e) => {
 		// 		console.log("group");
 		// });
 		
-		document.getElementById('delete-button').addEventListener("click", (e) => {
-				console.log("delete");
-		});
+
 	
 	}
 }
