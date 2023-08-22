@@ -35,13 +35,13 @@ class MotifApp {
 	
 	initUI() {
 		//List sorting
-    Sortable.mount(new MultiDrag());
+    // Sortable.mount(new MultiDrag());
 		let sortablelist = document.getElementById('actions-joy-list');
     new Sortable(sortablelist, {
 	    animation: 150,
 	    ghostClass: 'sortable-ghost',
-			multiDrag: true,
-			selectedClass: 'selected',
+			// multiDrag: true,
+			// selectedClass: 'selected',
 			onUpdate: (evt) => {
 				this.joy.actions.moveEntry(evt.oldIndex, evt.newIndex);
 			}

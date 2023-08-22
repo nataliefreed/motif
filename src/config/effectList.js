@@ -279,7 +279,6 @@ export const effectList = [
         (i) => {
           let hue = i*10%360;
           let rgb = HSVtoRGB(hue, 1, 1);
-          console.log("rgb", rgb);
           return rgb;
         }
       ]

@@ -2597,8 +2597,9 @@ Joy.add({
         }, -1);
     
         atIndex = lastSelectedIndex + 1;
-      }
 
+        console.log("selected index to add entry", atIndex);
+      }
       self.entries.splice(atIndex, 0, entry);
       list.insertBefore(entryDOM, list.children[atIndex]);
 

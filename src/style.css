@@ -133,10 +133,11 @@ body {
     cursor: url('./assets/cursors/paintbrush-solid.svg') 0 28, pointer;
 }
 
-.joy-list-item.selected {
-    border: 1px solid gray;
+/* .joy-list-item.selected { // for selectable list items
+    outline: 1px solid gray;
+    outline-offset: -1px;
     background-color: lightgray;
-}
+} */
 
 .joy-path {
     display: inline-block;
