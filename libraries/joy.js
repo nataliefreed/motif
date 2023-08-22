@@ -2590,16 +2590,16 @@ Joy.add({
       if(atIndex===undefined) atIndex = self.entries.length;
 
       // If entries selected, insert after last selected entry
-      if (self.entries.some(function(entry) { return entry.selected; })) {
-        // Find the index of the last selected entry
-        var lastSelectedIndex = self.entries.reduce(function(index, entry, currentIndex) {
-          return entry.selected ? currentIndex : index;
-        }, -1);
+      // if (self.entries.some(function(entry) { return entry.selected; })) {
+      //   // Find the index of the last selected entry
+      //   var lastSelectedIndex = self.entries.reduce(function(index, entry, currentIndex) {
+      //     return entry.selected ? currentIndex : index;
+      //   }, -1);
     
-        atIndex = lastSelectedIndex + 1;
+      //   atIndex = lastSelectedIndex + 1;
 
-        console.log("selected index to add entry", atIndex);
-      }
+      //   console.log("selected index to add entry", atIndex);
+      // }
       self.entries.splice(atIndex, 0, entry);
       list.insertBefore(entryDOM, list.children[atIndex]);
 
