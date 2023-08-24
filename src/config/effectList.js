@@ -4,6 +4,7 @@ export const effectList = [
     name: 'solid fill',
     dropdownName: 'Solid Fill',
     category: 'Backgrounds',
+    tag: 'motif',
     init: "Fill with {id:'color', type:'color', placeholder:[50, 0.8, 1.0]}",
     cursor: './assets/cursors/fill-drip-solid.svg',
     mouseActionType: 'single-click',
@@ -15,6 +16,7 @@ export const effectList = [
     name: 'gradient',
     dropdownName: 'Gradient',
     category: 'Backgrounds',
+    tag: 'motif',
     init: "Gradient from {id:'color1', type:'color', placeholder:[50, 0.8, 1.0]} to {id:'color2', type:'color', placeholder:[100, 0.8, 1.0]}",
     cursor: './assets/cursors/fill-drip-solid.svg',
     mouseActionType: 'single-click',
@@ -26,6 +28,7 @@ export const effectList = [
     name: 'stripes',
     dropdownName: 'Stripes',
     category: 'Backgrounds',
+    tag: 'motif',
     init: `Stripes of width {id:'stripeWidth', type:'number', min:1, max:300, placeholder:50}
       from {id:'color1', type:'color', placeholder:[0, 0.7, 0.8]} 
       to {id:'color2', type:'color', placeholder:[200, 0.7, 0.9]}`,
@@ -40,6 +43,7 @@ export const effectList = [
     name: 'circle',
     dropdownName: 'Circle',
     category: 'Shapes',
+    tag: 'motif',
     init: `Circle of radius {id:'radius', type:'number', min:1, max:600, placeholder:20}
     in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
     at ({id:'x', type:'number', min:0, max:600, placeholder:200},
@@ -47,6 +51,7 @@ export const effectList = [
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
+      console.log("target", my.target);
       my.target.addCircle({ color: my.data.color, x: my.data.x, y: my.data.y, r: my.data.radius });
     }
   },
@@ -54,6 +59,7 @@ export const effectList = [
     name: 'square',
     dropdownName: 'Square',
     category: 'Shapes',
+    tag: 'motif',
     init: `Square of size {id:'size', type:'number', min:1, max:600, placeholder:40}
     in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
     at ({id:'x', type:'number', min:0, max:600, placeholder:200},
@@ -68,6 +74,7 @@ export const effectList = [
     name: 'polygon',
     dropdownName: 'Polygon',
     category: 'Shapes',
+    tag: 'motif',
     init: `Polygon with {id:'nsides', type:'number', min:3, max:50, placeholder:6} sides 
     and radius {id:'radius', type:'number', min:1, max:600, placeholder:20} 
     in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
@@ -83,6 +90,7 @@ export const effectList = [
     name: 'star',
     dropdownName: 'Star',
     category: 'Shapes',
+    tag: 'motif',
     init: `Star with {id:'npoints', type:'number', min:3, max:200, placeholder:7} points, 
     outer {id:'r1', type:'number', min:1, max:600, placeholder:20}, 
     inner {id:'r2', type:'number', min:1, max:600, placeholder:10} 
@@ -90,7 +98,10 @@ export const effectList = [
     at ({id:'x', type:'number', min:0, max:600, placeholder:200}, 
     {id:'y', type:'number', min:0, max:600, placeholder:200})`,
     cursor: './assets/cursors/star-solid.svg',
-    mouseActionType: 'single-click2',
+    mouseActionType: 'single-click',
+    onact: (my) => {
+      my.target.star({color: my.data.color, x: my.data.x, y: my.data.y, r1: my.data.r1, r2: my.data.r2, npoints: my.data.npoints});
+    },
     config:
     {
       shape: (data, canvas) => {
@@ -102,6 +113,7 @@ export const effectList = [
     name: 'heart',
     dropdownName: 'Heart',
     category: 'Shapes',
+    tag: 'motif',
     init: `Heart of size {id:'size', type:'number', min:-600, max:600, placeholder:40} 
     in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
     at ({id:'x', type:'number', min:0, max:600, placeholder:200}, 
@@ -116,6 +128,7 @@ export const effectList = [
     name: 'straight line',
     dropdownName: 'straight line',
     category: 'Brushes',
+    tag: 'motif',
     init: `Straight line from ({id:'x1', type:'number', min:0, max:600, placeholder:100}, 
     {id:'y1', type:'number', min:0, max:600, placeholder:100})
     to ({id:'x2', type:'number', min:0, max:600, placeholder:200}, 
@@ -132,6 +145,7 @@ export const effectList = [
     name: 'brush',
     dropdownName: 'Brush',
     category: 'Brushes',
+    tag: 'motif',
     init: `Brush in {id:'color', type:'color', placeholder:[20, 0.8, 1.0]} 
     with width {id: 'lineWeight', type: 'number', min:1, max:600, placeholder: 8} 
     along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
@@ -145,6 +159,7 @@ export const effectList = [
     name: 'star brush',
     dropdownName: 'Star Brush',
     category: 'NewBrushes',
+    tag: 'motif',
     init: `Star brush in {id:'color', type:'color', placeholder:[20, 0.8, 1.0]} 
     with scale {id: 'scale', type: 'number', min:1, max:600, placeholder: 20}% 
     along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
@@ -176,6 +191,7 @@ export const effectList = [
     name: 'mosaic brush',
     dropdownName: 'Mosaic Brush',
     category: 'NewBrushes',
+    tag: 'motif',
     init: `Mosaic brush with scale {id: 'scale', type: 'number', min:25, max:600, placeholder: 100} 
     % along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
     cursor: './assets/cursors/star-solid.svg',
@@ -222,6 +238,7 @@ export const effectList = [
     name: 'stripe brush',
     dropdownName: 'Stripe Brush',
     category: 'NewBrushes',
+    tag: 'motif',
     init: `Stripe brush with scale {id: 'scale', type: 'number', min:25, max:600, placeholder: 100} 
     % along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
     cursor: './assets/cursors/star-solid.svg',
@@ -251,6 +268,7 @@ export const effectList = [
     name: 'rainbow brush',
     dropdownName: 'Rainbow Brush',
     category: 'Brushes',
+    tag: 'motif',
     init: `Rainbow brush in size {id: 'minSize', type: 'number', min:1, max:600, placeholder: 4} 
     to {id: 'maxSize', type: 'number', min:1, max:600, placeholder: 10} 
     along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
@@ -291,6 +309,7 @@ export const effectList = [
     name: 'blob brush',
     dropdownName: 'Blob Brush',
     category: 'Brushes',
+    tag: 'motif',
     init: `Blob brush in size {id: 'minSize', type: 'number', min:1, max:600, placeholder: 4} 
     to {id: 'maxSize', type: 'number', min:1, max:600, placeholder: 10} 
     along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
@@ -332,6 +351,7 @@ export const effectList = [
     name: 'porcupine brush',
     dropdownName: 'Porcupine Brush',
     category: 'Brushes',
+    tag: 'motif',
     init: `Porcupine brush in {id:'color', type:'color', placeholder:[20, 0.8, 1.0]} 
     with width {id: 'lineWeight', type: 'number', min:1, max:600, placeholder: 8} 
     along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
@@ -345,6 +365,7 @@ export const effectList = [
     name: 'lines brush',
     dropdownName: 'Lines Brush',
     category: 'Brushes',
+    tag: 'motif',
     init: `Lines brush in {id:'color', type:'color', placeholder:[20, 0.8, 1.0]} 
     with width {id: 'lineWeight', type: 'number', min:1, max:600, placeholder: 8} 
     along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
@@ -358,6 +379,7 @@ export const effectList = [
     name: 'tile',
     dropdownName: 'Tile',
     category: 'Patterns',
+    tag: 'motif',
     init: `{id:'tiling', type:'choose', options:['straight grid', 'brick', 'half drop', 'checkerboard'], placeholder:'straight grid'} 
     with width {id:'width', type:'number', min:1, max:600, placeholder:100} 
     and height {id:'height', type:'number', min:1, max:600, placeholder:100}
@@ -373,6 +395,7 @@ export const effectList = [
     name: 'shift',
     dropdownName: 'Shift',
     category: 'Patterns',
+    tag: 'motif',
     init: `{id:'orientation', type:'choose', options:['vertical','horizontal'], placeholder:'vertical'} shift 
     with height {id:'height', type:'number', min:1, max:600, placeholder:50} 
     and offset {id:'offset', type:'number', min:1, max:600, placeholder:20}`,
@@ -386,6 +409,7 @@ export const effectList = [
     name: 'invert',
     dropdownName: 'Invert',
     category: 'Effects',
+    tag: 'motif',
     init: `Color shift of type {id:'filter', type:'choose', options:['invert','threshold', 'gray', 'dilate', 'blur'], placeholder:'invert'}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
@@ -397,6 +421,7 @@ export const effectList = [
     name: 'grayscale',
     dropdownName: 'Grayscale',
     category: 'Effects',
+    tag: 'motif',
     init: `Color shift of type {id:'filter', type:'choose', options:['invert','threshold', 'gray', 'dilate', 'blur'], placeholder:'gray'}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
@@ -408,6 +433,7 @@ export const effectList = [
     name: 'threshold',
     dropdownName: 'Threshold',
     category: 'Effects',
+    tag: 'motif',
     init: `Color shift of type {id:'filter', type:'choose', options:['invert','threshold', 'gray', 'dilate', 'blur'], placeholder:'threshold'}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
@@ -419,6 +445,7 @@ export const effectList = [
     name: 'box',
     dropdownName: 'Box',
     category: 'Stencils',
+    tag: 'stencils',
     init: `Box with length 
     {id:'length', type:'number', placeholder:120, min:20}, 
     width {id:'width', type:'number', placeholder:120, min:20}, 
@@ -433,6 +460,7 @@ export const effectList = [
     name: 'paper doll',
     dropdownName: 'Doll',
     category: 'Stencils',
+    tag: 'stencils',
     init: `Paper doll with skin tone 
     {id:'skinTone', type:'color', placeholder:[25, 0.75, 0.4]}, 
     hairstyle {id:'hairstyle', type:'choose', options:['1'], placeholder:'1'},

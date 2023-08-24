@@ -16,10 +16,10 @@ export class BrushstrokeManager {
   }
 
   getOnActByID(id) {  //return onAct function
-    return (settings) => {
+    return (data) => {
       const brushstroke = this.getBrushstrokeById(id);
       if (brushstroke) {
-        brushstroke.renderFinal(settings);
+        brushstroke.renderFinal(data);
       }
       else {
         console.log('brushstroke not found');
@@ -29,31 +29,30 @@ export class BrushstrokeManager {
 }
 
 export class Brushstroke {
-  constructor(effect, point, color, sketch) {
+  constructor(effect, startPoint, color, sketch) {
     this.effect = effect;
     console.log("effect", effect);
-    this.path = new Path(point.x, point.y);
+    this.path = new Path(startPoint.x, startPoint.y);
     this.color = color;
     this.previewCanvas = sketch.getPreviewCanvas();
     this.finalCanvas = sketch.getStaticCanvas();
-    this.pathComplete = false;
 
     this.id = uuidv4();
 
     console.log("new brushstroke with id " + this.id);
   }
 
-  renderPreview(settings) {
-    console.log("rendering preview");
+  renderPreview(data) {
+    console.log("rendering preview", this.previewCanvas);
     // could be a lower resolution render
     // console.log("brushstroke points: ", this.path.getPoints());
-    this.effect.render(settings, this.path.getPoints(), this.previewCanvas);
+    this.effect.render(data, this.path.getPoints(), this.previewCanvas);
   }
 
-  renderFinal(settings) {
+  renderFinal(data) {
     console.log("rendering final");
     // TODO: if nothing has changed, use cached version
-    this.effect.render(settings, this.path.getPoints(), this.finalCanvas);
+    this.effect.render(data, this.path.getPoints(), this.finalCanvas);
   }
 
   getPoints() {
@@ -77,23 +76,23 @@ export class Brushstroke {
   // let brushAction = brushstrokeManager.getOnActByID(my.data.id);
   //     brushAction(my.data);
 
-  makeJoyEvent(tag, userSettings) {
-    let settings = userSettings;
-    settings.id = this.id;
+  makeJoyEvent() {
+    let data = {};
+    data.id = this.id;
+    data.x = { type: 'number', value: Math.round(this.path.getPoint(0).x) };
+    data.y = { type: 'number', value: Math.round(this.path.getPoint(0).y) };
+    console.log("making event with", this.effect);
+    console.log("and this data", data);
 
     return [
-      tag,
+      this.effect.tag,
       this.effect.name,
-      settings
+      data
     ]
   }
 
   addPoint(point) {
     this.path.addPoint(point.x, point.y);
-  }
-
-  finalizePath() {
-    this.pathComplete = true;
   }
 
   makeAntPath(frogPath, stepSize) {

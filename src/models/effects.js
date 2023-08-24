@@ -7,10 +7,10 @@ export class EffectManager {
     this.effectList.forEach(e => {
       let type = e.mouseActionType;
       if(type === 'drag') {
-        console.log("Adding effect " + e.name);
-        this.effects[e.name] = new PathEffect(e); //index by name
+        // console.log("Adding effect " + e.name);
+        // this.effects[e.name] = new PathEffect(e); //index by name
       }
-      else if(type === 'single-click2') {
+      else if(type === 'single-click') {
         console.log("Adding effect " + e.name);
         this.effects[e.name] = new PointEffect(e);
       }
@@ -36,13 +36,15 @@ export class EffectManager {
 }
 
 export class Effect {
-  constructor({name, dropdownName, category, init, cursor, mouseActionType}) { 
+  constructor({name, dropdownName, category, tag, init, cursor, mouseActionType, onact}) { 
     this.name = name;
     this.dropdownName = dropdownName;
     this.category = category;
+    this.tag = tag;
     this.init = init;
     this.cursor = cursor;
     this.mouseActionType = mouseActionType;
+    this.onact = onact;
   }
 
   render(settings, points, canvas) {
@@ -61,8 +63,8 @@ export class Effect {
 
 export class PathEffect extends Effect {
   
-  constructor({name, dropdownName, category, init, cursor, mouseActionType, config}) { 
-    super({name, dropdownName, category, init, cursor, mouseActionType, config});
+  constructor({name, dropdownName, category, tag, init, cursor, mouseActionType, config}) { 
+    super({name, dropdownName, category, tag, init, cursor, mouseActionType, config});
     console.log(config);
     this.scale = parseFloat(config.scale);
     this.shapes = config.shapes;
@@ -73,7 +75,7 @@ export class PathEffect extends Effect {
   }
 
   //effect knows how to render given set of points, render canvas, and settings
-  render(settings, points, canvas) {
+  render(data, points, canvas) {
     canvas.noStroke();
 
     let shapeCount = 0; // Count of shapes drawn
@@ -95,12 +97,15 @@ export class PathEffect extends Effect {
 
 export class PointEffect extends Effect {
   // effects with mouse action type 'single-click', only have one point rather than a path
-  constructor({name, dropdownName, category, init, cursor, mouseActionType, config}) {
-    super({name, dropdownName, category, init, cursor, mouseActionType});
-    this.shape = config.shape;
+  constructor({name, dropdownName, category, tag, init, cursor, mouseActionType, onact}) {
+    super({name, dropdownName, category, tag, init, cursor, mouseActionType, onact});
   }
-  render(settings, points, canvas) {
+  render(data, points, canvas) {
     let point = points[0];
+    // data.x = point.x;
+    // data.y = point.y;
+    data.x = { type: 'number', value: Math.round(point.x) };
+    data.y = { type: 'number', value: Math.round(point.y) };
     // this.shape.apply(null, [{
     //   color: settings.color,
     //   x: settings.x,
@@ -109,78 +114,6 @@ export class PointEffect extends Effect {
     //   r2: settings.r2,
     //   npoints: settings.npoints
     // }, canvas]);
-    this.shape.apply(null, [settings, canvas]);
+    this.onact.apply(null, [data, canvas]);
   }
 }
-
-// export let starBrush = new PathEffect({
-//   name: "star brush", 
-//   dropdownName: "Star Brush",
-//   category: "NewBrushes",
-//   init: `Star brush in {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}
-//   with scale {id: 'scale', type: 'number', min:1, max:600, placeholder: 20}%
-//   along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
-//   cursor: './assets/cursors/star-solid.svg',
-//   mouseActionType: 'drag',
-//   scale: 20,
-//   shapes: [
-//     (x, y, size, c) => {
-//       c.star({color: [255, 0, 255], x: x, y: y, r1: size, r2: size/2, npoints: 5});
-//     },
-//   ],
-//   sizes: [10, 20, 30, 40, 50, 40, 30, 20],
-//   colors: [
-//     [255, 165,   0], // Orange
-//     [255, 215,   0], // Gold
-//   ],
-//   alpha: 0.75,
-//   stepSize: 20
-// });
-
-// export let mosaicBrush = new PathEffect({
-//   name: "mosaic brush",
-//   dropdownName: "Mosaic Brush",
-//   category: "NewBrushes",
-//   init: `Mosaic brush in {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}
-//   with scale {id: 'scale', type: 'number', min:1, max:600, placeholder: 20}%
-//   along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
-//   cursor: './assets/cursors/star-solid.svg',
-//   mouseActionType: 'drag',
-//   scale: 20,
-//   shapes:
-//   [
-//     (x, y, size, pg) => {
-//       pg.ellipse(x, y, size, size);
-//     },
-//     (x, y, size, pg) => {
-//       pg.rect(x, y, size, size);
-//     },
-//     (x, y, size, pg) => {
-//       pg.triangle(
-//         x + size / 2,
-//         y + size / 2,
-//         x - size / 2,
-//         y + size / 2,
-//         x,
-//         y - size / 2
-//       );
-//     },
-//   ],
-//   sizes: [10, 20, 15, 8],
-//   colors:
-//   [
-//     [255,   0,   0], // Red
-//     [255, 165,   0], // Orange
-//     [255, 215,   0], // Gold
-//     [128, 128,   0], // Olive
-//     [  0, 128,   0], // Green
-//     [ 38, 162, 224], // Light blue
-//     [  0,   0, 255], // Blue
-//     [ 75,   0, 130], // Indigo
-//     [128,   0, 128], // Purple
-//     [238, 130, 238], // Violet
-//     [255, 192, 203], // Pink
-//   ],
-//   alpha: 0.75,
-//   stepSize: 20
-// });

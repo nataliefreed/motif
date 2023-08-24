@@ -1,10 +1,10 @@
 import Joy from '../../libraries/joy.js';
 
 export class JoyManager {
-  constructor(effects, brushstrokes, renderer) {
+  constructor(effects, brushstrokes, sketch) {
     let data = Joy.loadFromURL();
     this.loadEffects(effects);
-		this.renderer = renderer;
+		this.sketch = sketch;
     this.joy = new Joy({
 			// Where the Joy editor goes:
 			container: "#joy",
@@ -28,10 +28,10 @@ export class JoyManager {
 		
 			// What to do when the user makes a change:
 			onupdate: function(my) {
-        renderer.clear();
-        my.actions.act(brushstrokes); // pass in brush manager as target
-        my.stencils.act(brushstrokes);
-        renderer.render();
+        sketch.clear();
+        my.actions.act(sketch);
+        my.stencils.act(sketch);
+        sketch.render();
 			}
 		});
   }
@@ -49,13 +49,14 @@ export class JoyManager {
 					type: "motif/" + effect.name,
 					tags: ["motif", "action"],
 					init: effect.init,
-					onact: (my) => { 
-						//find brushstroke by id, generate and call its onact function
-						let brushAction = my.target.getOnActByID(my.data.id);
-						brushAction(my.data);
-					}
+					onact: effect.onact
+					// onact: (my) => { 
+					// 	//find brushstroke by id, generate and call its onact function
+					// 	let brushAction = my.target.getOnActByID(my.data.id);
+					// 	//TODO: if undefined, make a new brushstroke!
+					// 	brushAction(my.data);
+					// }
 				};
-				console.log("actor settings", template);
 				Joy.add(template);
 			});
 		});
@@ -72,7 +73,7 @@ export class JoyManager {
 					type: "stencils/" + effect.name,
 					tags: ["stencils", "action"],
 					init: effect.init,
-					// onact: effect.onact
+					onact: effect.onact
 				};
 				console.log("actor settings " + template);
 				Joy.add(template);	
@@ -80,12 +81,12 @@ export class JoyManager {
     });
   }
 
-  addEvent(category, effectName, settings) {
-		console.log("adding event to joy", category, effectName, settings);    
-    if(category == 'motif') {
-      this.joy.actions.addAction(category+'/'+effectName, undefined, settings);
-    } else if(category == 'stencils') {
-      this.joy.stencils.addAction(category+'/'+effectName, undefined, settings);
+  addEvent(tag, effectName, settings) {
+		console.log("adding event to joy", tag, effectName, settings);    
+    if(tag == 'motif') {
+      this.joy.actions.addAction(tag+'/'+effectName, undefined, settings);
+    } else if(tag == 'stencils') {
+      this.joy.stencils.addAction(tag+'/'+effectName, undefined, settings);
     }
     this.joy.actions.update();
   }

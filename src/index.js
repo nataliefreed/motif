@@ -23,17 +23,18 @@ class MotifApp {
 		this.brushstrokes = new BrushstrokeManager();
 		
 		this.ui = new UIManager(this.effects.getEffects());
-		this.ui.generateEffectToolbarUI();
+		this.ui.generateEffectToolbarUI(); //categories and brush/effect buttons
 
-		this.canvasRenderer = new P5Renderer();
-		this.joyManager = new JoyManager(this.effects.getEffects(), this.brushstrokes, this.canvasRenderer);
-		this.initUI(); //categories and brush/effect buttons
+		this.sketch = new P5Renderer();
+		this.joyManager = new JoyManager(this.effects.getEffects(), this.brushstrokes, this.sketch);
+		this.initUI();
 		// this.joy.actions.update();
 
 		this.activeBrushstroke = null;
 	}
 	
 	initUI() {
+		
 		//List sorting
     // Sortable.mount(new MultiDrag());
 		let sortablelist = document.getElementById('actions-joy-list');
@@ -47,7 +48,6 @@ class MotifApp {
 			}
     });
 
-		
 		//Mouse event listeners
 		let dragging = false;
 		let mouseDownOverCanvas = false; //TODO: doesn't work if you leave canvas with mouse down
@@ -55,28 +55,25 @@ class MotifApp {
 		document.getElementById('drawing-canvas').addEventListener('mousedown', e => {
 			dragging = false;
 			mouseDownOverCanvas = true;
+			console.log("mouse down!");
 
 			let activeEffect = this.effects.getEffectByName(this.ui.getSelectedEffect());
 			console.log("activeEffect", activeEffect);
-			console.log(activeEffect instanceof Effect);
-			console.log(activeEffect.mouseActionType);
-			console.log(activeEffect.getValue('mouseActionType'));
 
 			if(activeEffect) {
 				// if(activeEffect.getValue('mouseActionType') == 'drag') {
 
-				let userSettings = { x: this.canvasRenderer.mouseX, y: this.canvasRenderer.mouseY };
-
+				let point = { x: this.sketch.mouseX, y: this.sketch.mouseY };
 
 					if(!this.activeBrushstroke) {
 						this.activeBrushstroke = new Brushstroke(
 							activeEffect,
-							userSettings,
+							point,
 							currentColorHSV,
-							this.canvasRenderer);
+							this.sketch);
 						this.brushstrokes.addBrushstroke(this.activeBrushstroke);
-						this.joyManager.addEvent(...this.activeBrushstroke.makeJoyEvent('motif', userSettings));
-						this.canvasRenderer.loop(); //render preview of brushstroke
+						this.joyManager.addEvent(...this.activeBrushstroke.makeJoyEvent());
+						this.sketch.loop(); //render preview of brushstroke
 					}
 				// }
 				// else if(activeEffect.getValue('mouseActionType') == 'single-click2') {
@@ -122,8 +119,10 @@ class MotifApp {
 			if(mouseDownOverCanvas) {
 				dragging = true;
 				if(this.activeBrushstroke) {
-					this.activeBrushstroke.addPoint({x: this.canvasRenderer.mouseX, y: this.canvasRenderer.mouseY});
-					this.activeBrushstroke.renderPreview({}); //current canvas settings go here
+					this.activeBrushstroke.addPoint({x: this.sketch.mouseX, y: this.sketch.mouseY});
+					if(this.activeBrushstroke.getType() === 'drag') {
+					  this.activeBrushstroke.renderPreview({}); //current canvas settings go here
+					}
 				}
 				else {
 					console.log("No active brushstroke found");
@@ -137,8 +136,10 @@ class MotifApp {
 
 			if(this.activeBrushstroke) {
 				if(this.activeBrushstroke.getType() === 'drag') {
-					this.activeBrushstroke.addPoint({x: this.canvasRenderer.mouseX, y: this.canvasRenderer.mouseY});
+					this.activeBrushstroke.addPoint({x: this.sketch.mouseX, y: this.sketch.mouseY});
 
+					this.activeBrushstroke.finalizePath();
+					
 					// if(activeEffect == 'straight line') {
 					// 	this.joyManager.addEvent('motif', activeEffect, {
 					// 		x1: { type:'number', value: Math.round(this.mousePath.getPoint(0).x) },
@@ -172,60 +173,17 @@ class MotifApp {
 					// 	  maxSize: {type:'number', value: currentLineWeight*2}
 					// 	});
 					// }
-					this.activeBrushstroke.finalizePath();
 					
 					
 				}
 				this.activeBrushstroke = null;
-				this.canvasRenderer.noLoop();
+				this.sketch.noLoop();
 				console.log("no longer rendering brushstroke preview");
 			}
 			randomizeCurrentColor();
 		});
 
-		/* bookmark - add code button handlers here
-
-function moveSelectedCodeLineUp() {
-  let lineNum = getSelectedLineNumber();
-  if(lineNum < history.length) {
-    if(lineNum > 0) {
-      let line = history[lineNum];
-      history.splice(lineNum, 1);
-      history.splice(lineNum-1, 0, line);
-      updateCode();
-      let newLineNum = lineNum - 1;
-      markSelected("code-line", "code-line-" + newLineNum);
-    }
-  }
-}
-
-function deleteSelectedCodeLine() {
-  let lineNum = getSelectedLineNumber();
-  if(lineNum < history.length) {
-    //add to undo/redo here
-    history.splice(lineNum, 1);
-    updateCode();
-    if(history.length > 0) {
-      if(lineNum > 0 && lineNum < history.length) {
-        markSelected("code-line", "code-line-" + lineNum);
-      }
-      else if(lineNum == 0) {
-        markSelected("code-line", "code-line-0");
-      }
-    }
-  }
-}
-		*/
-
-		// document.getElementById('undo-button').addEventListener("click", (e) => {
-		// 	console.log("undo");
-	  // });
-
-		// document.getElementById('redo-button').addEventListener("click", (e) => {
-		// 		console.log("redo");
-		// });
-		
-		document.getElementById('clear-all-button').addEventListener("click", (e) => {
+    document.getElementById('clear-all-button').addEventListener("click", (e) => {
 				console.log("clear all");
 		});
 		
@@ -233,40 +191,13 @@ function deleteSelectedCodeLine() {
 			this.canvasRenderer.save('my drawing.jpg');
 		});
 		
-		// document.getElementById('move-up-button').addEventListener("click", (e) => {
-		// 		console.log("move up");
-		// });
-		
-		// document.getElementById('move-down-button').addEventListener("click", (e) => {
-		// 		console.log("move down");
-		// });
-		
-		// document.getElementById('add-above-button').addEventListener("click", (e) => {
-		// 		console.log("add above");
-		// });
-		
-		// document.getElementById('add-below-button').addEventListener("click", (e) => {
-		// 		console.log("add below");
-		// });
-		
-		// document.getElementById('remix-button').addEventListener("click", (e) => {
-		// 		console.log("remix");
-		// });
-		
 		document.getElementById('shuffle-button').addEventListener("click", (e) => {
 				console.log("shuffle all");
 		});
 
 		document.getElementById('shuffle-button').addEventListener("click", (e) => {
 			console.log("remix all");
-	});
-		
-		// document.getElementById('group-button').addEventListener("click", (e) => {
-		// 		console.log("group");
-		// });
-		
-
-	
+	  });
 	}
 }
 
