@@ -6,14 +6,6 @@ export class P5Renderer {
     return this.sketch;
   }
 
-  clear() {
-    this.sketch.clear();
-  }
-
-  render() {
-    this.sketch.render();
-  }
-
   getSketch() {
     return new p5(p => {
       

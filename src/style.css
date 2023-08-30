@@ -8,6 +8,11 @@
     padding: 5px;
 }
 
+.effect-controls {
+    background-color: #eeeeee;
+    padding: 5px;
+}
+
 .top-menu {
     background-color: green;
 }
@@ -78,7 +83,8 @@
 }
 
 .code-button {
-    margin: 10px 2px 10px 2px;
+    margin: 5px;
+    padding: 10px;
 }
 
 .effect-button.selected {
@@ -94,10 +100,11 @@
     margin-top: 20px;
 }
 
-#download-button, #undo-button, #redo-button, #clear-all-button {
+#download-button{
     float: right;
-    padding: 10px;
     margin: 5px;
+    padding: 10px;
+    /* background-color: rgb(45, 141, 77); */
 }
 
 body {
@@ -177,6 +184,15 @@ body{
     /* margin: 10px 10px 10px; */
     background: #ffffff;
     overflow: scroll;
+}
+
+#joy-preview{
+    /* width:600px;
+    height:545px; */
+    /* margin: 10px 10px 10px; */
+    /* left: 600px;
+    top: 100px; */
+    float: right; /* TODO: line up with Joy */
 }
 
 .hidden {

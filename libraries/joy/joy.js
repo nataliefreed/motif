@@ -7,90 +7,243 @@ VERSION 0 (the incredibly clunky first version) (sorry)
 Created by Nicky Case http://ncase.me/
 
 *****************/
+import { 
+  _generateUID, _forceToArray, _clone, _getParameterByName, _configure, _insertTextAtCursor, _selectAll, _unselectAll, _fixStringInput, _blurOnEnter, _preventWeirdCopyPaste, _forceToRGB } from './joy-utils.js';
 
-// THE JOY MASTER
-function Joy(options){
+class Joy extends Actor{
 
-  // You can call this as "new Joy()" or just "Joy()" 
-  // var self = (this==window) ? {} : this;
-  var self = {}; //NF changed with module import
+  static templates = [];
+  static modules = {};
 
-  // Modules to import?
-  if(options.modules){
-    for(var i=0;i<options.modules.length;i++){
-      Joy.loadModule(options.modules[i]);
+  constructor(options) {
+      // Modules to import?
+      if(options.modules) {
+          options.modules.forEach(module => Joy.loadModule(module));
+      }
+
+      // this.rootActor = new Actor({
+      //   init: options.init,
+      //   data: options.data,
+      //   onupdate: options.onupdate
+      // });
+      super(options);
+
+      initReferences(this.rootActor); // set up reference list for any synchronized actors
+
+      // Allow previewing of... actions, numbers, variables?
+      this.previewActions = this.previewActions === undefined ? true : this.previewActions;
+      this.previewNumbers = this.previewNumbers === undefined ? true : this.previewNumbers;
+      this.activePreview = null;
+
+      // And: automatically create MY widget!
+      this.createWidget();
+
+      // Append my dom to container specified by HTML element or CSS selector
+      if(this.container) {
+          if(typeof this.container === "string") 
+              this.container = document.body.querySelector(this.container);
+          this.container.appendChild(rootActor.dom);
+      }
+
+      // Initialize UI & Modal
+      this._initUI();
+      this._initModal();
+
+      // Update!
+      this.onupdate = this.onupdate || function(my) {};
+      this.update();
+  }
+
+  canPreview(type) {
+      type = type.charAt(0).toUpperCase() + type.slice(1);
+      const allowed = this["preview" + type];
+      return allowed && !this.activePreview;
+  }
+
+  update() {
+      const my = {
+          actor: this,
+          data: {}
+      };
+
+      // Try to pre-evaluate all data beforehand!
+      if(this.children) {
+          this.children.forEach(childActor => {
+              const dataID = childActor.dataID;
+              if(dataID) {
+                  const value = childActor.get();
+                  my.data[dataID] = value;
+              }
+          });
+
+          // Aliases to all children too, though
+          this.children.forEach(child => {
+              if(child.id) my[child.id] = child;
+          });
+      }
+
+      // On Update!
+      this.onupdate(my);
+  }
+
+  _initUI() {
+    // CSS
+    this.dom.classList.add("joy-master");
+
+    // Manual Scroll (to prevent it propagating up...)
+    this.container.addEventListener('wheel', this.handleScroll.bind(this));
+
+    // Prevent accidental backspace-history
+    document.body.addEventListener('keydown', this.preventBackspaceNavigation.bind(this));
+  }
+
+  // Manual Scroll (to prevent it propagating up...)
+  handleScroll(event) {
+      const delta = event.deltaY;
+      this.container.scrollTop += delta;
+      event.preventDefault();
+      return false;
+  }
+
+  // Prevent accidental backspace-history
+  // because why the heck is this even a thing, jeez.
+  // thx: https://stackoverflow.com/a/2768256
+  preventBackspaceNavigation(event) {
+    if(event.keyCode === 8) {
+      let doPrevent = true;
+      const types = ["text", "password", "file", "search", "email", "number", "date", "color", "datetime", "datetime-local", "month", "range", "search", "tel", "time", "url", "week"];
+      const d = event.srcElement || event.target;
+      const disabled = d.getAttribute("readonly") || d.getAttribute("disabled");
+      
+      if (!disabled) {
+        if (d.isContentEditable) {
+            doPrevent = false;
+        } else if (d.tagName.toUpperCase() === "INPUT") {
+            let type = d.getAttribute("type");
+            if (type) {
+                type = type.toLowerCase();
+            }
+            if (types.includes(type)) {
+                doPrevent = false;
+            }
+        } else if (d.tagName.toUpperCase() === "TEXTAREA") {
+            doPrevent = false;
+        }
+     }
+     if (doPrevent) {
+        event.preventDefault();
+        return false;
+     }
     }
   }
-
-  // I'm a Joy.Actor!
-  Joy.Actor.call(self, options);
-
-  // Initialize References
-  Joy.initReferences(self);
-
-  // Allow previewing of... actions, numbers, variables?
-  if(self.previewActions==undefined) self.previewActions = true;
-  if(self.previewNumbers==undefined) self.previewNumbers = true;
-  //if(self.previewVariables==undefined) self.previewVariables = false;
-  self.activePreview = null;
-  self.canPreview = function(type){
-    type = type.charAt(0).toUpperCase() + type.slice(1);
-    var allowed = self["preview"+type];
-    return allowed && !self.activePreview;
-  };
-
-  // And: automatically create MY widget!
-  self.createWidget();
-  if(self.container){ // ...and auto-add my DOM to a container, if provided in options
-    if(typeof self.container==="string") self.container=document.body.querySelector(self.container);
-    self.container.appendChild(self.dom);
-  }
-
-  // Initialize UI & Modal
-  Joy.ui.init(self);
-  Joy.modal.init(self);
-
-  // Update!
-  /*
-  Helps improve performance by pre-evaluating data beforehand
-  and provides a convenient way to access the "self" object's
-  data and children in the "onupdate" function.
-  */
-  self.onupdate = self.onupdate || function(my){};
-  self.update = function(){
-
-    // Create a fake "my" 
-    var my = {
-      actor: self,
-      data: {}
-    };
-
-    // Try to pre-evaluate all data beforehand!
-    self.children.forEach(function(childActor){
-      var dataID = childActor.dataID;
-      if(dataID){
-        var value = childActor.get();
-        my.data[dataID] = value;
-      }
-    });
-
-    // Aliases to all children too, though
-    self.children.forEach(function(child){
-      if(child.id) my[child.id] = child;
-    });
-
-    // On Update!
-    self.onupdate(my);
-
-  };
-  self.update();
-
-  // Return to sender
-  return self;
-
 }
 
-/*****************
+  /*****************
+
+  ACTOR TEMPLATES that future Actors can be made from! Looks like this:
+
+  Joy.add({
+    name: "Turn turtle", // what the Actions Widget calls it
+    type: "turtle/turn", // what it's called in Actor & Data
+    tags: ["turtle", "action"], // meta tags
+    init: "Turn {id:'angle', type:'number', placeholder:10} degrees", // for init'ing actor & widget
+    onact: function(my){
+      my.target.turn(my.data.angle);
+    }
+  });
+
+  *****************/
+
+  // Add a new template to the list of actor templates.
+  static add(template) {
+      this.templates.push(template);
+  }
+
+  // Retrieve an actor template by its unique type.
+  // eg. "number", "color", "turtle/forward"
+  static getTemplateByType(type) {
+      const template = this.templates.find(temp => temp.type === type);
+      if (!template) throw Error(`No actor template of type '${type}'!`);
+      return template;
+  }
+
+  // Retrieve all actor templates that match a specific tag.
+  // eg. "action", "turtle"
+  static getTemplatesByTag(tag) {
+      return this.templates.filter(template => template.tags.includes(tag));
+  }
+
+  // Modify an existing actor template, either update or rename it
+  static modify(type, renameOrCallback, callback = null) {
+      const oldTemplate = this.getTemplateByType(type);
+      const newTemplate = {...oldTemplate};  // Shallow copy using spread operator
+
+      if (typeof renameOrCallback === "string") {
+          oldTemplate.type = renameOrCallback;
+          if (callback) {
+              Object.assign(newTemplate, callback(oldTemplate));
+          }
+      } else {
+          Object.assign(newTemplate, renameOrCallback(oldTemplate));
+          const index = this.templates.indexOf(oldTemplate);
+          if (index !== -1) {
+              this.templates.splice(index, 1);  // Remove the old template
+          }
+      }
+      this.add(newTemplate);  // Add the modified/new template
+  }
+
+  /*****************
+
+  JOY MODULES
+
+  So that a player can slowly step up the staircase of complexity
+  (also maybe import Actors in the future?)
+
+  *****************/
+
+  // Registers a new module with a specified ID.
+  static module(id, callback) {
+    this.modules[id] = callback;
+  }
+
+  // Loads and executes a module by its ID.
+  static loadModule(id) {
+    const module = this.modules[id];
+    if (!module) throw new Error(`There's no module called '${id}'!`);
+    module();
+  }
+
+  /******************************
+
+  SAVE & LOAD
+
+  No need for a server!
+  Just compresses JSON with LZ-String and puts it in the URL
+
+  ******************************/
+
+  static saveToURL = function(data) {
+    var json = JSON.stringify(data); // Stringify
+    var compressed = LZString.compressToEncodedURIComponent(json); // Compress
+    var url = window.location.origin+window.location.pathname+"?data="+compressed; // append to current URL
+    // TODO: keep # and OTHER query stuff the same, just change ?data
+    return url;
+  };
+
+  static loadFromURL = function() {
+    var hash = _getParameterByName("data");
+    var decompressed = LZString.decompressFromEncodedURIComponent(hash);
+    if(decompressed){
+      var data = JSON.parse(decompressed);
+      return data;
+    }else{
+      return null;
+    }
+  };
+}
+
+/**** ACTORS ***
 
 ACTORS help the Player, Editor & Data talk to each other.
 
@@ -105,390 +258,396 @@ To create an Actor, you need to pass it a "options" object like so:
 
 *****************/
 
-Joy.Actor = function(options, parent, data){
+class Actor {
 
-  var self = this;
+  constructor(options, parent, data) {
+    this._class_ = "Actor";
+    this.options = options;
+    this.parent = parent;
+    this.top = this.parent ? this.parent.top : this;  // if no parent, I'M top dog.
+    this.previewData = null;
+    
+    // If an actor type is provided in options, fetch the corresponding template
+    // and configure this actor based on that template
+    this.type = options.type;
+    if (this.type) {
+      let actorTemplate = Joy.getTemplateByType(this.type);
+      _configure(actorTemplate);
+    }
+    // Now configure the actor with any additional options provided
+    _configure(this.options);
 
-  // Meta
-  self._class_ = "Actor";
-  self.options = options;
-  self.parent = parent;
-  self.top = self.parent ? self.parent.top : self; // if no parent, I'M top dog.
+    this.children = []; // Children actors, if any
+    this.dom = null;  // The DOM representation of this actor. Initialized later in "createWidget"
+    this._myEditLock = false;
 
-  // Inherit from Actor Template, if any. THEN inherit from "options"
-  self.type = options.type;
-  if(self.type){
-    var actorTemplate = Joy.getTemplateByType(self.type);
-    _configure(self, actorTemplate);
+    this._initData();
+
+    // If there's an initialization method or string provided, use it.
+    // This allows for custom setup logic when the actor is created.
+    if(this.init){
+      // If the init is a string, use it as an initialization script
+      if(typeof this.init==="string") Joy.initializeWithString(self, self.init);
+      // If the init is a function, call it and pass the current actor as the argument
+      if(typeof this.init==="function") self.init(self);
+    }
+
+    // WATCH DATA
+    watch(this.data, _onDataChange);
   }
-  _configure(self, self.options);
 
-  // Adding child actors
-  self.children = [];
-  self.addChild = function(child, data){
+  _initData() {
+    /////////////////////////////////
+    // ACTOR <-> DATA: //////////////
+    /////////////////////////////////
 
-    // If child's not an Actor, it's options to create a new Actor.
-    if(child._class_!="Actor") child = new Joy.Actor(child, self, data);
-    self.children.push(child);
+    // If placeholder is undefined, set it to an empty object
+    if (this.placeholder === undefined) {
+      this.placeholder = {};
+    }
 
-    // If it has an ID, reference child with ID
-    if(child.id) self[child.id] = child;
+    // If placeholder is a function, run it!
+    if (typeof this.placeholder === "function") {
+        this.placeholder = this.placeholder();
+    }
 
-    // gimme
+    // Ensure the placeholder is an object or array
+    // If it's not an object or array, convert it to an object with a 'value' property
+    if (typeof this.placeholder !== "object" || Array.isArray(this.placeholder)) {
+        this.placeholder = {
+            value: _clone(this.placeholder)
+        };
+    }
+
+    // // If data type not already specified, set it to the actor's type
+    if (!this.placeholder.type) {
+        this.placeholder.type = this.type;
+    }
+
+    // If you didn't already pass in a data object, let's figure it out!
+    // Use the provided data or fall back to the actor's current data property
+    this.data = this.data || data;
+
+    // If still no data, determine where the data should come from
+    if (!this.data) {
+      let parent = this.parent;
+      let dataID = this.dataID;
+
+      // If the actor has a parent and a data ID
+      if (parent && dataID) {
+          // If the parent doesn't already have data for this actor's data ID, use the placeholder
+          if (!parent.data[dataID]) {
+              parent.data[dataID] = _clone(this.placeholder);
+          }
+
+          // Set the actor's data to the relevant part of the parent's data
+          this.data = parent.data[dataID];
+      } else {
+          // If the actor doesn't have a parent or data ID, it's standalone data
+          this.data = _clone(this.placeholder);
+      }
+    }
+  }
+
+  // Initializes the actor with a given markup string
+  initializeWithString(markup) {
+    const actorOptions = [];
+    let html = markup;
+
+    // Extract actor options from the markup
+    html = this._extractActorOptions(html, actorOptions);
+
+    // Initialize child actors from extracted options.
+    actorOptions.forEach((actorOption) => this.addChild(actorOption));
+
+    // Create and initialize the widget.
+    this._initializeWidgetFromMarkup(html);
+  }
+
+  // Extracts actor options from the given markup
+  _extractActorOptions(markup, actorOptions) {
+    let html = markup;
+
+    // Split the markup into Actor Options & Widget HTML
+    let startIndex = -1;
+    let endIndex = -1;
+    let stack = 0;
+    // Go through each character. When you find a top-level "{...}" JSON string,
+    // 1) parse it into an Actor Option
+    // 2) replace it in the markup with a <span> saying where its widget should go
+    for(var i=0; i<html.length; i++){
+      var character = html[i];
+
+      // ONLY the top-level {...}'s...
+      if(stack==0 && character=="{") startIndex=i;
+      if(character=="{") stack++;
+      if(character=="}") stack--;
+      if(stack==0 && character=="}"){
+        endIndex = i+1;
+
+        // Cut out start to end, save as JSON & replace markup with <span>
+        var json = html.slice(startIndex, endIndex);
+        json = json.replace(/(\w+)\:/g,"'$1':"); // cleanup: give nameerties quotes
+        json = json.replace(/\'/g,'"'); // cleanup: replace ' with "
+        json = JSON.parse(json);
+        json.dataID = json.dataID || json.id; // cleanup: dataID=id by default
+        actorOptions.push(json); // remember option!
+        html = html.substr(0, startIndex)
+            + "<span id='widget_"+json.id+"'></span>"
+            + html.substr(endIndex); // replace markup
+
+        // GO BACK TO THE BEGINNING & START OVER
+        // because i'm too lazy to calculate where the index should go now
+        i=0;
+        startIndex = -1;
+        endIndex = -1;
+        stack = 0;
+      }
+    }
+    return html;
+  }
+
+  // Initializes the actor's widget using the processed markup.
+  _initializeWidgetFromMarkup(html) {
+      this.dom = document.createElement("span");
+      this.dom.innerHTML = html;
+
+      this.children.forEach((child) => {
+        child.createWidget();
+        const selector = "#widget_" + child.id;
+        const span = this.dom.querySelector(selector);
+        this.dom.replaceChild(child.dom, span);
+      });
+  }
+
+  addChild(child, data) {
+    if (child._class_ !== "Actor") child = new Actor(child, this, data);
+    this.children.push(child);
+    if (child.id) this[child.id] = child;
     return child;
+  }
 
-  };
-  self.removeChild = function(child){
-    _removeFromArray(self.children, child);
+  removeChild(child) {
+    this.children = this.children.filter(c => c !== child);
     child.kill();
-  };
+  }
 
-  // Update
-  self.update = function(){
-    if(self.onupdate) self.onupdate(self); // TODO: make consistent with .act()
-    if(self.parent) self.parent.update();
-  };
+  update() {
+    if (this.onupdate) this.onupdate(this);
+    if (this.parent) this.parent.update();
+  }
 
-  // Kill!
-  self.onkill = self.onkill || function(){};
-  self.kill = function(){
-
+  kill() {
     // Remove my DOM, if any.
-    if(self.dom && self.dom.parentNode) self.dom.parentNode.removeChild(self.dom);
+    if (this.dom && this.dom.parentNode) this.dom.parentNode.removeChild(this.dom);
 
     // Un-watch my data
-    unwatch(self.data, _onDataChange);
-
-    // Kill all children, too
-    while(self.children.length>0){
-      self.removeChild(self.children[0]);
+    unwatch(this.data, this._onDataChange);
+    
+    // Kill all child nodes, too
+    while (this.children.length > 0) {
+      this.removeChild(this.children[0]);
     }
-
     // On Kill?
-    self.onkill(self);
-
-  };
-
-  /////////////////////////////////
-  // ACTOR <-> DATA: //////////////
-  /////////////////////////////////
-
-  // Placeholder... convert to {value:w/e} object.
-  if(self.placeholder===undefined){
-    // If nothing, blank object.
-    self.placeholder = {};
-  }
-  if(typeof self.placeholder==="function"){
-    // If placeholder's a function, run it!
-    self.placeholder = self.placeholder();
-  }
-  if(typeof self.placeholder!=="object" || Array.isArray(self.placeholder)){
-    // If placeholder value's not an object (or is array)
-    self.placeholder = {
-      value: _clone(self.placeholder)
-    };
-  }
-  // If data type not already specified, do that!
-  if(!self.placeholder.type){
-    self.placeholder.type = self.type;
-  }
-
-  // If you didn't already pass in a data object, let's figure it out!
-  self.data = self.data || data;
-  if(!self.data){
-    var parent = self.parent;
-    var dataID = self.dataID;
-    if(parent && dataID){
-      // if nothing, put placeholder in parent
-      if(!parent.data[dataID]) parent.data[dataID] = _clone(self.placeholder); 
-      self.data = parent.data[dataID]; // i'm parent's sub-data!
-    }else{
-      // ...otherwise, I'm standalone data.
-      self.data = _clone(self.placeholder);
-    }
+    if (this.onkill) this.onkill(this);
   }
 
   // Get & Set!
-  self.getData = function(dataID){
-    return self.data[dataID];
-  };
-  self.setData = function(dataID, newValue, noUpdate){
-    _myEditLock = true; // lock!
-    if(newValue===undefined){
-      delete self.data[dataID]; // DELETE the thing!
-    }else{
-      self.data[dataID] = newValue;
+  getData(dataID) {
+    return this.data[dataID];
+  }
+
+  setData(dataID, newValue, noUpdate) {
+    this._myEditLock = true;
+    
+    if (newValue === undefined) {
+      delete this.data[dataID];
+    } else {
+      this.data[dataID] = newValue;
     }
-    setTimeout(function(){ _myEditLock=false; },1); // some threading issue, i dunno
-    if(!noUpdate) self.update();
-  };
-  self.switchData = function(newData){
-    unwatch(self.data, _onDataChange); // unwatch old data
-    self.data = newData;
-    watch(self.data, _onDataChange); // watch new data
-    if(self.onDataChange) self.onDataChange(newData);
-  };
+    
+    setTimeout(() => { this._myEditLock = false; }, 1);
+    if (!noUpdate) this.update();
+  }
 
-  // WATCH DATA
-  var _myEditLock = false;
-  var _onDataChange = function(attr, op, newValue, oldValue){  
-    if(_myEditLock) return; // prevent double update
-    if(self.onDataChange) self.onDataChange();
-  };
-  watch(self.data, _onDataChange);
-
+  switchData(newData) {
+    unwatch(this.data, this._onDataChange);
+    this.data = newData;
+    watch(this.data, this._onDataChange);
+    if (this.onDataChange) this.onDataChange(newData);
+  }
 
   /////////////////////////////////
   // ACTOR <-> EDITOR: "WIDGETS" //
   /////////////////////////////////
 
-  self.dom = null; // to be created in "createWidget"!
+  // virtual init widget - placeholder if not redefined
+  initWidget() {
+    this.dom = document.createElement("span");
+    this.dom.innerHTML = `[todo: '${this.type}' widget]`;
+  }
 
-  // Init & Create Widget (if none, just put a "todo")
-  self.initWidget = self.initWidget || function(){
-    self.dom = document.createElement("span");
-    self.dom.innerHTML = "[todo: '"+self.type+"' widget]";
-  };
-  self.createWidget = function(){
-    self.initWidget(self); // bind
-    return self.dom;
-  };
-
-  // "Preview Data"
-  self.previewData = null;
-  
+  createWidget() {
+    this.initWidget();
+    return this.dom;
+  }
 
   /////////////////////////////////
   // ACTOR <-> PLAYER: "TARGETS" //
   /////////////////////////////////
 
-  // bookmark - act function
+  onact() {
+    console.log("empty onact method!");
+  }
 
-  // Actors can ACT ON targets...
-  self.onact = self.onact || function(){};
-  self.act = function(target, altData){
-
-    // Real or Preview data?
-    var data;
-    if(altData){
+  act(target, altData) {
+    let data;
+    // Determine which data to use:
+    // - Use provided 'altData' if available.
+    // - If not, check for 'previewData' (temporary or staging data).
+    // - Default to (stored?) data if neither of the above is provided
+    if (altData) {
       data = _clone(altData);
-    }else if(self.previewData){
-      data = _clone(self.previewData);
-    }else{
-      data = _clone(self.data);
+    } else if (this.previewData) {
+      data = _clone(this.previewData);
+    } else {
+      data = _clone(this.data); // existing data if no new or preview data?
     }
 
-    // Try to pre-evaluate all data beforehand!
-    self.children.forEach(function(childActor){
-      var dataID = childActor.dataID;
-      if(dataID){
-        var value = childActor.get(target);
+    // Pre-evaluate data using child actors:
+    // - Iterate through all child actors of the current object.
+    // - For each child actor with a 'dataID' property, retrieve a value based on the target.
+    // - Update the main 'data' object with the retrieved value.
+    this.children.forEach(childActor => {
+      const dataID = childActor.dataID;
+      if (dataID) {
+        const value = childActor.get(target);
         data[dataID] = value;
       }
     });
 
-    // On Act!
-    return self.onact({
-      actor: self,
+    // Call onact with current actor, target, and data
+    return this.onact({
+      actor: this,
       target: target,
       data: data
     });
-
-  };
+  }
 
   // ...or GET INFO from targets.
-  self.onget = self.onget || function(){};
-  self.get = function(target){
+  onget() {
+    console.log("empty onget method!");
+  }
 
-    // Real or Preview data?
-    var data = self.previewData ? self.previewData : self.data;
-    data = _clone(data);
+  get(target) {
+    const data = this.previewData ? this.previewData : this.data;
+    const clonedData = this._clone(data);
 
-    // On Get!
-    return self.onget({
-      actor: self,
+    return this.onget({
+      actor: this,
       target: target,
-      data: data
+      data: clonedData
     });
-
-  };
-
-  /////////////////////////////////
-  // INITIALIZE ///////////////////
-  /////////////////////////////////
-
-  // Initialization: string or function?
-  if(self.init){
-    if(typeof self.init==="string") Joy.initializeWithString(self, self.init);
-    if(typeof self.init==="function") self.init(self);
   }
 
-};
-
-/*****************
-
-ACTOR TEMPLATES that future Actors can be made from! Looks like this:
-
-Joy.add({
-  name: "Turn turtle", // what the Actions Widget calls it
-  type: "turtle/turn", // what it's called in Actor & Data
-  tags: ["turtle", "action"], // meta tags
-  init: "Turn {id:'angle', type:'number', placeholder:10} degrees", // for init'ing actor & widget
-  onact: function(my){
-    my.target.turn(my.data.angle);
+  _onDataChange(attr, op, newValue, oldValue) {
+    if (this._myEditLock) return;
+    if (this.onDataChange) this.onDataChange();
   }
-});
+}
 
-*****************/
+class SynchronizedActor extends Actor {
+  constructor(options, parent, data) {
+    super(options, parent, data);
+  }
+}
 
-// Add Template 
-Joy.templates = [];
-Joy.add = function(template){
-  Joy.templates.push(template);
-};
+class Modal {
+  constructor() {
+    // The main modal container
+    this.dom = document.createElement("div");
+    this.dom.id = "joy-modal";
+    document.body.appendChild(this.dom);
 
-// Get Template
-// NF: Only one type per actor, eg. "number", "color", "turtle/forward"
-Joy.getTemplateByType = function(type){
-  var template = Joy.templates.find(function(template){
-    return template.type==type;
-  });
-  if(!template) throw Error("No actor template of type '"+type+"'!");
-  return template;
-};
-// NF: Multiple tags per actor, eg. "action", "turtle"
-Joy.getTemplatesByTag = function(tag){
-  return Joy.templates.filter(function(template){
-    return template.tags.indexOf(tag)>=0;
-  });
-};
+    // Transparent background you click to close!
+    this.background = document.createElement("div");
+    this.background.id = "joy-bg";
+    this.background.onclick = () => {
+      this.currentUI.kill();
+    };
+    this.dom.appendChild(this.background);
 
-// Modify Templates
-Joy.modify = function(){
+      // The actual bubble box
+    this.box = document.createElement("div");
+    this.box.id = "joy-box";
+    this.box.className = "arrow_box";
+    this.dom.appendChild(this.box);
 
-  // Arguments: (type, callback) or (type, rename, callback)
-  var type, rename, callback;
-  if(arguments.length==2){
-    type = arguments[0];
-    callback = arguments[1];
-  }else{
-    type = arguments[0];
-    rename = arguments[1];
-    callback = arguments[2];
+    // NO SCROLL
+    this.dom.addEventListener('wheel', (event) => {
+      event.preventDefault();
+      return false;
+    });
   }
 
-  // New Template inherits from old...
-  var newTemplate = {};
-  var _old = Joy.getTemplateByType(type);
-  _configure(newTemplate, _old);
+  show(ui) {
+    this.dom.style.display = "block"; // hi
 
-  // Then inherits from modifications
-  var modifications = callback(_old);
-  _configure(newTemplate, modifications);
+    // Remember & add UI
+    this.currentUI = ui;
+    this.box.appendChild(ui.dom);
+    
+    // Position the Box
+    let position = ui.config.position || "below";
+    let boxBounds = this.box.getBoundingClientRect();
+    let sourceBounds = ui.config.source.getBoundingClientRect();
+    let x,y, margin=20;
 
-  // Then, either RENAME or REMOVE old actor template!
-  if(rename){
-    _old.type = rename;
-  }else{
-    _removeFromArray(Joy.templates, _old);
+    // HACK: IF BELOW & NO SPACE, do LEFT
+    if(position=="below"){
+      y = sourceBounds.top + sourceBounds.height + margin; // y: bottom
+      if(y + boxBounds.height > document.body.clientHeight){ // below page!
+        position = "left";
+      }
+    }
+
+    this.box.setAttribute("position", position);
+    switch(position){ // TODO: smarter positioning
+      case "below":
+        x = sourceBounds.left + sourceBounds.width/2; // x: middle
+        y = sourceBounds.top + sourceBounds.height + margin; // y: bottom
+        x -= boxBounds.width/2;
+        break;
+      case "left":
+        x = sourceBounds.left - margin; // x: left
+        y = sourceBounds.top + sourceBounds.height/2; // y: middle
+        x -= boxBounds.width;
+        y -= boxBounds.height/2;
+        break;
+    }
+    this.box.style.left = x + "px";
+    this.box.style.top = y + "px";
+
+    // On Open
+    if(this.currentUI.config.onopen) this.currentUI.config.onopen();
+
   }
 
-  // And add the new one!
-  Joy.add(newTemplate);
+  hide() {
+    this._emptyDOM(this.box);
+    this.dom.style.display = "none";
 
-};
+    // On Close
+    if (this.currentUI.config.onclose) this.currentUI.config.onclose();
+  }
 
-// Converts a string into an ENTIRE ACTOR
-Joy.initializeWithString = function(self, markup){
-  var actorOptions = [];
-  var html = markup;
-
-  // Split the markup into Actor Options & Widget HTML
-  var startIndex = -1;
-  var endIndex = -1;
-  var stack = 0;
-  // Go through each character. When you find a top-level "{...}" JSON string,
-  // 1) parse it into an Actor Option
-  // 2) replace it in the markup with a <span> saying where its widget should go
-  for(var i=0; i<html.length; i++){
-    var character = html[i];
-
-    // ONLY the top-level {...}'s...
-    if(stack==0 && character=="{") startIndex=i;
-    if(character=="{") stack++;
-    if(character=="}") stack--;
-    if(stack==0 && character=="}"){
-      endIndex = i+1;
-
-      // Cut out start to end, save as JSON & replace markup with <span>
-      var json = html.slice(startIndex, endIndex);
-      json = json.replace(/(\w+)\:/g,"'$1':"); // cleanup: give nameerties quotes
-      json = json.replace(/\'/g,'"'); // cleanup: replace ' with "
-      json = JSON.parse(json);
-      json.dataID = json.dataID || json.id; // cleanup: dataID=id by default
-      actorOptions.push(json); // remember option!
-      html = html.substr(0, startIndex)
-           + "<span id='widget_"+json.id+"'></span>"
-           + html.substr(endIndex); // replace markup
-
-      // GO BACK TO THE BEGINNING & START OVER
-      // because i'm too lazy to calculate where the index should go now
-      i=0;
-      startIndex = -1;
-      endIndex = -1;
-      stack = 0;
+  _emptyDOM(element) {
+    while (element.firstChild) {
+      element.removeChild(element.firstChild);
     }
   }
+}
 
-  // Create all child Actors
-  actorOptions.forEach(function(actorOption){
-    self.addChild(actorOption);
-  });
-
-  // Create Widget: html, and replace
-  self.createWidget = function(){
-
-    self.dom = document.createElement("span");
-    self.dom.innerHTML = html;
-
-    // Replace all <spans> with childrens' widgets.
-    self.children.forEach(function(child){
-
-      // Make child create a widget!
-      child.createWidget();
-
-      // Replace <span> with child's widget
-      var selector = "#widget_"+child.id;
-      var span = self.dom.querySelector(selector);
-      self.dom.replaceChild(child.dom, span);
-
-    });
-
-    // Return to sender
-    return self.dom;
-
-  };
-
-};
-
-/*****************
-
-JOY MODULES
-
-So that a player can slowly step up the staircase of complexity
-(also maybe import Actors in the future?)
-
-*****************/
-
-Joy.modules = {};
-Joy.module = function(id, callback){
-  Joy.modules[id] = callback;
-};
-Joy.loadModule = function(id){
-  var module = Joy.modules[id];
-  if(!module) throw Error("There's no module called '"+id+"'!");
-  module();
-};
 
 
 /******************************
@@ -500,27 +659,38 @@ This is so you can sync variables, functions, strings, object names, etc.
 Each reference should have: Unique ID, Tag, Data, Watchers
 // (when Watchers[].length==0, delete that reference. Garbage day)
 
+
+Refactor notes: Right now the root actor keeps track of the list of references
+and other specific actors (variables) create new references to be managed
+by the root actor. I'm not sure if all actors need to keep the ability to have
+their own list of references, or if this is something that should go only in the
+Joy class (the part that's not an actor) (that all actors should be able to use?)
+Maybe actors with locally scoped variables will need to keep their own list of
+references, eg. a for loop actor with an index variable.
+
+I think actor.top.data always references the main root actor right now, which 
+is how the child actors can access/modify it themselves.
+
+Leaving it all here for now.
+
 ******************************/
 
-Joy.initReferences = function(actor){
-  
-  // Create if not already
-  var topdata = actor.top.data;
-  if(!topdata._references) topdata._references={};
+// Function to initialize references (for synchronized actors)
+initReferences(actor) {
+      // Create if not already
+    let topdata = actor.top.data;
+    if(!topdata._references) topdata._references={};
 
-  // Zero out all connected, it's a brand new world.
-  for(var id in topdata._references){
-    var ref = topdata._references[id];
-    ref.connected = 0;
+    // Zero out all connected, it's a brand new world.
+    for(let id in topdata._references){
+      let ref = topdata._references[id];
+      ref.connected = 0;
   }
 
-};
-
-Joy.createReference = function(actor, tags, data){
-
+createReference = function(actor, tags, data){
   // The reference
-  var topdata = actor.top.data;
-  var reference = {
+  let topdata = actor.top.data;
+  let reference = {
     id: _generateUID(topdata._references),
     tags: _forceToArray(tags),
     data: data,
@@ -530,336 +700,44 @@ Joy.createReference = function(actor, tags, data){
 
   // Gimme
   return reference;
-
 };
 
-Joy.getReferenceById = function(actor, refID){
-  var topdata = actor.top.data;
+getReferenceById = function(actor, refID){
+  let topdata = actor.top.data;
   return topdata._references[refID];
 };
 
-Joy.getReferencesByTag = function(actor, tag){
-  var topdata = actor.top.data;
-  var refs = [];
-  for(var id in topdata._references){
-    var ref = topdata._references[id];
+getReferencesByTag = function(actor, tag){
+  let topdata = actor.top.data;
+  let refs = [];
+  for(let id in topdata._references){
+    let ref = topdata._references[id];
     if(ref.tags.indexOf(tag)>=0) refs.push(ref);
   }
   return refs;
 };
 
-Joy.connectReference = function(actor, refID){
-  var ref = Joy.getReferenceById(actor, refID);
+connectReference = function(actor, refID){
+  let ref = getReferenceById(actor, refID);
   ref.connected++;
 };
 
-Joy.disconnectReference = function(actor, refID){
-  var ref = Joy.getReferenceById(actor, refID);
+disconnectReference = function(actor, refID){
+  let ref = getReferenceById(actor, refID);
   ref.connected--;
-  if(ref.connected==0) Joy.deleteReference(actor, refID);
+  if(ref.connected==0) deleteReference(actor, refID);
 };
 
-Joy.deleteReference = function(actor, refID){
-  var topdata = actor.top.data;
-  var reference = topdata._references[refID];
+deleteReference = function(actor, refID){
+  let topdata = actor.top.data;
+  let reference = topdata._references[refID];
   delete topdata._references[refID];
 };
 
-/*
-Joy.watchReference = function(topdata, id){
-  var reference = topdata._references[id];
-  reference._creators++;
-  return reference;
-};
 
-Joy.unwatchReference = function(topdata, id){
-
-  // The reference?
-  var reference = topdata._references[id];
-  reference._creators--;
-
-  // If no more _creators, DELETE.
-  if(reference._creators==0) Joy.deleteReference(topdata, id);
-
-  return reference;
-
-};
-*/
-
-/******************************
-
-SAVE & LOAD
-
-No need for a server!
-Just compresses JSON with LZ-String and puts it in the URL
-
-******************************/
-
-Joy.saveToURL = function(data){
-  var json = JSON.stringify(data); // Stringify
-  var compressed = LZString.compressToEncodedURIComponent(json); // Compress
-  var url = window.location.origin+window.location.pathname+"?data="+compressed; // append to current URL
-  // TODO: keep # and OTHER query stuff the same, just change ?data
-  return url;
-};
-
-Joy.loadFromURL = function(){
-  var hash = _getParameterByName("data");
-  var decompressed = LZString.decompressFromEncodedURIComponent(hash);
-  if(decompressed){
-    var data = JSON.parse(decompressed);
-    return data;
-  }else{
-    return null;
-  }
-};
-/**********************************
-
-RANDOM CRAP TO MAKE MY LIFE EASIER
-
-TODO: namespace these to avoid conflict
-
-**********************************/
-
-// For true believers
-Math.TAU = 2*Math.PI;
-
-// Deep clone
-var _clone = function(json){
-  return JSON.parse(JSON.stringify(json));
-};
-
-// "Configure": or just slap all properties of one object onto another
-var _configure = function(target, config){
-  for(var key in config){
-    var value = config[key];
-    target[key] = value;
-  }
-};
-
-// Array stuff
-var _removeFromArray = function(array, toDelete){
-  var index = array.indexOf(toDelete);
-  if(index<0) return false;
-  array.splice(index,1);
-  return true;
-}
-
-// Instant space
-var _nbsp = function(){
-  var span = document.createElement("span");
-  span.innerHTML = "&nbsp;";
-  return span;
-};
-
-// When in Rome, use a completely unuseable numeric system
-// from http://blog.stevenlevithan.com/archives/javascript-roman-numeral-converter
-var _numberToRoman = function(num){
-    if (!+num)
-        return NaN;
-    var digits = String(+num).split(""),
-        key = ["","C","CC","CCC","CD","D","DC","DCC","DCCC","CM",
-               "","X","XX","XXX","XL","L","LX","LXX","LXXX","XC",
-               "","I","II","III","IV","V","VI","VII","VIII","IX"],
-        roman = "",
-        i = 3;
-    while (i--)
-        roman = (key[+digits.pop() + (i * 10)] || "") + roman;
-    var result = Array(+digits.join("") + 1).join("M") + roman;
-    return result.toLowerCase();
-}
-
-// Number to Alphabetic Base 26
-// from https://stackoverflow.com/a/8604591
-var _numberToAlphabet = function(a){
-
-  var alpha = "abcdefghijklmnopqrstuvwxyz";
-
-  // First figure out how many digits there are.
-  var c = 0;
-  var x = 1;      
-  while (a >= x) {
-    c++;
-    a -= x;
-    x *= 26;
-  }
-
-  // Now you can do normal base conversion.
-  var s = "";
-  for (var i = 0; i < c; i++) {
-    s = alpha.charAt(a % 26) + s;
-    a = Math.floor(a/26);
-  }
-  return s;
-
-};
-
-// Helps prevent copy-pasting weird stuff into contenteditable
-// see: http://jsfiddle.net/marinagon/1v63t05q/
-var _insertTextAtCursor = function(text){
-  var sel, range, html;
-  if(window.getSelection){
-    sel = window.getSelection();
-    if (sel.getRangeAt && sel.rangeCount) {
-      range = sel.getRangeAt(0);
-      range.deleteContents();
-      range.insertNode(document.createTextNode(text));
-    }
-  } else if (document.selection && document.selection.createRange) {
-    document.selection.createRange().text = text;
-  }
-};
-var _preventWeirdCopyPaste = function(element){
-  element.addEventListener("paste", function(e) {
-    e.preventDefault();
-    if (e.clipboardData && e.clipboardData.getData) {
-      var text = e.clipboardData.getData("text/plain");
-      document.execCommand("insertHTML", false, text);
-    } else if (window.clipboardData && window.clipboardData.getData) {
-      var text = window.clipboardData.getData("Text");
-      _insertTextAtCursor(text);
-    }
-  });
-};
-var _selectAll = function(input, collapseToEnd){
-  // select all text in contenteditable
-  // see http://stackoverflow.com/a/6150060/145346
-  var range = document.createRange();
-    range.selectNodeContents(input);
-    if(collapseToEnd) range.collapse(false); // total hack
-    var selection = window.getSelection();
-    selection.removeAllRanges();
-    selection.addRange(range);
-};
-var _unselectAll = function(){
-  var selection = window.getSelection();
-    selection.removeAllRanges();
-};
-var _fixStringInput = function(input){
-
-  // Empty? Fix that!
-  if(input.innerText==""){
-    input.innerHTML="&nbsp;"; // Is it empty? Let's fix that.
-    _selectAll(input);
-  }
-
-  // Line breaks? HECK NO!
-  if(input.innerHTML.search("<br>")>=0){
-    input.innerHTML = input.innerHTML.replace(/(\<br\>)+/g,"&nbsp;");
-    _selectAll(input, true);
-  }
-
-};
-var _blurOnEnter = function(input){
-  input.addEventListener('keypress', function(event){
-      if(event.which===13){
-          event.preventDefault();
-          input.blur();
-      }
-  });
-};
-
-// Find a unique ID within an object
-var _generateUID = function(obj){
-  var num = 0;
-  var id;
-  do{
-    //id = Math.floor(Math.random()*1000000)+""; // a MILLION random IDs, hopefully don't go over
-    id = "id"+num; // linear time but who cares
-    num++;
-  }while(obj[id]);
-  return id;
-};
-
-// Make this an array, if not already
-var _forceToArray = function(thing){
-  if(Array.isArray(thing)) return thing;
-  else return [thing];
-};
-
-// Generate a deterministically pseudo-random color from an ID
-// TODO: not looking like crap. same luminance, etc.
-//var _generateColor = function(obj){  };
-
-// Remove all children from a DOM
-var _emptyDOM = function(node){
-  while(node.hasChildNodes()) node.removeChild(node.lastChild);
-};
-
-// Get Query Param
-// thx to https://stackoverflow.com/a/901144
-var _getParameterByName = function(name, url) {
-    if (!url) url = window.location.href;
-    name = name.replace(/[\[\]]/g, "\\$&");
-    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
-        results = regex.exec(url);
-    if (!results) return null;
-    if (!results[2]) return '';
-    return decodeURIComponent(results[2].replace(/\+/g, " "));
-}
-
-////////////////////////////
-// Good Color Shtuff ///////
-// thx to: https://stackoverflow.com/questions/17242144/javascript-convert-hsb-hsv-color-to-rgb-accurately/17243070#17243070
-////////////////////////////
-
-/* accepts parameters
- * h  Object = {h:x, s:y, v:z}
- * OR 
- * h, s, v
-*/
-function _HSVtoRGB(h, s, v) {
-    var r, g, b, i, f, p, q, t;
-    if (arguments.length === 1) {
-        s = h.s, v = h.v, h = h.h;
-    }
-    h /= 360; // convert, yo.
-    i = Math.floor(h * 6);
-    f = h * 6 - i;
-    p = v * (1 - s);
-    q = v * (1 - f * s);
-    t = v * (1 - (1 - f) * s);
-    switch (i % 6) {
-        case 0: r = v, g = t, b = p; break;
-        case 1: r = q, g = v, b = p; break;
-        case 2: r = p, g = v, b = t; break;
-        case 3: r = p, g = q, b = v; break;
-        case 4: r = t, g = p, b = v; break;
-        case 5: r = v, g = p, b = q; break;
-    }
-    return [Math.round(r*255), Math.round(g*255), Math.round(b*255)];
-}
-function _HSVToRGBString(h,s,v){
-  if(arguments.length===1) {
-        s=h[1], v=h[2], h=h[0]; // cast to different vars
-    }
-  var rgb = _HSVtoRGB(h,s,v);
-  return "rgb("+rgb[0]+","+rgb[1]+","+rgb[2]+")";
-}
-// well, "random"
-var _randomHSVIndex = 0;
-var _randomHSVArray = [
-      [0, 0.6, 1.0],
-   [30, 0.8, 1.0],
-  //[120, 0.9, 0.9],
-  [210, 0.8, 1.0],
-  [260, 0.7, 1.0],
-  [310, 0.6, 1.0]
-];
-function _randomHSV(){
-  var hsv = _randomHSVArray[_randomHSVIndex];
-  _randomHSVIndex = (_randomHSVIndex+1)%_randomHSVArray.length;
-  //return _HSVToRGBString(hsv[0], hsv[1], hsv[2]);
-  return hsv;
-}
-function _forceToRGB(color){
-  if(Array.isArray(color)){
-    color = _HSVToRGBString(color[0], color[1], color[2]); // HSV
-  }
-  return color;
-}
-
-/**
+/** 
+ * WATCH.JS
+ * 
  * DEVELOPED BY
  * GIL LOPES BUENO
  * gilbueno.mail@gmail.com
@@ -874,57 +752,12 @@ function _forceToRGB(color){
  * LICENSE: MIT
  */
 "use strict";!function(a){"object"==typeof exports?module.exports=a():"function"==typeof define&&define.amd?define(a):(window.WatchJS=a(),window.watch=window.WatchJS.watch,window.unwatch=window.WatchJS.unwatch,window.callWatchers=window.WatchJS.callWatchers)}(function(){function x(){w=null;for(var a=0;a<v.length;a++)v[a]();v.length=0}var a={noMore:!1,useDirtyCheck:!1},b=[],c=[],d=[],e=!1;try{e=Object.defineProperty&&Object.defineProperty({},"x",{})}catch(a){}var f=function(a){var b={};return a&&"[object Function]"==b.toString.call(a)},h=function(a){return"[object Array]"===Object.prototype.toString.call(a)},i=function(a){return"[object Object]"==={}.toString.apply(a)},j=function(a,b){var c=[],d=[];if("string"!=typeof a&&"string"!=typeof b){if(h(a)&&b)for(var e=0;e<a.length;e++)void 0===b[e]&&c.push(e);else for(var e in a)a.hasOwnProperty(e)&&b&&void 0===b[e]&&c.push(e);if(h(b)&&a)for(var f=0;f<b.length;f++)void 0===a[f]&&d.push(f);else for(var f in b)b.hasOwnProperty(f)&&a&&void 0===a[f]&&d.push(f)}return{added:c,removed:d}},k=function(a){if(null==a||"object"!=typeof a)return a;var b=a.constructor();for(var c in a)b[c]=a[c];return b},l=function(a,b,c,d){try{Object.observe(a,function(a){a.forEach(function(a){a.name===b&&d(a.object[a.name])})})}catch(e){try{Object.defineProperty(a,b,{get:c,set:function(a){d.call(this,a,!0)},enumerable:!0,configurable:!0})}catch(e){try{Object.prototype.__defineGetter__.call(a,b,c),Object.prototype.__defineSetter__.call(a,b,function(a){d.call(this,a,!0)})}catch(c){n(a,b,d)}}}},m=function(a,b,c){try{Object.defineProperty(a,b,{enumerable:!1,configurable:!0,writable:!1,value:c})}catch(d){a[b]=c}},n=function(a,b,d){c[c.length]={prop:b,object:a,orig:k(a[b]),callback:d}},o=function(){f(arguments[1])?p.apply(this,arguments):h(arguments[1])?q.apply(this,arguments):r.apply(this,arguments)},p=function(a,b,c,d){if("string"!=typeof a&&(a instanceof Object||h(a))){if(h(a)){if(D(a,"__watchall__",b,c),void 0===c||c>0)for(var f=0;f<a.length;f++)p(a[f],b,c,d)}else{var f,g=[];for(f in a)"$val"==f||!e&&"watchers"===f||Object.prototype.hasOwnProperty.call(a,f)&&g.push(f);q(a,g,b,c,d)}d&&R(a,"$$watchlengthsubjectroot",b,c)}},q=function(a,b,c,d,e){if("string"!=typeof a&&(a instanceof Object||h(a)))for(var f=0;f<b.length;f++){var g=b[f];r(a,g,c,d,e)}},r=function(a,b,c,d,e){"string"!=typeof a&&(a instanceof Object||h(a))&&(f(a[b])||(null!=a[b]&&(void 0===d||d>0)&&p(a[b],c,void 0!==d?d-1:d),D(a,b,c,d),e&&(void 0===d||d>0)&&R(a,b,c,d)))},s=function(){f(arguments[1])?t.apply(this,arguments):h(arguments[1])?u.apply(this,arguments):I.apply(this,arguments)},t=function(a,b){if(!(a instanceof String)&&(a instanceof Object||h(a)))if(h(a)){for(var c=["__watchall__"],d=0;d<a.length;d++)c.push(d);u(a,c,b)}else{var e=function(a){var c=[];for(var d in a)a.hasOwnProperty(d)&&(a[d]instanceof Object?e(a[d]):c.push(d));u(a,c,b)};e(a)}},u=function(a,b,c){for(var d in b)b.hasOwnProperty(d)&&I(a,b[d],c)},v=[],w=null,y=function(){return w||(w=setTimeout(x)),w},z=function(a){null==w&&y(),v[v.length]=a},A=function(){var a=f(arguments[2])?C:B;a.apply(this,arguments)},B=function(a,b,c,d){var i,e=null,f=-1,g=h(a),j=function(c,d,h,i){var j=y();if(f!==j&&(f=j,e={type:"update"},e.value=a,e.splices=null,z(function(){b.call(this,e),e=null})),g&&a===this&&null!==e){if("pop"===d||"shift"===d)h=[],i=[i];else if("push"===d||"unshift"===d)h=[h],i=[];else if("splice"!==d)return;e.splices||(e.splices=[]),e.splices[e.splices.length]={index:c,deleteCount:i?i.length:0,addedCount:h?h.length:0,added:h,deleted:i}}};i=1==c?void 0:0,p(a,j,i,d)},C=function(a,b,c,d,e){a&&b&&(r(a,b,function(a,b,f,g){var j={type:"update"};j.value=f,j.oldvalue=g,(d&&i(f)||h(f))&&B(f,c,d,e),c.call(this,j)},0),(d&&i(a[b])||h(a[b]))&&B(a[b],c,d,e))},D=function(b,c,d,e){var f=!1,g=h(b);b.watchers||(m(b,"watchers",{}),g&&H(b,function(a,d,f,g){if(N(b,a,d,f,g),0!==e&&f&&(i(f)||h(f))){var j,k,l,m,n=b.watchers[c];for((m=b.watchers.__watchall__)&&(n=n?n.concat(m):m),l=n?n.length:0,j=0;j<l;j++)if("splice"!==d)p(f,n[j],void 0===e?e:e-1);else for(k=0;k<f.length;k++)p(f[k],n[j],void 0===e?e:e-1)}})),b.watchers[c]||(b.watchers[c]=[],g||(f=!0));for(var j=0;j<b.watchers[c].length;j++)if(b.watchers[c][j]===d)return;if(b.watchers[c].push(d),f){var k=b[c],o=function(){return k},q=function(d,f){var g=k;if(k=d,0!==e&&b[c]&&(i(b[c])||h(b[c]))&&!b[c].watchers){var j,l=b.watchers[c].length;for(j=0;j<l;j++)p(b[c],b.watchers[c][j],void 0===e?e:e-1)}return K(b,c)?void L(b,c):void(a.noMore||g!==d&&(f?N(b,c,"set",d,g):E(b,c,"set",d,g),a.noMore=!1))};a.useDirtyCheck?n(b,c,q):l(b,c,o,q)}},E=function(a,b,c,d,e){if(void 0!==b){var f,g,h=a.watchers[b];(g=a.watchers.__watchall__)&&(h=h?h.concat(g):g),f=h?h.length:0;for(var i=0;i<f;i++)h[i].call(a,b,c,d,e)}else for(var b in a)a.hasOwnProperty(b)&&E(a,b,c,d,e)},F=["pop","push","reverse","shift","sort","slice","unshift","splice"],G=function(a,b,c,d){m(a,c,function(){var f,g,h,i,e=0;if("splice"===c){var j=arguments[0],k=j+arguments[1];for(h=a.slice(j,k),g=[],f=2;f<arguments.length;f++)g[f-2]=arguments[f];e=j}else g=arguments.length>0?arguments[0]:void 0;return i=b.apply(a,arguments),"slice"!==c&&("pop"===c?(h=i,e=a.length):"push"===c?e=a.length-1:"shift"===c?h=i:"unshift"!==c&&void 0===g&&(g=i),d.call(a,e,c,g,h)),i})},H=function(a,b){if(f(b)&&a&&!(a instanceof String)&&h(a))for(var d,c=F.length;c--;)d=F[c],G(a,a[d],d,b)},I=function(a,b,c){if(b){if(a.watchers[b])if(void 0===c)delete a.watchers[b];else for(var d=0;d<a.watchers[b].length;d++){var e=a.watchers[b][d];e==c&&a.watchers[b].splice(d,1)}}else delete a.watchers;S(a,b,c),T(a,b)},J=function(a,b){if(a.watchers){var c="__wjs_suspend__"+(void 0!==b?b:"");a.watchers[c]=!0}},K=function(a,b){return a.watchers&&(a.watchers.__wjs_suspend__||a.watchers["__wjs_suspend__"+b])},L=function(a,b){z(function(){delete a.watchers.__wjs_suspend__,delete a.watchers["__wjs_suspend__"+b]})},M=null,N=function(a,b,c,e,f){d[d.length]={obj:a,prop:b,mode:c,newval:e,oldval:f},null===M&&(M=setTimeout(O))},O=function(){var a=null;M=null;for(var b=0;b<d.length;b++)a=d[b],E(a.obj,a.prop,a.mode,a.newval,a.oldval);a&&(d=[],a=null)},P=function(){for(var a=0;a<b.length;a++){var d=b[a];if("$$watchlengthsubjectroot"===d.prop){var e=j(d.obj,d.actual);(e.added.length||e.removed.length)&&(e.added.length&&q(d.obj,e.added,d.watcher,d.level-1,!0),d.watcher.call(d.obj,"root","differentattr",e,d.actual)),d.actual=k(d.obj)}else{var e=j(d.obj[d.prop],d.actual);if(e.added.length||e.removed.length){if(e.added.length)for(var f=0;f<d.obj.watchers[d.prop].length;f++)q(d.obj[d.prop],e.added,d.obj.watchers[d.prop][f],d.level-1,!0);E(d.obj,d.prop,"differentattr",e,d.actual)}d.actual=k(d.obj[d.prop])}}var g,h;if(c.length>0)for(var a=0;a<c.length;a++)g=c[a],h=g.object[g.prop],Q(g.orig,h)||(g.orig=k(h),g.callback(h))},Q=function(a,b){var c,d=!0;if(a!==b)if(i(a)){for(c in a)if((e||"watchers"!==c)&&a[c]!==b[c]){d=!1;break}}else d=!1;return d},R=function(a,c,d,e){var f;f=k("$$watchlengthsubjectroot"===c?a:a[c]),b.push({obj:a,prop:c,actual:f,watcher:d,level:e})},S=function(a,c,d){for(var e=0;e<b.length;e++){var f=b[e];f.obj==a&&(c&&f.prop!=c||d&&f.watcher!=d||b.splice(e--,1))}},T=function(a,b){for(var d,e=0;e<c.length;e++){var f=c[e],g=f.object.watchers;d=f.object==a&&(!b||f.prop==b)&&g&&(!b||!g[b]||0==g[b].length),d&&c.splice(e--,1)}};return setInterval(P,50),a.watch=o,a.unwatch=s,a.callWatchers=E,a.suspend=J,a.onChange=A,a});var LZString=function(){function o(o,r){if(!t[o]){t[o]={};for(var n=0;n<o.length;n++)t[o][o.charAt(n)]=n}return t[o][r]}var r=String.fromCharCode,n="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",e="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$",t={},i={compressToBase64:function(o){if(null==o)return"";var r=i._compress(o,6,function(o){return n.charAt(o)});switch(r.length%4){default:case 0:return r;case 1:return r+"===";case 2:return r+"==";case 3:return r+"="}},decompressFromBase64:function(r){return null==r?"":""==r?null:i._decompress(r.length,32,function(e){return o(n,r.charAt(e))})},compressToUTF16:function(o){return null==o?"":i._compress(o,15,function(o){return r(o+32)})+" "},decompressFromUTF16:function(o){return null==o?"":""==o?null:i._decompress(o.length,16384,function(r){return o.charCodeAt(r)-32})},compressToUint8Array:function(o){for(var r=i.compress(o),n=new Uint8Array(2*r.length),e=0,t=r.length;t>e;e++){var s=r.charCodeAt(e);n[2*e]=s>>>8,n[2*e+1]=s%256}return n},decompressFromUint8Array:function(o){if(null===o||void 0===o)return i.decompress(o);for(var n=new Array(o.length/2),e=0,t=n.length;t>e;e++)n[e]=256*o[2*e]+o[2*e+1];var s=[];return n.forEach(function(o){s.push(r(o))}),i.decompress(s.join(""))},compressToEncodedURIComponent:function(o){return null==o?"":i._compress(o,6,function(o){return e.charAt(o)})},decompressFromEncodedURIComponent:function(r){return null==r?"":""==r?null:(r=r.replace(/ /g,"+"),i._decompress(r.length,32,function(n){return o(e,r.charAt(n))}))},compress:function(o){return i._compress(o,16,function(o){return r(o)})},_compress:function(o,r,n){if(null==o)return"";var e,t,i,s={},p={},u="",c="",a="",l=2,f=3,h=2,d=[],m=0,v=0;for(i=0;i<o.length;i+=1)if(u=o.charAt(i),Object.prototype.hasOwnProperty.call(s,u)||(s[u]=f++,p[u]=!0),c=a+u,Object.prototype.hasOwnProperty.call(s,c))a=c;else{if(Object.prototype.hasOwnProperty.call(p,a)){if(a.charCodeAt(0)<256){for(e=0;h>e;e++)m<<=1,v==r-1?(v=0,d.push(n(m)),m=0):v++;for(t=a.charCodeAt(0),e=0;8>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}else{for(t=1,e=0;h>e;e++)m=m<<1|t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t=0;for(t=a.charCodeAt(0),e=0;16>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}l--,0==l&&(l=Math.pow(2,h),h++),delete p[a]}else for(t=s[a],e=0;h>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;l--,0==l&&(l=Math.pow(2,h),h++),s[c]=f++,a=String(u)}if(""!==a){if(Object.prototype.hasOwnProperty.call(p,a)){if(a.charCodeAt(0)<256){for(e=0;h>e;e++)m<<=1,v==r-1?(v=0,d.push(n(m)),m=0):v++;for(t=a.charCodeAt(0),e=0;8>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}else{for(t=1,e=0;h>e;e++)m=m<<1|t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t=0;for(t=a.charCodeAt(0),e=0;16>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}l--,0==l&&(l=Math.pow(2,h),h++),delete p[a]}else for(t=s[a],e=0;h>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;l--,0==l&&(l=Math.pow(2,h),h++)}for(t=2,e=0;h>e;e++)m=m<<1|1&t,v==r-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;for(;;){if(m<<=1,v==r-1){d.push(n(m));break}v++}return d.join("")},decompress:function(o){return null==o?"":""==o?null:i._decompress(o.length,32768,function(r){return o.charCodeAt(r)})},_decompress:function(o,n,e){var t,i,s,p,u,c,a,l,f=[],h=4,d=4,m=3,v="",w=[],A={val:e(0),position:n,index:1};for(i=0;3>i;i+=1)f[i]=i;for(p=0,c=Math.pow(2,2),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;switch(t=p){case 0:for(p=0,c=Math.pow(2,8),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;l=r(p);break;case 1:for(p=0,c=Math.pow(2,16),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;l=r(p);break;case 2:return""}for(f[3]=l,s=l,w.push(l);;){if(A.index>o)return"";for(p=0,c=Math.pow(2,m),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;switch(l=p){case 0:for(p=0,c=Math.pow(2,8),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;f[d++]=r(p),l=d-1,h--;break;case 1:for(p=0,c=Math.pow(2,16),a=1;a!=c;)u=A.val&A.position,A.position>>=1,0==A.position&&(A.position=n,A.val=e(A.index++)),p|=(u>0?1:0)*a,a<<=1;f[d++]=r(p),l=d-1,h--;break;case 2:return w.join("")}if(0==h&&(h=Math.pow(2,m),m++),f[l])v=f[l];else{if(l!==d)return null;v=s+s.charAt(0)}w.push(v),f[d++]=s+v.charAt(0),h--,s=v,0==h&&(h=Math.pow(2,m),m++)}}};return i}();"function"==typeof define&&define.amd?define(function(){return LZString}):"undefined"!=typeof module&&null!=module&&(module.exports=LZString);
-(function(){
+/**
+* END WATCH.JS
+* TODO: import this!
+*
+ */
 
-// SINGLETON
-var ui = {};
-Joy.ui = ui;
-
-ui.init = function(master){
-
-  // CSS
-  master.dom.classList.add("joy-master");
-
-  // Manual Scroll (to prevent it propagating up...)
-  master.container.addEventListener('wheel', function(event){
-    var delta = event.deltaY;
-    master.container.scrollTop += delta;
-    event.preventDefault();
-    return false;
-  });
-
-  // Prevent accidental backspace-history
-  // because why the heck is this even a thing, jeez.
-  // thx: https://stackoverflow.com/a/2768256
-  document.body.addEventListener('keydown', function(event){
-      if(event.keyCode === 8) {
-          var doPrevent = true;
-          var types = ["text", "password", "file", "search", "email", "number", "date", "color", "datetime", "datetime-local", "month", "range", "search", "tel", "time", "url", "week"];
-          var d = event.srcElement || event.target;
-          var disabled = d.getAttribute("readonly") || d.getAttribute("disabled");
-          if (!disabled) {
-              if (d.isContentEditable) {
-                  doPrevent = false;
-              } else if (d.tagName.toUpperCase() == "INPUT") {
-                  var type = d.getAttribute("type");
-                  if (type) {
-                      type = type.toLowerCase();
-                  }
-                  if (types.indexOf(type) > -1) {
-                      doPrevent = false;
-                  }
-              } else if (d.tagName.toUpperCase() == "TEXTAREA") {
-                  doPrevent = false;
-              }
-          }
-          if (doPrevent) {
-              event.preventDefault();
-              return false;
-          }
-      }
-  });
-
-};
 
 /********************
 Button's config:
@@ -1298,22 +1131,8 @@ ui.String = function(config){
 
 };
 
-// bookmark
-// this is the list of points type
-/********************
-String's config:
-{
-  prefix: "[",
-  suffix: "]",
-  color:"whatever",
-  value: data.value,
-  onchange: function(value){
-    data.value = value;
-    self.update();
-  },
-  styles: ["comment"]
-}
-********************/
+// path (list of points) type
+/****************************************/
 
 class PathUI {
   constructor(config) {
@@ -1322,18 +1141,6 @@ class PathUI {
 
     this.dom = document.createElement("div");
     this.dom.className = "joy-path";
-  
-    const input = document.createElement("span");
-    input.contentEditable = true;
-    input.spellcheck = false;
-  
-    this.dom.appendChild(input);
-  
-    input.addEventListener("input", (event) => {
-      _fixStringInput(input);
-      const value = input.innerText; //todo - might be issue, expecting a string
-      config.onchange(value);
-    });
   
     input.addEventListener("focus", () => {
       _selectAll(input);
@@ -1417,63 +1224,12 @@ class PathUI {
   }  
 }
 
-// class Path {
-//   constructor(string) {
-//     this.coordinates = this.parse(string);
-//   }
-  
-//   parse(string) {
-//     const regex = /\((-?\d+),\s*(-?\d+)\)/g;
-//     const coordinates = [];
-  
-//     let match;
-//     while ((match = regex.exec(string))) {
-//     const x = parseInt(match[1]);
-//     const y = parseInt(match[2]);
-//     coordinates.push({ x, y });
-//     }
-  
-//     return coordinates;
-//   }
-  
-//   render(width, height) {
-//     const canvas = document.createElement('canvas');
-//     canvas.width = width;
-//     canvas.height = height;
-    
-//     const ctx = canvas.getContext('2d');
-//     ctx.clearRect(0, 0, width, height);
-    
-//     const firstPoint = this.coordinates[0];
-//     ctx.beginPath();
-//     ctx.moveTo(firstPoint.x, firstPoint.y);
-    
-//     for (let i = 1; i < this.coordinates.length; i++) {
-//   	const { x, y } = this.coordinates[i];
-//   	ctx.lineTo(x, y);
-//     }
-    
-//     ctx.strokeStyle = 'black';
-//     ctx.lineWidth = 1;
-//     ctx.stroke();
-    
-//     ctx.fillStyle = 'red';
-//     for (const { x, y } of this.coordinates) {
-//   	ctx.beginPath();
-//   	ctx.arc(x, y, 3, 0, Math.PI * 2);
-//   	ctx.fill();
-//     }
-    
-//     return canvas;
-//   }  
-// }
-
 /****************
 
-A widget to set xy coordinates!
+A widget for paths!
 
 Widget Options:
-{name:'name', type:'xycoords', prefix:'&ldquo;', suffix:'&rdquo;', color:"whatever"}
+{name:'name', type:'path', color:"whatever"}
 
 ****************/
 Joy.add({
@@ -2704,6 +2460,7 @@ Joy.add({
     // Manually add New Action To Actions + Widgets + DOM
     var _addAction = function(actorType, atIndex, data={}){ //FG added data
       // Create that new entry & everything
+      console.log("data in joy: " + data);
       var newAction = {type:actorType, ...data};
       if(atIndex===undefined){
         actions.push(newAction);
@@ -2772,7 +2529,7 @@ Joy.add({
     // "+" Button: When clicked, prompt what actions to add!
     var addButton = new Joy.ui.ChooserButton({
       staticLabel: "+",
-      options: moduleOptions,
+      options: actionOptions,
       onchange: function(value){
         _addAction(value);
         self.update(); // You oughta know!

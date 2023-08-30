@@ -1,4 +1,4 @@
-import Joy from '../libraries/joy.js';
+import Joy from './libraries/joy/joy.js';
 import { BrushstrokeManager, Brushstroke, Path } from './models/brushstrokes.js';
 import { Sortable, MultiDrag } from 'sortablejs';
 import { effectList } from './config/effectList.js';
@@ -118,6 +118,14 @@ class MotifApp {
 		document.getElementById('drawing-canvas').addEventListener('mousemove', e => {
 			if(mouseDownOverCanvas) {
 				dragging = true;
+
+				/*
+					When mouse is down over canvas and mouse is moving,
+					- add more points to the current path, making sure the Joy event gets the updates
+					- render current preview of brushstroke to "preview" canvas
+
+				*/
+
 				if(this.activeBrushstroke) {
 					this.activeBrushstroke.addPoint({x: this.sketch.mouseX, y: this.sketch.mouseY});
 					if(this.activeBrushstroke.getType() === 'drag') {
@@ -188,7 +196,7 @@ class MotifApp {
 		});
 		
 		document.getElementById('download-button').addEventListener("click", (e) => {
-			this.canvasRenderer.save('my drawing.jpg');
+			this.sketch.save('my drawing.jpg');
 		});
 		
 		document.getElementById('shuffle-button').addEventListener("click", (e) => {

@@ -79,6 +79,7 @@ export class Brushstroke {
   makeJoyEvent() {
     let data = {};
     data.id = this.id;
+    data.color = {type: 'color', value: this.color};
     data.x = { type: 'number', value: Math.round(this.path.getPoint(0).x) };
     data.y = { type: 'number', value: Math.round(this.path.getPoint(0).y) };
     console.log("making event with", this.effect);
