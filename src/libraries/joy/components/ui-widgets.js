@@ -10,7 +10,7 @@ Button's config:
 }
 ********************/
 
-export class Button {
+export class JoyButton {
   
   constructor(config) {
     
@@ -84,7 +84,7 @@ export class ChooserButton {
 
   // Method to show the chooser modal
   showChooser(position) {
-    Joy.modal.Chooser({
+    let chooser = new ChooserModal({
       source: this.button.dom,
       options: this.options,
       onchange: (value) => {
@@ -169,179 +169,177 @@ Scrubber's config:
   onchange: function(value){}
 }
 ********************/
-ui.Scrubber = function(config){
+class Scrubber {
+  constructor(config) {
+    // Config...
+    let min = config.min;
+    let max = config.max;
 
-  var self = this;
+    this.value = config.value;
 
-  // Config...
-  var min = config.min;
-  var max = config.max;
+    // DOM
+    let dom = document.createElement("div");
+    dom.className = "joy-scrubber";
+    this.dom = dom;
 
-  // console.log(config);
+    // DOM *is* Label
+    this.setLabel = function(newValue){
+      dom.innerHTML = newValue.toFixed(this.sigfigs);
+    };
 
-  self.value = config.value;
+    // On Value Change: make sure it's the right num of sigfigs
+    let _onValueChange = function(newValue){
+      newValue = parseFloat(newValue.toFixed(this.sigfigs));
+      config.onchange(newValue);
+    };
 
-  // DOM
-  var dom = document.createElement("div");
-  dom.className = "joy-scrubber";
-  self.dom = dom;
-
-  // DOM *is* Label
-  self.setLabel = function(newValue){
-    dom.innerHTML = newValue.toFixed(self.sigfigs);
-  };
-
-  // On Value Change: make sure it's the right num of sigfigs
-  var _onValueChange = function(newValue){
-    newValue = parseFloat(newValue.toFixed(self.sigfigs));
-    config.onchange(newValue);
-  };
-
-  // DRAG IT, BABY
-  var isDragging = false;
-  var wasDragging = false;
-  var lastDragX, startDragValue;
-  var delta = 0;
-  var _onmousedown = function(event){
-    isDragging = true;
-    lastDragX = event.clientX;
-    startDragValue = self.value;
-    delta = 0;
-    if(config.onstart) config.onstart();
-  };
-  var _onmousemove = function(event){
-    if(isDragging){
-
-      wasDragging = true;
-
-      // What's the step?
-      var step = Math.pow(0.1,self.sigfigs);
-      step = parseFloat(step.toPrecision(1)); // floating point crap
-      
-      // Change number
-      var velocity = event.clientX - lastDragX;
+    // DRAG IT, BABY
+    let isDragging = false;
+    let wasDragging = false;
+    let lastDragX, startDragValue;
+    let delta = 0;
+    let _onmousedown = function(event){
+      isDragging = true;
       lastDragX = event.clientX;
-      var multiplier = Math.abs(velocity/10);
-      if(multiplier<1) multiplier=1;
-      if(multiplier>3) multiplier=3;
-      delta += velocity*multiplier;
-      var dx = Math.floor(delta/2);
-      var newValue = startDragValue + dx*step;
-      newValue = _boundNumber(newValue);
-      
-      // Only update if ACTUALLY new.
-      if(self.value != newValue){
-        self.value = newValue;
-        self.setLabel(newValue);
-        _onValueChange(newValue);
+      startDragValue = this.value;
+      delta = 0;
+      if(config.onstart) config.onstart();
+    };
+    let _onmousemove = function(event){
+      if(isDragging){
+
+        wasDragging = true;
+
+        // What's the step?
+        let step = Math.pow(0.1,this.sigfigs);
+        step = parseFloat(step.toPrecision(1)); // floating point crap
+        
+        // Change number
+        let velocity = event.clientX - lastDragX;
+        lastDragX = event.clientX;
+        let multiplier = Math.abs(velocity/10);
+        if(multiplier<1) multiplier=1;
+        if(multiplier>3) multiplier=3;
+        delta += velocity*multiplier;
+        let dx = Math.floor(delta/2);
+        let newValue = startDragValue + dx*step;
+        newValue = _boundNumber(newValue);
+        
+        // Only update if ACTUALLY new.
+        if(this.value != newValue){
+          this.value = newValue;
+          this.setLabel(newValue);
+          _onValueChange(newValue);
+        }
+
       }
-
-    }
-  };
-  var _boundNumber = function(newValue){
-    if(min!==undefined && newValue<min) newValue=min;
-    if(max!==undefined && newValue>max) newValue=max;
-    // console.log("min ", min, " max ", max);
-    return newValue;
-  };
-  var _onmouseup = function(){
-    isDragging = false;
-    if(config.onstop) config.onstop();
-    setTimeout(function(){
-      wasDragging = false; // so can't "click" if let go on scrubber
-    },1);
-  };
-
-  // MOUSE EVENTS
-  dom.addEventListener("mousedown", _onmousedown);
-  window.addEventListener("mousemove", _onmousemove);
-  window.addEventListener("mouseup", _onmouseup);
-
-  // KILL ALL LISTENERS
-  self.kill = function(){
-    dom.removeEventListener("mousedown", _onmousedown);
-    window.removeEventListener("mousemove", _onmousemove);
-    window.removeEventListener("mouseup", _onmouseup);
-  };
-
-  // On click: edit manually!
-  var _manuallyEditing = false;
-  dom.onblur = function(){
-    if(_manuallyEditing){
-
-      _manuallyEditing = false;
-      dom.contentEditable = false;
-      _unselectAll();
-
-      // Done manually updating! The new number!
-      _countSigFigs(dom.innerText); // re-calc sigfigs
-      self.value = _parseNumber();
-      self.setLabel(self.value);
-      _onValueChange(self.value);
-
-      // On Stop editing
+    };
+    let _boundNumber = function(newValue){
+      if(min!==undefined && newValue<min) newValue=min;
+      if(max!==undefined && newValue>max) newValue=max;
+      // console.log("min ", min, " max ", max);
+      return newValue;
+    };
+    let _onmouseup = function(){
+      isDragging = false;
       if(config.onstop) config.onstop();
+      setTimeout(function(){
+        wasDragging = false; // so can't "click" if let go on scrubber
+      },1);
+    };
 
-    }
-  };
-  _preventWeirdCopyPaste(dom);
-  _blurOnEnter(dom);
-  dom.onclick = function(){
+    // MOUSE EVENTS
+    dom.addEventListener("mousedown", _onmousedown);
+    window.addEventListener("mousemove", _onmousemove);
+    window.addEventListener("mouseup", _onmouseup);
 
-    if(wasDragging) return; // can't click if I was just dragging!
+    // KILL ALL LISTENERS
+    this.kill = function(){
+      dom.removeEventListener("mousedown", _onmousedown);
+      window.removeEventListener("mousemove", _onmousemove);
+      window.removeEventListener("mouseup", _onmouseup);
+    };
 
-    _manuallyEditing = true;
-    
-    // Make it editable, and select it!
-    dom.contentEditable = true;
-    dom.spellcheck = false;
-    _selectAll(dom);
+    // On click: edit manually!
+    let _manuallyEditing = false;
+    dom.onblur = function(){
+      if(_manuallyEditing){
 
-    // On Start editing
-    if(config.onstart) config.onstart();
+        _manuallyEditing = false;
+        dom.contentEditable = false;
+        _unselectAll();
 
-  };
-  dom.oninput = function(event){
+        // Done manually updating! The new number!
+        _countSigFigs(dom.innerText); // re-calc sigfigs
+        this.value = _parseNumber();
+        this.setLabel(this.value);
+        _onValueChange(this.value);
 
-    if(!_manuallyEditing) return;
+        // On Stop editing
+        if(config.onstop) config.onstop();
 
-    // Also, no non-decimal or numbers
-    var regex = /[^0-9.\-]/g;
-    if(dom.innerText.match(regex)){
-      dom.innerText = dom.innerText.replace(regex,"");
-    }
-    _fixStringInput(dom);
+      }
+    };
+    _preventWeirdCopyPaste(dom);
+    _blurOnEnter(dom);
+    dom.onclick = function(){
 
-    // Show that change!
-    _onValueChange(_parseNumber());
+      if(wasDragging) return; // can't click if I was just dragging!
 
-  };
-  var _parseNumber = function(){
-    var num = parseFloat(dom.innerText);
-    if(isNaN(num)) num=0;
-    num = _boundNumber(num);
-    return num;
-  };
+      _manuallyEditing = true;
+      
+      // Make it editable, and select it!
+      dom.contentEditable = true;
+      dom.spellcheck = false;
+      _selectAll(dom);
 
-  // How many significant digits?
-  self.sigfigs = 0;
-  var _countSigFigs = function(string){
-    string = string.toString();
-    var sigfigs;
-    var positionOfPeriod = string.search(/\./);
-    if(positionOfPeriod>=0){ // has a period
-      sigfigs = (string.length-1)-positionOfPeriod;
-    }else{
-      sigfigs = 0;
-    }
-    self.sigfigs = sigfigs;
-  };
-  _countSigFigs(self.value);
+      // On Start editing
+      if(config.onstart) config.onstart();
 
-  // Current value...
-  self.setLabel(self.value);
+    };
+    dom.oninput = function(event){
 
-};
+      if(!_manuallyEditing) return;
+
+      // Also, no non-decimal or numbers
+      let regex = /[^0-9.\-]/g;
+      if(dom.innerText.match(regex)){
+        dom.innerText = dom.innerText.replace(regex,"");
+      }
+      _fixStringInput(dom);
+
+      // Show that change!
+      _onValueChange(_parseNumber());
+
+    };
+    let _parseNumber = function(){
+      let num = parseFloat(dom.innerText);
+      if(isNaN(num)) num=0;
+      num = _boundNumber(num);
+      return num;
+    };
+
+    // How many significant digits?
+    this.sigfigs = 0;
+    let _countSigFigs = function(string){
+      string = string.toString();
+      let sigfigs;
+      let positionOfPeriod = string.search(/\./);
+      if(positionOfPeriod>=0){ // has a period
+        sigfigs = (string.length-1)-positionOfPeriod;
+      }else{
+        sigfigs = 0;
+      }
+      this.sigfigs = sigfigs;
+    };
+    _countSigFigs(this.value);
+
+    // Current value...
+    this.setLabel(this.value);
+
+
+  }
+}
 
 /********************
 String's config:
@@ -352,81 +350,81 @@ String's config:
   value: data.value,
   onchange: function(value){
     data.value = value;
-    self.update();
+    this.update();
   },
   styles: ["comment"]
 }
 ********************/
-ui.String = function(config){
+class JoyString {
   
-  var self = this;
+  constructor(config) {
+    // DOM
+    this.dom = document.createElement("div");
+    this.dom.className = "joy-string";
+    
+    // The Actual Part that's Content Editable
+    let input = document.createElement("span");
+    input.contentEditable = true;
+    input.spellcheck = false;
 
-  // DOM
-  var dom = document.createElement("div");
-  dom.className = "joy-string";
-  self.dom = dom;
-  
-  // The Actual Part that's Content Editable
-  var input = document.createElement("span");
-  input.contentEditable = true;
-  input.spellcheck = false;
+    // Prefix & Suffix & Color: entirely cosmetic
+    let prefixDOM = document.createElement("span");
+    let suffixDOM = document.createElement("span");
+    prefixDOM.innerHTML = config.prefix || "";
+    suffixDOM.innerHTML = config.suffix || "";
+    this.dom.appendChild(prefixDOM);
+    this.dom.appendChild(input);
+    this.dom.appendChild(suffixDOM);
 
-  // Prefix & Suffix & Color: entirely cosmetic
-  var prefixDOM = document.createElement("span");
-  var suffixDOM = document.createElement("span");
-  prefixDOM.innerHTML = config.prefix || "";
-  suffixDOM.innerHTML = config.suffix || "";
-  dom.appendChild(prefixDOM);
-  dom.appendChild(input);
-  dom.appendChild(suffixDOM);
+    // On input!
+    input.oninput = (event) => {
+      _fixStringInput(input);
+      let value = input.innerText; // NOT innerHTML
+      config.onchange(value); // callback!
+    };
 
-  // On input!
-  input.oninput = function(event){
-    _fixStringInput(input);
-    var value = input.innerText; // NOT innerHTML
-    config.onchange(value); // callback!
-  };
+    // On focus, select all
+    input.onfocus = () => {
+      _selectAll(input);
+    };
+    input.onblur = () => {
+      _unselectAll();
+    };
+    _preventWeirdCopyPaste(input);
 
-  // On focus, select all
-  input.onfocus = function(){
-    _selectAll(input);
-  };
-  input.onblur = function(){
-    _unselectAll();
-  };
-  _preventWeirdCopyPaste(input);
+    // On pressing <enter>, DON'T line break, just blur
+    input.onkeypress = (e) => {
+      if(e.which == 13){
+        input.blur();
+        return false;
+      }
+      return true;
+    };
 
-  // On pressing <enter>, DON'T line break, just blur
-  input.onkeypress = function(e){
-    if(e.which == 13){
-      input.blur();
-      return false;
+    if(config.color) this.setColor(config.color);
+
+    // Styles
+    this.styles = config.styles || [];
+    for(let i=0; i<this.styles.length; i++) {
+      dom.classList.add(this.styles[i]);
     }
-    return true;
-  };
+
+    this.setString(config.value); //start with the current value
+  }
 
   // Set String
-  self.setString = function(value){
+  setString(value) {
     input.innerText = value;
     _fixStringInput(input);
-  };
+  }
 
   // Set Color, why not
-  self.setColor = function(color){
+  setColor(color) {
     color = _forceToRGB(color);
-    dom.style.color = color;
-    dom.style.borderColor = color;
+    this.dom.style.color = color;
+    this.dom.style.borderColor = color;
   }
-  if(config.color) self.setColor(config.color);
-
-  // Styles
-  self.styles = config.styles || [];
-  for(var i=0; i<self.styles.length; i++) dom.classList.add(self.styles[i]);
-
-  // Start with the current value
-  self.setString(config.value);
-
-};
+}
 
 // path (list of points) type
 /****************************************/
@@ -535,68 +533,67 @@ TextLine's config:
 ********************/
 // TODO: a full WSIYWIG editor?
 // https://hackernoon.com/easily-create-an-html-editor-with-designmode-and-contenteditable-7ed1c465d39b
-ui.TextBox = function(config){
-  
-  var self = this;
+class TextBox {
+  constructor(config){
+    // DOM
+    let input;
+    if(config.multiline){
+      input = document.createElement("textarea");
+    }else{
+      input = document.createElement("input");
+      input.type = "text";
+    }
+    if(config.placeholder){
+      input.placeholder = config.placeholder;
+    }
+    input.spellcheck = false;
+    input.className = "joy-textbox";
+    this.dom = input;
 
-  // DOM
-  var input;
-  if(config.multiline){
-    input = document.createElement("textarea");
-  }else{
-    input = document.createElement("input");
-    input.type = "text";
-  }
-  if(config.placeholder){
-    input.placeholder = config.placeholder;
-  }
-  input.spellcheck = false;
-  input.className = "joy-textbox";
-  self.dom = input;
-  var dom = self.dom;
+    // Config options
+    if(config.readonly){
+      input.setAttribute("readonly", 1);
+      input.addEventListener("click",function(){
+        this.select();
+      });
+    }else{
+      input.oninput = function(event){
+        config.onchange(input.value);
+      };
+    }
+    if(config.width){
+      input.style.width = (typeof config.width==="number") ? config.width+"px" : config.width;
+    }
 
-  // Config options
-  if(config.readonly){
-    input.setAttribute("readonly", 1);
-    input.addEventListener("click",function(){
-      self.select();
-    });
-  }else{
-    input.oninput = function(event){
-      config.onchange(input.value);
-    };
+    // Styles
+    this.styles = config.styles || [];
+    for(let i=0; i<this.styles.length; i++) {
+      this.dom.classList.add(this.styles[i]);
+    }
+
+    // Start
+    if(config.value) {
+      this.setValue(config.value);
+    }
+
+    // If it's multiline, auto-resize!
+    // Thanks to this: https://stackoverflow.com/a/25621277
+    if(config.multiline){
+      let _onInput = () => {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+      };
+      this.dom.addEventListener("input", _onInput, false);
+      setTimeout(() => {
+        this.dom.setAttribute('style', 'height:' + (dom.scrollHeight) + 'px; overflow-y:hidden;');
+      },1); // some threading thing?
+    }
   }
-  if(config.width){
-    input.style.width = (typeof config.width==="number") ? config.width+"px" : config.width;
-  }
-  
+    
   // Get & Set Value
-  self.getValue = function(){ return input.value; };
-  self.setValue = function(value){ input.value = value; };
+  getValue() { return input.value; }
+  setValue(value) { input.value = value; }
 
   // Select
-  self.select = function(){
-    input.select();
-  };
-
-  // Styles
-  self.styles = config.styles || [];
-  for(var i=0; i<self.styles.length; i++) dom.classList.add(self.styles[i]);
-
-  // Start
-  if(config.value) self.setValue(config.value);
-
-  // If it's multiline, auto-resize!
-  // Thanks to this: https://stackoverflow.com/a/25621277
-  if(config.multiline){
-    var _onInput = function(){
-      this.style.height = 'auto';
-      this.style.height = (this.scrollHeight) + 'px';
-    };
-    dom.addEventListener("input", _onInput, false);
-    setTimeout(function(){
-      dom.setAttribute('style', 'height:' + (dom.scrollHeight) + 'px; overflow-y:hidden;');
-    },1); // some threading thing?
-  }
-
-};
+  select() { input.select(); }  
+}
