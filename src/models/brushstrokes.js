@@ -65,7 +65,7 @@ export class Brushstroke {
     return this.path.getPoints();
   }
 
-  getType() {
+  getMouseActionType() {
     return this.effect.mouseActionType;
   }
 
@@ -87,7 +87,7 @@ export class Brushstroke {
 
     return [
       this.effect.tag,
-      this.effect.name,
+      this.effect.tag + "/" + this.effect.name,
       data
     ]
   }

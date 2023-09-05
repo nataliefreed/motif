@@ -1,4 +1,6 @@
-import Joy from '../libraries/joy/joy.js';
+import { Joy } from '../libraries/joy/joy.js';
+import '../libraries/joy/joy-standard-modules.js'; //add the modules, ie. import for side effects
+import '../libraries/joy/joy-custom-modules.js';
 
 export class JoyManager {
   constructor(effects, brushstrokes, sketch) {
@@ -12,10 +14,10 @@ export class JoyManager {
 		
 			// The words and widgets inside the editor:
 			init: "To create my design: "+
-				  "{id:'actions', type:'actions', modules:['motif', 'sequences']} "+ // a list of actions
+				  "{id:'paintingActionList', type:'actions', modules:['motif', 'sequences']} "+ // a list of actions
 				//   "Fill with {id:'color', type:'color', placeholder:[0.3, 0.8, 1.0]}" +
 				"With stencils: "+
-				"{id: 'stencils', type:'actions', modules:['stencils']} "+  
+				"{id: 'stencilActionList', type:'actions', modules:['stencils']} "+  
 				"<hr> {type:'save'}", // a save button!
 			
 			// Load data from URL, otherwise blank:
@@ -30,8 +32,8 @@ export class JoyManager {
 			// What to do when the user makes a change:
 			onupdate: function(my) {
         sketch.clear();
-        my.actions.act(sketch);
-        my.stencils.act(sketch);
+        my.paintingActionList.act(sketch);
+        my.stencilActionList.act(sketch);
         sketch.render();
 			}
 		});
@@ -86,7 +88,6 @@ export class JoyManager {
 					init: effect.init,
 					onact: effect.onact
 				};
-				console.log("actor settings " + template);
 				Joy.add(template);	
 			});
     });
@@ -182,18 +183,23 @@ export class JoyManager {
 		})
 	}
 
-		
+	getParentList(listName) {
+		console.log("looking for list name:", listName);
+		if (listName == 'motif') {
+			return this.joy.rootActor.paintingActionList;
+		}
+		else if (listName == 'stencils') {
+			return this.joy.rootActor.stencilActionList;
+		}
+		else {
+			throw new Error("No list found with name " + listName);
+		}
+	}
 
-	
-
-  addEvent(tag, effectName, settings) {
-		console.log("adding event to joy", tag, effectName, settings);    
-    if(tag == 'motif') {
-      this.joy.actions.addAction(tag+'/'+effectName, undefined, settings);
-    } else if(tag == 'stencils') {
-      this.joy.stencils.addAction(tag+'/'+effectName, undefined, settings);
-    }
-    this.joy.actions.update();
+  addEvent(listName, type, settings) {
+		const target = this.getParentList(listName);
+		target.addAction(type, undefined, settings);
+		target.update();
   }
 }
 

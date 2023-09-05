@@ -242,3 +242,40 @@ button {
     border-radius: 10px;
     margin: 10px;
 }
+
+.number-slider-widget {
+    position: relative;
+    display: inline;
+    cursor: col-resize;
+    min-width: 0.8em;
+    text-align: center;
+
+    padding-bottom: 0px;
+    border-bottom: 2px solid #bbb;
+}
+
+.slider {
+    background-color: purple;
+    padding: 10px;
+
+    
+    position: relative;
+    display: inline;
+    cursor: col-resize;
+    min-width: 0.8em;
+    text-align: center;
+
+    padding-bottom: 0px;
+    border-bottom: 2px solid #bbb;
+}
+
+.slider-modal {
+    background-color: royalblue;
+}
+
+.base-modal{
+    position: relative;
+}
+.base-modal > canvas{
+	position: absolute;
+}

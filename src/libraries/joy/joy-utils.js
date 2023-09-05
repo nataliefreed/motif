@@ -1,3 +1,5 @@
+export const TAU = 2*Math.PI;
+
 // Deep clone
 export function _clone(json){
   return JSON.parse(JSON.stringify(json));

@@ -1,4 +1,7 @@
-import Joy from "./joy.js";
+import { Joy } from "./joy.js";
+import { ChooserModal, ColorPicker } from "./components/modals.js";
+import { JoyButton, ChooserButton, JoyTextBox, NumberScrubber } from "./components/ui-widgets.js";
+import { _HSVToRGBString, _clone, TAU } from "./joy-utils.js";
 
 /////////////////////////////////////////
 // FUNDAMENTAL USER INTERACE ACTORS /////
@@ -17,67 +20,67 @@ Widget Options:
 Joy.add({
   type: "number",
   tags: ["ui"],
-  initWidget: function(self){
+  initWidget: function(){
 
     // Scrubber IS the DOM
-    var o = self.options;
-    var scrubber = new Joy.ui.Scrubber({
+    let o = this.options;
+    let scrubber = new NumberScrubber({
       min: o.min,
       max: o.max,
       step: o.step,
-      value: self.getData("value"),
-      onstart: function(){
-        self.top.activePreview = self;
+      value: this.getData("value"),
+      onstart: () => {
+        this.top.activePreview = this;
       },
-      onstop: function(){
-        self.top.activePreview = null;
+      onstop: () => {
+        this.top.activePreview = null;
       },
-      onchange: function(value){
-        self.setData("value", value);
+      onchange: (value) => {
+        this.setData("value", value);
       }
     });
-    self.dom = scrubber.dom;
+    this.dom = scrubber.dom;
 
     // PREVIEW ON HOVER. WIGGLE IT JUST ONCE.
     
-    var _ticker = null;
-    var _fps = 30;
-    self.dom.onmouseenter = function(){
+    let _ticker = null;
+    let _fps = 30;
+    this.dom.onmouseenter = () => {
 
-      if(!self.top.canPreview("numbers")) return;
+      if(!this.top.canPreview("numbers")) return;
       
       // Create Preview Data
-      self.previewData = _clone(self.data);
+      this.previewData = _clone(this.data);
 
       // Wiggle by 5%... as long as that's not less than 0.5, not more than 2.
-      var _amplitude = Math.abs(self.data.value*0.05);
+      let _amplitude = Math.abs(this.data.value*0.05);
       //if(_amplitude<0.5) _amplitude=0.5; // TODO: WITH SIGFIG
       //if(_amplitude>3) _amplitude=3;
       if(_amplitude==0) _amplitude=1; // If it's EXACTLY zero, wiggle with 1, whatever.
-      var _timer = 0;
-      _ticker = setInterval(function(){
+      let _timer = 0;
+      _ticker = setInterval(() => {
 
-        if(!self.top.canPreview("numbers")) return _stopPreview(); // don't even
+        if(!this.top.canPreview("numbers")) return _stopPreview(); // don't even
 
-        _timer += (Math.TAU/_fps)/0.25; // 0.25 seconds
-        self.previewData.value = self.data.value + Math.sin(_timer)*_amplitude;
-        self.update();
+        _timer += (TAU/_fps)/0.25; // 0.25 seconds
+        this.previewData.value = this.data.value + Math.sin(_timer)*_amplitude;
+        this.update();
 
-        if(_timer>Math.TAU) _stopPreview(); // yer done, son.
+        if(_timer>TAU) _stopPreview(); // yer done, son.
 
       },1000/_fps);
 
     };
-    var _stopPreview = function(){
+    let _stopPreview = () => {
       if(_ticker) clearInterval(_ticker);
-      self.previewData = null;
-      self.update();
+      this.previewData = null;
+      this.update();
     };
-    self.dom.onmouseleave = _stopPreview;
+    this.dom.onmouseleave = _stopPreview;
     
 
   },
-  onget: function(my){
+  onget: function(my) {
     return my.data.value;
   },
   placeholder: {
@@ -98,27 +101,27 @@ Widget Options:
 Joy.add({
   type: "color",
   tags: ["ui"],
-  initWidget: function(self){
+  initWidget: function() {
 
     // Color Button IS the DOM
-    var colorButton = new JoyButton({
+    let colorButton = new JoyButton({
       label: "&nbsp;",
-      onclick: function(){
+      onclick: () => {
 
         let colorPicker = new ColorPicker({ // TODO: precision for those floats, y'know
           source: this.dom,
           value: this.getData("value"),
-          onchange: function(value){
-            self.setData("value", value);
+          onchange: (value) => {
+            this.setData("value", value);
             _changeLabelColor();
           },
-          onopen: function(){
+          onopen: () => {
             this.top.activePreview = this;
           },
-          onclose: function(){
+          onclose: () => {
             this.top.activePreview = null;
           }
-        });
+        }).show();
 
       },
       styles:["joy-color"]
@@ -126,34 +129,35 @@ Joy.add({
     this.dom = colorButton.dom;
 
     // Change button color!
-    var _changeLabelColor = function(){
-      var hsl = self.getData("value");
+    let _changeLabelColor = () => {
+      let hsl = this.getData("value");
       colorButton.dom.style.background = _HSVToRGBString(hsl);
     };
     _changeLabelColor();
 
     // PREVIEW ON HOVER
     // BOUNCE the HSL Value up & down!
-    var _ticker = null;
-    var _fps = 30;
-    var _initialV, _vel, _timer;
-    self.dom.onmouseenter = function(){
+    let _ticker = null;
+    let _fps = 30;
+    let _initialV, _vel, _timer;
+    console.log("this before onmousenter", this);
+    this.dom.onmouseenter = () => {
 
-      if(!self.top.canPreview("numbers")) return; // yeah let's pretend it's a number
+      if(!this.top.canPreview("numbers")) return; // yeah let's pretend it's a number
       
       // Create Preview Data
-      _initialV = self.data.value[2];
-      self.previewData = _clone(self.data);
+      _initialV = this.data.value[2];
+      this.previewData = _clone(this.data);
 
       // Bounce up & down for HALF a second
       _timer = 0;
       _vel = 2*(2/_fps);
-      _ticker = setInterval(function(){
+      _ticker = setInterval(() =>{
 
-        if(!self.top.canPreview("numbers")) return _stopPreview(); // don't
+        if(!this.top.canPreview("numbers")) return _stopPreview(); // don't
 
         // Bounce up & down
-        var hsl = self.previewData.value;
+        let hsl = this.previewData.value;
         hsl[2] += _vel;
         if(hsl[2] > 1){
           hsl[2] = 1;
@@ -163,7 +167,7 @@ Joy.add({
           hsl[2] = 0;
           _vel *= -1;
         }
-        self.update();
+        this.update();
 
         // Done!
         _timer += 2/_fps;
@@ -171,19 +175,19 @@ Joy.add({
 
       },1000/_fps);
     };
-    var _stopPreview = function(){
+    let _stopPreview = () => {
       if(_ticker) clearInterval(_ticker);
-      self.previewData = null;
-      self.update();
+      this.previewData = null;
+      this.update();
     };
-    self.dom.onmouseleave = _stopPreview;
+    this.dom.onmouseleave = _stopPreview;
 
   },
   onget: function(my){
     return _HSVToRGBString(my.data.value);
   },
   placeholder: function(){
-    var hue = Math.floor(Math.random()*360); // Random color!
+    let hue = Math.floor(Math.random()*360); // Random color!
     return [hue, 0.8, 1.0];
   }
 });
@@ -201,16 +205,16 @@ Widget Options:
 Joy.add({
   type: "choose",
   tags: ["ui"],
-  initWidget: function(self){
+  initWidget: function(){
 
-    var data = self.data;
+    let data = this.data;
 
     // Options
-    var options = self.options;
-    for(var i=0; i<options.length; i++){
+    let options = this.options;
+    for(let i=0; i<options.length; i++){
 
       // convert to label/value if not already
-      var o = options[i];
+      let o = options[i];
       if(!(o.label!==undefined && o.value!==undefined)){
         options[i] = {
           label: o.toString(),
@@ -221,16 +225,16 @@ Joy.add({
     }
 
     // ChooserButton *IS* DOM
-    var chooserButton = new Joy.ui.ChooserButton({
+    let chooserButton = new ChooserButton({
       value: data.value,
       options: options,
-      onchange: function(value){
+      onchange: (value) => {
         data.value = value;
-        self.update(); // you oughta know!
+        this.update(); // you oughta know!
       },
-      styles: self.styles
+      styles: this.styles
     });
-    self.dom = chooserButton.dom;
+    this.dom = chooserButton.dom;
 
   },
   onget: function(my){
@@ -250,25 +254,25 @@ Widget Options:
 Joy.add({
   type: "string",
   tags: ["ui"],
-  initWidget: function(self){
+  initWidget: function(){
 
     // String *IS* DOM
-    var o = self.options;
-    self.stringUI = new Joy.ui.String({
+    let o = this.options;
+    this.stringUI = new JoyString({
       prefix: o.prefix,
       suffix: o.suffix,
       color: o.color, 
-      value: self.getData("value"),
-      onchange: function(value){
-        self.setData("value", value);
+      value: this.getData("value"),
+      onchange: (value) => {
+        this.setData("value", value);
       }
     });
-    self.dom = self.stringUI.dom;
+    this.dom = this.stringUI.dom;
 
     // When data's changed, externally
-    self.onDataChange = function(){
-      var value = self.getData("value");
-      self.stringUI.setString(value);
+    this.onDataChange = () => {
+      let value = this.getData("value");
+      this.stringUI.setString(value);
     };
 
   },
@@ -290,40 +294,39 @@ Widget Options:
 Joy.add({
   type: "save",
   tags: ["ui"],
-  initWidget: function(self){
+  initWidget: function(){
 
     // DOM
-    var dom = document.createElement("div");
-    dom.className = "joy-save";
-    self.dom = dom;
+    this.dom = document.createElement("div");
+    this.dom.className = "joy-save";
     
     // Save Button
-    self.saveButton = new Joy.ui.Button({
+    this.saveButton = new JoyButton({
       label: "save:",
-      onclick: function(){
+      onclick: () => {
         
-        var url = Joy.saveToURL(self.top.data);
-        self.url.setValue(url);
-        self.url.select();
+        let url = Joy.saveToURL(this.top.data);
+        this.url.setValue(url);
+        this.url.select();
 
         // info
-        var chars = url.length;
-        self.info.innerHTML = "P.S: you can shorten your link with <a href='http://tinyurl.com/' target='_blank'>TinyURL</a>!"
+        let chars = url.length;
+        this.info.innerHTML = "P.S: you can shorten your link with <a href='http://tinyurl.com/' target='_blank'>TinyURL</a>!"
 
       }
     });
-    dom.appendChild(self.saveButton.dom);
+    this.dom.appendChild(this.saveButton.dom);
 
     // URL TextBox
-    self.url = new Joy.ui.TextBox({
+    this.url = new JoyTextBox({
       readonly: true
     });
-    dom.appendChild(self.url.dom);
+    this.dom.appendChild(this.url.dom);
 
     // Details: chars & tinyurl link
-    self.info = document.createElement("div");
-    self.info.id = "joy-save-info";
-    dom.appendChild(self.info);    
+    this.info = document.createElement("div");
+    this.info.id = "joy-save-info";
+    this.dom.appendChild(this.info);    
 
   }
 });
@@ -342,9 +345,9 @@ WidgetConfig:
 Joy.add({
   type: "actions",
   tags: ["ui"],
-  init: function(self){
+  init: function(){
 
-    if(self.resetVariables!==undefined) self.data.resetVariables=self.resetVariables;
+    if(this.resetVariables!==undefined) this.data.resetVariables=this.resetVariables;
 
     // TODO: ACTUALLY REFACTOR
     // TODO: Separate out Actor code from Widget code
@@ -352,110 +355,107 @@ Joy.add({
     // Using messages, probably.
 
   },
-  initWidget: function(self){
+  initWidget: function(){
 
-    var data = self.data;
-    var actions = data.actions;
+    let data = this.data;
+    let actions = data.actions;
 
     // DOM
-    var dom = document.createElement("div");
-    dom.className = "joy-actions";
-    self.dom = dom;
+    this.dom = document.createElement("div");
+    this.dom.className = "joy-actions";
 
     // List
-    var list = document.createElement("list");
-    // list.id = "joylist"; //NF TODO: make this a class or unique id because there can be more than one list
+    let list = document.createElement("list");
     list.classList.add('joy-list');
-    list.id = self.id + "-joy-list";
-    dom.appendChild(list);
+    list.id = this.id + "-joy-list";
+    this.dom.appendChild(list);
 
     // Preview Variables?
-    /*var varPreview;
-    if(self.top.canPreview("variables")){
-      varPreview = document.createElement("div");
-      varPreview.id = "joy-variables-preview";
-      varPreview.innerHTML = "AHHHH";
-      dom.appendChild(varPreview);
+    /*let letPreview;
+    if(this.top.canPreview("variables")){
+      letPreview = document.createElement("div");
+      letPreview.id = "joy-variables-preview";
+      letPreview.innerHTML = "AHHHH";
+      dom.appendChild(letPreview);
     }*/
 
     //////////////////////////////////////////
     // Create Bullet /////////////////////////
     //////////////////////////////////////////
 
-    var bulletOptions = [
+    let bulletOptions = [
       {label:"Add action above", value:"action_above"},
       {label:"Add action below", value:"action_below"},
       {label:"Delete", value:"delete"}
     ];
-    var _onBulletChoice = function(entry, choice){
+    let _onBulletChoice = (entry, choice) => {
 
       // ACTION ABOVE or BELOW
-      var newActionWhere = 0;
+      let newActionWhere = 0;
       if(choice=="action_above") newActionWhere=-1; // above
       if(choice=="action_below") newActionWhere=1; // below
       if(newActionWhere!=0){ // not NOT new action
         
-        var newEntryIndex = self.entries.indexOf(entry);
+        let newEntryIndex = this.entries.indexOf(entry);
         if(newActionWhere>0) newEntryIndex+=1;
 
         // Chooser Modal!
-        Joy.modal.Chooser({
+        let chooser = new ChooserModal({
           position: "left",
           source: entry.bullet.dom,
           options: actionOptions,
-          onchange: function(value){
+          onchange: (value) => {
             _addAction(value, newEntryIndex);
-            self.update(); // You oughta know!
+            this.update(); // You oughta know!
             _updateBullets(); // update the UI, re-number it.
           }
         });
-
       }
 
       // DELETE
       if(choice=="delete"){
-        _removeFromArray(self.entries, entry); // Delete entry from Entries[]
+        _removeFromArray(this.entries, entry); // Delete entry from Entries[]
         _removeFromArray(actions, entry.actionData); // Delete action from Data's Actions[]
-        self.removeChild(entry.actor); // Delete actor from Children[]
+        this.removeChild(entry.actor); // Delete actor from Children[]
         list.removeChild(entry.dom); // Delete entry from DOM
-        self.update(); // You oughta know!
+        this.update(); // You oughta know!
         _updateBullets(); // update the UI, re-number it.
       }
 
     };
-    var _createBullet = function(entry){
+    let _createBullet = (entry) => {
     
-      var bullet = new Joy.ui.ChooserButton({
+      let bullet = new ChooserButton({
         position: "left",
         staticLabel: _getBulletLabel(entry),
         options: bulletOptions,
-        onchange: function(choice){
+        onchange: (choice) => {
           _onBulletChoice(entry, choice);
         },
         styles: ["joy-bullet"]
       });
-      bullet.dom.id = "joy-bullet";
+      bullet.dom.id = "joy-bullet"; //TODO: make this unique
 
       return bullet;
 
     };
 
     // Get the digit (or letter, or roman) for this bullet...
-    var _getBulletLabel = function(entry){
+    let _getBulletLabel = (entry) => {
 
       // What index am I?
-      var index = self.entries.indexOf(entry)+1;
+      let index = this.entries.indexOf(entry)+1;
 
       // How many levels deep in "actions" am I?
-      var levelsDeep = 0;
-      var parent = self.parent;
+      let levelsDeep = 0;
+      let parent = this.parent;
       while(parent){
         if(parent.type=="actions") levelsDeep++;
         parent = parent.parent;
       }
 
       // Digit, Letter, or Roman? (Cycle around)
-      var label;
+      let label;
       switch(levelsDeep%3){
         case 0: label=index; break; // digits
         case 1: label=_numberToAlphabet(index); break; // letter
@@ -467,11 +467,11 @@ Joy.add({
     };
 
     // Re-number ALL these bad boys
-    var _updateBullets = function(){
-      for(var i=0; i<self.entries.length; i++){
-        var entry = self.entries[i];
-        var bullet = entry.bullet;
-        var label = _getBulletLabel(entry);
+    let _updateBullets = () => {
+      for(let i=0; i<this.entries.length; i++){
+        let entry = this.entries[i];
+        let bullet = entry.bullet;
+        let label = _getBulletLabel(entry);
         bullet.setLabel(label);
       }
     };
@@ -480,19 +480,21 @@ Joy.add({
     // Add Entry: Entries have a Bullet (the number) & actual widget! //
     ////////////////////////////////////////////////////////////////////
 
-    self.entries = [];
-    var _addEntry = function(actionData, atIndex){
+    this.entries = [];
+    
+    let _addEntry = (actionData, atIndex) => {
+      console.log("add entry this", this);
 
       // New entry
-      var entry = {};
-      var entryDOM = document.createElement("div");
+      let entry = {};
+      let entryDOM = document.createElement("div");
       entryDOM.classList.add('joy-list-item');
-      if(atIndex===undefined) atIndex = self.entries.length;
+      if(atIndex===undefined) atIndex = this.entries.length;
 
       // If entries selected, insert after last selected entry
-      // if (self.entries.some(function(entry) { return entry.selected; })) {
+      // if (this.entries.some(function(entry) { return entry.selected; })) {
       //   // Find the index of the last selected entry
-      //   var lastSelectedIndex = self.entries.reduce(function(index, entry, currentIndex) {
+      //   let lastSelectedIndex = this.entries.reduce(function(index, entry, currentIndex) {
       //     return entry.selected ? currentIndex : index;
       //   }, -1);
     
@@ -500,21 +502,21 @@ Joy.add({
 
       //   console.log("selected index to add entry", atIndex);
       // }
-      self.entries.splice(atIndex, 0, entry);
+      this.entries.splice(atIndex, 0, entry);
       list.insertBefore(entryDOM, list.children[atIndex]);
 
       // The Bullet is a Chooser!
-      var bullet = _createBullet(entry);
-      var bulletContainer = document.createElement("div");
-      bulletContainer.id = "joy-bullet-container";
+      let bullet = _createBullet(entry);
+      let bulletContainer = document.createElement("div");
+      bulletContainer.id = "joy-bullet-container"; //TODO: make unique
       entryDOM.appendChild(bulletContainer);
       bulletContainer.appendChild(bullet.dom);
 
       // New Actor!
-      var newActor = self.addChild({type:actionData.type}, actionData);
+      let newActor = this.addChild({type:actionData.type}, actionData);
 
       // The Widget
-      var newWidget = newActor.createWidget();
+      let newWidget = newActor.createWidget();
       newWidget.id = "joy-widget";
       entryDOM.appendChild(newWidget);
 
@@ -528,28 +530,28 @@ Joy.add({
 
       // PREVIEW ON HOVER
       // Also tell the action "_PREVIEW": how far in the action to go?
-      var _calculatePreviewParam = function(event){
-        var param = event.offsetY / bullet.dom.getBoundingClientRect().height;
+      let _calculatePreviewParam = (event) => {
+        let param = event.offsetY / bullet.dom.getBoundingClientRect().height;
         if(param<0) param=0;
         if(param>1) param=1;
         _previewAction._PREVIEW = param;
-        self.update();
+        this.update();
       };
-      var _previewAction;
-      var _previewStyle;
-      bulletContainer.onmouseenter = function(event){
+      let _previewAction;
+      let _previewStyle;
+      bulletContainer.onmouseenter = (event) => {
 
-        if(!self.top.canPreview("actions")) return;
+        if(!this.top.canPreview("actions")) return;
 
-        self.top.activePreview = self;
+        this.top.activePreview = this;
         
         // Create Preview Data
-        self.previewData = _clone(self.data);
-        var actionIndex = self.entries.indexOf(entry);
-        _previewAction = self.previewData.actions[actionIndex];
+        this.previewData = _clone(this.data);
+        let actionIndex = this.entries.indexOf(entry);
+        _previewAction = this.previewData.actions[actionIndex];
 
         // STOP after that action!
-        self.previewData.actions.splice(actionIndex+1, 0, {STOP:true});
+        this.previewData.actions.splice(actionIndex+1, 0, {STOP:true});
 
         // How far to go along action?
         _calculatePreviewParam(event);
@@ -559,19 +561,19 @@ Joy.add({
         document.head.appendChild(_previewStyle);
         _previewStyle.sheet.insertRule('.joy-actions.joy-previewing > #joy-list > div:nth-child(n+'+(actionIndex+2)+') { opacity:0.1; }');
         _previewStyle.sheet.insertRule('.joy-actions.joy-previewing > div.joy-bullet { opacity:0.1; }');
-        dom.classList.add("joy-previewing");
+        this.dom.classList.add("joy-previewing");
 
       };
-      bulletContainer.onmousemove = function(event){
-        if(self.previewData) _calculatePreviewParam(event);
+      bulletContainer.onmousemove = (event) => {
+        if(this.previewData) _calculatePreviewParam(event);
       };
-      bulletContainer.onmouseleave = function(){
-        if(self.previewData){
-          self.previewData = null;
-          self.top.activePreview = null;
-          self.update();
+      bulletContainer.onmouseleave = () => {
+        if(this.previewData){
+          this.previewData = null;
+          this.top.activePreview = null;
+          this.update();
           document.head.removeChild(_previewStyle);
-          dom.classList.remove("joy-previewing");
+          this.dom.classList.remove("joy-previewing");
         }
       };
 
@@ -585,15 +587,15 @@ Joy.add({
 
     };
     // add all INITIAL actions as widgets
-    for(var i=0;i<actions.length;i++) _addEntry(actions[i]);
+    for(let i=0;i<actions.length;i++) _addEntry(actions[i]);
 
     // ///////////////////////////////////////
     // // Reorder Entries - NF added /////////
     // ///////////////////////////////////////
-    self.moveEntry = function(oldIndex, newIndex) {
-      var item = self.entries.splice(oldIndex, 1)[0];
-      self.entries.splice(newIndex, 0, item);
-      self.update();
+    this.moveEntry = (oldIndex, newIndex) => {
+      let item = this.entries.splice(oldIndex, 1)[0];
+      this.entries.splice(newIndex, 0, item);
+      this.update();
       _updateBullets();
     }
 
@@ -602,33 +604,33 @@ Joy.add({
     ///////////////////////////////////////
 
     // Manually add New Action To Actions + Widgets + DOM
-    var _addAction = function(actorType, atIndex, data={}){ //FG added data
+    let _addAction = (actorType, atIndex, data={}) => { //FG added data
       // Create that new entry & everything
-      console.log("data in joy: " + data);
-      var newAction = {type:actorType, ...data};
+      console.log("data in joy in _addAction: " + data);
+      let newAction = {type:actorType, ...data};
       if(atIndex===undefined){
         actions.push(newAction);
       }else{
         actions.splice(atIndex, 0, newAction);
       }
-      var entry = _addEntry(newAction, atIndex);
+      let entry = _addEntry(newAction, atIndex);
 
       // Focus on that entry's widget!
       // entry.widget.focus();
     };
-    self.addAction = _addAction; //FG added
+    this.addAction = _addAction; //available to other modules - [QUESTION] should I just have one addAction function?
 
     // Actions you can add:
     // TODO: INCLUDE ALIASED ACTIONS
-    var actionOptions = [];
+    let actionOptions = [];
 
     //TODO: refactor into functions
 
-    if(self.onlyActions){ //get a specific list of types
-      for(var i=0;i<self.onlyActions.length;i++){
-        var actionType = self.onlyActions[i];
-        var actorTemplate = Joy.getTemplateByType(actionType);
-        var notActionTag = actorTemplate.tags.filter(function(tag){
+    if(this.onlyActions){ //get a specific list of types
+      for(let i=0;i<this.onlyActions.length;i++){
+        let actionType = this.onlyActions[i];
+        let actorTemplate = Joy.getTemplateByType(actionType);
+        let notActionTag = actorTemplate.tags.filter((tag) => {
           return tag!="action"; // first tag that's NOT "action" (so that actions categorized in the chooser menu based on their secondary tag)
         })[0];
         actionOptions.push({
@@ -638,10 +640,10 @@ Joy.add({
         });
       }
     }else{ //find anything tagged action
-      var actionActors = Joy.getTemplatesByTag("action");
-      for(var i=0;i<actionActors.length;i++){
-        var actionActor = actionActors[i];
-        var notActionTag = actionActor.tags.filter(function(tag){
+      let actionActors = Joy.getTemplatesByTag("action");
+      for(let i=0;i<actionActors.length;i++){
+        let actionActor = actionActors[i];
+        let notActionTag = actionActor.tags.filter((tag) => {
           return tag!="action";
         })[0];
         actionOptions.push({
@@ -654,12 +656,12 @@ Joy.add({
 
     // NF: Add only actions in specified modules to chooser menu
     // TODO: merge with previous filter code
-    var modules = self.modules || [];
-    var moduleOptions = [];
+    let modules = this.modules || [];
+    let moduleOptions = [];
     modules.forEach((module) => {
-      var moduleActors = Joy.getTemplatesByTag(module);
+      let moduleActors = Joy.getTemplatesByTag(module);
       moduleActors.forEach((moduleActor) => {
-        var notActionTag = moduleActor.tags.filter(function(tag){
+        let notActionTag = moduleActor.tags.filter((tag) => {
           return tag!="action";
         })[0];
         moduleOptions.push({
@@ -671,36 +673,36 @@ Joy.add({
     });
 
     // "+" Button: When clicked, prompt what actions to add!
-    var addButton = new Joy.ui.ChooserButton({
+    let addButton = new ChooserButton({
       staticLabel: "+",
       options: actionOptions,
-      onchange: function(value){
+      onchange: (value) => {
         _addAction(value);
-        self.update(); // You oughta know!
+        this.update(); // You oughta know!
       },
-      styles: ["joy-bullet"]
+      styles: ["joy-bullet", "joy-add-bullet"]
     });
-    dom.appendChild(addButton.dom);
+    this.dom.appendChild(addButton.dom);
 
   },
   onact: function(my){
 
-    // Create _vars, if not already there
+    // Create _lets, if not already there
     if(!my.target._variables) my.target._variables={}; 
 
     // Reset all of target's variables?
     if(my.data.resetVariables) my.target._variables = {};
 
     // Do those actions, baby!!!
-    for(var i=0; i<my.data.actions.length; i++){
+    for(let i=0; i<my.data.actions.length; i++){
 
       // Stop?
-      var actionData = my.data.actions[i];
+      let actionData = my.data.actions[i];
       if(actionData.STOP) return "STOP";
 
       // Run 
-      var actor = my.actor.entries[i].actor; // TODO: THIS IS A HACK AND SHOULD NOT RELY ON THAT
-      var actorMessage = actor.act(my.target, actionData); // use ol' actor, but GIVEN data.
+      let actor = my.actor.entries[i].actor; // TODO: THIS IS A HACK AND SHOULD NOT RELY ON THAT
+      let actorMessage = actor.act(my.target, actionData); // use ol' actor, but GIVEN data.
       if(actorMessage=="STOP") return actorMessage;
 
     }
@@ -726,13 +728,13 @@ Joy.module("instructions", function(){
     onact: function(my){
       
       // Previewing? How much to preview?
-      var param = 1;
+      let param = 1;
       if(my.data._PREVIEW!==undefined) param=my.data._PREVIEW;
 
       // Loop through it... (as far as preview shows, anyway)
-      var loops = Math.floor(my.data.count*param);
-      for(var i=0; i<loops; i++){
-        var message = my.actor.actions.act(my.target);
+      let loops = Math.floor(my.data.count*param);
+      for(let i=0; i<loops; i++){
+        let message = my.actor.actions.act(my.target);
         if(message=="STOP") return message; // STOP
       }
 
@@ -746,7 +748,7 @@ Joy.module("instructions", function(){
     init: "If AHHH, then: "+
         "{id:'actions', type:'actions', resetVariables:false}",
     onact: function(my){
-      var message = my.actor.actions.act(my.target);
+      let message = my.actor.actions.act(my.target);
       if(message=="STOP") return message; // STOP
     }
   });*/
@@ -755,22 +757,22 @@ Joy.module("instructions", function(){
     name: "// Write a note",
     type: "instructions/comment",
     tags: ["instructions", "action"],
-    initWidget: function(self){
+    initWidget: function(){
 
       // DOM
-      self.dom = document.createElement("div");
+      this.dom = document.createElement("div");
 
       // Comment Box
-      self.box = new Joy.ui.TextBox({
+      this.box = new TextBox({
         multiline: true,
         placeholder: "// your notes here",
-        value: self.getData("value"),
-        onchange: function(value){
-          self.setData("value", value);
+        value: this.getData("value"),
+        onchange: (value) => {
+          this.setData("value", value);
         },
         styles: ["box"]
       });
-      self.dom.appendChild(self.box.dom);
+      this.dom.appendChild(this.box.dom);
 
     }
   });
@@ -780,20 +782,20 @@ Joy.module("instructions", function(){
 Joy.add({
   type: "variableName",
   tags: ["ui"],
-  init: function(self){
+  init: function(){
 
-    var variableType = self.variableType;
+    let variableType = this.variableType;
 
     // Unique Variable Name
-    var _uniqueVariableName = function(){
-      var varnames = Joy.getReferencesByTag(self, variableType).map(function(ref){
+    let _uniqueVariableName = () => {
+      let varnames = Joy.getReferencesByTag(this, variableType).map((ref) => {
         return ref.data.value;
       });
-      var highestCount=0;
-      varnames.forEach(function(varname){
-        var num;
+      let highestCount=0;
+      varnames.forEach((varname) => {
+        let num;
         if(varname=="thing") num=1; // at least 1
-        var match = varname.match(/thing\s(\d+)/);
+        let match = varname.match(/thing\s(\d+)/);
         if(match) num = parseInt(match[1]); // or more
         if(highestCount<num) highestCount=num;
       });
@@ -802,82 +804,82 @@ Joy.add({
     };
 
     // Create Reference method
-    self._createNewReference = function(){
-      var refData = {
+    this._createNewReference = () => {
+      let refData = {
         value: _uniqueVariableName(),
         color: _randomHSV()
       };
-      var ref = Joy.createReference(self, variableType, refData);
-      self.setData("refID", ref.id, true); // Remember Ref ID. And DON'T update.
-      Joy.connectReference(self, ref.id); // connect new ref
+      let ref = Joy.createReference(this, variableType, refData);
+      this.setData("refID", ref.id, true); // Remember Ref ID. And DON'T update.
+      Joy.connectReference(this, ref.id); // connect new ref
     };
 
     // Do I already have a reference? Create one if no.
-    var refID = self.getData("refID");
+    let refID = this.getData("refID");
     if(refID){
-      Joy.connectReference(self, refID); // connect this ref
+      Joy.connectReference(this, refID); // connect this ref
     }else{
 
-      // Well, first try seeing if there are any vars.
+      // Well, first try seeing if there are any lets.
       // If so, connect to most recently created one
-      var varReferences = Joy.getReferencesByTag(self, variableType);
-      // CONFIG: self.startWithExisting!
-      if(self.startWithExisting && varReferences.length>0){
-        var latestReference = varReferences[varReferences.length-1];
+      let letReferences = Joy.getReferencesByTag(this, variableType);
+      // CONFIG: this.startWithExisting!
+      if(this.startWithExisting && letReferences.length>0){
+        let latestReference = letReferences[letReferences.length-1];
         refID = latestReference.id;
-        self.setData("refID", refID, true); // set data
-        Joy.connectReference(self, refID); // connect this ref
+        this.setData("refID", refID, true); // set data
+        Joy.connectReference(this, refID); // connect this ref
       }else{
         // Otherwise, make a new one!
-        self._createNewReference();
+        this._createNewReference();
       }
       
     }
 
     // Switch reference 
-    self._switchReference = function(newRefID){
-      var refID = self.getData("refID");
-      Joy.disconnectReference(self, refID); // disconnect old ref
-      self.setData("refID", newRefID); // DO update this!
-      Joy.connectReference(self, newRefID); // connect new ref
+    this._switchReference = (newRefID) => {
+      let refID = this.getData("refID");
+      Joy.disconnectReference(this, refID); // disconnect old ref
+      this.setData("refID", newRefID); // DO update this!
+      Joy.connectReference(this, newRefID); // connect new ref
     };
 
   },
-  initWidget: function(self){
+  initWidget: function(){
 
-    self.dom = document.createElement("span");
+    this.dom = document.createElement("span");
     
     // The String edits my REFERENCE'S data.
-    var refID = self.getData("refID");
-    var refData = Joy.getReferenceById(self, refID).data;
-    var stringActor = self.addChild({
+    let refID = this.getData("refID");
+    let refData = Joy.getReferenceById(this, refID).data;
+    let stringActor = this.addChild({
       type: "string",
       prefix:"[", suffix:"]",
       color: refData.color
     }, refData);
-    var stringWidget = stringActor.createWidget();
-    self.dom.appendChild(stringWidget);
+    let stringWidget = stringActor.createWidget();
+    this.dom.appendChild(stringWidget);
 
     // This String Actor also updates its color
-    var _old_stringActor_onDataChange = stringActor.onDataChange;
-    stringActor.onDataChange = function(){
+    let _old_stringActor_onDataChange = stringActor.onDataChange;
+    stringActor.onDataChange = () => {
       _old_stringActor_onDataChange();
-      var color = stringActor.getData("color");
+      let color = stringActor.getData("color");
       stringActor.stringUI.setColor(color);
     };
 
     // Chooser? Can choose to switch to other variables (or make new one)
-    var variableType = self.variableType;
-    var _showChooser = function(){
+    let variableType = this.variableType;
+    let _showChooser = () => {
 
-      var options = [];
+      let options = [];
 
       // Get all references that are of this type
-      var refs = Joy.getReferencesByTag(self, variableType);
-      var myRefID = self.getData("refID");
-      refs.forEach(function(ref){
+      let refs = Joy.getReferencesByTag(this, variableType);
+      let myRefID = this.getData("refID");
+      refs.forEach((ref) => {
         if(ref.id==myRefID) return; // don't show SELF
-        var color = ref.data.color;
+        let color = ref.data.color;
         color = _HSVToRGBString(color[0], color[1], color[2]);
         options.push({
           label: "["+ref.data.value+"]",
@@ -900,17 +902,17 @@ Joy.add({
 
       // Show all possible variables!
       Joy.modal.Chooser({
-        source: self.dom,
+        source: this.dom,
         options: options,
-        onchange: function(newRefID){
+        onchange: (newRefID) => {
 
           if(newRefID=="CHANGE_COLOR"){
 
             // Just change color, ha.
             Joy.modal.Color({
-              source: self.dom,
+              source: this.dom,
               value: stringActor.getData("color"),
-              onchange: function(newColor){
+              onchange: (newColor) => {
                 stringActor.setData("color", newColor);
                 stringActor.stringUI.setColor(newColor); // do this again coz edit lock
               }
@@ -920,17 +922,17 @@ Joy.add({
 
             // Make a new reference? Either way, set refID
             if(newRefID=="NEW"){
-              var oldRefID = self.getData("refID");
-              Joy.disconnectReference(self, oldRefID); // disconnect old ref
-              self._createNewReference();
-              self.update(); // update, yo
+              let oldRefID = this.getData("refID");
+              Joy.disconnectReference(this, oldRefID); // disconnect old ref
+              this._createNewReference();
+              this.update(); // update, yo
             }else{
-              self._switchReference(newRefID);
+              this._switchReference(newRefID);
             }
 
             // Make String Widget edit that instead
-            var refID = self.getData("refID");
-            var ref = Joy.getReferenceById(self, refID);
+            let refID = this.getData("refID");
+            let ref = Joy.getReferenceById(this, refID);
             stringActor.switchData(ref.data);
 
           }
@@ -941,21 +943,21 @@ Joy.add({
     };
 
     // Show ON CLICK!
-    if(!self.noChooser){
-      self.dom.onclick = _showChooser;
+    if(!this.noChooser){
+      this.dom.onclick = _showChooser;
     }
     
   },
   onget: function(my){
-    var refID = my.data.refID;
-    var ref = Joy.getReferenceById(my.actor, refID);
+    let refID = my.data.refID;
+    let ref = Joy.getReferenceById(my.actor, refID);
     return ref.data.value; // returns the variable name
   },
-  onkill: function(self){
+  onkill: function(){
     
     // Disconnect any references I may have
-    var refID = self.getData("refID");
-    Joy.disconnectReference(self, refID); // disconnect old ref
+    let refID = this.getData("refID");
+    Joy.disconnectReference(this, refID); // disconnect old ref
 
   }
 });/////////////////////////////////////////
@@ -986,40 +988,40 @@ Joy.module("math", function(){
   *********************/
   Joy.modify("number", "number_raw", function(_old){
     return {
-      init: function(self){
+      init: function(){
 
         // no variables?
-        if(self.noVariables) return;
+        if(this.noVariables) return;
 
         // Force data to a chain...
-        var originalValue = self.getData("value");
+        let originalValue = this.getData("value");
         if(typeof originalValue==="number"){
-          self.setData("value",undefined,true); // delete "value", no update
-          self.setData("chain",[
+          this.setData("value",undefined,true); // delete "value", no update
+          this.setData("chain",[
             {type:"number_raw", value:originalValue}
           ],true); // create "chain", no update
         }
 
         // MAKE A NEW CHAIN ACTOR *AND DATA(?)*
-        self._makeNewChainActor = function(chainItem, atIndex){
+        this._makeNewChainActor = (chainItem, atIndex) => {
 
           // Make it
-          var chainActor;
-          var type = chainItem.type;
-          var options = {};
-          var isFirst = (atIndex === undefined) ? (self.chainActors.length == 0) : (atIndex == 0); 
-          if (isFirst && self.options !== undefined) {
-            options.min = self.options.min;
-            options.max = self.options.max;
+          let chainActor;
+          let type = chainItem.type;
+          let options = {};
+          let isFirst = (atIndex === undefined) ? (this.chainActors.length == 0) : (atIndex == 0); 
+          if (isFirst && this.options !== undefined) {
+            options.min = this.options.min;
+            options.max = this.options.max;
           }
           switch(type){
 
             // Elements
             case "number_raw":
-              chainActor = self.addChild({type:type, ...options}, chainItem);
+              chainActor = this.addChild({type:type, ...options}, chainItem);
               break;
             case "variableName":
-              chainActor = self.addChild({
+              chainActor = this.addChild({
                 type: type,
                 variableType: 'number',
                 noChooser: true
@@ -1028,7 +1030,7 @@ Joy.module("math", function(){
 
             // Operand
             case "choose":
-              chainActor = self.addChild({
+              chainActor = this.addChild({
                 type:type, 
                 options:[
                   { label:"+", value:"+" },
@@ -1043,12 +1045,12 @@ Joy.module("math", function(){
           }
 
           // Add or splice to Chain Actors array! *AND THE DATA*
-          var chain = self.getData("chain");
+          let chain = this.getData("chain");
           if(atIndex!==undefined){
-            self.chainActors.splice(atIndex, 0, chainActor);
+            this.chainActors.splice(atIndex, 0, chainActor);
             chain.splice(atIndex, 0, chainItem);
           }else{
-            self.chainActors.push(chainActor);
+            this.chainActors.push(chainActor);
             chain.push(chainItem);
           }
 
@@ -1058,23 +1060,23 @@ Joy.module("math", function(){
         }
 
         // Create an actor for each element in the chain
-        self.chainActors = []; // keep a chain parallel to children. this one's in ORDER.
-        var realChain = self.getData("chain");
-        var chain = _clone(realChain);
+        this.chainActors = []; // keep a chain parallel to children. this one's in ORDER.
+        let realChain = this.getData("chain");
+        let chain = _clone(realChain);
         realChain.splice(0, realChain.length); // empty out realChain
-        for(var i=0; i<chain.length; i++){
-          self._makeNewChainActor(chain[i]);
+        for(let i=0; i<chain.length; i++){
+          this._makeNewChainActor(chain[i]);
         }
 
         // REPLACE A CHAIN ACTOR *AND DATA*
-        self._replaceChainActor = function(oldChainActor, newItem){
+        this._replaceChainActor = (oldChainActor, newItem) => {
 
           // Delete old actor, and add new actor where it was
-          var oldIndex = self._deleteChainActor(oldChainActor);
-          var newChainActor = self._makeNewChainActor(newItem, oldIndex);
+          let oldIndex = this._deleteChainActor(oldChainActor);
+          let newChainActor = this._makeNewChainActor(newItem, oldIndex);
 
           // update manually!
-          self.update();
+          this.update();
 
           // Return
           return newChainActor;
@@ -1082,15 +1084,15 @@ Joy.module("math", function(){
         };
 
         // DELETE A CHAIN ACTOR *AND DATA*
-        self._deleteChainActor = function(chainActor){
+        this._deleteChainActor = (chainActor) => {
 
           // Delete actor
-          var oldIndex = self.chainActors.indexOf(chainActor);
-          _removeFromArray(self.chainActors, chainActor);
-          self.removeChild(chainActor);
+          let oldIndex = this.chainActors.indexOf(chainActor);
+          _removeFromArray(this.chainActors, chainActor);
+          this.removeChild(chainActor);
 
           // and data!
-          var chain = self.getData("chain");
+          let chain = this.getData("chain");
           chain.splice(oldIndex, 1);
 
            // so can re-use index
@@ -1099,26 +1101,26 @@ Joy.module("math", function(){
         };
 
       },
-      initWidget: function(self){
+      initWidget: function(){
 
         // no variables?
-        if(self.noVariables){
-          _old.initWidget(self);
+        if(this.noVariables){
+          _old.initWidget(this);
           return;
         }
 
         // Container!
-        self.dom = document.createElement("span");
-        self.dom.className = "joy-number";
+        this.dom = document.createElement("span");
+        this.dom.className = "joy-number";
 
         // Show Chooser!
-        var _showChooser = function(chainActor){
+        let _showChooser = (chainActor) => {
 
-          var options = [];
+          let options = [];
 
           // Show placeholder number (unless i'm a number_raw, or there isn't one)
           if(chainActor.type!="number_raw"){
-            var placeholderNumber = self.placeholder.value;
+            let placeholderNumber = this.placeholder.value;
             if(typeof placeholderNumber==="number"){
               options.push({
                 label: placeholderNumber,
@@ -1131,12 +1133,12 @@ Joy.module("math", function(){
           }
 
           // Show possible variables (except the current variable)
-          var refs = Joy.getReferencesByTag(self, "number");
-          var myRefID;
+          let refs = Joy.getReferencesByTag(this, "number");
+          let myRefID;
           if(chainActor.type=="variableName") myRefID=chainActor.getData("refID");
-          refs.forEach(function(ref){
+          refs.forEach((ref) => {
             if(ref.id==myRefID) return; // don't show SELF
-            var color = ref.data.color;
+            let color = ref.data.color;
             color = _HSVToRGBString(color[0], color[1], color[2]);
             options.push({
               label: "["+ref.data.value+"]",
@@ -1153,10 +1155,10 @@ Joy.module("math", function(){
             Joy.modal.Chooser({
               source: chainActor.dom,
               options: options,
-              onchange: function(newItem){
+              onchange: (newItem) => {
                 // REPLACE CHAIN ACTOR & ENTRY
-                var newChainActor = self._replaceChainActor(chainActor, newItem);
-                self._replaceChainEntry(chainActor, newChainActor);
+                let newChainActor = this._replaceChainActor(chainActor, newItem);
+                this._replaceChainEntry(chainActor, newChainActor);
               }
             });
           }
@@ -1164,21 +1166,21 @@ Joy.module("math", function(){
         };
 
         // THE WAY TO ORGANIZE THIS: ENTRIES that have DOM *and* ACTOR
-        self._chainEntries = [];
+        this._chainEntries = [];
 
         // MAKE CHAIN ENTRY
-        self._makeChainEntry = function(chainActor, atIndex){
+        this._makeChainEntry = (chainActor, atIndex) => {
 
           // Widget
-          var widget = document.createElement("span");
+          let widget = document.createElement("span");
           chainActor.createWidget();
           widget.appendChild(chainActor.dom);
 
           // Widget chooser, if NOT an operand
           if(chainActor.type!="choose"){
-            var entry;
-            var moreButton = new Joy.ui.Button({
-              onclick: function(){
+            let entry;
+            let moreButton = new JoyButton({
+              onclick: () => {
                 _showChainOptions(entry);
               },
               styles: ["joy-more"]
@@ -1188,28 +1190,28 @@ Joy.module("math", function(){
 
           // Place in widget
           if(atIndex!==undefined){
-            if(atIndex < self.dom.childNodes.length){
+            if(atIndex < this.dom.childNodes.length){
               // replacing NOT at last child...
-              var beforeThisWidget = self.dom.childNodes[atIndex];
-              self.dom.insertBefore(widget, beforeThisWidget);
+              let beforeThisWidget = this.dom.childNodes[atIndex];
+              this.dom.insertBefore(widget, beforeThisWidget);
             }else{
               // Otherwise just append
-              self.dom.appendChild(widget);
+              this.dom.appendChild(widget);
             }
           }else{
-            self.dom.appendChild(widget);
+            this.dom.appendChild(widget);
           }
 
           // If it's NOT an operand, clicking it reveals options
           if(chainActor.type!="choose"){
-            (function(ca){
+            ((ca) => {
               // HACK: click, NOT scrub. detect w/ time frame
-              var _mouseDownTime;
+              let _mouseDownTime;
               ca.dom.addEventListener("mousedown", function(){
                 _mouseDownTime = +(new Date());
               });
               ca.dom.addEventListener("mouseup", function(){
-                var _time = +(new Date());
+                let _time = +(new Date());
                 if(_time-_mouseDownTime < 500){
                   _showChooser(ca); // if clicked in less than a half second
                 }
@@ -1223,26 +1225,26 @@ Joy.module("math", function(){
             actor: chainActor
           };
           if(atIndex!==undefined){
-            self._chainEntries.splice(atIndex, 0, entry);
+            this._chainEntries.splice(atIndex, 0, entry);
           }else{
-            self._chainEntries.push(entry);
+            this._chainEntries.push(entry);
           }
 
         };
 
         // DELETE CHAIN ENTRY
-        self._deleteChainEntry = function(chainActor){
+        this._deleteChainEntry = (chainActor) => {
 
           // Get index (so can return later)
-          var entry = self._chainEntries.find(function(entry){
+          let entry = this._chainEntries.find((entry) => {
             return entry.actor == chainActor;
           });
-          var index = self._chainEntries.indexOf(entry);
+          let index = this._chainEntries.indexOf(entry);
 
           // Delete widget & entry (actor's already been deleted)
-          var widget = entry.widget;
-          self.dom.removeChild(widget);
-          _removeFromArray(self._chainEntries, entry);
+          let widget = entry.widget;
+          this.dom.removeChild(widget);
+          _removeFromArray(this._chainEntries, entry);
 
           // Index?
           return index;
@@ -1250,17 +1252,17 @@ Joy.module("math", function(){
         };
 
         // REPLACE CHAIN ENTRY
-        self._replaceChainEntry = function(oldChainActor, newChainActor){
-          var oldIndex = self._deleteChainEntry(oldChainActor);          
-          self._makeChainEntry(newChainActor, oldIndex);
+        this._replaceChainEntry = (oldChainActor, newChainActor) => {
+          let oldIndex = this._deleteChainEntry(oldChainActor);          
+          this._makeChainEntry(newChainActor, oldIndex);
         };
 
         // SHOW CHAIN OPTIONS
-        var _showChainOptions = function(entry){
+        let _showChainOptions = (entry) => {
 
           // Possible operands
-          var currentLabel = entry.widget.innerText;
-          var options = [
+          let currentLabel = entry.widget.innerText;
+          let options = [
             {label:currentLabel+" + 2", value:"+"},
             {label:currentLabel+" - 2", value:"-"},
             {label:currentLabel+" &times; 2", value:"*"},
@@ -1268,22 +1270,22 @@ Joy.module("math", function(){
           ];
 
           // To delete... which operand?
-          var elementIndex = self._chainEntries.indexOf(entry);
-          if(self._chainEntries.length>1){ // can't delete if just one
+          let elementIndex = this._chainEntries.indexOf(entry);
+          if(this._chainEntries.length>1){ // can't delete if just one
             
             // The operand...
-            var operandIndex;
+            let operandIndex;
             if(elementIndex==0) operandIndex=elementIndex+1; // first
             else operandIndex=elementIndex-1; // not
 
             // Label
-            var label;
-            var operandLabel = self._chainEntries[operandIndex].widget.innerText;
+            let label;
+            let operandLabel = this._chainEntries[operandIndex].widget.innerText;
             if(elementIndex==0) label = currentLabel+" "+operandLabel; // first
             else label = operandLabel+" "+currentLabel; // not
 
             // Indices to delete
-            var indicesToDelete = [elementIndex, operandIndex].sort(); // increasing order
+            let indicesToDelete = [elementIndex, operandIndex].sort(); // increasing order
 
             // Push option!
             options.push({
@@ -1298,39 +1300,39 @@ Joy.module("math", function(){
           Joy.modal.Chooser({
             source: entry.widget,
             options: options,
-            onchange: function(operand){
+            onchange: (operand) => {
 
               // It's an operand...
               if(typeof operand==="string"){
 
                 // Get index of the actor...
-                var index = self._chainEntries.indexOf(entry);
+                let index = this._chainEntries.indexOf(entry);
 
                 // Make the OPERAND actor(+data) & entry
                 index++;
-                var operandActor = self._makeNewChainActor({type:"choose", value:operand}, index);
-                self._makeChainEntry(operandActor, index);
+                let operandActor = this._makeNewChainActor({type:"choose", value:operand}, index);
+                this._makeChainEntry(operandActor, index);
 
                 // Make the NUMBER actor(+data) & entry (just the number 2, why hot)
                 index++;
-                var numberActor = self._makeNewChainActor({type:"number_raw", value:2}, index);
-                self._makeChainEntry(numberActor, index);
+                let numberActor = this._makeNewChainActor({type:"number_raw", value:2}, index);
+                this._makeChainEntry(numberActor, index);
 
               }else{
 
                 // Otherwise, DELETE ACTOR & ENTRY!
-                var indices = operand;
-                for(var i=indices.length-1; i>=0; i--){ // flip around coz DELETING
-                  var indexToDelete = indices[i];
-                  var actorToDelete = self._chainEntries[indexToDelete].actor;
-                  self._deleteChainActor(actorToDelete);
-                  self._deleteChainEntry(actorToDelete);
+                let indices = operand;
+                for(let i=indices.length-1; i>=0; i--){ // flip around coz DELETING
+                  let indexToDelete = indices[i];
+                  let actorToDelete = this._chainEntries[indexToDelete].actor;
+                  this._deleteChainActor(actorToDelete);
+                  this._deleteChainEntry(actorToDelete);
                 }
 
               }
 
               // Update!
-              self.update();
+              this.update();
 
             }
           });
@@ -1338,9 +1340,9 @@ Joy.module("math", function(){
         };
 
         // For each chain actor, put in that entry
-        for(var i=0; i<self.chainActors.length; i++){
-          var chainActor = self.chainActors[i];
-          self._makeChainEntry(chainActor);
+        for(let i=0; i<this.chainActors.length; i++){
+          let chainActor = this.chainActors[i];
+          this._makeChainEntry(chainActor);
         }
 
       },
@@ -1353,31 +1355,31 @@ Joy.module("math", function(){
 
         ////////////////
 
-        var nums_and_ops = []; // just gets chain of nums & ops
+        let nums_and_ops = []; // just gets chain of nums & ops
 
         // EVALUATE EACH ELEMENT FIRST
-        for(var i=0; i<my.data.chain.length; i+=2){
+        for(let i=0; i<my.data.chain.length; i+=2){
 
           // Synched indices!
-          var chainActor = my.actor.chainActors[i]; 
+          let chainActor = my.actor.chainActors[i]; 
 
           // Evaluate element
-          var num;
+          let num;
           switch(chainActor.type){
             case "number_raw":
               num = chainActor.get(my.target);
               break;
             case "variableName":
-              var _variables = my.target._variables;
-              var varname = chainActor.get(my.target); // it's just a synchronized string
+              let _variables = my.target._variables;
+              let varname = chainActor.get(my.target); // it's just a synchronized string
               num = _variables[varname];
               break; 
           }
 
           // Any operator before it?
           if(i>0){
-            var operandActor = my.actor.chainActors[i-1];
-            var op = operandActor.get();
+            let operandActor = my.actor.chainActors[i-1];
+            let op = operandActor.get();
             nums_and_ops.push(op);
           }
 
@@ -1387,15 +1389,15 @@ Joy.module("math", function(){
         }
 
         // MULTIPLICATION AND DIVISION FIRST. LEFT-ASSOCIATIVE
-        for(var i=1; i<nums_and_ops.length; i+=2){
+        for(let i=1; i<nums_and_ops.length; i+=2){
 
-          var op = nums_and_ops[i];
+          let op = nums_and_ops[i];
           if(op=="*" || op=="/"){
 
             // Do math to the two numbers
-            var num1 = nums_and_ops[i-1];
-            var num2 = nums_and_ops[i+1];
-            var res;
+            let num1 = nums_and_ops[i-1];
+            let num2 = nums_and_ops[i+1];
+            let res;
             if(op=="*") res = num1*num2;
             else res = num1/num2;
 
@@ -1412,15 +1414,15 @@ Joy.module("math", function(){
         }
 
         // NOW DO ADDITION AND SUBTRACTION
-        for(var i=1; i<nums_and_ops.length; i+=2){
+        for(let i=1; i<nums_and_ops.length; i+=2){
 
-          var op = nums_and_ops[i];
+          let op = nums_and_ops[i];
           if(op=="+" || op=="-"){
 
             // Do math to the two numbers
-            var num1 = nums_and_ops[i-1];
-            var num2 = nums_and_ops[i+1];
-            var res;
+            let num1 = nums_and_ops[i-1];
+            let num2 = nums_and_ops[i+1];
+            let res;
             if(op=="+") res = num1+num2;
             else res = num1-num2;
 
@@ -1453,8 +1455,8 @@ Joy.module("math", function(){
     tags: ["math", "action"],
     init: "Set {id:'varname', type:'variableName', variableType:'number'} to {id:'value', type:'number'}",
     onact: function(my){
-      var _variables = my.target._variables;
-      var varname = my.data.varname; // it's just a synchronized string
+      let _variables = my.target._variables;
+      let varname = my.data.varname; // it's just a synchronized string
       _variables[varname] = my.data.value; // Set the variable
     }
   });
@@ -1484,15 +1486,15 @@ Joy.module("math", function(){
 
     onact: function(my){
 
-      var vars = my.target._variables;
-      var varname = my.data.varname;
-      if(vars[varname]===undefined) vars[varname]=0; // Set to 0, if nothing's there.
+      let lets = my.target._variables;
+      let varname = my.data.varname;
+      if(lets[varname]===undefined) lets[varname]=0; // Set to 0, if nothing's there.
 
       switch(my.data.operation){
-        case "+": vars[varname] += my.data.value; break;
-        case "-": vars[varname] -= my.data.value; break;
-        case "*": vars[varname] *= my.data.value; break;
-        case "/": vars[varname] /= my.data.value; break;
+        case "+": lets[varname] += my.data.value; break;
+        case "-": lets[varname] -= my.data.value; break;
+        case "*": lets[varname] *= my.data.value; break;
+        case "/": lets[varname] /= my.data.value; break;
       }
 
     }
@@ -1514,10 +1516,10 @@ Joy.module("math", function(){
         "{id:'actions', type:'actions', resetVariables:false}",
     onact: function(my){
 
-      var value1 = my.data.value1;
-      var value2 = my.data.value2;
+      let value1 = my.data.value1;
+      let value2 = my.data.value2;
 
-      var result;
+      let result;
       switch(my.data.test){
         case '<': 
           result = value1<value2;
@@ -1537,7 +1539,7 @@ Joy.module("math", function(){
       }
 
       if(result){
-        var message = my.actor.actions.act(my.target);
+        let message = my.actor.actions.act(my.target);
         if(message=="STOP") return message; // STOP
       }
 
@@ -1555,9 +1557,9 @@ Joy.module("random", function(){
         "{id:'actions', type:'actions', resetVariables:false}",
     onact: function(my){
       
-      var probability = my.data.chance/100;
+      let probability = my.data.chance/100;
       if(Math.random() < probability){
-        var message = my.actor.actions.act(my.target);
+        let message = my.actor.actions.act(my.target);
         if(message=="STOP") return message; // STOP
       }
 
@@ -1578,15 +1580,15 @@ Joy.module("random", function(){
         "{id:'min', type:'number', placeholder:1} and {id:'max', type:'number', placeholder:100}",
     onact: function(my){
 
-      var _variables = my.target._variables;
-      var varname = my.data.varname; // it's just a synchronized string
+      let _variables = my.target._variables;
+      let varname = my.data.varname; // it's just a synchronized string
 
-      var _min = my.data.min;
-      var _max = my.data.max;
-      var min = Math.min(_min,_max); // just in case
-      var max = Math.max(_min,_max); // just in case
+      let _min = my.data.min;
+      let _max = my.data.max;
+      let min = Math.min(_min,_max); // just in case
+      let max = Math.max(_min,_max); // just in case
 
-      var randomValue;
+      let randomValue;
       if(my.data.numtype=="integer"){
         randomValue = min + Math.floor( Math.random()*((max-min)+1) );
       }else{

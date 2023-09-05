@@ -29,7 +29,7 @@ export const effectList = [
     dropdownName: 'Stripes',
     category: 'Backgrounds',
     tag: 'motif',
-    init: `Stripes of width {id:'stripeWidth', type:'number', min:1, max:300, placeholder:50}
+    init: `Stripes of width {id:'stripeWidth', type:'number-with-modal', min:1, max:300, placeholder:50}
       from {id:'color1', type:'color', placeholder:[0, 0.7, 0.8]} 
       to {id:'color2', type:'color', placeholder:[200, 0.7, 0.9]}`,
     cursor: './assets/cursors/fill-drip-solid.svg',
@@ -39,7 +39,6 @@ export const effectList = [
     }
   },
   {
-    //TODO: variable for screen size in min/max
     name: 'circle',
     dropdownName: 'Circle',
     category: 'Shapes',

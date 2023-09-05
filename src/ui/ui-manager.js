@@ -29,7 +29,7 @@ export class UIManager {
           let effectButton = this.createButton(name, name + '-button', ['effect-button']); 
           effectButtonBar.appendChild(effectButton);
           effectButton.addEventListener('click', (event) => {
-            this.setIdAsSelected('effect-button', name + '-button');  // when effect button clicked, select it and deselect all others
+            this.markAsSelected('effect-button', name + '-button');  // when effect button clicked, select it and deselect all others
             //this.updateCursor(this.effects[name].cursor); //TODO
           });
         });
@@ -45,23 +45,26 @@ export class UIManager {
 
   // mark category selected and show its tab and corresponding effect buttons
   setActiveCategoryTab(id) {
-    this.setIdAsSelected("category-tab", id); // select the clicked tab and deselect all others
-    document.getElementsByClassName('effect-button-bar').forEach(e => { // hide all effect button bars
+    this.markAsSelected("category-tab", id); // select the clicked tab and deselect all others
+    document.querySelectorAll('.effect-button-bar').forEach(e => { // hide all effect button bars
       e.classList.add('hidden');
     });
     let effectButtonBar = document.getElementById(id + '-buttons'); // get this category's effect button bar
     effectButtonBar.classList.remove('hidden'); // show the button bar
-    this.setIdAsSelected("effect-button", effectButtonBar.firstChild.id); // select first button in this category by default
+    this.markAsSelected("effect-button", effectButtonBar.firstChild.id); // select first button in this category by default
   }
 
   setDefaultEffectAndCategory() {
     let firstCategory = document.querySelector('.category-tab');
-    this.setActiveCategoryTab(firstCategory.id);
+    if(firstCategory) {
+     this.setActiveCategoryTab(firstCategory.id);
+    }
   }
 
-  setIdAsSelected(className, id) {
+  markAsSelected(className, id) {
+    console.log("marking as selected", className, id);
     // Deselect all elements with the specified class name
-    document.getElementsByClassName(className).forEach(e => {
+    document.querySelectorAll("."+className).forEach(e => {
       e.classList.remove('selected');
     });
     // Select the element with the specified ID

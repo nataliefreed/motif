@@ -1,5 +1,4 @@
-import Joy from './libraries/joy/joy.js';
-import { BrushstrokeManager, Brushstroke, Path } from './models/brushstrokes.js';
+import { BrushstrokeManager, Brushstroke } from './models/brushstrokes.js';
 import { Sortable, MultiDrag } from 'sortablejs';
 import { effectList } from './config/effectList.js';
 import { EffectManager } from './models/effects.js';
@@ -27,26 +26,26 @@ class MotifApp {
 
 		this.sketch = new P5Renderer();
 		this.joyManager = new JoyManager(this.effects.getEffects(), this.brushstrokes, this.sketch);
-		this.initUI();
+		this._initUI();
 		// this.joy.actions.update();
 
 		this.activeBrushstroke = null;
 	}
 	
-	initUI() {
+	_initUI() {
 		
 		//List sorting
     // Sortable.mount(new MultiDrag());
-		let sortablelist = document.getElementById('actions-joy-list');
-    new Sortable(sortablelist, {
-	    animation: 150,
-	    ghostClass: 'sortable-ghost',
-			// multiDrag: true,
-			// selectedClass: 'selected',
-			onUpdate: (evt) => {
-				this.joy.actions.moveEntry(evt.oldIndex, evt.newIndex);
-			}
-    });
+		// let sortablelist = document.getElementById('actions-joy-list');
+    // new Sortable(sortablelist, {
+	  //   animation: 150,
+	  //   ghostClass: 'sortable-ghost',
+		// 	// multiDrag: true,
+		// 	// selectedClass: 'selected',
+		// 	onUpdate: (e) => {
+		// 		this.joy.actions.moveEntry(e.oldIndex, e.newIndex);
+		// 	}
+    // });
 
 		//Mouse event listeners
 		let dragging = false;
@@ -128,7 +127,7 @@ class MotifApp {
 
 				if(this.activeBrushstroke) {
 					this.activeBrushstroke.addPoint({x: this.sketch.mouseX, y: this.sketch.mouseY});
-					if(this.activeBrushstroke.getType() === 'drag') {
+					if(this.activeBrushstroke.getMouseActionType() === 'drag') {
 					  this.activeBrushstroke.renderPreview({}); //current canvas settings go here
 					}
 				}
@@ -143,7 +142,7 @@ class MotifApp {
 			mouseDownOverCanvas = false;
 
 			if(this.activeBrushstroke) {
-				if(this.activeBrushstroke.getType() === 'drag') {
+				if(this.activeBrushstroke.getMouseActionType() === 'drag') {
 					this.activeBrushstroke.addPoint({x: this.sketch.mouseX, y: this.sketch.mouseY});
 
 					this.activeBrushstroke.finalizePath();

@@ -1,5 +1,7 @@
-//Singleton! Only one instance of this class should exist at a time.
-class ModalBackdrop {
+import { _HSVtoRGB, _HSVToRGBString, TAU } from "../joy-utils.js";
+  
+  //Singleton! Only one instance of this class should exist at a time.
+export class ModalBackdrop {
   constructor() {
     if (ModalBackdrop._instance) {
         return ModalBackdrop._instance;
@@ -8,12 +10,11 @@ class ModalBackdrop {
     // The main modal container
     this.dom = document.createElement('div');
     this.dom.id = "joy-modal";
-    this.dom.style.display = 'none';
     document.body.appendChild(this.dom);
 
     // Transparent background you click to close!
     this.bg = document.createElement("div");
-    this.bg.id = "joy-modal-bg";
+    this.bg.id = "joy-bg";
     this.bg.onclick = () => {
       this.currentUI.kill();
     };
@@ -35,13 +36,19 @@ class ModalBackdrop {
   }
 
   show(ui) {
+
     this._clear(this.box);
 
     this.dom.style.display = 'block';
 
+    console.log("showing modal with dom", ui, ui.dom);
+    console.log("the box", this.box);
+
     // Remember & add UI
     this.currentUI = ui;
     this.box.appendChild(ui.dom);
+
+    console.log("the box", this.box);
     
     // Position the Box
     let position = ui.config.position || "below";
@@ -96,14 +103,18 @@ class ModalBackdrop {
     if (!ModalBackdrop._instance) {
         new ModalBackdrop();
     }
+    console.log("modal backdrop instance", ModalBackdrop._instance);
     return ModalBackdrop._instance;
   }
 }
+
+
 
 export class BaseModal {
   constructor(config) {
       this.config = config;
       this.dom = document.createElement("div");
+      this.dom.classList.add("base-modal");
   }
 
   kill() {
@@ -111,17 +122,24 @@ export class BaseModal {
   }
 
   show() {
-    ModalBackdrop.getInstance().show(this.dom);
+    console.log("showing modal", this);
+    const modalInstance = ModalBackdrop.getInstance();
+    if (modalInstance instanceof ModalBackdrop) {
+      modalInstance.show(this);
+    } else {
+      console.error("Unexpected instance:", modalInstance);
+    }
   }
 }
 
-export class Chooser extends BaseModal {
+
+
+export class ChooserModal extends BaseModal {
   constructor(config) {
     super(config);
     this.categories = {};
     const _placeholder_ = "_placeholder_";
 
-    this.dom = document.createElement("div");
     this.dom.className = "joy-modal-chooser";
     
     let list = document.createElement("div");
@@ -195,12 +213,14 @@ export class ColorPicker extends BaseModal {
   constructor(config) {
     super(config);
 
-    // Config
-    this.config = config;
-
-    // Create DOM
-    this.dom = document.createElement("div");
-    this.dom.className = "joy-modal-color";
+    this.WHEEL_SIZE = 150;
+    this.SPECTRUM_WIDTH = 15;
+    this.MARGIN_1 = 10;
+    this.MARGIN_2 = 10;
+    this.MARGIN_3 = 10;
+  
+    this.FULL_WIDTH = this.MARGIN_1+this.WHEEL_SIZE+this.MARGIN_2+this.SPECTRUM_WIDTH+this.MARGIN_3;
+    this.FULL_HEIGHT = this.MARGIN_1+this.WHEEL_SIZE+this.MARGIN_3;
 
     // COLOR is HSV.
     config.value = config.value || [0,1,1];
@@ -208,22 +228,31 @@ export class ColorPicker extends BaseModal {
     this.s = config.value[1];
     this.v = config.value[2];
 
+    this.dom = this._createDOM();
+    this._attachEvents();
+  }
+
+  _createDOM() {
+    const dom = document.createElement("div");
+    dom.className = "joy-modal-color";
+
+    // Add the color wheel, spectrum and picker here...
+    this.wheelCanvas = this._createColorWheel(dom);
+    this.spectrumCanvas = this._createValueSpectrum(dom);
+    this.pickerCanvas = this._createColorPickers(dom, this.wheelCanvas, this.spectrumCanvas);
+
+    return dom;
+  }
+
+  _createColorWheel(dom) {
+
     // THREE ELEMENTS:
     // 1. Color Wheel
     // 2. Color Value
     // 3. Color Pickers
 
-    let WHEEL_SIZE = 150;
-    let SPECTRUM_WIDTH = 15;
-    let MARGIN_1 = 10;
-    let MARGIN_2 = 10;
-    let MARGIN_3 = 10;
-
-    let FULL_WIDTH = MARGIN_1+WHEEL_SIZE+MARGIN_2+SPECTRUM_WIDTH+MARGIN_3;
-    let FULL_HEIGHT = MARGIN_1+WHEEL_SIZE+MARGIN_3;
-
-    this.dom.style.width = FULL_WIDTH + "px";
-    this.dom.style.height = FULL_HEIGHT + "px";
+    dom.style.width = this.FULL_WIDTH + "px";
+    dom.style.height = this.FULL_HEIGHT + "px";
 
     /////////////////////////////
     // 1) The Color Wheel ///////
@@ -231,109 +260,51 @@ export class ColorPicker extends BaseModal {
 
     let wheelCanvas = document.createElement("canvas");
     wheelCanvas.id = "joy-color-wheel";
-    let wheelContext = wheelCanvas.getContext("2d");
-    wheelCanvas.width = WHEEL_SIZE*2;
-    wheelCanvas.height = WHEEL_SIZE*2;
+    wheelCanvas.width = this.WHEEL_SIZE*2;
+    wheelCanvas.height = this.WHEEL_SIZE*2;
     wheelCanvas.style.width = wheelCanvas.width/2 + "px";
     wheelCanvas.style.height = wheelCanvas.height/2 + "px";
     dom.appendChild(wheelCanvas);
 
-    wheelCanvas.style.top = MARGIN_1 + "px";
-    wheelCanvas.style.left = MARGIN_1 + "px";
+    wheelCanvas.style.top = this.MARGIN_1 + "px";
+    wheelCanvas.style.left = this.MARGIN_1 + "px";
 
-    let _updateWheel = function(){
+    this._updateWheel(wheelCanvas);
+    return wheelCanvas;
+  }
 
-      // Image Data!
-      let ctx = wheelContext;
-      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-      let w = wheelCanvas.width;
-      let h = wheelCanvas.height;
-      let image = ctx.createImageData(w,h);
-      let imageData = image.data;
+  _updateWheel(wheelCanvas) {
+    // Image Data!
+    let ctx = wheelCanvas.getContext("2d");
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    let w = wheelCanvas.width;
+    let h = wheelCanvas.height;
+    let image = ctx.createImageData(w,h);
+    let imageData = image.data;
 
-      // Create a circle of colors
-      // Thanks to: https://medium.com/@bantic/hand-coding-a-color-wheel-with-canvas-78256c9d7d43
-      let cx = w/2;
-      let cy = h/2;
-      let radius = w/2; // buffer for the crosshair
-      let radiusBuffered = radius + 2; // small buffer for clipping
-      for(let x=0; x<w; x++){
-        for(let y=0; y<h; y++){
-          let dx = x-cx;
-          let dy = y-cy;
-          let distance = Math.sqrt(dx*dx+dy*dy);
-          if(distance<radiusBuffered){ // buffer for clipping
-            if(distance>=radius) distance=radius;
+    // Create a circle of colors
+    // Thanks to: https://medium.com/@bantic/hand-coding-a-color-wheel-with-canvas-78256c9d7d43
+    let cx = w/2;
+    let cy = h/2;
+    let radius = w/2; // buffer for the crosshair
+    let radiusBuffered = radius + 2; // small buffer for clipping
+    for(let x=0; x<w; x++){
+      for(let y=0; y<h; y++){
+        let dx = x-cx;
+        let dy = y-cy;
+        let distance = Math.sqrt(dx*dx+dy*dy);
+        if(distance<radiusBuffered){ // buffer for clipping
+          if(distance>=radius) distance=radius;
 
-            // Angle & Distance, re-mapped to [0,1]
-            let angle = Math.atan2(dy,dx); // from [-tau/2, tau/2]
-            angle = ((angle/Math.TAU)+0.5)*360; // to [0,360]
-            distance = (distance/radius); // to [0,1]
-
-            // HSV! (capitals, coz already using 'h')
-            let H = angle;
-            let S = distance;
-            let V = this.v;
-
-            // TO RGB
-            let rgb = _HSVtoRGB(H,S,V);
-            let i = (x + (y*w))*4;
-            imageData[i] = rgb[0];
-            imageData[i+1] = rgb[1];
-            imageData[i+2] = rgb[2];
-            imageData[i+3] = 255;
-
-          }
-        }
-      }
-      ctx.putImageData(image, 0, 0);
-
-      // Clip it, for aliasing
-      ctx.save();
-      ctx.globalCompositeOperation = "destination-in";
-      ctx.beginPath();
-      ctx.fillStyle = "#fff";
-      ctx.arc(cx,cy,radius,0,Math.TAU);
-      ctx.fill();
-      ctx.restore();
-
-    };
-    _updateWheel();
-
-    /////////////////////////////
-    // 2) The Value Spectrum ////
-    /////////////////////////////
-
-    let spectrumCanvas = document.createElement("canvas");
-    spectrumCanvas.id = "joy-color-value";
-    let spectrumContext = spectrumCanvas.getContext("2d");
-    spectrumCanvas.width = SPECTRUM_WIDTH*2;
-    spectrumCanvas.height = WHEEL_SIZE*2;
-    spectrumCanvas.style.width = spectrumCanvas.width/2 + "px";
-    spectrumCanvas.style.height = spectrumCanvas.height/2 + "px";
-    dom.appendChild(spectrumCanvas);
-
-    spectrumCanvas.style.top = MARGIN_1 + "px";
-    spectrumCanvas.style.right = MARGIN_3 + "px";
-
-    let _updateSpectrum = function(){
-
-      // Image data
-      let ctx = spectrumContext;
-      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-      let w = spectrumCanvas.width;
-      let h = spectrumCanvas.height;
-      let image = ctx.createImageData(w,h);
-      let imageData = image.data;
-
-      // Just a good ol' spectrum of values
-      for(let x=0; x<w; x++){
-        for(let y=0; y<h; y++){
+          // Angle & Distance, re-mapped to [0,1]
+          let angle = Math.atan2(dy,dx); // from [-tau/2, tau/2]
+          angle = ((angle/TAU)+0.5)*360; // to [0,360]
+          distance = (distance/radius); // to [0,1]
 
           // HSV! (capitals, coz already using 'h')
-          let H = this.h;
-          let S = this.s;
-          let V = 1-(y/h);
+          let H = angle;
+          let S = distance;
+          let V = this.v;
 
           // TO RGB
           let rgb = _HSVtoRGB(H,S,V);
@@ -342,136 +313,209 @@ export class ColorPicker extends BaseModal {
           imageData[i+1] = rgb[1];
           imageData[i+2] = rgb[2];
           imageData[i+3] = 255;
-
         }
       }
-      ctx.putImageData(image, 0, 0);
+    }
+    ctx.putImageData(image, 0, 0);
 
-    };
-    _updateSpectrum();
+    // Clip it, for aliasing
+    ctx.save();
+    ctx.globalCompositeOperation = "destination-in";
+    ctx.beginPath();
+    ctx.fillStyle = "#fff";
+    ctx.arc(cx,cy,radius,0,TAU);
+    ctx.fill();
+    ctx.restore();
+  }
+
+    /////////////////////////////
+    // 2) The Value Spectrum ////
+    /////////////////////////////
+  _createValueSpectrum(dom) {
+
+    let spectrumCanvas = document.createElement("canvas");
+    spectrumCanvas.id = "joy-color-value";
+    spectrumCanvas.width = this.SPECTRUM_WIDTH*2;
+    spectrumCanvas.height = this.WHEEL_SIZE*2;
+    spectrumCanvas.style.width = spectrumCanvas.width/2 + "px";
+    spectrumCanvas.style.height = spectrumCanvas.height/2 + "px";
+    dom.appendChild(spectrumCanvas);
+
+    spectrumCanvas.style.top = this.MARGIN_1 + "px";
+    spectrumCanvas.style.right = this.MARGIN_3 + "px";
+
+    this._updateSpectrum(spectrumCanvas);
+    return spectrumCanvas;
+  }
+
+  _updateSpectrum (spectrumCanvas) {
+    // Image data
+    let ctx = spectrumCanvas.getContext("2d");
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    let w = spectrumCanvas.width;
+    let h = spectrumCanvas.height;
+    let image = ctx.createImageData(w,h);
+    let imageData = image.data;
+
+    // Just a good ol' spectrum of values
+    for(let x=0; x<w; x++){
+      for(let y=0; y<h; y++){
+
+        // HSV! (capitals, coz already using 'h')
+        let H = this.h;
+        let S = this.s;
+        let V = 1-(y/h);
+
+        // TO RGB
+        let rgb = _HSVtoRGB(H,S,V);
+        let i = (x + (y*w))*4;
+        imageData[i] = rgb[0];
+        imageData[i+1] = rgb[1];
+        imageData[i+2] = rgb[2];
+        imageData[i+3] = 255;
+
+      }
+    }
+    ctx.putImageData(image, 0, 0);
+  }
 
     /////////////////////////////
     // 3) The Color Pickers /////
     /////////////////////////////
 
+  _createColorPickers(dom, wheelCanvas, spectrumCanvas) {
     let pickerCanvas = document.createElement("canvas");
+    this.pickerCanvas = pickerCanvas;
     pickerCanvas.id = "joy-color-picker";
-    let pickerContext = pickerCanvas.getContext("2d");
-    pickerCanvas.width = FULL_WIDTH*2;
-    pickerCanvas.height = FULL_HEIGHT*2;
+    pickerCanvas.width = this.FULL_WIDTH*2;
+    pickerCanvas.height = this.FULL_HEIGHT*2;
     pickerCanvas.style.width = pickerCanvas.width/2 + "px";
     pickerCanvas.style.height = pickerCanvas.height/2 + "px";
     dom.appendChild(pickerCanvas);
 
-    let _updatePickers = function(){
+    this._updatePickers(pickerCanvas, wheelCanvas, spectrumCanvas);
+    return pickerCanvas;
+  }
 
-      // What's the color?
-      let x,y;
-      let ctx = pickerContext;
-      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-      ctx.fillStyle = _HSVToRGBString(this.h, this.s, this.v);
-      ctx.strokeStyle = "#fff";
-      ctx.lineWidth = 2;
+  _updatePickers(pickerCanvas, wheelCanvas, spectrumCanvas) {
+    // What's the color?
+    let x,y;
+    let ctx = pickerCanvas.getContext("2d");
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.fillStyle = _HSVToRGBString(this.h, this.s, this.v);
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 2;
 
-      // Draw it on the circle
-      let cx = MARGIN_1*2 + wheelCanvas.width/2;
-      let cy = MARGIN_1*2 + wheelCanvas.height/2;
-      let angle = this.h*(Math.TAU/360);
-      let radius = this.s*(wheelCanvas.width/2);
-      x = cx - Math.cos(angle)*radius;
-      y = cy - Math.sin(angle)*radius;
-      ctx.beginPath();
-      ctx.arc(x, y, SPECTRUM_WIDTH, 0, Math.TAU);
-      ctx.fill();
-      ctx.stroke();
+    // Draw it on the circle
+    let cx = this.MARGIN_1*2 + wheelCanvas.width/2;
+    let cy = this.MARGIN_1*2 + wheelCanvas.height/2;
+    let angle = this.h*(TAU/360);
+    let radius = this.s*(wheelCanvas.width/2);
+    x = cx - Math.cos(angle)*radius;
+    y = cy - Math.sin(angle)*radius;
+    ctx.beginPath();
+    ctx.arc(x, y, this.SPECTRUM_WIDTH, 0, TAU);
+    ctx.fill();
+    ctx.stroke();
 
-      // Draw it on the spectrum
-      let sx = MARGIN_1*2 + wheelCanvas.width + MARGIN_2*2 + spectrumCanvas.width/2;
-      let sy = MARGIN_1*2;
-      x = sx;
-      y = sy + spectrumCanvas.height*(1-this.v);
-      ctx.beginPath();
-      ctx.arc(x, y, SPECTRUM_WIDTH, 0, Math.TAU);
-      ctx.fill();
-      ctx.stroke();
+    // Draw it on the spectrum
+    let sx = this.MARGIN_1*2 + wheelCanvas.width + this.MARGIN_2*2 + spectrumCanvas.width/2;
+    let sy = this.MARGIN_1*2;
+    x = sx;
+    y = sy + spectrumCanvas.height*(1-this.v);
+    ctx.beginPath();
+    ctx.arc(x, y, this.SPECTRUM_WIDTH, 0, TAU);
+    ctx.fill();
+    ctx.stroke();
 
-    };
-    _updatePickers();
+  }
 
-    // THE MOUSE EVENTS FOR THE PICKERS
-    let editMode;
-    let isDragging = false;
-    let _update = function(event){
+  _updateHS(x,y) {
+    // get polar
+    let radius = this.wheelCanvas.width/2;
+    let dx = x - radius;
+    let dy = y - radius;
+    let angle = Math.atan2(dy, dx);
+    let distance = Math.sqrt(dx*dx+dy*dy);
 
-      if(event.target!=pickerCanvas) return; // if outta bounds forget it
+    // Re-map
+    angle = ((angle/TAU)+0.5)*360; // to [0,360]
+    if(angle<0) angle=0;
+    if(angle>360) angle=360;
+    distance = (distance/radius); // to [0,1]
+    if(distance<0) distance=0;
+    if(distance>1) distance=1;
 
-      let x = event.offsetX*2;
-      let y = event.offsetY*2;
-      if(editMode=="hs"){
-        x -= MARGIN_1*2;
-        y -= MARGIN_1*2;
-        _updateHS(x,y);
-      }else{
-        x -= MARGIN_1*2 + wheelCanvas.width + MARGIN_2*2;
-        y -= MARGIN_1*2;
-        _updateV(x,y);
-      }
+    // update
+    this.h = angle;
+    this.s = distance;
+    this._updateSpectrum(this.spectrumCanvas);
+    this._updatePickers(this.pickerCanvas, this.wheelCanvas, this.spectrumCanvas);
 
-      // HEY TELL THE SOURCE
-      _updateSource();
+  }
 
-    };
-    let _updateHS = function(x,y){
-
-      // get polar
-      let radius = wheelCanvas.width/2;
-      let dx = x - radius;
-      let dy = y - radius;
-      let angle = Math.atan2(dy, dx);
-      let distance = Math.sqrt(dx*dx+dy*dy);
-
-      // Re-map
-      angle = ((angle/Math.TAU)+0.5)*360; // to [0,360]
-      if(angle<0) angle=0;
-      if(angle>360) angle=360;
-      distance = (distance/radius); // to [0,1]
-      if(distance<0) distance=0;
-      if(distance>1) distance=1;
-
-      // update
-      this.h = angle;
-      this.s = distance;
-      _updateSpectrum();
-      _updatePickers();
-
-    };
-    let _updateV = function(x,y){
-      this.v = 1-(y/spectrumCanvas.height);
+  _updateV(x,y) {
+      this.v = 1-(y/this.spectrumCanvas.height);
       if(this.v<0) this.v=0;
       if(this.v>1) this.v=1;
-      _updateWheel();
-      _updatePickers();
-    };
-    let _onmousedown = function(event){
-      isDragging = true;
-      if(event.offsetX*2 < MARGIN_1*2 + wheelCanvas.width + MARGIN_2){
-        editMode = "hs";
-      }else{
-        editMode = "v";
-      }
-      _update(event);
-    };
-    let _onmousemove = function(event){
-      if(isDragging) _update(event);
-    };
-    let _onmouseup = function(){
-      isDragging = false;
-    };
+      this._updateWheel(this.wheelCanvas);
+      this._updatePickers(this.pickerCanvas, this.wheelCanvas, this.spectrumCanvas);
+  }
 
-    // MOUSE EVENTS
-    pickerCanvas.addEventListener("mousedown", _onmousedown);
-    window.addEventListener("mousemove", _onmousemove);
-    window.addEventListener("mouseup", _onmouseup);
+  _onmousedown(event) {
+    this.isDragging = true;
+    if(event.offsetX*2 < this.MARGIN_1*2 + this.wheelCanvas.width + this.MARGIN_2){
+      this.editMode = "hs";
+    }else{
+      this.editMode = "v";
+    }
+    this._update(event);
+  }
+
+  _onmousemove(event) {
+    if(this.isDragging) this._update(event);
+  }
+
+  _onmouseup() {
+    this.isDragging = false;
+  }
+
+  _update(event) {
+
+    if(event.target!=this.pickerCanvas) return; // if outta bounds forget it
+
+    let x = event.offsetX*2;
+    let y = event.offsetY*2;
+    if(this.editMode=="hs"){
+      x -= this.MARGIN_1*2;
+      y -= this.MARGIN_1*2;
+      this._updateHS(x,y);
+    }else{
+      x -= this.MARGIN_1*2 + this.wheelCanvas.width + this.MARGIN_2*2;
+      y -= this.MARGIN_1*2;
+      this._updateV(x,y);
+    }
+
+    // HEY TELL THE SOURCE
+    this._updateSource();
+  }
+
+  // MOUSE EVENTS
+  _attachEvents() {
+    // THE MOUSE EVENTS FOR THE PICKERS
+    this.editMode = "";
+    this.isDragging = false;
+  
+    this.dom.addEventListener("mousedown", this._onmousedown.bind(this));
+    window.addEventListener("mousemove", this._onmousemove.bind(this));
+    window.addEventListener("mouseup", this._onmouseup.bind(this));
+  }
+
+  _detachEvents() {
+    // remove listeners
+    this.dom.removeEventListener("mousedown", this._onmousedown);
+    window.removeEventListener("mousemove", this._onmousemove);
+    window.removeEventListener("mouseup", this._onmouseup);
   }
 
     // UPDATE SOURCE
@@ -480,14 +524,11 @@ export class ColorPicker extends BaseModal {
     newValue[0] = parseFloat(newValue[0].toFixed(0));
     newValue[1] = parseFloat(newValue[1].toFixed(2));
     newValue[2] = parseFloat(newValue[2].toFixed(2));
-    config.onchange(newValue);
+    this.config.onchange(newValue);
   }
 
   kill() {
-    // remove listeners
-    dom.removeEventListener("mousedown", _onmousedown);
-    window.removeEventListener("mousemove", _onmousemove);
-    window.removeEventListener("mouseup", _onmouseup);
+    this._detachEvents();
 
     // Hide Modal
     super.kill();

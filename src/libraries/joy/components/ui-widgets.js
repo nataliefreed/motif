@@ -1,5 +1,6 @@
 
-import { ChooserModal } from './chooser-modal.js';
+import { ChooserModal } from './modals.js';
+import { _preventWeirdCopyPaste, _blurOnEnter, _selectAll } from '../joy-utils.js';
 
 /********************
 Button's config:
@@ -10,22 +11,14 @@ Button's config:
 }
 ********************/
 
-export class JoyButton {
-  
+export class JoyWidget {
   constructor(config) {
-    
+
     // Default the config object if it's not provided
-    config = config || {};
+    this.config = config || {};
 
     // Create the DOM element
     this.dom = document.createElement("div");
-    this.dom.className = "joy-button";
-
-    // Setting Label
-    config.label = config.label || "";
-    this.label = document.createElement("span");
-    this.dom.appendChild(this.label);
-    this.setLabel(config.label);
 
     // On Click
     this.dom.onclick = () => {
@@ -39,6 +32,21 @@ export class JoyButton {
     this.styles.forEach(style => {
       this.dom.classList.add(style);
     });
+  }
+}
+
+export class JoyButton extends JoyWidget {
+  
+  constructor(config) {
+    super(config);
+
+    this.dom.classList.add("joy-button");
+
+    // Setting Label
+    config.label = config.label || "";
+    this.label = document.createElement("span");
+    this.dom.appendChild(this.label);
+    this.setLabel(config.label);
     
   }
   // Setter for label
@@ -59,80 +67,27 @@ ChooserButton's config:
   styles: ["round", "hollow"] // optional: for the button
 }
 ********************/
-export class ChooserButton {
-
+export class ChooserButton extends JoyButton {
   constructor(config) {
-    this.value = config.value;
-    this.options = config.options;
-    this.onchange = config.onchange;
 
-    // If no value provided, default to the first option's value
-    if (!this.value && this.options.length > 0) {
-      this.value = this.options[0].value;
-    }
-
-    // Initialize as a button with the provided label and click callback
-    this.button = new Button({
-      label: (config.staticLabel === undefined) ? "" : config.staticLabel,
-      onclick: () => this.showChooser(config.position),
-      styles: config.styles
-    });
-
-    // Update label
-    this.updateLabel();
-  }
-
-  // Method to show the chooser modal
-  showChooser(position) {
-    let chooser = new ChooserModal({
-      source: this.button.dom,
-      options: this.options,
-      onchange: (value) => {
-        // Update value & label
-        this.value = value;
-        this.updateLabel();
-        // On Select callback
-        if (this.onchange) {
-          this.onchange(value);
-        }
-      },
-      position: position
-    });
-  }
-
-  // Helper method to update the button's label
-  updateLabel() {
-    if (this.button.config && this.button.config.staticLabel !== undefined) {
-      return; // if static label, do not update.
-    }
-
-    // Otherwise, find the corresponding label to the current value & set to that.
-    let matchingOption = this.options.find(pair => pair.value == this.value);
-    if (matchingOption) {
-      this.button.setLabel(matchingOption.label);
-    }
-  }
-}
-
-class ChooserButton extends Button {
-  constructor(config) {
     const initialLabel = config.staticLabel !== undefined ? config.staticLabel : "";
-    
-    super({
-        label: initialLabel,
-        onclick: () => this.showChooserModal(),
-        styles: config.styles
-    });
+    console.log("initial label", initialLabel);
 
-    this.value = config.value || this.options[0].value;
+    config.label = initialLabel;
+    config.onclick = () => this.showChooserModal();
+    
+    super(config);
+
     this.options = config.options;
     this.onchange = config.onchange;
     this.position = config.position;
 
+    this.value = config.value || this.options[0].value;
+
     this.updateLabel();
 }
 
-showChooserModal() {
+  showChooserModal() {
     new ChooserModal({
       source: this.dom,
       options: this.options,
@@ -145,17 +100,18 @@ showChooserModal() {
       },
       position: this.position
     }).show();
-}
-
-updateLabel() {
-  if (this.config && this.config.staticLabel !== undefined) {
-      return;
   }
 
-  let matchingOption = this.options.find(pair => pair.value === this.value);
-  if (matchingOption) {
-    this.setLabel(matchingOption.label);
-  }
+  updateLabel() {
+    if (this.config && this.config.staticLabel !== undefined) {
+        return;
+    }
+
+    let matchingOption = this.options.find(pair => pair.value === this.value);
+    if (matchingOption) {
+      this.setLabel(matchingOption.label);
+      console.log("setting label to ", matchingOption.label);
+    }
   }
 }
 
@@ -169,7 +125,7 @@ Scrubber's config:
   onchange: function(value){}
 }
 ********************/
-class Scrubber {
+export class NumberScrubber {
   constructor(config) {
     // Config...
     let min = config.min;
@@ -183,12 +139,12 @@ class Scrubber {
     this.dom = dom;
 
     // DOM *is* Label
-    this.setLabel = function(newValue){
+    this.setLabel = (newValue) => {
       dom.innerHTML = newValue.toFixed(this.sigfigs);
     };
 
     // On Value Change: make sure it's the right num of sigfigs
-    let _onValueChange = function(newValue){
+    let _onValueChange = (newValue) => {
       newValue = parseFloat(newValue.toFixed(this.sigfigs));
       config.onchange(newValue);
     };
@@ -198,14 +154,14 @@ class Scrubber {
     let wasDragging = false;
     let lastDragX, startDragValue;
     let delta = 0;
-    let _onmousedown = function(event){
+    let _onmousedown = (event) => {
       isDragging = true;
       lastDragX = event.clientX;
       startDragValue = this.value;
       delta = 0;
       if(config.onstart) config.onstart();
     };
-    let _onmousemove = function(event){
+    let _onmousemove = (event) => {
       if(isDragging){
 
         wasDragging = true;
@@ -234,16 +190,16 @@ class Scrubber {
 
       }
     };
-    let _boundNumber = function(newValue){
+    let _boundNumber = (newValue) => {
       if(min!==undefined && newValue<min) newValue=min;
       if(max!==undefined && newValue>max) newValue=max;
       // console.log("min ", min, " max ", max);
       return newValue;
     };
-    let _onmouseup = function(){
+    let _onmouseup = () => {
       isDragging = false;
       if(config.onstop) config.onstop();
-      setTimeout(function(){
+      setTimeout(() => {
         wasDragging = false; // so can't "click" if let go on scrubber
       },1);
     };
@@ -254,7 +210,7 @@ class Scrubber {
     window.addEventListener("mouseup", _onmouseup);
 
     // KILL ALL LISTENERS
-    this.kill = function(){
+    this.kill = () => {
       dom.removeEventListener("mousedown", _onmousedown);
       window.removeEventListener("mousemove", _onmousemove);
       window.removeEventListener("mouseup", _onmouseup);
@@ -262,7 +218,7 @@ class Scrubber {
 
     // On click: edit manually!
     let _manuallyEditing = false;
-    dom.onblur = function(){
+    dom.onblur = () => {
       if(_manuallyEditing){
 
         _manuallyEditing = false;
@@ -282,7 +238,7 @@ class Scrubber {
     };
     _preventWeirdCopyPaste(dom);
     _blurOnEnter(dom);
-    dom.onclick = function(){
+    dom.onclick = () => {
 
       if(wasDragging) return; // can't click if I was just dragging!
 
@@ -297,7 +253,7 @@ class Scrubber {
       if(config.onstart) config.onstart();
 
     };
-    dom.oninput = function(event){
+    dom.oninput = (event) => {
 
       if(!_manuallyEditing) return;
 
@@ -312,7 +268,7 @@ class Scrubber {
       _onValueChange(_parseNumber());
 
     };
-    let _parseNumber = function(){
+    let _parseNumber = () => {
       let num = parseFloat(dom.innerText);
       if(isNaN(num)) num=0;
       num = _boundNumber(num);
@@ -321,7 +277,7 @@ class Scrubber {
 
     // How many significant digits?
     this.sigfigs = 0;
-    let _countSigFigs = function(string){
+    let _countSigFigs = (string) => {
       string = string.toString();
       let sigfigs;
       let positionOfPeriod = string.search(/\./);
@@ -336,8 +292,6 @@ class Scrubber {
 
     // Current value...
     this.setLabel(this.value);
-
-
   }
 }
 
@@ -453,7 +407,7 @@ class PathUI {
       return true;
     });
   
-    this.setPath = function(points) {
+    this.setPath = (points) => {
   	  // input.innerText = value.substring(0, 8) + "...";
   	  // // _fixStringInput(input);
       // this.points = this._parse(value);
@@ -464,7 +418,7 @@ class PathUI {
       // this.dom.appendChild(thumbnail_canvas);
     };
   
-    this.setColor = function (color) {
+    this.setColor = (color) => {
 	  color = this._forceToRGB(color);
   	  this.dom.style.color = color;
   	  this.dom.style.borderColor = color;
@@ -533,7 +487,7 @@ TextLine's config:
 ********************/
 // TODO: a full WSIYWIG editor?
 // https://hackernoon.com/easily-create-an-html-editor-with-designmode-and-contenteditable-7ed1c465d39b
-class TextBox {
+export class JoyTextBox {
   constructor(config){
     // DOM
     let input;
@@ -553,11 +507,11 @@ class TextBox {
     // Config options
     if(config.readonly){
       input.setAttribute("readonly", 1);
-      input.addEventListener("click",function(){
+      input.addEventListener("click", () => {
         this.select();
       });
     }else{
-      input.oninput = function(event){
+      input.oninput = (event) => {
         config.onchange(input.value);
       };
     }
