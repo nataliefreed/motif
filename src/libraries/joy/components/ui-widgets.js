@@ -1,6 +1,6 @@
 
 import { ChooserModal } from './modals.js';
-import { _preventWeirdCopyPaste, _blurOnEnter, _selectAll } from '../joy-utils.js';
+import { _preventWeirdCopyPaste, _blurOnEnter, _selectAll, _unselectAll } from '../joy-utils.js';
 
 /********************
 Button's config:

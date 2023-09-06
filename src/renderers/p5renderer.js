@@ -3,6 +3,7 @@ export class P5Renderer {
     this.sketch = this.getSketch();
     this.sketch.addFill({color:'#aaaaaa'});
 		this.sketch.clear('#aaaaaa');
+    this.sketch.loadStencils();
     return this.sketch;
   }
 
@@ -14,12 +15,6 @@ export class P5Renderer {
       let strokeColor = 0;
       let strokeWeight = 5;
       let s, t; //p is main sketch, s is static canvas, t is temporary for animations
-
-      let paperdolls = { // paper doll stencils
-        outfits: [],
-        hairstyles: [],
-        dollFill: null
-      };
 
       p.getPreviewCanvas = () => {
         return t;
@@ -396,12 +391,18 @@ export class P5Renderer {
         s.pop();
       }
 
+      let paperdolls = { // paper doll stencils
+        outfits: [],
+        hairstyles: [],
+      };
+
       p.loadStencils = () => {
         let outfitNames = ['01'];
-        let hairstyleNames = ['01'];
+        let hairstyleNames = ['01', '02'];
       
         // Load doll fill
         paperdolls.dollFill = p.loadImage(`src/assets/stencils/paper-dolls/outfits/doll-fill.png`);
+        paperdolls.underlayerFill = p.loadImage('src/assets/stencils/paper-dolls/outfits/underlayer-fill.png');
       
         // Load all outfit and hairstyle files
         for (let name of outfitNames) {
@@ -421,8 +422,6 @@ export class P5Renderer {
           };
           paperdolls.hairstyles.push(hairstyle);
         }
-
-        console.log("loaded images");
       }
 
       // p.paperdoll = (params) => {
@@ -455,9 +454,11 @@ export class P5Renderer {
         dollCanvas.tint(c); // Apply the tint for the doll's fill image
         dollCanvas.image(paperdolls.dollFill, 0, 0, p.width, p.height); // Draw the doll's fill image
         dollCanvas.noTint(); // Remove the tint before drawing the other images
+        dollCanvas.image(paperdolls.underlayerFill, 0, 0, p.width, p.height); // Undies!
 
         // Prepare the outfit fill as a mask
         outfitCanvas.image(outfit.fill, 0, 0, p.width, p.height);
+        outfitCanvas.image(paperdolls.underlayerFill, 0, 0, p.width, p.height);
         outfitCanvas.drawingContext.globalCompositeOperation = 'source-in';
         outfitCanvas.image(s, 0, 0, p.width, p.height);
       

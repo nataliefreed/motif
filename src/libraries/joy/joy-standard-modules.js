@@ -1,7 +1,7 @@
 import { Joy } from "./joy.js";
 import { ChooserModal, ColorPicker } from "./components/modals.js";
 import { JoyButton, ChooserButton, JoyTextBox, NumberScrubber } from "./components/ui-widgets.js";
-import { _HSVToRGBString, _clone, TAU } from "./joy-utils.js";
+import { _HSVToRGBString, _clone, TAU, _removeFromArray } from "./joy-utils.js";
 
 /////////////////////////////////////////
 // FUNDAMENTAL USER INTERACE ACTORS /////
@@ -592,12 +592,13 @@ Joy.add({
     // ///////////////////////////////////////
     // // Reorder Entries - NF added /////////
     // ///////////////////////////////////////
-    this.moveEntry = (oldIndex, newIndex) => {
+    let _moveEntry = (oldIndex, newIndex) => {
       let item = this.entries.splice(oldIndex, 1)[0];
       this.entries.splice(newIndex, 0, item);
       this.update();
       _updateBullets();
-    }
+    };
+    this.moveAction = _moveEntry;
 
     ///////////////////////////////////////
     // Add Action /////////////////////////

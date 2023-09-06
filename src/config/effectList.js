@@ -50,7 +50,6 @@ export const effectList = [
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
-      console.log("target", my.target);
       my.target.addCircle({ color: my.data.color, x: my.data.x, y: my.data.y, r: my.data.radius });
     }
   },
@@ -462,7 +461,7 @@ export const effectList = [
     tag: 'stencils',
     init: `Paper doll with skin tone 
     {id:'skinTone', type:'color', placeholder:[25, 0.75, 0.4]}, 
-    hairstyle {id:'hairstyle', type:'choose', options:['1'], placeholder:'1'},
+    hairstyle {id:'hairstyle', type:'choose', options:['1', '2'], placeholder:'1'},
     outfit set {id:'outfit', type:'choose', options:['1'], placeholder:'1'}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',

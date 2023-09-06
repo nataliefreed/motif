@@ -201,6 +201,12 @@ export class JoyManager {
 		target.addAction(type, undefined, settings);
 		target.update();
   }
+
+	moveAction(listName, oldIndex, newIndex) {
+    const target = this.getParentList(listName);
+		target.moveAction(oldIndex, newIndex);
+		target.update();
+  }
 }
 
 

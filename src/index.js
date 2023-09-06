@@ -36,16 +36,16 @@ class MotifApp {
 		
 		//List sorting
     // Sortable.mount(new MultiDrag());
-		// let sortablelist = document.getElementById('actions-joy-list');
-    // new Sortable(sortablelist, {
-	  //   animation: 150,
-	  //   ghostClass: 'sortable-ghost',
-		// 	// multiDrag: true,
-		// 	// selectedClass: 'selected',
-		// 	onUpdate: (e) => {
-		// 		this.joy.actions.moveEntry(e.oldIndex, e.newIndex);
-		// 	}
-    // });
+		let sortablelist = document.getElementById('paintingActionList-joy-list');
+    new Sortable(sortablelist, {
+	    animation: 150,
+	    ghostClass: 'sortable-ghost',
+			// multiDrag: true,
+			// selectedClass: 'selected',
+			onUpdate: (e) => {
+				this.joyManager.moveAction('motif', e.oldIndex, e.newIndex);
+			}
+    });
 
 		//Mouse event listeners
 		let dragging = false;
