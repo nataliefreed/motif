@@ -429,6 +429,9 @@ export class P5Renderer {
       // }
 
       p.paperdoll = (params) => {
+
+        const MASK = false;
+
         // Get the color value from params.
         let c = s.color(params.skinTone);
         
@@ -447,8 +450,8 @@ export class P5Renderer {
       
         // Create a new graphics object to draw the paper doll and its outfit and hairstyle fills
         let dollCanvas = p.createGraphics(p.width, p.height);
-        let outfitCanvas = p.createGraphics(p.width, p.height);
-        let hairstyleCanvas = p.createGraphics(p.width, p.height);
+        var outfitCanvas = p.createGraphics(p.width, p.height); //weird example where block scope didn't work!
+        var hairstyleCanvas = p.createGraphics(p.width, p.height);
       
         //Tint and then draw the doll fill
         dollCanvas.tint(c); // Apply the tint for the doll's fill image
@@ -471,20 +474,21 @@ export class P5Renderer {
         s.noStroke();
         s.fill(255, 220);
         s.rect(0, 0, p.width, p.height);
+        
 
         // Draw the doll fill
         s.image(dollCanvas, 0, 0);
 
-        // Draw the outfit fill
-        s.image(outfitCanvas, 0, 0);
+          // Draw the outfit fill
+          s.image(outfitCanvas, 0, 0);
 
         // Draw the outfit outline
         if(outfit.outline){
           s.image(outfit.outline, 0, 0, s.width, s.height);
         }
 
-        // Draw the hair fill
-        s.image(hairstyleCanvas, 0, 0);
+          // Draw the hair fill
+         s.image(hairstyleCanvas, 0, 0);
       
         // Draw the hair outline
         if(hairstyle.outline){

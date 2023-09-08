@@ -279,3 +279,39 @@ button {
 .base-modal > canvas{
 	position: absolute;
 }
+
+
+
+
+/* hidden input over buttons */
+input[type="button"].color-palette-widget {
+
+    display: inline-block;
+    position: relative;
+    color: transparent;
+
+	line-height: 1.5em;
+	padding: 0 0.3em;
+
+	border-radius: 5px;
+	border: 2px solid #ccc;
+	
+	cursor: pointer;
+
+
+    border-radius: 1000px; /* infinite roundness */
+	width: 1.5em;
+    height: 1.5em;
+    padding: 0;
+    border-color: rgba(0,0,0,0.1);
+
+    /* font-size: 0; */
+    /* top: '0';
+    left: '0'; */
+    width: 2em;
+    height: 2em;
+    /* height: 22.5px; */
+    border-radius: 1000px;
+
+    cursor: point;
+}

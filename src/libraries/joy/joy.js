@@ -105,12 +105,6 @@ export class Joy {
       this.onupdate(my);
   }
 
-  addAction(listid, actiontype, data) {
-    // this.rootActor.addAction()
-      // this.joy.actions.addAction(tag+'/'+effectName, undefined, settings);
-      // this.joy.actions.update();
-  }
-
   _initUI() {
     // CSS
     this.dom.classList.add("joy-master");

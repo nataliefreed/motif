@@ -77,3 +77,11 @@ export function HSVtoRGB(h,s,v) { //duplicate from Joy.js
 	}
 	return [Math.round(r*255), Math.round(g*255), Math.round(b*255)];
 }
+
+export function _hexToRGB(hex) {
+	let bigint = parseInt(hex.substring(1), 16);
+	let r = (bigint >> 16) & 255;
+	let g = (bigint >> 8) & 255;
+	let b = bigint & 255;
+	return [r, g, b];
+}

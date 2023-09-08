@@ -1,7 +1,7 @@
 import { Joy } from "./joy.js";
 import { ChooserModal, ColorPicker } from "./components/modals.js";
 import { JoyButton, ChooserButton, JoyTextBox, NumberScrubber } from "./components/ui-widgets.js";
-import { _HSVToRGBString, _clone, TAU, _removeFromArray } from "./joy-utils.js";
+import { _HSVToRGBString, _clone, TAU, _removeFromArray, _numberToAlphabet, _numberToRoman } from "./joy-utils.js";
 
 /////////////////////////////////////////
 // FUNDAMENTAL USER INTERACE ACTORS /////
@@ -140,7 +140,6 @@ Joy.add({
     let _ticker = null;
     let _fps = 30;
     let _initialV, _vel, _timer;
-    console.log("this before onmousenter", this);
     this.dom.onmouseenter = () => {
 
       if(!this.top.canPreview("numbers")) return; // yeah let's pretend it's a number
@@ -483,7 +482,6 @@ Joy.add({
     this.entries = [];
     
     let _addEntry = (actionData, atIndex) => {
-      console.log("add entry this", this);
 
       // New entry
       let entry = {};
@@ -607,7 +605,6 @@ Joy.add({
     // Manually add New Action To Actions + Widgets + DOM
     let _addAction = (actorType, atIndex, data={}) => { //FG added data
       // Create that new entry & everything
-      console.log("data in joy in _addAction: " + data);
       let newAction = {type:actorType, ...data};
       if(atIndex===undefined){
         actions.push(newAction);

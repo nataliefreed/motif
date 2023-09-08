@@ -460,7 +460,16 @@ export const effectList = [
     category: 'Stencils',
     tag: 'stencils',
     init: `Paper doll with skin tone 
-    {id:'skinTone', type:'color', placeholder:[25, 0.75, 0.4]}, 
+    {id:'skinTone', type:'colorpalette', placeholder:'#552E1F',
+    colorOptions: [
+      '#552E1F','#60311F','#A16F4C','#BB815C','#BC8F68','#CA9978',
+      '#DCBA9E','#F3D7C2','#653728','#B77E53','#D6A98A','#F0CBB0',
+      '#A6734A','#422E29','#4E2E2A','#683F38','#7A4943','#492F29',
+      '#51342C','#643E31','#774D3D','#4A3123','#543626','#61402E',
+      '#331707','#462008','#58280A','#7A370F','#DFBDA2','#E4C9B6',
+      '#3E2C1E','#5F442C','#7E573B','#060403','#8A5414','#B57033',
+      '#744D36','#FDF0D5','#FADCA9','#EDB178','#DF9D56','#D38C45',
+      '#F6D4B9','#DEBA96','#DAB08C','#CD865A','#B37858','#96624D']},
     hairstyle {id:'hairstyle', type:'choose', options:['1', '2'], placeholder:'1'},
     outfit set {id:'outfit', type:'choose', options:['1'], placeholder:'1'}`,
     cursor: './assets/cursors/star-solid.svg',
