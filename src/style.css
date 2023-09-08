@@ -254,34 +254,12 @@ button {
     border-bottom: 2px solid #bbb;
 }
 
-.slider {
-    background-color: purple;
-    padding: 10px;
-
-    
-    position: relative;
-    display: inline;
-    cursor: col-resize;
-    min-width: 0.8em;
-    text-align: center;
-
-    padding-bottom: 0px;
-    border-bottom: 2px solid #bbb;
-}
-
-.slider-modal {
-    background-color: royalblue;
-}
-
 .base-modal{
     position: relative;
 }
 .base-modal > canvas{
 	position: absolute;
 }
-
-
-
 
 /* hidden input over buttons */
 input[type="button"].color-palette-widget {
@@ -315,3 +293,139 @@ input[type="button"].color-palette-widget {
 
     cursor: point;
 }
+
+
+/* Range slider styling - thank you https://range-input-css.netlify.app/ */
+
+/*********** Baseline, reset styles ***********/
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+    width: 200px;
+  }
+  
+  /* Removes default focus */
+  input[type="range"]:focus {
+    outline: none;
+  }
+  
+  /******** Chrome, Safari, Opera and Edge Chromium styles ********/
+  /* slider track */
+  input[type="range"]::-webkit-slider-runnable-track {
+    background-color: #bfbfbf;
+    border-radius: 0.5rem;
+    height: 0.3rem;
+  }
+  
+  /* slider thumb */
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; /* Override default look */
+    appearance: none;
+    margin-top: -5.6px; /* Centers thumb on the track */
+    background-color: #808080;
+    border-radius: 0.5rem;
+    height: 1rem;
+    width: 1rem;
+  }
+  
+  input[type="range"]:focus::-webkit-slider-thumb {
+    outline: 3px solid #808080;
+    outline-offset: 0.125rem;
+  }
+  
+  /*********** Firefox styles ***********/
+  /* slider track */
+  input[type="range"]::-moz-range-track {
+    background-color: #bfbfbf;
+    border-radius: 0.5rem;
+    height: 0.3rem;
+  }
+  
+  /* slider thumb */
+  input[type="range"]::-moz-range-thumb {
+    background-color: #808080;
+    border: none; /*Removes extra border that FF applies*/
+    border-radius: 0.5rem;
+    height: 1rem;
+    width: 1rem;
+  }
+  
+  input[type="range"]:focus::-moz-range-thumb{
+    outline: 3px solid #808080;
+    outline-offset: 0.125rem;
+  }
+
+
+
+
+
+
+input[type="number"].numberbox-for-slider {
+    border: 1px solid lightgray;  /* sets the border color to light gray */
+    border-radius: 4px;          /* rounds the corners slightly */
+    outline: none;               /* removes the blue outline when focused */
+    padding: 5px 8px;            /* adds some internal spacing */
+    transition: border 0.3s;    /* smooth transition for border changes */
+}
+
+input[type="number"].numberbox-for-slider:focus {
+    border-color: darkgray;       /* changes border color when input is focused */
+    background-color: lightgray;
+}
+
+
+
+
+/* number that can be clicked to display a slider modal*/
+.number-widget {
+    display: inline-block;
+    text-decoration: underline lightgray 2px;
+    text-underline-offset: 5px;
+    cursor: default;
+}
+
+/* the parent div holding a connected slider and number box */
+.number-slider {
+    padding: 30px;
+}
+
+.slider-for-numberbox {
+    display: block;
+    width: 100px;
+    margin-top: 30px;
+    background-color: blue;
+}
+
+.numberbox-for-slider {
+    display: block;
+    text-align: center;
+    margin: auto;
+    width: 60%;
+    font-family: 'FuturaHandwritten';
+    font-size: 24px;
+    border-color: gray; /*not working*/
+    border: solid;
+    border-radius: 2px;
+}
+
+
+/* .slider {
+    background-color: purple;
+    padding: 10px;
+
+    
+    position: relative;
+    display: inline;
+    cursor: col-resize;
+    min-width: 0.8em;
+    text-align: center;
+
+    padding-bottom: 0px;
+    border-bottom: 2px solid #bbb;
+}
+
+.slider-modal {
+    background-color: royalblue;
+} */

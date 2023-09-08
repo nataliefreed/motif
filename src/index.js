@@ -26,10 +26,26 @@ class MotifApp {
 
 		this.sketch = new P5Renderer();
 		this.joyManager = new JoyManager(this.effects.getEffects(), this.brushstrokes, this.sketch);
+		
 		this._initUI();
-		// this.joy.actions.update();
 
 		this.activeBrushstroke = null;
+		
+		// const slider = document.getElementById('numberSlider');
+		// 	const input = document.getElementById('numberInput');
+
+		// 	slider.addEventListener('input', () => {
+		// 		input.value = slider.value;
+		// 	});
+
+		// 	input.addEventListener('input', () => {
+		// 		if (input.value < parseInt(input.min) || input.value > parseInt(input.max)) {
+		// 				alert('Value must be between ' + input.min + ' and ' + input.max);
+		// 				input.value = slider.value;
+		// 		} else {
+		// 				slider.value = input.value;
+		// 		}
+		//   });
 	}
 	
 	_initUI() {
