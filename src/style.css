@@ -429,3 +429,27 @@ input[type="number"].numberbox-for-slider:focus {
 .slider-modal {
     background-color: royalblue;
 } */
+
+
+.joy-list-item::before {
+    content: ''; 
+    /* hides the triangle by default */
+}
+
+.joy-list-item.has-children:before {
+    content: '▼'; 
+    cursor: pointer;
+    position: absolute;
+    left: -15px;
+}
+
+.joy-list-item.has-children.collapsed:before {
+    content: '▶'; 
+}
+
+
+
+/* Hide nested list content when parent is collapsed */
+.joy-bullet-container.collapsed + .joy-widget .joy-actions {
+    display: none;
+}

@@ -1,6 +1,6 @@
 import { Joy } from "./joy.js";
 import { ChooserModal, ColorPicker } from "./components/modals.js";
-import { JoyButton, ChooserButton, JoyTextBox, NumberScrubber } from "./components/ui-widgets.js";
+import { JoyButton, ChooserButton, JoyTextBox, NumberScrubber, JoyString } from "./components/ui-widgets.js";
 import { _HSVToRGBString, _clone, TAU, _removeFromArray, _numberToAlphabet, _numberToRoman } from "./joy-utils.js";
 
 /////////////////////////////////////////
@@ -341,376 +341,376 @@ WidgetConfig:
 {type:'actions', name:'actions', resetVariables:false}
 
 ****************/
-Joy.add({
-  type: "actions",
-  tags: ["ui"],
-  init: function(){
+// Joy.add({
+//   type: "actions",
+//   tags: ["ui"],
+//   init: function(){
 
-    if(this.resetVariables!==undefined) this.data.resetVariables=this.resetVariables;
+//     if(this.resetVariables!==undefined) this.data.resetVariables=this.resetVariables;
 
-    // TODO: ACTUALLY REFACTOR
-    // TODO: Separate out Actor code from Widget code
-    // so that this can run EVEN WITHOUT WIDGETS.
-    // Using messages, probably.
+//     // TODO: ACTUALLY REFACTOR
+//     // TODO: Separate out Actor code from Widget code
+//     // so that this can run EVEN WITHOUT WIDGETS.
+//     // Using messages, probably.
 
-  },
-  initWidget: function(){
+//   },
+//   initWidget: function(){
 
-    let data = this.data;
-    let actions = data.actions;
+//     let data = this.data;
+//     let actions = data.actions;
 
-    // DOM
-    this.dom = document.createElement("div");
-    this.dom.className = "joy-actions";
+//     // DOM
+//     this.dom = document.createElement("div");
+//     this.dom.className = "joy-actions";
 
-    // List
-    let list = document.createElement("list");
-    list.classList.add('joy-list');
-    list.id = this.id + "-joy-list";
-    this.dom.appendChild(list);
+//     // List
+//     let list = document.createElement("list");
+//     list.classList.add('joy-list');
+//     list.id = this.id + "-joy-list";
+//     this.dom.appendChild(list);
 
-    // Preview Variables?
-    /*let letPreview;
-    if(this.top.canPreview("variables")){
-      letPreview = document.createElement("div");
-      letPreview.id = "joy-variables-preview";
-      letPreview.innerHTML = "AHHHH";
-      dom.appendChild(letPreview);
-    }*/
+//     // Preview Variables?
+//     /*let letPreview;
+//     if(this.top.canPreview("variables")){
+//       letPreview = document.createElement("div");
+//       letPreview.id = "joy-variables-preview";
+//       letPreview.innerHTML = "AHHHH";
+//       dom.appendChild(letPreview);
+//     }*/
 
-    //////////////////////////////////////////
-    // Create Bullet /////////////////////////
-    //////////////////////////////////////////
+//     //////////////////////////////////////////
+//     // Create Bullet /////////////////////////
+//     //////////////////////////////////////////
 
-    let bulletOptions = [
-      {label:"Add action above", value:"action_above"},
-      {label:"Add action below", value:"action_below"},
-      {label:"Delete", value:"delete"}
-    ];
-    let _onBulletChoice = (entry, choice) => {
+//     let bulletOptions = [
+//       {label:"Add action above", value:"action_above"},
+//       {label:"Add action below", value:"action_below"},
+//       {label:"Delete", value:"delete"}
+//     ];
+//     let _onBulletChoice = (entry, choice) => {
 
-      // ACTION ABOVE or BELOW
-      let newActionWhere = 0;
-      if(choice=="action_above") newActionWhere=-1; // above
-      if(choice=="action_below") newActionWhere=1; // below
-      if(newActionWhere!=0){ // not NOT new action
+//       // ACTION ABOVE or BELOW
+//       let newActionWhere = 0;
+//       if(choice=="action_above") newActionWhere=-1; // above
+//       if(choice=="action_below") newActionWhere=1; // below
+//       if(newActionWhere!=0){ // not NOT new action
         
-        let newEntryIndex = this.entries.indexOf(entry);
-        if(newActionWhere>0) newEntryIndex+=1;
+//         let newEntryIndex = this.entries.indexOf(entry);
+//         if(newActionWhere>0) newEntryIndex+=1;
 
-        // Chooser Modal!
-        let chooser = new ChooserModal({
-          position: "left",
-          source: entry.bullet.dom,
-          options: actionOptions,
-          onchange: (value) => {
-            _addAction(value, newEntryIndex);
-            this.update(); // You oughta know!
-            _updateBullets(); // update the UI, re-number it.
-          }
-        });
-      }
+//         // Chooser Modal!
+//         let chooser = new ChooserModal({
+//           position: "left",
+//           source: entry.bullet.dom,
+//           options: actionOptions,
+//           onchange: (value) => {
+//             _addAction(value, newEntryIndex);
+//             this.update(); // You oughta know!
+//             _updateBullets(); // update the UI, re-number it.
+//           }
+//         });
+//       }
 
-      // DELETE
-      if(choice=="delete"){
-        _removeFromArray(this.entries, entry); // Delete entry from Entries[]
-        _removeFromArray(actions, entry.actionData); // Delete action from Data's Actions[]
-        this.removeChild(entry.actor); // Delete actor from Children[]
-        list.removeChild(entry.dom); // Delete entry from DOM
-        this.update(); // You oughta know!
-        _updateBullets(); // update the UI, re-number it.
-      }
+//       // DELETE
+//       if(choice=="delete"){
+//         _removeFromArray(this.entries, entry); // Delete entry from Entries[]
+//         _removeFromArray(actions, entry.actionData); // Delete action from Data's Actions[]
+//         this.removeChild(entry.actor); // Delete actor from Children[]
+//         list.removeChild(entry.dom); // Delete entry from DOM
+//         this.update(); // You oughta know!
+//         _updateBullets(); // update the UI, re-number it.
+//       }
 
-    };
-    let _createBullet = (entry) => {
+//     };
+//     let _createBullet = (entry) => {
     
-      let bullet = new ChooserButton({
-        position: "left",
-        staticLabel: _getBulletLabel(entry),
-        options: bulletOptions,
-        onchange: (choice) => {
-          _onBulletChoice(entry, choice);
-        },
-        styles: ["joy-bullet"]
-      });
-      bullet.dom.id = "joy-bullet"; //TODO: make this unique
+//       let bullet = new ChooserButton({
+//         position: "left",
+//         staticLabel: _getBulletLabel(entry),
+//         options: bulletOptions,
+//         onchange: (choice) => {
+//           _onBulletChoice(entry, choice);
+//         },
+//         styles: ["joy-bullet"]
+//       });
+//       bullet.dom.id = "joy-bullet"; //TODO: make this unique
 
-      return bullet;
+//       return bullet;
 
-    };
+//     };
 
-    // Get the digit (or letter, or roman) for this bullet...
-    let _getBulletLabel = (entry) => {
+//     // Get the digit (or letter, or roman) for this bullet...
+//     let _getBulletLabel = (entry) => {
 
-      // What index am I?
-      let index = this.entries.indexOf(entry)+1;
+//       // What index am I?
+//       let index = this.entries.indexOf(entry)+1;
 
-      // How many levels deep in "actions" am I?
-      let levelsDeep = 0;
-      let parent = this.parent;
-      while(parent){
-        if(parent.type=="actions") levelsDeep++;
-        parent = parent.parent;
-      }
+//       // How many levels deep in "actions" am I?
+//       let levelsDeep = 0;
+//       let parent = this.parent;
+//       while(parent){
+//         if(parent.type=="actions") levelsDeep++;
+//         parent = parent.parent;
+//       }
 
-      // Digit, Letter, or Roman? (Cycle around)
-      let label;
-      switch(levelsDeep%3){
-        case 0: label=index; break; // digits
-        case 1: label=_numberToAlphabet(index); break; // letter
-        case 2: label=_numberToRoman(index); break; // roman
-      }
+//       // Digit, Letter, or Roman? (Cycle around)
+//       let label;
+//       switch(levelsDeep%3){
+//         case 0: label=index; break; // digits
+//         case 1: label=_numberToAlphabet(index); break; // letter
+//         case 2: label=_numberToRoman(index); break; // roman
+//       }
 
-      return label;
+//       return label;
 
-    };
+//     };
 
-    // Re-number ALL these bad boys
-    let _updateBullets = () => {
-      for(let i=0; i<this.entries.length; i++){
-        let entry = this.entries[i];
-        let bullet = entry.bullet;
-        let label = _getBulletLabel(entry);
-        bullet.setLabel(label);
-      }
-    };
+//     // Re-number ALL these bad boys
+//     let _updateBullets = () => {
+//       for(let i=0; i<this.entries.length; i++){
+//         let entry = this.entries[i];
+//         let bullet = entry.bullet;
+//         let label = _getBulletLabel(entry);
+//         bullet.setLabel(label);
+//       }
+//     };
 
-    ////////////////////////////////////////////////////////////////////
-    // Add Entry: Entries have a Bullet (the number) & actual widget! //
-    ////////////////////////////////////////////////////////////////////
+//     ////////////////////////////////////////////////////////////////////
+//     // Add Entry: Entries have a Bullet (the number) & actual widget! //
+//     ////////////////////////////////////////////////////////////////////
 
-    this.entries = [];
+//     this.entries = [];
     
-    let _addEntry = (actionData, atIndex) => {
+//     let _addEntry = (actionData, atIndex) => {
 
-      // New entry
-      let entry = {};
-      let entryDOM = document.createElement("div");
-      entryDOM.classList.add('joy-list-item');
-      if(atIndex===undefined) atIndex = this.entries.length;
+//       // New entry
+//       let entry = {};
+//       let entryDOM = document.createElement("div");
+//       entryDOM.classList.add('joy-list-item');
+//       if(atIndex===undefined) atIndex = this.entries.length;
 
-      // If entries selected, insert after last selected entry
-      // if (this.entries.some(function(entry) { return entry.selected; })) {
-      //   // Find the index of the last selected entry
-      //   let lastSelectedIndex = this.entries.reduce(function(index, entry, currentIndex) {
-      //     return entry.selected ? currentIndex : index;
-      //   }, -1);
+//       // If entries selected, insert after last selected entry
+//       // if (this.entries.some(function(entry) { return entry.selected; })) {
+//       //   // Find the index of the last selected entry
+//       //   let lastSelectedIndex = this.entries.reduce(function(index, entry, currentIndex) {
+//       //     return entry.selected ? currentIndex : index;
+//       //   }, -1);
     
-      //   atIndex = lastSelectedIndex + 1;
+//       //   atIndex = lastSelectedIndex + 1;
 
-      //   console.log("selected index to add entry", atIndex);
-      // }
-      this.entries.splice(atIndex, 0, entry);
-      list.insertBefore(entryDOM, list.children[atIndex]);
+//       //   console.log("selected index to add entry", atIndex);
+//       // }
+//       this.entries.splice(atIndex, 0, entry);
+//       list.insertBefore(entryDOM, list.children[atIndex]);
 
-      // The Bullet is a Chooser!
-      let bullet = _createBullet(entry);
-      let bulletContainer = document.createElement("div");
-      bulletContainer.id = "joy-bullet-container"; //TODO: make unique
-      entryDOM.appendChild(bulletContainer);
-      bulletContainer.appendChild(bullet.dom);
+//       // The Bullet is a Chooser!
+//       let bullet = _createBullet(entry);
+//       let bulletContainer = document.createElement("div");
+//       bulletContainer.class = "joy-bullet-container";
+//       entryDOM.appendChild(bulletContainer);
+//       bulletContainer.appendChild(bullet.dom);
 
-      // New Actor!
-      let newActor = this.addChild({type:actionData.type}, actionData);
+//       // New Actor!
+//       let newActor = this.addChild({type:actionData.type}, actionData);
 
-      // The Widget
-      let newWidget = newActor.createWidget();
-      newWidget.id = "joy-widget";
-      entryDOM.appendChild(newWidget);
+//       // The Widget
+//       let newWidget = newActor.createWidget();
+//       newWidget.id = "joy-widget";
+//       entryDOM.appendChild(newWidget);
 
-      // (Remember all this)
-      entry.dom = entryDOM;
-      entry.bullet = bullet;
-      entry.actor = newActor;
-      entry.widget = newWidget;
-      entry.actionData = actionData;
-      entry.selected = false;
+//       // (Remember all this)
+//       entry.dom = entryDOM;
+//       entry.bullet = bullet;
+//       entry.actor = newActor;
+//       entry.widget = newWidget;
+//       entry.actionData = actionData;
+//       entry.selected = false;
 
-      // PREVIEW ON HOVER
-      // Also tell the action "_PREVIEW": how far in the action to go?
-      let _calculatePreviewParam = (event) => {
-        let param = event.offsetY / bullet.dom.getBoundingClientRect().height;
-        if(param<0) param=0;
-        if(param>1) param=1;
-        _previewAction._PREVIEW = param;
-        this.update();
-      };
-      let _previewAction;
-      let _previewStyle;
-      bulletContainer.onmouseenter = (event) => {
+//       // PREVIEW ON HOVER
+//       // Also tell the action "_PREVIEW": how far in the action to go?
+//       let _calculatePreviewParam = (event) => {
+//         let param = event.offsetY / bullet.dom.getBoundingClientRect().height;
+//         if(param<0) param=0;
+//         if(param>1) param=1;
+//         _previewAction._PREVIEW = param;
+//         this.update();
+//       };
+//       let _previewAction;
+//       let _previewStyle;
+//       bulletContainer.onmouseenter = (event) => {
 
-        if(!this.top.canPreview("actions")) return;
+//         if(!this.top.canPreview("actions")) return;
 
-        this.top.activePreview = this;
+//         this.top.activePreview = this;
         
-        // Create Preview Data
-        this.previewData = _clone(this.data);
-        let actionIndex = this.entries.indexOf(entry);
-        _previewAction = this.previewData.actions[actionIndex];
+//         // Create Preview Data
+//         this.previewData = _clone(this.data);
+//         let actionIndex = this.entries.indexOf(entry);
+//         _previewAction = this.previewData.actions[actionIndex];
 
-        // STOP after that action!
-        this.previewData.actions.splice(actionIndex+1, 0, {STOP:true});
+//         // STOP after that action!
+//         this.previewData.actions.splice(actionIndex+1, 0, {STOP:true});
 
-        // How far to go along action?
-        _calculatePreviewParam(event);
+//         // How far to go along action?
+//         _calculatePreviewParam(event);
 
-        // Add in a style
-        _previewStyle = document.createElement("style");
-        document.head.appendChild(_previewStyle);
-        _previewStyle.sheet.insertRule('.joy-actions.joy-previewing > #joy-list > div:nth-child(n+'+(actionIndex+2)+') { opacity:0.1; }');
-        _previewStyle.sheet.insertRule('.joy-actions.joy-previewing > div.joy-bullet { opacity:0.1; }');
-        this.dom.classList.add("joy-previewing");
+//         // Add in a style
+//         _previewStyle = document.createElement("style");
+//         document.head.appendChild(_previewStyle);
+//         _previewStyle.sheet.insertRule('.joy-actions.joy-previewing > #joy-list > div:nth-child(n+'+(actionIndex+2)+') { opacity:0.1; }');
+//         _previewStyle.sheet.insertRule('.joy-actions.joy-previewing > div.joy-bullet { opacity:0.1; }');
+//         this.dom.classList.add("joy-previewing");
 
-      };
-      bulletContainer.onmousemove = (event) => {
-        if(this.previewData) _calculatePreviewParam(event);
-      };
-      bulletContainer.onmouseleave = () => {
-        if(this.previewData){
-          this.previewData = null;
-          this.top.activePreview = null;
-          this.update();
-          document.head.removeChild(_previewStyle);
-          this.dom.classList.remove("joy-previewing");
-        }
-      };
+//       };
+//       bulletContainer.onmousemove = (event) => {
+//         if(this.previewData) _calculatePreviewParam(event);
+//       };
+//       bulletContainer.onmouseleave = () => {
+//         if(this.previewData){
+//           this.previewData = null;
+//           this.top.activePreview = null;
+//           this.update();
+//           document.head.removeChild(_previewStyle);
+//           this.dom.classList.remove("joy-previewing");
+//         }
+//       };
 
-      // select or deselect when clicked
-      // entryDOM.addEventListener('click', function() {
-      //   entry.selected = !entry.selected;
-      //   entryDOM.classList.toggle('selected');
-      // });
+//       // select or deselect when clicked
+//       // entryDOM.addEventListener('click', function() {
+//       //   entry.selected = !entry.selected;
+//       //   entryDOM.classList.toggle('selected');
+//       // });
 
-      return entry;
+//       return entry;
 
-    };
-    // add all INITIAL actions as widgets
-    for(let i=0;i<actions.length;i++) _addEntry(actions[i]);
+//     };
+//     // add all INITIAL actions as widgets
+//     for(let i=0;i<actions.length;i++) _addEntry(actions[i]);
 
-    // ///////////////////////////////////////
-    // // Reorder Entries - NF added /////////
-    // ///////////////////////////////////////
-    let _moveEntry = (oldIndex, newIndex) => {
-      let item = this.entries.splice(oldIndex, 1)[0];
-      this.entries.splice(newIndex, 0, item);
-      this.update();
-      _updateBullets();
-    };
-    this.moveAction = _moveEntry;
+//     // ///////////////////////////////////////
+//     // // Reorder Entries - NF added /////////
+//     // ///////////////////////////////////////
+//     let _moveEntry = (oldIndex, newIndex) => {
+//       let item = this.entries.splice(oldIndex, 1)[0];
+//       this.entries.splice(newIndex, 0, item);
+//       this.update();
+//       _updateBullets();
+//     };
+//     this.moveAction = _moveEntry;
 
-    ///////////////////////////////////////
-    // Add Action /////////////////////////
-    ///////////////////////////////////////
+//     ///////////////////////////////////////
+//     // Add Action /////////////////////////
+//     ///////////////////////////////////////
 
-    // Manually add New Action To Actions + Widgets + DOM
-    let _addAction = (actorType, atIndex, data={}) => { //FG added data
-      // Create that new entry & everything
-      let newAction = {type:actorType, ...data};
-      if(atIndex===undefined){
-        actions.push(newAction);
-      }else{
-        actions.splice(atIndex, 0, newAction);
-      }
-      let entry = _addEntry(newAction, atIndex);
+//     // Manually add New Action To Actions + Widgets + DOM
+//     let _addAction = (actorType, atIndex, data={}) => { //FG added data
+//       // Create that new entry & everything
+//       let newAction = {type:actorType, ...data};
+//       if(atIndex===undefined){
+//         actions.push(newAction);
+//       }else{
+//         actions.splice(atIndex, 0, newAction);
+//       }
+//       let entry = _addEntry(newAction, atIndex);
 
-      // Focus on that entry's widget!
-      // entry.widget.focus();
-    };
-    this.addAction = _addAction; //available to other modules - [QUESTION] should I just have one addAction function?
+//       // Focus on that entry's widget!
+//       // entry.widget.focus();
+//     };
+//     this.addAction = _addAction; //available to other modules - [QUESTION] should I just have one addAction function?
 
-    // Actions you can add:
-    // TODO: INCLUDE ALIASED ACTIONS
-    let actionOptions = [];
+//     // Actions you can add:
+//     // TODO: INCLUDE ALIASED ACTIONS
+//     let actionOptions = [];
 
-    //TODO: refactor into functions
+//     //TODO: refactor into functions
 
-    if(this.onlyActions){ //get a specific list of types
-      for(let i=0;i<this.onlyActions.length;i++){
-        let actionType = this.onlyActions[i];
-        let actorTemplate = Joy.getTemplateByType(actionType);
-        let notActionTag = actorTemplate.tags.filter((tag) => {
-          return tag!="action"; // first tag that's NOT "action" (so that actions categorized in the chooser menu based on their secondary tag)
-        })[0];
-        actionOptions.push({
-          label: actorTemplate.name,
-          value: actionType,
-          category: notActionTag
-        });
-      }
-    }else{ //find anything tagged action
-      let actionActors = Joy.getTemplatesByTag("action");
-      for(let i=0;i<actionActors.length;i++){
-        let actionActor = actionActors[i];
-        let notActionTag = actionActor.tags.filter((tag) => {
-          return tag!="action";
-        })[0];
-        actionOptions.push({
-          label: actionActor.name,
-          value: actionActor.type,
-          category: notActionTag
-        });
-      }
-    }
+//     if(this.onlyActions){ //get a specific list of types
+//       for(let i=0;i<this.onlyActions.length;i++){
+//         let actionType = this.onlyActions[i];
+//         let actorTemplate = Joy.getTemplateByType(actionType);
+//         let notActionTag = actorTemplate.tags.filter((tag) => {
+//           return tag!="action"; // first tag that's NOT "action" (so that actions categorized in the chooser menu based on their secondary tag)
+//         })[0];
+//         actionOptions.push({
+//           label: actorTemplate.name,
+//           value: actionType,
+//           category: notActionTag
+//         });
+//       }
+//     }else{ //find anything tagged action
+//       let actionActors = Joy.getTemplatesByTag("action");
+//       for(let i=0;i<actionActors.length;i++){
+//         let actionActor = actionActors[i];
+//         let notActionTag = actionActor.tags.filter((tag) => {
+//           return tag!="action";
+//         })[0];
+//         actionOptions.push({
+//           label: actionActor.name,
+//           value: actionActor.type,
+//           category: notActionTag
+//         });
+//       }
+//     }
 
-    // NF: Add only actions in specified modules to chooser menu
-    // TODO: merge with previous filter code
-    let modules = this.modules || [];
-    let moduleOptions = [];
-    modules.forEach((module) => {
-      let moduleActors = Joy.getTemplatesByTag(module);
-      moduleActors.forEach((moduleActor) => {
-        let notActionTag = moduleActor.tags.filter((tag) => {
-          return tag!="action";
-        })[0];
-        moduleOptions.push({
-          label: moduleActor.name,
-          value: moduleActor.type,
-          category: notActionTag
-        });
-      });
-    });
+//     // NF: Add only actions in specified modules to chooser menu
+//     // TODO: merge with previous filter code
+//     let modules = this.modules || [];
+//     let moduleOptions = [];
+//     modules.forEach((module) => {
+//       let moduleActors = Joy.getTemplatesByTag(module);
+//       moduleActors.forEach((moduleActor) => {
+//         let notActionTag = moduleActor.tags.filter((tag) => {
+//           return tag!="action";
+//         })[0];
+//         moduleOptions.push({
+//           label: moduleActor.name,
+//           value: moduleActor.type,
+//           category: notActionTag
+//         });
+//       });
+//     });
 
-    // "+" Button: When clicked, prompt what actions to add!
-    let addButton = new ChooserButton({
-      staticLabel: "+",
-      options: actionOptions,
-      onchange: (value) => {
-        _addAction(value);
-        this.update(); // You oughta know!
-      },
-      styles: ["joy-bullet", "joy-add-bullet"]
-    });
-    this.dom.appendChild(addButton.dom);
+//     // "+" Button: When clicked, prompt what actions to add!
+//     let addButton = new ChooserButton({
+//       staticLabel: "+",
+//       options: actionOptions,
+//       onchange: (value) => {
+//         _addAction(value);
+//         this.update(); // You oughta know!
+//       },
+//       styles: ["joy-bullet", "joy-add-bullet"]
+//     });
+//     this.dom.appendChild(addButton.dom);
 
-  },
-  onact: function(my){
+//   },
+//   onact: function(my){
 
-    // Create _lets, if not already there
-    if(!my.target._variables) my.target._variables={}; 
+//     // Create _lets, if not already there
+//     if(!my.target._variables) my.target._variables={}; 
 
-    // Reset all of target's variables?
-    if(my.data.resetVariables) my.target._variables = {};
+//     // Reset all of target's variables?
+//     if(my.data.resetVariables) my.target._variables = {};
 
-    // Do those actions, baby!!!
-    for(let i=0; i<my.data.actions.length; i++){
+//     // Do those actions, baby!!!
+//     for(let i=0; i<my.data.actions.length; i++){
 
-      // Stop?
-      let actionData = my.data.actions[i];
-      if(actionData.STOP) return "STOP";
+//       // Stop?
+//       let actionData = my.data.actions[i];
+//       if(actionData.STOP) return "STOP";
 
-      // Run 
-      let actor = my.actor.entries[i].actor; // TODO: THIS IS A HACK AND SHOULD NOT RELY ON THAT
-      let actorMessage = actor.act(my.target, actionData); // use ol' actor, but GIVEN data.
-      if(actorMessage=="STOP") return actorMessage;
+//       // Run 
+//       let actor = my.actor.entries[i].actor; // TODO: THIS IS A HACK AND SHOULD NOT RELY ON THAT
+//       let actorMessage = actor.act(my.target, actionData); // use ol' actor, but GIVEN data.
+//       if(actorMessage=="STOP") return actorMessage;
 
-    }
+//     }
 
-  },
-  placeholder: {
-    actions: [],
-    resetVariables: true
-  }
-});
+//   },
+//   placeholder: {
+//     actions: [],
+//     resetVariables: true
+//   }
+// });
 /////////////////////////////////////////
 // LOGIC ACTORS /////////////////////////
 /////////////////////////////////////////
@@ -761,7 +761,7 @@ Joy.module("instructions", function(){
       this.dom = document.createElement("div");
 
       // Comment Box
-      this.box = new TextBox({
+      this.box = new JoyTextBox({
         multiline: true,
         placeholder: "// your notes here",
         value: this.getData("value"),

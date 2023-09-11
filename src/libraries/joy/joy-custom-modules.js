@@ -1,7 +1,7 @@
 import { Joy } from "./joy.js";
-import { BaseModal, ModalBackdrop } from "./components/modals.js";
-import { JoyWidget, JoyButton } from './components/ui-widgets.js';
-import { _clone, _HSVtoRGB, _HSVToRGBString } from "./joy-utils.js";
+import { BaseModal, ModalBackdrop, ChooserModal } from "./components/modals.js";
+import { JoyWidget, JoyButton, JoyString, ChooserButton } from './components/ui-widgets.js';
+import { _clone, _HSVtoRGB, _HSVToRGBString, _numberToAlphabet, _numberToRoman } from "./joy-utils.js";
 import { _hexToRGB } from "../../utils/color-utils.js";
 
 /****************
@@ -55,6 +55,12 @@ Joy.add({
 // position: this.position
 // }).show();
 
+
+/************
+
+Number Sliders
+
+************/
 
 export class SliderModal extends BaseModal {
   constructor(config) {
@@ -118,6 +124,585 @@ export class SliderModal extends BaseModal {
   }
 }
 
+Joy.module("sequences", function() {
+
+  /**********Along Path ***********/
+  Joy.add({
+    name: "Along path",
+    type: "sequences/alongpath",
+    tags: ["sequences", "action"],
+    init: "Along path {id:'path', type:'path', min:1, placeholder:'20,50,200,250'} "+
+        "{id:'actions', type:'actions', resetVariables:false}",
+    onact: function(my){
+      
+      // Previewing? How much to preview?
+      var param = 1;
+      if(my.data._PREVIEW!==undefined) param=my.data._PREVIEW;
+
+      // Loop through it... (as far as preview shows, anyway)
+      var loops = Math.floor(my.data.count*param);
+      for(var i=0; i<loops; i++){
+        var message = my.actor.actions.act(my.target);
+        if(message=="STOP") return message; // STOP
+      }
+    }
+  });
+
+
+  /******** Group  *********/
+  Joy.add({
+    name: "Group",
+    type: "sequences/group",
+    tags: ["sequences", "action"],
+    init: "{id:'groupname', type:'string', placeholder:'brush name'}"+
+        "{id:'actions', type:'actions', resetVariables:false}",
+    onact: function(my){
+      
+      // Previewing? How much to preview?
+      var param = 1;
+      if(my.data._PREVIEW!==undefined) param=my.data._PREVIEW;
+
+      // Loop through it... (as far as preview shows, anyway)
+      var loops = Math.floor(my.data.count*param);
+      for(var i=0; i<loops; i++){
+        var message = my.actor.actions.act(my.target);
+        if(message=="STOP") return message; // STOP
+      }
+    }
+  });
+});
+
+/****************
+
+A collapsible list of actions.
+
+WidgetConfig:
+{type:'actions', name:'actions', resetVariables:false}
+
+****************/
+Joy.add({
+  type: "actions",
+  tags: ["ui"],
+  init: function(){
+    if(this.resetVariables!==undefined) this.data.resetVariables=this.resetVariables;
+  },
+  initWidget: function(){
+
+    let data = this.data;
+    let actions = data.actions;
+
+    // DOM
+    this.dom = document.createElement("div");
+    this.dom.className = "joy-actions";
+
+    // List
+    let list = document.createElement("list");
+    list.classList.add('joy-list');
+    list.id = this.id + "-joy-list";
+    this.dom.appendChild(list);
+
+    //////////////////////////////////////////
+    // Create Bullet /////////////////////////
+    //////////////////////////////////////////
+
+    let bulletOptions = [
+      {label:"Add action above", value:"action_above"},
+      {label:"Add action below", value:"action_below"},
+      {label:"Delete", value:"delete"}
+    ];
+    let _onBulletChoice = (entry, choice) => {
+
+      // ACTION ABOVE or BELOW
+      let newActionWhere = 0;
+      if(choice=="action_above") newActionWhere=-1; // above
+      if(choice=="action_below") newActionWhere=1; // below
+      if(newActionWhere!=0){ // not NOT new action
+        
+        let newEntryIndex = this.entries.indexOf(entry);
+        if(newActionWhere>0) newEntryIndex+=1;
+
+        // Chooser Modal!
+        let chooser = new ChooserModal({
+          position: "left",
+          source: entry.bullet.dom,
+          options: actionOptions,
+          onchange: (value) => {
+            _addAction(value, newEntryIndex);
+            this.update(); // You oughta know!
+            _updateBullets(); // update the UI, re-number it.
+          }
+        }).show();
+      }
+
+      // DELETE
+      if(choice=="delete"){
+        _removeFromArray(this.entries, entry); // Delete entry from Entries[]
+        _removeFromArray(actions, entry.actionData); // Delete action from Data's Actions[]
+        this.removeChild(entry.actor); // Delete actor from Children[]
+        list.removeChild(entry.dom); // Delete entry from DOM
+        this.update(); // You oughta know!
+        _updateBullets(); // update the UI, re-number it.
+      }
+
+    };
+    let _createBullet = (entry) => {
+    
+      let bullet = new ChooserButton({
+        position: "left",
+        staticLabel: _getBulletLabel(entry),
+        options: bulletOptions,
+        onchange: (choice) => {
+          _onBulletChoice(entry, choice);
+        },
+        styles: ["joy-bullet"]
+      });
+      bullet.dom.class = "joy-bullet";
+
+      return bullet;
+
+    };
+
+    // Get the digit (or letter, or roman) for this bullet...
+    let _getBulletLabel = (entry) => {
+
+      // What index am I?
+      let index = this.entries.indexOf(entry)+1;
+
+      // How many levels deep in "actions" am I?
+      let levelsDeep = 0;
+      let parent = this.parent;
+      while(parent){
+        if(parent.type=="actions") levelsDeep++;
+        parent = parent.parent;
+      }
+
+      // Digit, Letter, or Roman? (Cycle around)
+      let label;
+      switch(levelsDeep%3){
+        case 0: label=index; break; // digits
+        case 1: label=_numberToAlphabet(index); break; // letter
+        case 2: label=_numberToRoman(index); break; // roman
+      }
+
+      return label;
+
+    };
+
+    // Re-number ALL these bad boys
+    let _updateBullets = () => {
+      console.log("updating bullets");
+
+      for(let i=0; i<this.entries.length; i++){
+        let entry = this.entries[i];
+        let bullet = entry.bullet;
+        let label = _getBulletLabel(entry);
+        bullet.setLabel(label);
+      }
+
+      /*** testing ***/
+
+      document.querySelectorAll('.joy-list-item').forEach(function(item) {
+        if (item.querySelector('.joy-list')) {
+            item.classList.add('has-children');
+            console.log(item, "has children");
+        }
+      });
+
+            // Get all joy-list-item elements that have the has-children class
+      let listItemsWithChildren = document.querySelectorAll('.joy-list-item.has-children');
+
+      // Add an event listener to each of these elements
+      listItemsWithChildren.forEach(item => {
+          item.addEventListener('click', function(e) {
+              // If the clicked element is the triangle (the pseudo-element :before),
+              // or any other part of the joy-list-item, toggle the collapsed class
+              if (e.target === item || getComputedStyle(item, ':before').content === '"▼"') {
+                  item.classList.toggle('collapsed');
+
+                  // Show or hide its child lists depending on the collapsed state
+                  let childLists = item.querySelectorAll('.joy-list');
+                  childLists.forEach(childList => {
+                      if (item.classList.contains('collapsed')) {
+                          childList.style.display = 'none';
+                      } else {
+                          childList.style.display = '';
+                      }
+                  });
+              }
+          });
+      });
+
+      /*** testing ***/
+
+    };
+
+    ////////////////////////////////////////////////////////////////////
+    // Add Entry: Entries have a Bullet (the number) & actual widget! //
+    ////////////////////////////////////////////////////////////////////
+
+    this.entries = [];
+    
+    let _addEntry = (actionData, atIndex) => {
+
+      // New entry
+      let entry = {};
+      let entryDOM = document.createElement("div");
+      entryDOM.classList.add('joy-list-item');
+      if(atIndex===undefined) atIndex = this.entries.length;
+
+      // If entries selected, insert after last selected entry
+      // if (this.entries.some(function(entry) { return entry.selected; })) {
+      //   // Find the index of the last selected entry
+      //   let lastSelectedIndex = this.entries.reduce(function(index, entry, currentIndex) {
+      //     return entry.selected ? currentIndex : index;
+      //   }, -1);
+    
+      //   atIndex = lastSelectedIndex + 1;
+
+      //   console.log("selected index to add entry", atIndex);
+      // }
+      this.entries.splice(atIndex, 0, entry);
+      list.insertBefore(entryDOM, list.children[atIndex]);
+
+      // The Bullet is a Chooser!
+      let bullet = _createBullet(entry);
+      let bulletContainer = document.createElement("div");
+
+      bulletContainer.className = "joy-bullet-container";
+      bulletContainer.addEventListener('click', (event) => {
+        let bulletContainer = event.target.closest('.joy-bullet-container');
+        if (bulletContainer) {
+          bulletContainer.classList.toggle('collapsed');
+        }
+      });
+
+      entryDOM.appendChild(bulletContainer);
+      bulletContainer.appendChild(bullet.dom);
+
+      // New Actor!
+      let newActor = this.addChild({type:actionData.type}, actionData);
+
+      // The Widget
+      let newWidget = newActor.createWidget();
+      newWidget.id = "joy-widget";
+      entryDOM.appendChild(newWidget);
+
+      // (Remember all this)
+      entry.dom = entryDOM;
+      entry.bullet = bullet;
+      entry.actor = newActor;
+      entry.widget = newWidget;
+      entry.actionData = actionData;
+      entry.selected = false;
+
+      // PREVIEW ON HOVER
+      // Also tell the action "_PREVIEW": how far in the action to go?
+      let _calculatePreviewParam = (event) => {
+        let param = event.offsetY / bullet.dom.getBoundingClientRect().height;
+        if(param<0) param=0;
+        if(param>1) param=1;
+        _previewAction._PREVIEW = param;
+        this.update();
+      };
+      let _previewAction;
+      let _previewStyle;
+      bulletContainer.onmouseenter = (event) => {
+
+        if(!this.top.canPreview("actions")) return;
+
+        this.top.activePreview = this;
+        
+        // Create Preview Data
+        this.previewData = _clone(this.data);
+        let actionIndex = this.entries.indexOf(entry);
+        _previewAction = this.previewData.actions[actionIndex];
+
+        // STOP after that action!
+        this.previewData.actions.splice(actionIndex+1, 0, {STOP:true});
+
+        // How far to go along action?
+        _calculatePreviewParam(event);
+
+        // Add in a style
+        _previewStyle = document.createElement("style");
+        document.head.appendChild(_previewStyle);
+        _previewStyle.sheet.insertRule('.joy-actions.joy-previewing > #joy-list > div:nth-child(n+'+(actionIndex+2)+') { opacity:0.1; }');
+        _previewStyle.sheet.insertRule('.joy-actions.joy-previewing > div.joy-bullet { opacity:0.1; }');
+        this.dom.classList.add("joy-previewing");
+
+      };
+      bulletContainer.onmousemove = (event) => {
+        if(this.previewData) _calculatePreviewParam(event);
+      };
+      bulletContainer.onmouseleave = () => {
+        if(this.previewData){
+          this.previewData = null;
+          this.top.activePreview = null;
+          this.update();
+          document.head.removeChild(_previewStyle);
+          this.dom.classList.remove("joy-previewing");
+        }
+      };
+
+      // select or deselect when clicked
+      // entryDOM.addEventListener('click', function() {
+      //   entry.selected = !entry.selected;
+      //   entryDOM.classList.toggle('selected');
+      // });
+
+      return entry;
+
+    };
+    // add all INITIAL actions as widgets
+    for(let i=0;i<actions.length;i++) _addEntry(actions[i]);
+
+    // ///////////////////////////////////////
+    // // Reorder Entries - NF added /////////
+    // ///////////////////////////////////////
+    let _moveEntry = (oldIndex, newIndex) => {
+      let item = this.entries.splice(oldIndex, 1)[0];
+      this.entries.splice(newIndex, 0, item);
+      this.update();
+      _updateBullets();
+    };
+    this.moveAction = _moveEntry;
+
+    ///////////////////////////////////////
+    // Add Action /////////////////////////
+    ///////////////////////////////////////
+
+    // Manually add New Action To Actions + Widgets + DOM
+    let _addAction = (actorType, atIndex, data={}) => { //FG added data
+      // Create that new entry & everything
+      let newAction = {type:actorType, ...data};
+      if(atIndex===undefined){
+        actions.push(newAction);
+      }else{
+        actions.splice(atIndex, 0, newAction);
+      }
+      let entry = _addEntry(newAction, atIndex);
+
+      // Focus on that entry's widget!
+      // entry.widget.focus();
+    };
+    this.addAction = _addAction; //available to other modules - [QUESTION] should I just have one addAction function?
+
+    // Actions you can add:
+    // TODO: INCLUDE ALIASED ACTIONS
+    let actionOptions = [];
+
+    //TODO: refactor into functions
+
+    if(this.onlyActions){ //get a specific list of types
+      for(let i=0;i<this.onlyActions.length;i++){
+        let actionType = this.onlyActions[i];
+        let actorTemplate = Joy.getTemplateByType(actionType);
+        let notActionTag = actorTemplate.tags.filter((tag) => {
+          return tag!="action"; // first tag that's NOT "action" (so that actions categorized in the chooser menu based on their secondary tag)
+        })[0];
+        actionOptions.push({
+          label: actorTemplate.name,
+          value: actionType,
+          category: notActionTag
+        });
+      }
+    }else{ //find anything tagged action
+      let actionActors = Joy.getTemplatesByTag("action");
+      for(let i=0;i<actionActors.length;i++){
+        let actionActor = actionActors[i];
+        let notActionTag = actionActor.tags.filter((tag) => {
+          return tag!="action";
+        })[0];
+        actionOptions.push({
+          label: actionActor.name,
+          value: actionActor.type,
+          category: notActionTag
+        });
+      }
+    }
+
+    // NF: Add only actions in specified modules to chooser menu
+    // TODO: merge with previous filter code
+    let modules = this.modules || [];
+    let moduleOptions = [];
+    modules.forEach((module) => {
+      let moduleActors = Joy.getTemplatesByTag(module);
+      moduleActors.forEach((moduleActor) => {
+        let notActionTag = moduleActor.tags.filter((tag) => {
+          return tag!="action";
+        })[0];
+        moduleOptions.push({
+          label: moduleActor.name,
+          value: moduleActor.type,
+          category: notActionTag
+        });
+      });
+    });
+
+    // "+" Button: When clicked, prompt what actions to add!
+    let addButton = new ChooserButton({
+      staticLabel: "+",
+      options: actionOptions,
+      onchange: (value) => {
+        _addAction(value);
+        this.update(); // You oughta know!
+      },
+      styles: ["joy-bullet", "joy-add-bullet"]
+    });
+    this.dom.appendChild(addButton.dom);
+
+  },
+  onact: function(my){
+
+    // Create _lets, if not already there
+    if(!my.target._variables) my.target._variables={}; 
+
+    // Reset all of target's variables?
+    if(my.data.resetVariables) my.target._variables = {};
+
+    // Do those actions, baby!!!
+    for(let i=0; i<my.data.actions.length; i++){
+
+      // Stop?
+      let actionData = my.data.actions[i];
+      if(actionData.STOP) return "STOP";
+
+      // Run 
+      let actor = my.actor.entries[i].actor; // TODO: THIS IS A HACK AND SHOULD NOT RELY ON THAT
+      let actorMessage = actor.act(my.target, actionData); // use ol' actor, but GIVEN data.
+      if(actorMessage=="STOP") return actorMessage;
+
+    }
+
+  },
+  placeholder: {
+    actions: [],
+    resetVariables: true
+  }
+});
+
+// //new widget
+// Joy.add({
+//   type: "group",
+//   tags: ["ui"],
+//   initWidget: function(self){
+
+//     // String *IS* DOM
+//     var o = self.options;
+//     self.groupUI = new GroupUI({
+//       prefix: o.prefix,
+//       suffix: o.suffix,
+//       color: o.color, 
+//       value: self.getData("value"),
+//       onchange: function(value){
+//         self.setData("value", value);
+//       }
+//     });
+//     self.dom = self.groupUI.dom;
+
+//     // When data's changed, externally
+//     self.onDataChange = function(){
+//       var value = self.getData("value");
+//       console.log("value: ", value);
+//       console.log("self ", self);
+//       self.pathUI.setPath(value);
+//     };
+//   },
+//   onget: function(my){
+//     return my.data.value;
+//   },
+//   placeholder: "group name"
+// });
+
+// TODO: add a single action "preview" panel with customizeable parameters
+// TODO: make Joy widgets and actors their own classes - Q: what are the differences between widgets and actors?
+Joy.add({
+  type: "singleAction",
+  tags: ["ui"],
+  initWidget: function(self) {
+
+  }
+});
+
+
+
+
+
+
+class GroupUI {
+  constructor(config) {
+
+    this.dom = document.createElement("div");
+    this.dom.className = "joy-named-group";
+
+		const arrow = document.createElement("span");
+		arrow.contentEditable = false;
+		arrow.innerText = "^ ";
+		this.dom.appendChild(arrow);
+  
+    const input = document.createElement("span");
+    input.contentEditable = true;
+    input.spellcheck = false;
+  
+    this.dom.appendChild(input);
+  
+    input.addEventListener("input", (event) => {
+      _fixStringInput(input);
+      const value = input.innerText; //todo - might be issue, expecting a string
+      config.onchange(value);
+    });
+  
+    input.addEventListener("focus", () => {
+      _selectAll(input);
+    });
+  
+    input.addEventListener("blur", () => {
+      _unselectAll();
+    });
+		_preventWeirdCopyPaste(input);
+  
+    input.addEventListener("keypress", (e) => {
+  	if (e.which === 13) {
+  	  input.blur();
+  	  return false;
+      }
+      return true;
+    });
+  
+   // Set name
+    this.setName = function(value){
+    input.innerText = value;
+    _fixStringInput(input);
+    };
+  
+    this.setColor = function (color) {
+	  color = this._forceToRGB(color);
+  	  this.dom.style.color = color;
+  	  this.dom.style.borderColor = color;
+    };
+  
+    if (config.color) {
+      this.setColor(config.color);
+    }
+  
+    this.styles = config.styles || [];
+    this.styles.forEach((style) => {
+  	this.dom.classList.add(style);
+    });
+  
+    this.setName(config.value);
+  }
+}
+
+
+
+
+
+
+
+
+
+
 
 /****************
 
@@ -158,7 +743,86 @@ Joy.add({
 });
 
 
+/****************
+Color Palette Widget
+****************/
 
+Joy.add({
+  type: "colorpalette",
+  tags: ["ui"],
+  initWidget: function() {
+
+    let colorButton = document.createElement("input");
+    colorButton.type = "button";
+    colorButton.value = "&nbsp;";
+    colorButton.classList.add("color-palette-widget", "clr-field");
+    colorButton.setAttribute("data-coloris", ""); //normally this would also add other coloris specific classes, but not if HTML isn't created yet
+    colorButton.addEventListener('click', () => {
+        new Coloris({
+          swatches: this.colorOptions,
+          theme: 'polaroid',
+          formatToggle: false,
+          swatchesOnly: true,
+          alpha: false,
+          defaultColor: this.colorOptions[0] || '#aabbcc',
+          onChange: (color) => {
+            this.dom.style.background = color;
+            this.data.value = color;
+            this.update();
+          }
+        });
+      });
+      this.dom = colorButton;
+      this.dom.style.background = this.data.value;
+  },
+  onget: function(my){
+    return my.data.value;
+  },
+  placeholder: function(){
+    let hue = Math.floor(Math.random()*360); // Random color! 
+    // change to random color from the palette
+    return '#FAE7D0';
+  }
+});
+
+
+/********************
+Color Palette Modal
+********************/
+export class ColorPalette extends BaseModal {
+  constructor(config) {
+    super(config);
+
+    // Add input field for Coloris
+    this.colorisInput = document.createElement('input');
+    // this.colorisInput.type = "hidden";
+    this.colorisInput.setAttribute('data-coloris', '');
+    this.dom.appendChild(this.colorisInput);
+
+    // this._attachEvents();
+  }
+
+  show() {
+    const modalInstance = ModalBackdrop.getInstance();
+    this._initializeColoris(modalInstance.box);
+    super.show();
+  }
+
+  _initializeColoris() {
+    this.colorisInstance = Coloris({
+      parent: this.modalContainer, // Assuming modalContainer is where the color picker should show
+      swatches: this.config.colorOptionsHex,
+      inline: false, // we don't want the color picker to be always visible
+      onChange: (color) => {
+        if(config.onchange) {
+          config.onchange(color);
+        }
+      }
+    });
+  }
+
+
+}
 
 
   // Joy.add({
@@ -269,48 +933,9 @@ Joy.add({
   
 
 
-/****************
-Color Palette Widget
-****************/
 
-Joy.add({
-  type: "colorpalette",
-  tags: ["ui"],
-  initWidget: function() {
 
-    let colorButton = document.createElement("input");
-    colorButton.type = "button";
-    colorButton.value = "&nbsp;";
-    colorButton.classList.add("color-palette-widget", "clr-field");
-    colorButton.setAttribute("data-coloris", ""); //normally this would also add other coloris specific classes, but not if HTML isn't created yet
-    colorButton.addEventListener('click', () => {
-        new Coloris({
-          closeButton: true,
-          swatches: this.colorOptions,
-          theme: 'polaroid',
-          formatToggle: false,
-          swatchesOnly: true,
-          alpha: false,
-          defaultColor: this.colorOptions[0] || '#aabbcc',
-          onChange: (color) => {
-            this.dom.style.background = color;
-            this.data.value = color;
-            this.update();
-          }
-        });
-      });
-      this.dom = colorButton;
-      this.dom.style.background = this.data.value;
-  },
-  onget: function(my){
-    return my.data.value;
-  },
-  placeholder: function(){
-    let hue = Math.floor(Math.random()*360); // Random color! 
-    // change to random color from the palette
-    return '#FAE7D0';
-  }
-});
+
 
     // const colorButton = new ColorisButton({
     //   label: "&nbsp;",
@@ -427,43 +1052,6 @@ Joy.add({
   //   this.dom.onmouseleave = _stopPreview;
 
 
-/********************
-Color Palette Modal
-********************/
-export class ColorPalette extends BaseModal {
-  constructor(config) {
-    super(config);
-
-    // Add input field for Coloris
-    this.colorisInput = document.createElement('input');
-    // this.colorisInput.type = "hidden";
-    this.colorisInput.setAttribute('data-coloris', '');
-    this.dom.appendChild(this.colorisInput);
-
-    // this._attachEvents();
-  }
-
-  show() {
-    const modalInstance = ModalBackdrop.getInstance();
-    this._initializeColoris(modalInstance.box);
-    super.show();
-  }
-
-  _initializeColoris() {
-    this.colorisInstance = Coloris({
-      parent: this.modalContainer, // Assuming modalContainer is where the color picker should show
-      swatches: this.config.colorOptionsHex,
-      inline: false, // we don't want the color picker to be always visible
-      onChange: (color) => {
-        if(config.onchange) {
-          config.onchange(color);
-        }
-      }
-    });
-  }
-
-
-}
 
 
 // export class ColorPalette extends BaseModal {

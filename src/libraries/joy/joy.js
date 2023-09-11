@@ -562,7 +562,7 @@ class Actor {
 
   // ...or GET INFO from targets.
   onget() {
-    console.log("empty onget method!");
+    // console.log("empty onget method!");
   }
 
   get(target) {

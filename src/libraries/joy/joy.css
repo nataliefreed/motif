@@ -40,7 +40,7 @@ More prefixing to avoid NAME COLLISIONS
 	display: flex;
 
 }
-.joy-actions .joy-list > div #joy-bullet-container{
+.joy-actions .joy-list > div .joy-bullet-container{
 	/*float: left;*/
 	-webkit-box-flex: 1;
 	-moz-box-flex: 1;

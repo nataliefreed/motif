@@ -6,7 +6,6 @@ export class JoyManager {
   constructor(effects, brushstrokes, sketch) {
     let data = Joy.loadFromURL();
     this.loadEffects(effects);
-		this.addModulesAndWidgets();
 		this.sketch = sketch;
     this.joy = new Joy({
 			// Where the Joy editor goes:
@@ -24,7 +23,7 @@ export class JoyManager {
 			data: data,
 		
 			// Actions to include:
-			modules: ['motif', 'sequences', 'stencils'], //TODO: 'math' module removes min and max settings on Scrubber - see line 1032 and 2813
+			modules: ['motif', 'sequences', 'stencils', 'instructions'], //TODO: 'math' module removes min and max settings on Scrubber - see line 1032 and 2813
 		
 			previewActions: true,
 			previewNumbers: true,
@@ -94,95 +93,6 @@ export class JoyManager {
 
 	}
 
-	addModulesAndWidgets() {
-		//sequences (along path and group with name)
-		Joy.module("sequences", function() {
-			Joy.add({
-				name: "Along path",
-				type: "sequences/alongpath",
-				tags: ["alongpath", "action"],
-				init: "Along path {id:'path', type:'path', min:1, placeholder:'20,50,200,250'} "+
-						"{id:'actions', type:'actions', resetVariables:false}",
-				onact: function(my){
-					
-					// Previewing? How much to preview?
-					var param = 1;
-					if(my.data._PREVIEW!==undefined) param=my.data._PREVIEW;
-		
-					// Loop through it... (as far as preview shows, anyway)
-					var loops = Math.floor(my.data.count*param);
-					for(var i=0; i<loops; i++){
-						var message = my.actor.actions.act(my.target);
-						if(message=="STOP") return message; // STOP
-					}
-				}
-			});
-			Joy.add({
-				name: "Group",
-				type: "sequences/group",
-				tags: ["group", "action"],
-				init: "{id:'groupname', type:'group', placeholder:'brush name'}"+
-						"{id:'actions', type:'actions', resetVariables:false}",
-				onact: function(my){
-					
-					// Previewing? How much to preview?
-					var param = 1;
-					if(my.data._PREVIEW!==undefined) param=my.data._PREVIEW;
-		
-					// Loop through it... (as far as preview shows, anyway)
-					var loops = Math.floor(my.data.count*param);
-					for(var i=0; i<loops; i++){
-						var message = my.actor.actions.act(my.target);
-						if(message=="STOP") return message; // STOP
-					}
-				}
-			});
-		});
-
-		//new widget
-		Joy.add({
-			type: "group",
-			tags: ["ui"],
-			initWidget: function(self){
-
-				// String *IS* DOM
-				var o = self.options;
-				self.groupUI = new GroupUI({
-					prefix: o.prefix,
-					suffix: o.suffix,
-					color: o.color, 
-					value: self.getData("value"),
-					onchange: function(value){
-						self.setData("value", value);
-					}
-				});
-				self.dom = self.groupUI.dom;
-
-				// When data's changed, externally
-				self.onDataChange = function(){
-					var value = self.getData("value");
-					console.log("value: ", value);
-					console.log("self ", self);
-					self.pathUI.setPath(value);
-				};
-			},
-			onget: function(my){
-				return my.data.value;
-			},
-			placeholder: "group name"
-		});
-
-		// TODO: add a single action "preview" panel with customizeable parameters
-		// TODO: make Joy widgets and actors their own classes - Q: what are the differences between widgets and actors?
-		Joy.add({
-			type: "previewAction",
-			tags: ["ui"],
-			initWidget: function(self) {
-
-			}
-		})
-	}
-
 	getParentList(listName) {
 		console.log("looking for list name:", listName);
 		if (listName == 'motif') {
@@ -196,81 +106,15 @@ export class JoyManager {
 		}
 	}
 
-  addEvent(listName, type, settings) {
+	addEvent(listName, type, settings) {
 		const target = this.getParentList(listName);
 		target.addAction(type, undefined, settings);
 		target.update();
-  }
+	}
 
 	moveAction(listName, oldIndex, newIndex) {
-    const target = this.getParentList(listName);
+		const target = this.getParentList(listName);
 		target.moveAction(oldIndex, newIndex);
 		target.update();
-  }
-}
-
-
-class GroupUI {
-  constructor(config) {
-
-    this.dom = document.createElement("div");
-    this.dom.className = "joy-named-group";
-
-		const arrow = document.createElement("span");
-		arrow.contentEditable = false;
-		arrow.innerText = "^ ";
-		this.dom.appendChild(arrow);
-  
-    const input = document.createElement("span");
-    input.contentEditable = true;
-    input.spellcheck = false;
-  
-    this.dom.appendChild(input);
-  
-    input.addEventListener("input", (event) => {
-      _fixStringInput(input);
-      const value = input.innerText; //todo - might be issue, expecting a string
-      config.onchange(value);
-    });
-  
-    input.addEventListener("focus", () => {
-      _selectAll(input);
-    });
-  
-    input.addEventListener("blur", () => {
-      _unselectAll();
-    });
-		_preventWeirdCopyPaste(input);
-  
-    input.addEventListener("keypress", (e) => {
-  	if (e.which === 13) {
-  	  input.blur();
-  	  return false;
-      }
-      return true;
-    });
-  
-   // Set name
-    this.setName = function(value){
-    input.innerText = value;
-    _fixStringInput(input);
-    };
-  
-    this.setColor = function (color) {
-	  color = this._forceToRGB(color);
-  	  this.dom.style.color = color;
-  	  this.dom.style.borderColor = color;
-    };
-  
-    if (config.color) {
-      this.setColor(config.color);
-    }
-  
-    this.styles = config.styles || [];
-    this.styles.forEach((style) => {
-  	this.dom.classList.add(style);
-    });
-  
-    this.setName(config.value);
-  }
+	}
 }

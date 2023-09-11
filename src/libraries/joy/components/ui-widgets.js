@@ -309,7 +309,7 @@ String's config:
   styles: ["comment"]
 }
 ********************/
-class JoyString {
+export class JoyString {
   
   constructor(config) {
     // DOM
@@ -317,9 +317,9 @@ class JoyString {
     this.dom.className = "joy-string";
     
     // The Actual Part that's Content Editable
-    let input = document.createElement("span");
-    input.contentEditable = true;
-    input.spellcheck = false;
+    this.input = document.createElement("span");
+    this.input.contentEditable = true;
+    this.input.spellcheck = false;
 
     // Prefix & Suffix & Color: entirely cosmetic
     let prefixDOM = document.createElement("span");
@@ -327,29 +327,29 @@ class JoyString {
     prefixDOM.innerHTML = config.prefix || "";
     suffixDOM.innerHTML = config.suffix || "";
     this.dom.appendChild(prefixDOM);
-    this.dom.appendChild(input);
+    this.dom.appendChild(this.input);
     this.dom.appendChild(suffixDOM);
 
     // On input!
-    input.oninput = (event) => {
-      _fixStringInput(input);
-      let value = input.innerText; // NOT innerHTML
+    this.input.oninput = (event) => {
+      _fixStringInput(this.input);
+      let value = this.input.innerText; // NOT innerHTML
       config.onchange(value); // callback!
     };
 
     // On focus, select all
-    input.onfocus = () => {
-      _selectAll(input);
+    this.input.onfocus = () => {
+      _selectAll(this.input);
     };
-    input.onblur = () => {
+    this.input.onblur = () => {
       _unselectAll();
     };
-    _preventWeirdCopyPaste(input);
+    _preventWeirdCopyPaste(this.input);
 
     // On pressing <enter>, DON'T line break, just blur
-    input.onkeypress = (e) => {
+    this.input.onkeypress = (e) => {
       if(e.which == 13){
-        input.blur();
+        this.input.blur();
         return false;
       }
       return true;
@@ -368,8 +368,8 @@ class JoyString {
 
   // Set String
   setString(value) {
-    input.innerText = value;
-    _fixStringInput(input);
+    this.input.innerText = value;
+    _fixStringInput(this.input);
   }
 
   // Set Color, why not
@@ -533,14 +533,14 @@ export class JoyTextBox {
     // If it's multiline, auto-resize!
     // Thanks to this: https://stackoverflow.com/a/25621277
     if(config.multiline){
-      let _onInput = () => {
+      let _onInput = function() {
         this.style.height = 'auto';
         this.style.height = (this.scrollHeight) + 'px';
       };
       this.dom.addEventListener("input", _onInput, false);
       setTimeout(() => {
-        this.dom.setAttribute('style', 'height:' + (dom.scrollHeight) + 'px; overflow-y:hidden;');
-      },1); // some threading thing?
+        this.dom.setAttribute('style', 'height:' + (this.dom.scrollHeight) + 'px; overflow-y:hidden;');
+      }, 1); // some threading thing?
     }
   }
     

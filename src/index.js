@@ -221,6 +221,26 @@ class MotifApp {
 		document.getElementById('shuffle-button').addEventListener("click", (e) => {
 			console.log("remix all");
 	  });
+
+		document.addEventListener("DOMContentLoaded", function() {
+			var coll = document.querySelectorAll(".joy-bullet-container");
+	
+			for (var i = 0; i < coll.length; i++) {
+				coll[i].classList.add("collapsible");
+				coll[i].addEventListener("click", function() {
+					this.classList.toggle("active");
+					var content = this.nextElementSibling;
+					while (content && !content.classList.contains("joy-actions")) {
+							content = content.nextElementSibling;
+					}
+					if (content.style.display === "block") {
+							content.style.display = "none";
+					} else {
+							content.style.display = "block";
+					}
+				});
+			}
+		});
 	}
 }
 
