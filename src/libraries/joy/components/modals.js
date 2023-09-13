@@ -41,14 +41,9 @@ export class ModalBackdrop {
 
     this.dom.style.display = 'block';
 
-    console.log("showing modal with dom", ui, ui.dom);
-    console.log("the box", this.box);
-
     // Remember & add UI
     this.currentUI = ui;
     this.box.appendChild(ui.dom);
-
-    console.log("the box", this.box);
     
     // Position the Box
     let position = ui.config.position || "below";
@@ -103,12 +98,13 @@ export class ModalBackdrop {
     if (!ModalBackdrop._instance) {
         new ModalBackdrop();
     }
-    console.log("modal backdrop instance", ModalBackdrop._instance);
     return ModalBackdrop._instance;
   }
 }
 
 
+
+/* Base Modal */
 
 export class BaseModal {
   constructor(config) {
@@ -122,7 +118,6 @@ export class BaseModal {
   }
 
   show() {
-    console.log("showing modal", this);
     const modalInstance = ModalBackdrop.getInstance();
     if (modalInstance instanceof ModalBackdrop) {
       modalInstance.show(this);
@@ -131,6 +126,8 @@ export class BaseModal {
     }
   }
 }
+
+
 
 
 

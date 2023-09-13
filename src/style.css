@@ -411,45 +411,91 @@ input[type="number"].numberbox-for-slider:focus {
 }
 
 
-/* .slider {
-    background-color: purple;
-    padding: 10px;
-
-    
-    position: relative;
-    display: inline;
-    cursor: col-resize;
-    min-width: 0.8em;
-    text-align: center;
-
-    padding-bottom: 0px;
-    border-bottom: 2px solid #bbb;
+.list-title {
+    margin-left: 0.5em;  /* Some space between the arrow and the title */
 }
 
-.slider-modal {
-    background-color: royalblue;
-} */
 
-
-.joy-list-item::before {
-    content: ''; 
-    /* hides the triangle by default */
+:root {
+    --coordinate-grid-margin: 15px;
 }
 
-.joy-list-item.has-children:before {
-    content: '▼'; 
+
+.coordinate-widget {
+    display: inline-block;
+    text-decoration: underline lightgray 2px;
+    text-underline-offset: 5px;
     cursor: pointer;
+}
+
+.outer-grid-container {
+    /* width: 250px;
+    height: 150px; */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.coordinate-and-grid-container {
+    display: flex;
+    flex-direction: row;
+    margin: var(--coordinate-grid-margin);
+}
+
+.grid {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border: 1px solid darkgray;
+    background: repeating-linear-gradient(0deg, #e5e5e5, #e5e5e5 1px, transparent 1px, transparent 10px),
+                repeating-linear-gradient(90deg, #e5e5e5, #e5e5e5 1px, transparent 1px, transparent 10px);
+    cursor: crosshair;
+}
+
+.cursor-circle {
     position: absolute;
-    left: -15px;
+    width: 5px;
+    height: 5px;
+    background-color: #333;   /* dark circle for visibility */
+    border-radius: 50%;       /* makes it a circle */
+    transform: translate(-50%, -50%);  /* centers the circle on the mouse position */
+    pointer-events: none;     /* ensures it doesn't interfere with mouse events */
 }
 
-.joy-list-item.has-children.collapsed:before {
-    content: '▶'; 
+.coordinate-pair {
+    display: flex;
+    align-items: center;
+    gap: 5px; /* Small gap between the label and input */
+}
+
+.coordinate-container span, 
+.coordinate-container .coordinate-numberbox {
+    font-size: 1.5em;      /* Adjust the font size as needed */
+}
+
+.coordinate-container {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    margin-left: 20px; /* Space between the grid and the coordinate boxes */
+}
+
+.coordinate-numberbox {
+    width: 50px;
+    margin: 2px 0;
+    text-align: center;
+    font-family: 'FuturaHandwritten';
 }
 
 
 
-/* Hide nested list content when parent is collapsed */
-.joy-bullet-container.collapsed + .joy-widget .joy-actions {
-    display: none;
+/* .grid-cell {
+    width: 10px;
+    height: 10px;
+    background-color: #e5e5e5;
+    cursor: crosshair;
 }
+
+.grid-cell:hover {
+    background-color: #c5c5c5;
+} */

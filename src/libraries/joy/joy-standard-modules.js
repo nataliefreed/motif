@@ -506,7 +506,7 @@ WidgetConfig:
 //       // The Bullet is a Chooser!
 //       let bullet = _createBullet(entry);
 //       let bulletContainer = document.createElement("div");
-//       bulletContainer.class = "joy-bullet-container";
+//       bulletContainer.classList.add("joy-bullet-container");
 //       entryDOM.appendChild(bulletContainer);
 //       bulletContainer.appendChild(bullet.dom);
 
@@ -515,7 +515,7 @@ WidgetConfig:
 
 //       // The Widget
 //       let newWidget = newActor.createWidget();
-//       newWidget.id = "joy-widget";
+//       newWidget.classList.add("joy-widget");
 //       entryDOM.appendChild(newWidget);
 
 //       // (Remember all this)
@@ -711,6 +711,7 @@ WidgetConfig:
 //     resetVariables: true
 //   }
 // });
+
 /////////////////////////////////////////
 // LOGIC ACTORS /////////////////////////
 /////////////////////////////////////////

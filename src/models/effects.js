@@ -6,13 +6,11 @@ export class EffectManager {
     this.effects = {};
     this.effectList.forEach(e => {
       let type = e.mouseActionType;
-      if(type === 'drag') {
-        // console.log("Adding effect " + e.name);
-        // this.effects[e.name] = new PathEffect(e); //index by name
-      }
-      else if(type === 'single-click') {
-        console.log("Adding effect " + e.name);
+      if(type === 'single-click') {
         this.effects[e.name] = new PointEffect(e);
+      }
+      else if(type === 'drag') { //testing heart brush
+        this.effects[e.name] = new Effect(e);
       }
       else {
         console.warn(`Unknown mouseActionType "${type}" for effect named "${e.name}".`);
@@ -65,7 +63,6 @@ export class PathEffect extends Effect {
   
   constructor({name, dropdownName, category, tag, init, cursor, mouseActionType, config}) { 
     super({name, dropdownName, category, tag, init, cursor, mouseActionType, config});
-    console.log(config);
     this.scale = parseFloat(config.scale);
     this.shapes = config.shapes;
     this.sizes = config.sizes;

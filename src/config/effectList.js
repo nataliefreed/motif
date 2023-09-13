@@ -43,14 +43,13 @@ export const effectList = [
     dropdownName: 'Circle',
     category: 'Shapes',
     tag: 'motif',
-    init: `Circle of radius {id:'radius', type:'number', min:1, max:600, placeholder:20}
+    init: `Circle of radius {id:'radius', type:'numberslider', min:1, max:600, placeholder:20}
     in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
-    at ({id:'x', type:'number', min:0, max:600, placeholder:200},
-    {id:'y', type:'number', min:0, max:600, placeholder:200})`,
+    at {id:'position', type:'coordinate', placeholder:[200, 200]}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
-      my.target.addCircle({ color: my.data.color, x: my.data.x, y: my.data.y, r: my.data.radius });
+      my.target.addCircle({ color: my.data.color, x: my.data.position.x, y: my.data.position.y, r: my.data.radius });
     }
   },
   {
@@ -58,10 +57,10 @@ export const effectList = [
     dropdownName: 'Square',
     category: 'Shapes',
     tag: 'motif',
-    init: `Square of size {id:'size', type:'number', min:1, max:600, placeholder:40}
+    init: `Square of size {id:'size', type:'numberslider', min:1, max:600, placeholder:40}
     in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
-    at ({id:'x', type:'number', min:0, max:600, placeholder:200},
-    {id:'y', type:'number', min:0, max:600, placeholder:200})`,
+    at ({id:'x', type:'numberslider', min:0, max:600, placeholder:200},
+    {id:'y', type:'numberslider', min:0, max:600, placeholder:200})`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
@@ -73,11 +72,11 @@ export const effectList = [
     dropdownName: 'Polygon',
     category: 'Shapes',
     tag: 'motif',
-    init: `Polygon with {id:'nsides', type:'number', min:3, max:50, placeholder:6} sides 
-    and radius {id:'radius', type:'number', min:1, max:600, placeholder:20} 
+    init: `Polygon with {id:'nsides', type:'numberslider', min:3, max:50, placeholder:6} sides 
+    and radius {id:'radius', type:'numberslider', min:1, max:600, placeholder:20} 
     in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
-    at ({id:'x', type:'number', min:0, max:600, placeholder:200},
-    {id:'y', type:'number', min:0, max:600, placeholder:200})`,
+    at ({id:'x', type:'numberslider', min:0, max:600, placeholder:200},
+    {id:'y', type:'numberslider', min:0, max:600, placeholder:200})`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
@@ -89,12 +88,12 @@ export const effectList = [
     dropdownName: 'Star',
     category: 'Shapes',
     tag: 'motif',
-    init: `Star with {id:'npoints', type:'number', min:3, max:200, placeholder:7} points, 
-    outer {id:'r1', type:'number', min:1, max:600, placeholder:20}, 
-    inner {id:'r2', type:'number', min:1, max:600, placeholder:10} 
+    init: `Star with {id:'npoints', type:'numberslider', min:3, max:200, placeholder:7} points, 
+    outer {id:'r1', type:'numberslider', min:1, max:600, placeholder:20}, 
+    inner {id:'r2', type:'numberslider', min:1, max:600, placeholder:10} 
     in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
-    at ({id:'x', type:'number', min:0, max:600, placeholder:200}, 
-    {id:'y', type:'number', min:0, max:600, placeholder:200})`,
+    at ({id:'x', type:'numberslider', min:0, max:600, placeholder:200}, 
+    {id:'y', type:'numberslider', min:0, max:600, placeholder:200})`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
@@ -112,10 +111,10 @@ export const effectList = [
     dropdownName: 'Heart',
     category: 'Shapes',
     tag: 'motif',
-    init: `Heart of size {id:'size', type:'number', min:-600, max:600, placeholder:40} 
+    init: `Heart of size {id:'size', type:'numberslider', min:-600, max:600, placeholder:40} 
     in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
-    at ({id:'x', type:'number', min:0, max:600, placeholder:200}, 
-    {id:'y', type:'number', min:0, max:600, placeholder:200})`,
+    at ({id:'x', type:'numberslider', min:0, max:600, placeholder:200}, 
+    {id:'y', type:'numberslider', min:0, max:600, placeholder:200})`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
@@ -123,16 +122,33 @@ export const effectList = [
     }
   },
   {
+    name: 'heart brush',
+    dropdownName: 'heart brush',
+    category: 'Brushes2',
+    tag: 'motif',
+    init: `Along path {id:'path', type:'path', placeholder:[[20,50],[600,250]]} 
+    Heart of size {id:'size', type:'numberslider', min:-600, max:600, placeholder:10} 
+    in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
+    at {id:'position', type:'coordinate', placeholder:[200, 200]}`,
+    cursor: './assets/cursors/star-solid.svg',
+    mouseActionType: 'drag',
+    onact: (my) => {
+      for(let i=0;i<my.data.path.length;i++) {
+        my.target.heart({ color: my.data.color, x: my.data.path[i][0]+my.data.position.x-my.data.path[0][0], y: my.data.path[i][1]+my.data.position.y-my.data.path[0][1], size: my.data.size });
+      }
+    }
+  },
+  {
     name: 'straight line',
     dropdownName: 'straight line',
     category: 'Brushes',
     tag: 'motif',
-    init: `Straight line from ({id:'x1', type:'number', min:0, max:600, placeholder:100}, 
-    {id:'y1', type:'number', min:0, max:600, placeholder:100})
-    to ({id:'x2', type:'number', min:0, max:600, placeholder:200}, 
-    {id:'y2', type:'number', min:0, max:600, placeholder:200})
+    init: `Straight line from ({id:'x1', type:'numberslider', min:0, max:600, placeholder:100}, 
+    {id:'y1', type:'numberslider', min:0, max:600, placeholder:100})
+    to ({id:'x2', type:'numberslider', min:0, max:600, placeholder:200}, 
+    {id:'y2', type:'numberslider', min:0, max:600, placeholder:200})
     in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}
-    with width {id: 'lineWeight', type: 'number', min:1, max:600, placeholder: 5}`,
+    with width {id: 'lineWeight', type: 'numberslider', min:1, max:600, placeholder: 5}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'drag1',
     onact: (my) => {
@@ -145,7 +161,7 @@ export const effectList = [
     category: 'Brushes',
     tag: 'motif',
     init: `Brush in {id:'color', type:'color', placeholder:[20, 0.8, 1.0]} 
-    with width {id: 'lineWeight', type: 'number', min:1, max:600, placeholder: 8} 
+    with width {id: 'lineWeight', type: 'numberslider', min:1, max:600, placeholder: 8} 
     along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'drag1',
@@ -159,7 +175,7 @@ export const effectList = [
     category: 'NewBrushes',
     tag: 'motif',
     init: `Star brush in {id:'color', type:'color', placeholder:[20, 0.8, 1.0]} 
-    with scale {id: 'scale', type: 'number', min:1, max:600, placeholder: 20}% 
+    with scale {id: 'scale', type: 'numberslider', min:1, max:600, placeholder: 20}% 
     along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'drag',
@@ -190,7 +206,7 @@ export const effectList = [
     dropdownName: 'Mosaic Brush',
     category: 'NewBrushes',
     tag: 'motif',
-    init: `Mosaic brush with scale {id: 'scale', type: 'number', min:25, max:600, placeholder: 100} 
+    init: `Mosaic brush with scale {id: 'scale', type: 'numberslider', min:25, max:600, placeholder: 100} 
     % along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'drag',
@@ -237,7 +253,7 @@ export const effectList = [
     dropdownName: 'Stripe Brush',
     category: 'NewBrushes',
     tag: 'motif',
-    init: `Stripe brush with scale {id: 'scale', type: 'number', min:25, max:600, placeholder: 100} 
+    init: `Stripe brush with scale {id: 'scale', type: 'numberslider', min:25, max:600, placeholder: 100} 
     % along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'drag',
@@ -267,8 +283,8 @@ export const effectList = [
     dropdownName: 'Rainbow Brush',
     category: 'Brushes',
     tag: 'motif',
-    init: `Rainbow brush in size {id: 'minSize', type: 'number', min:1, max:600, placeholder: 4} 
-    to {id: 'maxSize', type: 'number', min:1, max:600, placeholder: 10} 
+    init: `Rainbow brush in size {id: 'minSize', type: 'numberslider', min:1, max:600, placeholder: 4} 
+    to {id: 'maxSize', type: 'numberslider', min:1, max:600, placeholder: 10} 
     along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'drag',
@@ -308,8 +324,8 @@ export const effectList = [
     dropdownName: 'Blob Brush',
     category: 'Brushes',
     tag: 'motif',
-    init: `Blob brush in size {id: 'minSize', type: 'number', min:1, max:600, placeholder: 4} 
-    to {id: 'maxSize', type: 'number', min:1, max:600, placeholder: 10} 
+    init: `Blob brush in size {id: 'minSize', type: 'numberslider', min:1, max:600, placeholder: 4} 
+    to {id: 'maxSize', type: 'numberslider', min:1, max:600, placeholder: 10} 
     along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'drag',
@@ -351,7 +367,7 @@ export const effectList = [
     category: 'Brushes',
     tag: 'motif',
     init: `Porcupine brush in {id:'color', type:'color', placeholder:[20, 0.8, 1.0]} 
-    with width {id: 'lineWeight', type: 'number', min:1, max:600, placeholder: 8} 
+    with width {id: 'lineWeight', type: 'numberslider', min:1, max:600, placeholder: 8} 
     along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'drag1',
@@ -365,7 +381,7 @@ export const effectList = [
     category: 'Brushes',
     tag: 'motif',
     init: `Lines brush in {id:'color', type:'color', placeholder:[20, 0.8, 1.0]} 
-    with width {id: 'lineWeight', type: 'number', min:1, max:600, placeholder: 8} 
+    with width {id: 'lineWeight', type: 'numberslider', min:1, max:600, placeholder: 8} 
     along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'drag1',
@@ -379,10 +395,10 @@ export const effectList = [
     category: 'Patterns',
     tag: 'motif',
     init: `{id:'tiling', type:'choose', options:['straight grid', 'brick', 'half drop', 'checkerboard'], placeholder:'straight grid'} 
-    with width {id:'width', type:'number', min:1, max:600, placeholder:100} 
-    and height {id:'height', type:'number', min:1, max:600, placeholder:100}
-    at ({id:'x', type:'number', min:0, max:600, placeholder:200}, 
-    {id:'y', type:'number', min:0, max:600, placeholder:200})`,
+    with width {id:'width', type:'numberslider', min:1, max:600, placeholder:100} 
+    and height {id:'height', type:'numberslider', min:1, max:600, placeholder:100}
+    at ({id:'x', type:'numberslider', min:0, max:600, placeholder:200}, 
+    {id:'y', type:'numberslider', min:0, max:600, placeholder:200})`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
@@ -395,8 +411,8 @@ export const effectList = [
     category: 'Patterns',
     tag: 'motif',
     init: `{id:'orientation', type:'choose', options:['vertical','horizontal'], placeholder:'vertical'} shift 
-    with height {id:'height', type:'number', min:1, max:600, placeholder:50} 
-    and offset {id:'offset', type:'number', min:1, max:600, placeholder:20}`,
+    with height {id:'height', type:'numberslider', min:1, max:600, placeholder:50} 
+    and offset {id:'offset', type:'numberslider', min:1, max:600, placeholder:20}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
@@ -445,9 +461,9 @@ export const effectList = [
     category: 'Stencils',
     tag: 'stencils',
     init: `Box with length 
-    {id:'length', type:'number', placeholder:120, min:20}, 
-    width {id:'width', type:'number', placeholder:120, min:20}, 
-    height {id:'height', type:'number', placeholder:120, min:20}`,
+    {id:'length', type:'numberslider', placeholder:120, min:20}, 
+    width {id:'width', type:'numberslider', placeholder:120, min:20}, 
+    height {id:'height', type:'numberslider', placeholder:120, min:20}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {

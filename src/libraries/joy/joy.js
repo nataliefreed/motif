@@ -75,8 +75,6 @@ export class Joy {
       // Update!
       this.onupdate = this.onupdate || function(my) {};
       this.update();
-
-      console.log("data", this.data);
   }
 
   update() {
@@ -368,16 +366,11 @@ class Actor {
           this.data = _clone(this.placeholder);
       }
     }
-
-    console.log("setting placeholder to ", this.placeholder);
-    console.log("data is ", this.data);
-
   }
 
   // Initializes the actor with a given markup string
   initializeWithString(markup) {
-    console.log("initializing with string", markup);
-    
+
     const actorOptions = [];
     let html = markup;
 
@@ -420,7 +413,6 @@ class Actor {
 
     // Initialize child actors from extracted options
     actorOptions.forEach((actorOption) => {
-      console.log("adding child actor", actorOption);
       this.addChild(actorOption);
     });
 
@@ -523,7 +515,7 @@ class Actor {
   /////////////////////////////////
 
   onact() {
-    console.log("empty onact method!");
+
   }
 
   act(target, altData) {
@@ -562,7 +554,6 @@ class Actor {
 
   // ...or GET INFO from targets.
   onget() {
-    // console.log("empty onget method!");
   }
 
   get(target) {

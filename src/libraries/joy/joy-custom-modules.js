@@ -1,7 +1,7 @@
 import { Joy } from "./joy.js";
 import { BaseModal, ModalBackdrop, ChooserModal } from "./components/modals.js";
 import { JoyWidget, JoyButton, JoyString, ChooserButton } from './components/ui-widgets.js';
-import { _clone, _HSVtoRGB, _HSVToRGBString, _numberToAlphabet, _numberToRoman } from "./joy-utils.js";
+import { _clone, _HSVtoRGB, _HSVToRGBString, _numberToAlphabet, _numberToRoman, _removeFromArray } from "./joy-utils.js";
 import { _hexToRGB } from "../../utils/color-utils.js";
 
 /****************
@@ -15,46 +15,123 @@ Widget Options:
 Joy.add({
   type: "path",
   tags: ["ui"],
-  initWidget: function(self){
-
-    // String *IS* DOM
-    var o = self.options;
-    self.pathUI = new PathUI({
-      prefix: o.prefix,
-      suffix: o.suffix,
-      color: o.color, 
-      value: self.getData("value"),
-      onchange: function(value){
-        self.setData("value", value);
+  initWidget: function() { 
+    this.pathWidget = new PathWidget({
+      value: this.getData("value"),
+      onchange: (value) => {
+        this.setData("value", value);
       }
     });
-    self.dom = self.pathUI.dom;
+    this.dom = this.pathWidget.dom;
 
     // When data's changed, externally
-    self.onDataChange = function(){
-      var value = self.getData("value");
-      self.pathUI.setPath(value);
+    this.onDataChange = () => {
+      var value = self.getData("value"); // value is a list of points
+      this.pathWidget.setPath(value);
     };
-
   },
   onget: function(my){
     return my.data.value;
   },
-  placeholder: "???"
+  placeholder: [[10, 10], [500, 600]]
 });
 
-// source: this.dom,
-// options: this.options,
-// onchange: (value) => {
-//     this.value = value;
-//     this.updateLabel();
-//     if (typeof this.onchange === "function") {
-//       this.onchange(value);
-//     }
-// },
-// position: this.position
-// }).show();
 
+/****** path (list of points) type *********/
+class PathWidget {
+  constructor(config) {
+    this.points = [];
+    this.setPoints(config.value);
+
+    this.dom = document.createElement("div");
+    this.dom.className = "path-widget-container";
+
+    this.pathPreview = this.getPathView(this.points, 100, 100, 600, 600);
+    this.pathPreview.classList.add("path-preview");
+    this.dom.appendChild(this.pathPreview);
+
+    // add a click event to the path preview, eventually will open a modal
+  }
+
+  setPoints(pointsList) {
+    // Basic validation: ensure it's an array of objects with x and y properties.
+    if (Array.isArray(pointsList)) {
+      this.points = pointsList;
+    } else {
+      console.error("Invalid points data provided.");
+    }
+  }
+
+  getPathView(points, width, height, originWidth, originHeight) {
+    const svgNS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute('width', width);
+    svg.setAttribute('height', height);
+    svg.style.background = "white";
+    svg.style.border = '1px solid #888';
+
+    // Draw lines connecting the points
+    const pathData = points.map((pt, index) => {
+      const x = (pt[0] / originWidth) * width;
+      const y = (pt[1] / originHeight) * height;
+
+      return `${index === 0 ? 'M' : 'L'} ${x},${y}`;
+    }).join(' ');
+
+    const path = document.createElementNS(svgNS, "path");
+    path.setAttribute('d', pathData);
+    path.setAttribute('stroke', 'lightgray');
+    path.setAttribute('fill', 'none');
+    svg.appendChild(path);
+
+    // Draw circles for each point
+    points.forEach(pt => {
+      const circle = document.createElementNS(svgNS, "circle");
+      circle.setAttribute('cx', (pt[0] / originWidth) * width);
+      circle.setAttribute('cy', (pt[1] / originHeight) * height);
+      circle.setAttribute('r', 4); // half the previous size for preview
+      circle.setAttribute('fill', 'black');
+      svg.appendChild(circle);
+    });
+
+    return svg;
+  }
+}
+
+  // old version with canvas
+  // getCanvas(points, width, height, originWidth, originHeight) {
+    
+  //   const canvas = document.createElement('canvas');
+  //   canvas.width = width;
+  //   canvas.height = height;
+  //   canvas.style.background = "white";
+  //   canvas.style.border = '1px solid #888';
+    
+  //   const ctx = canvas.getContext('2d');
+  //   ctx.clearRect(0, 0, width, height);
+  //   ctx.scale(width/originWidth, height/originHeight);
+    
+  //   const firstPoint = points[0];
+  //   ctx.beginPath();
+  //   ctx.moveTo(firstPoint.x, firstPoint.y);
+    
+  //   for (let i = 1; i < points.length; i++) {
+  // 	  const { x, y } = points[i];
+  // 	  ctx.lineTo(x, y);
+  //   }
+    
+  //   ctx.strokeStyle = 'black';
+  //   ctx.lineWidth = 3;
+  //   ctx.stroke();
+    
+  //   ctx.fillStyle = 'black';
+  //   for (const { x, y } of this.points) {
+  // 	ctx.beginPath();
+  // 	ctx.arc(x, y, 8, 0, Math.PI * 2);
+  // 	ctx.fill();
+  //   }
+  //   return canvas;
+  // }  
 
 /************
 
@@ -95,7 +172,7 @@ export class SliderModal extends BaseModal {
       this._updateSource(this._parseNumber(slider.value));
     });
 
-    number.addEventListener('input', e => {
+    number.addEventListener('change', e => {
       if (number.value < parseInt(number.min) || number.value > parseInt(number.max)) {
         number.value = slider.value;
       } else {
@@ -131,10 +208,11 @@ Joy.module("sequences", function() {
     name: "Along path",
     type: "sequences/alongpath",
     tags: ["sequences", "action"],
-    init: "Along path {id:'path', type:'path', min:1, placeholder:'20,50,200,250'} "+
-        "{id:'actions', type:'actions', resetVariables:false}",
+    init: "Along path {id:'path', type:'path', min:1, placeholder:[[20,50],[600,250]]} " +
+        // "{id:'actions', type:'actions', resetVariables:false}",
+        "{id:'actions', type:'actions', listName:'brush name', resetVariables:false}", //name makes it collapsible, eventually - variable name
     onact: function(my){
-      
+      console.log("What about here?", my.data.points);
       // Previewing? How much to preview?
       var param = 1;
       if(my.data._PREVIEW!==undefined) param=my.data._PREVIEW;
@@ -177,7 +255,8 @@ Joy.module("sequences", function() {
 A collapsible list of actions.
 
 WidgetConfig:
-{type:'actions', name:'actions', resetVariables:false}
+{type:'actions', name:'actions', resetVariables:false, listName:'listName', onlyTags:['tag1']}
+// if list name is defined, creates a collapsible list
 
 ****************/
 Joy.add({
@@ -192,14 +271,44 @@ Joy.add({
     let actions = data.actions;
 
     // DOM
-    this.dom = document.createElement("div");
-    this.dom.className = "joy-actions";
+    this.dom = document.createElement("li");
+    this.dom.className = "joy-list-item";
+
+    // Details for Actions List
+    let detailsElement = document.createElement("details");
+    detailsElement.className = "joy-actions";
+    this.dom.appendChild(detailsElement);
+
+    // Summary
+    let summary = document.createElement("summary");
+    let arrowSpan = document.createElement("span");
+    arrowSpan.className = "toggle-arrow";
+    summary.appendChild(arrowSpan);
+
+    // Check if list name is defined
+    let listName = this.options.listName;
+    console.log("listName", listName);
+    if (listName) {
+      // If list name is defined, make the list collapsible
+      let titleSpan = document.createElement("span");
+      titleSpan.className = "list-title";
+      titleSpan.textContent = listName;
+      summary.appendChild(titleSpan);
+    } else {
+      // If list name is not defined, make the list non-collapsible
+      detailsElement.removeAttribute("open");
+      detailsElement.setAttribute("open", "open");
+      arrowSpan.style.display = "none";  // Hide the arrow
+    }
+
+    detailsElement.appendChild(summary);
 
     // List
-    let list = document.createElement("list");
+    let list = document.createElement("ul");
     list.classList.add('joy-list');
     list.id = this.id + "-joy-list";
-    this.dom.appendChild(list);
+    detailsElement.appendChild(list);
+    this.list = list;
 
     //////////////////////////////////////////
     // Create Bullet /////////////////////////
@@ -256,7 +365,7 @@ Joy.add({
         },
         styles: ["joy-bullet"]
       });
-      bullet.dom.class = "joy-bullet";
+      bullet.dom.classList.add("joy-bullet");
 
       return bullet;
 
@@ -290,50 +399,12 @@ Joy.add({
 
     // Re-number ALL these bad boys
     let _updateBullets = () => {
-      console.log("updating bullets");
-
       for(let i=0; i<this.entries.length; i++){
         let entry = this.entries[i];
         let bullet = entry.bullet;
         let label = _getBulletLabel(entry);
         bullet.setLabel(label);
       }
-
-      /*** testing ***/
-
-      document.querySelectorAll('.joy-list-item').forEach(function(item) {
-        if (item.querySelector('.joy-list')) {
-            item.classList.add('has-children');
-            console.log(item, "has children");
-        }
-      });
-
-            // Get all joy-list-item elements that have the has-children class
-      let listItemsWithChildren = document.querySelectorAll('.joy-list-item.has-children');
-
-      // Add an event listener to each of these elements
-      listItemsWithChildren.forEach(item => {
-          item.addEventListener('click', function(e) {
-              // If the clicked element is the triangle (the pseudo-element :before),
-              // or any other part of the joy-list-item, toggle the collapsed class
-              if (e.target === item || getComputedStyle(item, ':before').content === '"▼"') {
-                  item.classList.toggle('collapsed');
-
-                  // Show or hide its child lists depending on the collapsed state
-                  let childLists = item.querySelectorAll('.joy-list');
-                  childLists.forEach(childList => {
-                      if (item.classList.contains('collapsed')) {
-                          childList.style.display = 'none';
-                      } else {
-                          childList.style.display = '';
-                      }
-                  });
-              }
-          });
-      });
-
-      /*** testing ***/
-
     };
 
     ////////////////////////////////////////////////////////////////////
@@ -346,48 +417,27 @@ Joy.add({
 
       // New entry
       let entry = {};
-      let entryDOM = document.createElement("div");
+      let entryDOM = document.createElement("li");
       entryDOM.classList.add('joy-list-item');
       if(atIndex===undefined) atIndex = this.entries.length;
-
-      // If entries selected, insert after last selected entry
-      // if (this.entries.some(function(entry) { return entry.selected; })) {
-      //   // Find the index of the last selected entry
-      //   let lastSelectedIndex = this.entries.reduce(function(index, entry, currentIndex) {
-      //     return entry.selected ? currentIndex : index;
-      //   }, -1);
-    
-      //   atIndex = lastSelectedIndex + 1;
-
-      //   console.log("selected index to add entry", atIndex);
-      // }
+      
       this.entries.splice(atIndex, 0, entry);
       list.insertBefore(entryDOM, list.children[atIndex]);
-
+  
       // The Bullet is a Chooser!
-      let bullet = _createBullet(entry);
+      let bullet = _createBullet(entry); 
       let bulletContainer = document.createElement("div");
-
       bulletContainer.className = "joy-bullet-container";
-      bulletContainer.addEventListener('click', (event) => {
-        let bulletContainer = event.target.closest('.joy-bullet-container');
-        if (bulletContainer) {
-          bulletContainer.classList.toggle('collapsed');
-        }
-      });
-
       entryDOM.appendChild(bulletContainer);
       bulletContainer.appendChild(bullet.dom);
-
-      // New Actor!
+  
+      // The Actor & Widget 
       let newActor = this.addChild({type:actionData.type}, actionData);
-
-      // The Widget
       let newWidget = newActor.createWidget();
       newWidget.id = "joy-widget";
       entryDOM.appendChild(newWidget);
-
-      // (Remember all this)
+  
+      // Storing data
       entry.dom = entryDOM;
       entry.bullet = bullet;
       entry.actor = newActor;
@@ -549,7 +599,10 @@ Joy.add({
       },
       styles: ["joy-bullet", "joy-add-bullet"]
     });
-    this.dom.appendChild(addButton.dom);
+    let addButtonLi = document.createElement('li'); //make it the last element in the list
+    addButtonLi.classList.add('joy-add-item');
+    addButtonLi.appendChild(addButton.dom);
+    this.list.appendChild(addButtonLi);
 
   },
   onact: function(my){
@@ -581,53 +634,242 @@ Joy.add({
   }
 });
 
-// //new widget
-// Joy.add({
-//   type: "group",
-//   tags: ["ui"],
-//   initWidget: function(self){
-
-//     // String *IS* DOM
-//     var o = self.options;
-//     self.groupUI = new GroupUI({
-//       prefix: o.prefix,
-//       suffix: o.suffix,
-//       color: o.color, 
-//       value: self.getData("value"),
-//       onchange: function(value){
-//         self.setData("value", value);
-//       }
-//     });
-//     self.dom = self.groupUI.dom;
-
-//     // When data's changed, externally
-//     self.onDataChange = function(){
-//       var value = self.getData("value");
-//       console.log("value: ", value);
-//       console.log("self ", self);
-//       self.pathUI.setPath(value);
-//     };
-//   },
-//   onget: function(my){
-//     return my.data.value;
-//   },
-//   placeholder: "group name"
-// });
-
-// TODO: add a single action "preview" panel with customizeable parameters
-// TODO: make Joy widgets and actors their own classes - Q: what are the differences between widgets and actors?
+//new widget
 Joy.add({
-  type: "singleAction",
+  type: "group",
   tags: ["ui"],
-  initWidget: function(self) {
+  initWidget: function(self){
 
+    // String *IS* DOM
+    var o = this.options;
+    self.groupUI = new GroupUI({
+      prefix: o.prefix,
+      suffix: o.suffix,
+      color: o.color, 
+      value: this.getData("value"),
+      onchange: function(value){
+        this.setData("value", value);
+      }
+    });
+    this.dom = this.groupUI.dom;
+
+    // When data's changed, externally
+    self.onDataChange = function(){
+      var value = self.getData("value");
+      console.log("value: ", value);
+      console.log("self ", self);
+      self.pathUI.setPath(value);
+    };
+  },
+  onget: function(my){
+    return my.data.value;
+  },
+  placeholder: "group name"
+});
+
+Joy.add({
+  type: "coordinate",
+  tags: ["ui"],
+  initWidget: function() {
+    // DOM representation for the widget
+    let dom = document.createElement("div");
+    dom.className = "coordinate-widget";
+
+    let x = this.getX(); // set initial value in the DOM
+    let y = this.getY();
+    dom.innerHTML = `(${x}, ${y})`;
+
+    dom.onclick = () => {
+      // Create and show the grid modal
+      new GridModal({
+        source: this.dom,
+        onchange: (x, y) => {
+          dom.innerHTML = `(${x}, ${y})`;
+          this.setData("value", [x, y]);
+        },
+        getX: () => {
+          return this.getX();
+        },
+        getY: () => {
+          return this.getY();
+        }
+      }).show();
+    };
+
+    this.dom = dom;
+  },
+  onget: function(my) {
+    return { x: my.data.value[0], y: my.data.value[1] };
+  },
+  placeholder: function() {
+    return { x: 0, y: 0 }; // placeholder if we never set the value originally, does this ever get used?
+  },
+  getX() {
+    return parseInt(this.getData('value')[0]);
+  },
+  getY() {
+    return parseInt(this.getData('value')[1]);
   }
 });
 
+class GridModal extends BaseModal {
+  constructor(config) {
+    super(config);
+
+    this.cache = {}; //memoization experiment
+
+    this.scaleFactor = 5; // 5 pixels in the grid corresponds to 1 pixel in the canvas
+    this.min = 0;
+    this.max = 600; //size of canvas
+
+    let outerGridContainer = document.createElement("div");
+    outerGridContainer.classList.add("outer-grid-container");
+    this.dom = outerGridContainer;
+
+    let innerContainer = document.createElement("div");
+    innerContainer.classList.add("coordinate-and-grid-container");
+    this.innerContainer = innerContainer;
+    outerGridContainer.appendChild(innerContainer);
+    this.outerGridContainer = outerGridContainer;
+
+    let grid = document.createElement("div");
+    grid.classList.add("grid");
+    innerContainer.appendChild(grid);
+    this.grid = grid;
+    
+    // Create coordinate display for x and y
+    let coordinateContainer = document.createElement("div");
+    coordinateContainer.classList.add("coordinate-container");
+
+    // For the x-coordinate
+    let xContainer = document.createElement("div");
+    xContainer.classList.add("coordinate-pair");
+
+    let xLabel = document.createElement("span");
+    xLabel.innerHTML = "x = ";
+
+    this.xBox = document.createElement("input");
+    this.xBox.type = "number";
+    this.xBox.className = "coordinate-numberbox";
+    this.xBox.addEventListener('change', e => {
+      let x = parseInt(e.target.value);
+      let y = this.config.getY();
+      this.updateCoordinates(x, y);
+    });
+
+    xContainer.appendChild(xLabel);
+    xContainer.appendChild(this.xBox);
+    coordinateContainer.appendChild(xContainer);
+
+    // For the y-coordinate
+    let yContainer = document.createElement("div");
+    yContainer.classList.add("coordinate-pair");
+    let yLabel = document.createElement("span");
+    yLabel.innerHTML = "y = ";
+
+    this.yBox = document.createElement("input");
+    this.yBox.type = "number";
+    this.yBox.className = "coordinate-numberbox";
+    this.yBox.addEventListener('change', e => {
+      let x = this.config.getX();
+      let y = parseInt(e.target.value);
+      this.updateCoordinates(x, y);
+    });
+
+    yContainer.appendChild(yLabel);
+    yContainer.appendChild(this.yBox);
+    coordinateContainer.appendChild(yContainer);
+    innerContainer.appendChild(coordinateContainer); // Add the coordinate boxes to the outer grid container
+
+    // cursor (dot on grid)
+    this.cursorCircle = document.createElement("div");
+    this.cursorCircle.classList.add("cursor-circle");
+    grid.appendChild(this.cursorCircle);  // Add the circle to the grid
+
+    // set initial values
+    this.updateCoordinates(this.config.getX(),this.config.getY());
+
+    let isMouseDown = false; // Track the mouse state
+
+    grid.onmousedown = (e) => {
+      isMouseDown = true;
+      this.updateCoordinates(...this.scaleCoords(e.clientX, e.clientY));
+      document.addEventListener('mouseup', globalMouseUp); // capture mouse released even if off the grid
+    };
+
+    grid.onmousemove = (e) => {
+      if(isMouseDown) {
+        this.updateCoordinates(...this.scaleCoords(e.clientX, e.clientY));
+      }
+    };
+
+    grid.onmouseup = (e) => {
+      isMouseDown = false;
+    };
+
+    let globalMouseUp = (e) => {
+      isMouseDown = false;
+      // Once the mouse is released, remove this global listener to avoid unnecessary overhead
+      document.removeEventListener('mouseup', globalMouseUp);
+    }
+  }
+
+  scaleCoords(viewportX, viewportY) {
+    let origin = this.getOrigin(); //top left corner of the grid element
+    let x = Math.round(viewportX - origin.left) * this.scaleFactor; // x relative to grid
+    let y = Math.round(viewportY - origin.top) * this.scaleFactor; // y relative to grid
+
+    return [x, y];
+  }
+
+  updateCoordinates(x, y) {
+    x = parseInt(x);
+    y = parseInt(y);
+    if(x < this.min) { x = this.min; }
+    if(y < this.min) { y = this.min; }
+    if(x > this.max) { x = this.max; }
+    if(y > this.max) { y = this.max; }
+    console.log("x: ", x, " y: ", y);
+
+    this.setCursorPos(x / this.scaleFactor, y / this.scaleFactor);
+    this.setNumberBoxes(x, y);
+    this.config.onchange(x, y);
+  }
+
+  getOrigin() {
+    if (this.cache.origin) {
+        return this.cache.origin;
+    } else {
+        let gridRect = this.grid.getBoundingClientRect();
+        this.cache.origin = { left: gridRect.left, top: gridRect.top };
+        return this.cache.origin;
+    }
+  }
+
+  setNumberBoxes(x, y) {
+    this.xBox.value = x;
+    this.yBox.value = y;
+  }
+
+  setCursorPos(x, y) {
+    this.cursorCircle.style.left = `${x}px`;
+    this.cursorCircle.style.top = `${y}px`;
+  }
+}
 
 
 
+// TODO: add a single action "preview" panel with customizeable parameters
+// TODO: make Joy widgets and actors their own classes - Q: what are the differences between widgets and actors?
 
+
+Joy.add({
+  type: "singleAction",
+  tags: ["ui"],
+  initWidget: function() {
+
+  }
+});
 
 class GroupUI {
   constructor(config) {

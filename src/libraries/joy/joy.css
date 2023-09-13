@@ -19,41 +19,78 @@ More prefixing to avoid NAME COLLISIONS
 /* ACTIONS *****/
 /***************/
 
-.joy-actions{
+.joy-actions {
 	margin-top: 0.5em;
 	margin-bottom: 0.5em;
-	position: relative;
-}
-
-.joy-actions .joy-list{}
-
-/* Entry */
-.joy-actions .joy-list > div{
-
-	overflow: hidden;
-
-	/* Thank you https://css-tricks.com/using-flexbox/ */
-	display: -webkit-box;
-	display: -moz-box;
-	display: -ms-flexbox;
-	display: -webkit-flex;
+	position: relative; /* Remove if not needed */
 	display: flex;
+	align-items: center;
+	overflow: hidden;
+}
 
-}
-.joy-actions .joy-list > div .joy-bullet-container{
-	/*float: left;*/
-	-webkit-box-flex: 1;
-	-moz-box-flex: 1;
-	width: 1.5em;
-	-webkit-flex: 1;
-	-ms-flex: 1;
-	flex: 1;
+.joy-actions summary {
+	display: flex;
+	align-items: center;
+	list-style: none;
+	flex-shrink: 0;
+	/* width: 1.5em; */
 	text-align: left;
+	cursor: pointer;
 }
-.joy-actions .joy-list > div #joy-widget{
-	/*float: right;*/
-	width: calc(100% - 2em);
+
+.joy-actions summary::-webkit-details-marker {
+	display: none;
+}
+
+.joy-actions ul {
+  flex-grow: 1;
+  margin-left: 0.5em; /* space between the bullet and its content */
+	padding-left: 0;
+	list-style-type: none; /* removes default bullet points */
+}
+
+.joy-list {
+	padding-left: 0;
+	margin-left: 0;
+}
+
+.joy-list-item {
+	display: flex;
+	align-items: flex-start;
 	margin-bottom: 0.3em;
+}
+
+.joy-add-item {
+	list-style: none;
+}
+
+.joy-bullet-container {
+	display: flex;
+	list-style: none;
+	align-items: flex-start;
+	flex-shrink: 0;
+	flex-grow: 0;
+	width: 1.5em;
+	text-align: left;
+	margin-right: 10px;
+}
+
+.joy-widget {
+	flex-grow: 1;
+	display: flex;
+	align-items: center;
+}
+
+.joy-actions summary .toggle-arrow::before {
+	/* Right arrow */
+	content: "\25B6"; 
+	color: darkgray;
+}
+
+.joy-actions details[open] summary .toggle-arrow::before {
+	/* Down arrow */
+	content: "\25BC";
+	color: darkgray;
 }
 
 /***************/
@@ -83,46 +120,40 @@ More prefixing to avoid NAME COLLISIONS
 /***************/
 
 .joy-button{
-	
-	display: inline-block;
-
-	line-height: 1.5em;
-	padding: 0 0.3em;
-
-	border-radius: 5px;
-	border: 2px solid #ccc;
-	
-	cursor: pointer;
-
+		display: inline-block;
+		line-height: 1.5em;
+		padding: 0 0.3em;
+		border-radius: 5px;
+		border: 2px solid #ccc;
+		cursor: pointer;
 }
 
-.joy-button.joy-bullet{
-	
-	border-radius: 1000px; /* infinite roundness */
-	width: 1.5em;
-    height: 1.5em;
-    padding: 0;
-	text-align: center;
-
-	background: none;
-	border: 1px solid #bebebe;
-	color: #b7b7b7;
+.joy-button.joy-bullet {
+		border-radius: 50%;  /* Make it perfectly round */
+		width: 1.5em;
+		height: 1.5em;
+		padding: 0;
+		text-align: center;
+		background: none;
+		border: 1px solid #bebebe;
+		color: #b7b7b7;
 }
+
 .joy-button.joy-bullet:hover{
-	background: #fff;
-	color: #333;
+		background: #fff;
+		color: #333;
 }
 
 .joy-button.joy-color{
-	border-radius: 1000px; /* infinite roundness */
-	width: 1.5em;
-    height: 1.5em;
-    padding: 0;
-    border-color: rgba(0,0,0,0.1);
+		border-radius: 1000px; /* infinite roundness */
+		width: 1.5em;
+		height: 1.5em;
+		padding: 0;
+		border-color: rgba(0,0,0,0.1);
 }
 
 .joy-button.joy-more{
-	border: none;
+	  border: none;
     width: 10px;
     height: 1em;
     padding: 0;

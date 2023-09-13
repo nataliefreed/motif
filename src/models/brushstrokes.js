@@ -82,8 +82,8 @@ export class Brushstroke {
     data.color = {type: 'color', value: this.color};
     data.x = { type: 'number', value: Math.round(this.path.getPoint(0).x) };
     data.y = { type: 'number', value: Math.round(this.path.getPoint(0).y) };
-    console.log("making event with", this.effect);
-    console.log("and this data", data);
+    data.position = { type: 'coordinate', value: [Math.round(this.path.getPoint(0).x), Math.round(this.path.getPoint(0).y)] };
+    data.path = { type: 'path', value: this.path.getPointsAsArray() };
 
     return [
       this.effect.tag,
@@ -140,6 +140,10 @@ export class Path {
 
   getPoints() {
     return this.points;
+  }
+
+  getPointsAsArray() {
+    return this.points.map(p => [p.x, p.y]);
   }
 
   getPoint(index) {

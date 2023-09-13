@@ -76,8 +76,6 @@ class MotifApp {
 			console.log("activeEffect", activeEffect);
 
 			if(activeEffect) {
-				// if(activeEffect.getValue('mouseActionType') == 'drag') {
-
 				let point = { x: this.sketch.mouseX, y: this.sketch.mouseY };
 
 					if(!this.activeBrushstroke) {
@@ -87,8 +85,10 @@ class MotifApp {
 							currentColorHSV,
 							this.sketch);
 						this.brushstrokes.addBrushstroke(this.activeBrushstroke);
-						this.joyManager.addEvent(...this.activeBrushstroke.makeJoyEvent());
-						this.sketch.loop(); //render preview of brushstroke
+						if(activeEffect.getValue('mouseActionType') == 'single-click') {
+						  this.joyManager.addEvent(...this.activeBrushstroke.makeJoyEvent());
+						  // this.sketch.loop(); //render preview of brushstroke
+						}
 					}
 				// }
 				// else if(activeEffect.getValue('mouseActionType') == 'single-click2') {
@@ -160,8 +160,7 @@ class MotifApp {
 			if(this.activeBrushstroke) {
 				if(this.activeBrushstroke.getMouseActionType() === 'drag') {
 					this.activeBrushstroke.addPoint({x: this.sketch.mouseX, y: this.sketch.mouseY});
-
-					this.activeBrushstroke.finalizePath();
+					this.joyManager.addEvent(...this.activeBrushstroke.makeJoyEvent());
 					
 					// if(activeEffect == 'straight line') {
 					// 	this.joyManager.addEvent('motif', activeEffect, {
@@ -221,26 +220,6 @@ class MotifApp {
 		document.getElementById('shuffle-button').addEventListener("click", (e) => {
 			console.log("remix all");
 	  });
-
-		document.addEventListener("DOMContentLoaded", function() {
-			var coll = document.querySelectorAll(".joy-bullet-container");
-	
-			for (var i = 0; i < coll.length; i++) {
-				coll[i].classList.add("collapsible");
-				coll[i].addEventListener("click", function() {
-					this.classList.toggle("active");
-					var content = this.nextElementSibling;
-					while (content && !content.classList.contains("joy-actions")) {
-							content = content.nextElementSibling;
-					}
-					if (content.style.display === "block") {
-							content.style.display = "none";
-					} else {
-							content.style.display = "block";
-					}
-				});
-			}
-		});
 	}
 }
 
