@@ -18,14 +18,16 @@ window.addEventListener('load', e => {
 
 class MotifApp {
 	constructor(effectList) {
+		this.eventBus = new EventTarget();
+
 		this.effects = new EffectManager(effectList);
 		this.brushstrokes = new BrushstrokeManager();
 		
-		this.ui = new UIManager(this.effects.getEffects());
+		this.ui = new UIManager(this.effects.getEffects(), this.eventBus);
 		this.ui.generateEffectToolbarUI(); //categories and brush/effect buttons
 
 		this.sketch = new P5Renderer();
-		this.joyManager = new JoyManager(this.effects.getEffects(), this.brushstrokes, this.sketch);
+		this.joyManager = new JoyManager(this.effects.getEffects(), this.brushstrokes, this.sketch, this.eventBus);
 		
 		this._initUI();
 
@@ -70,10 +72,8 @@ class MotifApp {
 		document.getElementById('drawing-canvas').addEventListener('mousedown', e => {
 			dragging = false;
 			mouseDownOverCanvas = true;
-			console.log("mouse down!");
 
 			let activeEffect = this.effects.getEffectByName(this.ui.getSelectedEffect());
-			console.log("activeEffect", activeEffect);
 
 			if(activeEffect) {
 				let point = { x: this.sketch.mouseX, y: this.sketch.mouseY };
@@ -87,10 +87,9 @@ class MotifApp {
 						this.brushstrokes.addBrushstroke(this.activeBrushstroke);
 						if(activeEffect.getValue('mouseActionType') == 'single-click') {
 						  this.joyManager.addEvent(...this.activeBrushstroke.makeJoyEvent());
-						  // this.sketch.loop(); //render preview of brushstroke
+						  this.sketch.loop(); //render preview of brushstroke
 						}
 					}
-				// }
 				// else if(activeEffect.getValue('mouseActionType') == 'single-click2') {
 				// 	let brushtap = new Brushstroke(
 				// 		activeEffect,
@@ -158,8 +157,8 @@ class MotifApp {
 			mouseDownOverCanvas = false;
 
 			if(this.activeBrushstroke) {
+				this.activeBrushstroke.addPoint({x: this.sketch.mouseX, y: this.sketch.mouseY});
 				if(this.activeBrushstroke.getMouseActionType() === 'drag') {
-					this.activeBrushstroke.addPoint({x: this.sketch.mouseX, y: this.sketch.mouseY});
 					this.joyManager.addEvent(...this.activeBrushstroke.makeJoyEvent());
 					
 					// if(activeEffect == 'straight line') {
@@ -200,7 +199,6 @@ class MotifApp {
 				}
 				this.activeBrushstroke = null;
 				this.sketch.noLoop();
-				console.log("no longer rendering brushstroke preview");
 			}
 			randomizeCurrentColor();
 		});

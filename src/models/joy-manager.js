@@ -3,8 +3,13 @@ import '../libraries/joy/joy-standard-modules.js'; //add the modules, ie. import
 import '../libraries/joy/joy-custom-modules.js';
 
 export class JoyManager {
-  constructor(effects, brushstrokes, sketch) {
+  constructor(effects, brushstrokes, sketch, eventBus) {
+		this.eventBus = eventBus;
+
     let data = Joy.loadFromURL();
+
+		console.log("this is the url loaded", data);
+
     this.loadEffects(effects);
 		this.sketch = sketch;
     this.joy = new Joy({
@@ -33,19 +38,39 @@ export class JoyManager {
         sketch.clear();
         my.paintingActionList.act(sketch);
         my.stencilActionList.act(sketch);
+				// draw the preview canvas
         sketch.render();
 			}
 		});
 
+		let fillAction = {
+			type: 'motif/solid fill',
+			color: {
+					value: [50, 0.8, 1.0],
+					type: 'color'
+			}
+		};
+
 		// preview current action in menu bar
-		// this.joyPreview = new Joy({
-		// 	container: "#joy-preview",
-		// 	init: " hello " + {id:'currentAction', type:'action', placeholder:'motif/fill'},
-		// 	modules: ['motif', 'sequences', 'stencils'],
-		// 	onupdate: function(my) {
-		// 		//set the current values
-		// 	}
-		// });
+		this.joyPreview = new Joy({
+			container: "#joy-preview",
+			id:'joy-preview',
+			data: fillAction,
+			init: "{id:'currentAction', type:'singleAction'}",
+			modules: ['motif', 'sequences', 'stencils'],
+			onupdate: function(my) {
+				console.log("preview updated");
+				//set the current values
+			}
+		});
+
+		this.addEvent('action-preview', fillAction.type, fillAction);
+
+		this.eventBus.addEventListener('effectSelected', (e) => {
+			this.effectType = e.detail.effectType;
+			console.log("effect name in JM", this.effectType);
+			this.addEvent('action-preview', this.effectType);
+		});
   }
 
   loadEffects(effects) {
@@ -90,7 +115,6 @@ export class JoyManager {
 				Joy.add(template);	
 			});
     });
-
 	}
 
 	getParentList(listName) {
@@ -101,14 +125,18 @@ export class JoyManager {
 		else if (listName == 'stencils') {
 			return this.joy.rootActor.stencilActionList;
 		}
+		else if(listName == 'action-preview'){
+			return this.joyPreview.rootActor.currentAction;
+		}
 		else {
 			throw new Error("No list found with name " + listName);
 		}
 	}
 
-	addEvent(listName, type, settings) {
+	addEvent(listName, type, data) {
 		const target = this.getParentList(listName);
-		target.addAction(type, undefined, settings);
+		let index = undefined;
+		target.addAction(type, index, data);
 		target.update();
 	}
 

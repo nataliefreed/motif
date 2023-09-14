@@ -43,7 +43,7 @@ export class Brushstroke {
   }
 
   renderPreview(data) {
-    console.log("rendering preview", this.previewCanvas);
+    // console.log("rendering preview", this.previewCanvas);
     // could be a lower resolution render
     // console.log("brushstroke points: ", this.path.getPoints());
     this.effect.render(data, this.path.getPoints(), this.previewCanvas);

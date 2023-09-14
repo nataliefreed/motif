@@ -7,6 +7,7 @@ Created by Nicky Case http://ncase.me/
 Forked by @nataliefreed - 2023
 
 *****************/
+import { parse } from 'uuid';
 import { 
   _blurOnEnter,
   _clone,
@@ -284,6 +285,7 @@ class Actor {
     this.parent = parent;
     this.top = this.parent ? this.parent.top : this;  // if no parent, I'M top dog.
     this.previewData = null;
+    this.data = data;
     
     // If an actor type is provided in options, fetch the corresponding template
     // and configure this actor based on that template
@@ -299,7 +301,7 @@ class Actor {
     this.dom = null;  // The DOM representation of this actor. Initialized later in "createWidget"
     this._myEditLock = false;
 
-    this._initData(data);
+    this._initData(this.data);
 
     // If there's an initialization method or string provided, use it.
     // This allows for custom setup logic when the actor is created.
@@ -346,6 +348,7 @@ class Actor {
     // If you didn't already pass in a data object, let's figure it out!
     // Use the provided data or fall back to the actor's current data property
     this.data = this.data || data;
+    console.log("data", this, this.data);
 
     // If still no data, determine where the data should come from
     if (!this.data) {
@@ -368,10 +371,8 @@ class Actor {
     }
   }
 
-  // Initializes the actor with a given markup string
-  initializeWithString(markup) {
-
-    const actorOptions = [];
+  parseActorMarkup(markup) {
+    let actorOptions = [];
     let html = markup;
 
     // Split the markup into Actor Options & Widget HTML
@@ -410,6 +411,13 @@ class Actor {
         stack = 0;
       }
     }
+    return { actorOptions: actorOptions, html: html };
+  }
+
+  initializeWithString(markup) {
+    let parseResult = this.parseActorMarkup(markup);
+    let actorOptions = parseResult.actorOptions;
+    let html = parseResult.html;
 
     // Initialize child actors from extracted options
     actorOptions.forEach((actorOption) => {

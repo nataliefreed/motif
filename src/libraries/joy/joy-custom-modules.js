@@ -208,7 +208,7 @@ Joy.module("sequences", function() {
     name: "Along path",
     type: "sequences/alongpath",
     tags: ["sequences", "action"],
-    init: "Along path {id:'path', type:'path', min:1, placeholder:[[20,50],[600,250]]} " +
+    init: "Along path {id:'path', type:'path', placeholder:[[20,50],[600,250]]} " +
         // "{id:'actions', type:'actions', resetVariables:false}",
         "{id:'actions', type:'actions', listName:'brush name', resetVariables:false}", //name makes it collapsible, eventually - variable name
     onact: function(my){
@@ -434,7 +434,7 @@ Joy.add({
       // The Actor & Widget 
       let newActor = this.addChild({type:actionData.type}, actionData);
       let newWidget = newActor.createWidget();
-      newWidget.id = "joy-widget";
+      newWidget.classList.add("joy-widget");
       entryDOM.appendChild(newWidget);
   
       // Storing data
@@ -522,7 +522,7 @@ Joy.add({
     ///////////////////////////////////////
 
     // Manually add New Action To Actions + Widgets + DOM
-    let _addAction = (actorType, atIndex, data={}) => { //FG added data
+    let _addAction = (actorType, atIndex, data={}) => {
       // Create that new entry & everything
       let newAction = {type:actorType, ...data};
       if(atIndex===undefined){
@@ -535,7 +535,7 @@ Joy.add({
       // Focus on that entry's widget!
       // entry.widget.focus();
     };
-    this.addAction = _addAction; //available to other modules - [QUESTION] should I just have one addAction function?
+    this.addAction = _addAction; //available to other modules
 
     // Actions you can add:
     // TODO: INCLUDE ALIASED ACTIONS
@@ -595,6 +595,7 @@ Joy.add({
       options: actionOptions,
       onchange: (value) => {
         _addAction(value);
+        console.log("value passed to addaction", value);
         this.update(); // You oughta know!
       },
       styles: ["joy-bullet", "joy-add-bullet"]
@@ -857,84 +858,116 @@ class GridModal extends BaseModal {
   }
 }
 
-
-
-// TODO: add a single action "preview" panel with customizeable parameters
-// TODO: make Joy widgets and actors their own classes - Q: what are the differences between widgets and actors?
-
-
 Joy.add({
   type: "singleAction",
   tags: ["ui"],
+  init: function() {
+      // Initialization logic
+  },
   initWidget: function() {
+      this.dom = document.createElement("li");
+      this.dom.className = "joy-single-action";
 
+      this.entry = {}; // Initially empty
+  },
+  addAction: function(actionType, index=undefined, actionOptions={}) {
+      // Remove previous action's representation if exists
+      if(this.entry.actor) {
+        this.dom.removeChild(this.entry.widget);
+        this.removeChild(this.entry.actor);
+        this.entry = {};
+      }
+
+      // Create and add the new action's widget
+      let newActor = this.addChild({type: actionType}, actionOptions);
+      let newWidget = newActor.createWidget();
+      newWidget.classList.add("joy-widget");
+      this.dom.appendChild(newWidget);
+      
+      this.entry.actor = newActor;
+      this.entry.widget = newWidget;
+      this.entry.actionData = actionOptions;
+  },
+  getAction: function() {
+      return this.entry.actionData;
+  },
+  onact: function(my) {
+      if (my.data.action) {
+          let actor = this.children[0]; // Assuming the single action actor is the first child
+          let actorMessage = actor.act(my.target, my.data.action);
+          if (actorMessage === "STOP") return actorMessage;
+      }
+  },
+  placeholder: {
+      action: {}
   }
 });
 
-class GroupUI {
-  constructor(config) {
 
-    this.dom = document.createElement("div");
-    this.dom.className = "joy-named-group";
+// class GroupUI {
+//   constructor(config) {
 
-		const arrow = document.createElement("span");
-		arrow.contentEditable = false;
-		arrow.innerText = "^ ";
-		this.dom.appendChild(arrow);
+//     this.dom = document.createElement("div");
+//     this.dom.className = "joy-named-group";
+
+// 		const arrow = document.createElement("span");
+// 		arrow.contentEditable = false;
+// 		arrow.innerText = "^ ";
+// 		this.dom.appendChild(arrow);
   
-    const input = document.createElement("span");
-    input.contentEditable = true;
-    input.spellcheck = false;
+//     const input = document.createElement("span");
+//     input.contentEditable = true;
+//     input.spellcheck = false;
   
-    this.dom.appendChild(input);
+//     this.dom.appendChild(input);
   
-    input.addEventListener("input", (event) => {
-      _fixStringInput(input);
-      const value = input.innerText; //todo - might be issue, expecting a string
-      config.onchange(value);
-    });
+//     input.addEventListener("input", (event) => {
+//       _fixStringInput(input);
+//       const value = input.innerText; //todo - might be issue, expecting a string
+//       config.onchange(value);
+//     });
   
-    input.addEventListener("focus", () => {
-      _selectAll(input);
-    });
+//     input.addEventListener("focus", () => {
+//       _selectAll(input);
+//     });
   
-    input.addEventListener("blur", () => {
-      _unselectAll();
-    });
-		_preventWeirdCopyPaste(input);
+//     input.addEventListener("blur", () => {
+//       _unselectAll();
+//     });
+// 		_preventWeirdCopyPaste(input);
   
-    input.addEventListener("keypress", (e) => {
-  	if (e.which === 13) {
-  	  input.blur();
-  	  return false;
-      }
-      return true;
-    });
+//     input.addEventListener("keypress", (e) => {
+//   	if (e.which === 13) {
+//   	  input.blur();
+//   	  return false;
+//       }
+//       return true;
+//     });
   
-   // Set name
-    this.setName = function(value){
-    input.innerText = value;
-    _fixStringInput(input);
-    };
+//    // Set name
+//     this.setName = function(value){
+//     input.innerText = value;
+//     _fixStringInput(input);
+//     };
   
-    this.setColor = function (color) {
-	  color = this._forceToRGB(color);
-  	  this.dom.style.color = color;
-  	  this.dom.style.borderColor = color;
-    };
+//     this.setColor = function (color) {
+// 	  color = this._forceToRGB(color);
+//   	  this.dom.style.color = color;
+//   	  this.dom.style.borderColor = color;
+//     };
   
-    if (config.color) {
-      this.setColor(config.color);
-    }
+//     if (config.color) {
+//       this.setColor(config.color);
+//     }
   
-    this.styles = config.styles || [];
-    this.styles.forEach((style) => {
-  	this.dom.classList.add(style);
-    });
+//     this.styles = config.styles || [];
+//     this.styles.forEach((style) => {
+//   	this.dom.classList.add(style);
+//     });
   
-    this.setName(config.value);
-  }
-}
+//     this.setName(config.value);
+//   }
+// }
 
 
 

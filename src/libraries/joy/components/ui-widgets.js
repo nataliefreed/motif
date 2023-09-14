@@ -380,99 +380,6 @@ export class JoyString {
   }
 }
 
-// path (list of points) type
-/****************************************/
-
-class PathUI {
-  constructor(config) {
-
-    this.points = [];
-
-    this.dom = document.createElement("div");
-    this.dom.className = "joy-path";
-  
-    input.addEventListener("focus", () => {
-      _selectAll(input);
-    });
-  
-    input.addEventListener("blur", () => {
-      _unselectAll();
-    });
-  
-    input.addEventListener("keypress", (e) => {
-  	if (e.which === 13) {
-  	  input.blur();
-  	  return false;
-      }
-      return true;
-    });
-  
-    this.setPath = (points) => {
-  	  // input.innerText = value.substring(0, 8) + "...";
-  	  // // _fixStringInput(input);
-      // this.points = this._parse(value);
-      console.log("points", points);
-      // let thumbnail_canvas = this.getCanvas(points, 25, 25, 599, 599);
-      // thumbnail_canvas.classList.add('thumbnail-canvas');
-      // this.dom.getElementsByClassName('thumbnail-canvas').forEach(e => e.remove());
-      // this.dom.appendChild(thumbnail_canvas);
-    };
-  
-    this.setColor = (color) => {
-	  color = this._forceToRGB(color);
-  	  this.dom.style.color = color;
-  	  this.dom.style.borderColor = color;
-    };
-  
-    if (config.color) {
-      this.setColor(config.color);
-    }
-  
-    this.styles = config.styles || [];
-    this.styles.forEach((style) => {
-  	this.dom.classList.add(style);
-    });
-  
-    this.setPath(config.value);
-  }
-
-  getCanvas(points, width, height, originWidth, originHeight) {
-    
-    console.log(points);
-    
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    canvas.style.background = "white";
-    canvas.style.border = '1px solid #888';
-    
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, width, height);
-    ctx.scale(width/originWidth, height/originHeight);
-    
-    const firstPoint = points[0];
-    ctx.beginPath();
-    ctx.moveTo(firstPoint.x, firstPoint.y);
-    
-    for (let i = 1; i < points.length; i++) {
-  	  const { x, y } = points[i];
-  	  ctx.lineTo(x, y);
-    }
-    
-    ctx.strokeStyle = 'black';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-    
-    ctx.fillStyle = 'black';
-    for (const { x, y } of this.points) {
-  	ctx.beginPath();
-  	ctx.arc(x, y, 8, 0, Math.PI * 2);
-  	ctx.fill();
-    }
-    return canvas;
-  }  
-}
-
 
 /********************
 TextLine's config:
@@ -545,9 +452,9 @@ export class JoyTextBox {
   }
     
   // Get & Set Value
-  getValue() { return input.value; }
-  setValue(value) { input.value = value; }
+  getValue() { return this.dom.value; }
+  setValue(value) { this.dom.value = value; }
 
   // Select
-  select() { input.select(); }  
+  select() { this.dom.select(); }  
 }
