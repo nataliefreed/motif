@@ -1,6 +1,7 @@
 import { Joy } from '../libraries/joy/joy.js';
 import '../libraries/joy/joy-standard-modules.js'; //add the modules, ie. import for side effects
 import '../libraries/joy/joy-custom-modules.js';
+import { _configure } from '../libraries/joy/joy-utils.js'
 
 export class JoyManager {
   constructor(effects, brushstrokes, sketch, eventBus) {
@@ -43,38 +44,31 @@ export class JoyManager {
 			}
 		});
 
-		let fillAction = {
-			type: 'motif/solid fill',
-			color: {
-					value: [50, 0.8, 1.0],
-					type: 'color'
-			}
-		};
-
 		// preview current action in menu bar
 		this.joyPreview = new Joy({
 			container: "#joy-preview",
 			id:'joy-preview',
-			data: fillAction,
-			init: "{id:'currentAction', type:'singleAction'}",
+			init: "{id:'action', type:'singleAction'}",
 			modules: ['motif', 'sequences', 'stencils'],
 			onupdate: function(my) {
 				console.log("preview updated");
 				//set the current values
 			}
 		});
+		this.previewActionList = this.joyPreview.rootActor.action;
 
-		this.addEvent('action-preview', fillAction.type, fillAction);
+		// this.addEvent('action-preview', fillAction.type, fillAction);
 
 		this.eventBus.addEventListener('effectSelected', (e) => {
 			this.effectType = e.detail.effectType;
-			console.log("effect name in JM", this.effectType);
-			this.addEvent('action-preview', this.effectType);
+			this._updatePreview(this.effectType);
+
+			// this._addEvent('action-preview', this.effectType); //add current one to preview panel
 		});
   }
 
   loadEffects(effects) {
-		console.log("effects passed to joy manager", effects);
+		console.log("effects passed to joy", effects);
 		Joy.module("motif", function() {
 			//Add from effects list, but filter out stencils
 			let motifEffects = Object.values(effects).filter((e) => {
@@ -117,31 +111,44 @@ export class JoyManager {
     });
 	}
 
-	getParentList(listName) {
-		console.log("looking for list name:", listName);
+	_updatePreview(type, data) {
+		this.previewActionList.setAction(type, data);
+	}
+
+	addCurrentAction(data) {
+		let actionData = this.previewActionList.getActionData();
+		let type = this.previewActionList.getActionType();
+		console.log("preview data", actionData);
+		console.log('data from user', data);
+		let combinedData = {...actionData, ...data};
+		this._addEvent('motif', type, combinedData);
+		// this.previewActionList.getAction();
+		// console.log("preview actor", this.previewActionList.actor, "widget", this.previewActionList.widget, "data", this.previewActionList.getAction());
+		// if(this.effectType) {
+		// 	this._addEvent(listName, this.effectType, data);
+		// }
+	}
+
+	_getParentList(listName) {
 		if (listName == 'motif') {
 			return this.joy.rootActor.paintingActionList;
 		}
 		else if (listName == 'stencils') {
 			return this.joy.rootActor.stencilActionList;
 		}
-		else if(listName == 'action-preview'){
-			return this.joyPreview.rootActor.currentAction;
-		}
 		else {
 			throw new Error("No list found with name " + listName);
 		}
 	}
 
-	addEvent(listName, type, data) {
-		const target = this.getParentList(listName);
-		let index = undefined;
-		target.addAction(type, index, data);
+	_addEvent(listName, type, data) {
+		const target = this._getParentList(listName);
+		target.addAction(type, undefined, data);
 		target.update();
 	}
 
 	moveAction(listName, oldIndex, newIndex) {
-		const target = this.getParentList(listName);
+		const target = this._getParentList(listName);
 		target.moveAction(oldIndex, newIndex);
 		target.update();
 	}

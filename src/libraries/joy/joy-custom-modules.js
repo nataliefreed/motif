@@ -46,7 +46,7 @@ class PathWidget {
     this.dom = document.createElement("div");
     this.dom.className = "path-widget-container";
 
-    this.pathPreview = this.getPathView(this.points, 100, 100, 600, 600);
+    this.pathPreview = this.getPathView(this.points, 20, 20, 600, 600);
     this.pathPreview.classList.add("path-preview");
     this.dom.appendChild(this.pathPreview);
 
@@ -89,7 +89,7 @@ class PathWidget {
       const circle = document.createElementNS(svgNS, "circle");
       circle.setAttribute('cx', (pt[0] / originWidth) * width);
       circle.setAttribute('cy', (pt[1] / originHeight) * height);
-      circle.setAttribute('r', 4); // half the previous size for preview
+      circle.setAttribute('r', 0.5);
       circle.setAttribute('fill', 'black');
       svg.appendChild(circle);
     });
@@ -212,7 +212,6 @@ Joy.module("sequences", function() {
         // "{id:'actions', type:'actions', resetVariables:false}",
         "{id:'actions', type:'actions', listName:'brush name', resetVariables:false}", //name makes it collapsible, eventually - variable name
     onact: function(my){
-      console.log("What about here?", my.data.points);
       // Previewing? How much to preview?
       var param = 1;
       if(my.data._PREVIEW!==undefined) param=my.data._PREVIEW;
@@ -287,7 +286,6 @@ Joy.add({
 
     // Check if list name is defined
     let listName = this.options.listName;
-    console.log("listName", listName);
     if (listName) {
       // If list name is defined, make the list collapsible
       let titleSpan = document.createElement("span");
@@ -595,7 +593,6 @@ Joy.add({
       options: actionOptions,
       onchange: (value) => {
         _addAction(value);
-        console.log("value passed to addaction", value);
         this.update(); // You oughta know!
       },
       styles: ["joy-bullet", "joy-add-bullet"]
@@ -657,8 +654,6 @@ Joy.add({
     // When data's changed, externally
     self.onDataChange = function(){
       var value = self.getData("value");
-      console.log("value: ", value);
-      console.log("self ", self);
       self.pathUI.setPath(value);
     };
   },
@@ -830,7 +825,6 @@ class GridModal extends BaseModal {
     if(y < this.min) { y = this.min; }
     if(x > this.max) { x = this.max; }
     if(y > this.max) { y = this.max; }
-    console.log("x: ", x, " y: ", y);
 
     this.setCursorPos(x / this.scaleFactor, y / this.scaleFactor);
     this.setNumberBoxes(x, y);
@@ -870,7 +864,7 @@ Joy.add({
 
       this.entry = {}; // Initially empty
   },
-  addAction: function(actionType, index=undefined, actionOptions={}) {
+  setAction: function(actionType, actionOptions={}) {
       // Remove previous action's representation if exists
       if(this.entry.actor) {
         this.dom.removeChild(this.entry.widget);
@@ -880,6 +874,7 @@ Joy.add({
 
       // Create and add the new action's widget
       let newActor = this.addChild({type: actionType}, actionOptions);
+      console.log("newActor in preview", newActor);
       let newWidget = newActor.createWidget();
       newWidget.classList.add("joy-widget");
       this.dom.appendChild(newWidget);
@@ -887,16 +882,21 @@ Joy.add({
       this.entry.actor = newActor;
       this.entry.widget = newWidget;
       this.entry.actionData = actionOptions;
+      this.update();
   },
-  getAction: function() {
-      return this.entry.actionData;
+  getActionData: function() {
+    let actionDataCopy = _clone(this.entry.actionData);
+    return { ...actionDataCopy };
+  },
+  getActionType: function() {
+    return this.entry.actor.type;
   },
   onact: function(my) {
-      if (my.data.action) {
-          let actor = this.children[0]; // Assuming the single action actor is the first child
-          let actorMessage = actor.act(my.target, my.data.action);
-          if (actorMessage === "STOP") return actorMessage;
-      }
+    // if (my.data.action) {
+    //     let actor = this.children[0]; // Assuming the single action actor is the first child
+    //     let actorMessage = actor.act(my.target, my.data.action);
+    //     if (actorMessage === "STOP") return actorMessage;
+    // }
   },
   placeholder: {
       action: {}

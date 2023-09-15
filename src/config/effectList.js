@@ -134,7 +134,8 @@ export const effectList = [
     mouseActionType: 'drag',
     onact: (my) => {
       for(let i=0;i<my.data.path.length;i++) {
-        my.target.heart({ color: my.data.color, x: my.data.path[i][0]+my.data.position.x-my.data.path[0][0], y: my.data.path[i][1]+my.data.position.y-my.data.path[0][1], size: my.data.size });
+        //offset experiment // my.target.heart({ color: my.data.color, x: my.data.path[i][0]+my.data.position.x-my.data.path[0][0], y: my.data.path[i][1]+my.data.position.y-my.data.path[0][1], size: my.data.size });
+        my.target.heart({ color: my.data.color, x: my.data.path[i][0], y: my.data.path[i][1], size: my.data.size });
       }
     }
   },

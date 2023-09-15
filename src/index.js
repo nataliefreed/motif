@@ -22,13 +22,13 @@ class MotifApp {
 
 		this.effects = new EffectManager(effectList);
 		this.brushstrokes = new BrushstrokeManager();
-		
-		this.ui = new UIManager(this.effects.getEffects(), this.eventBus);
-		this.ui.generateEffectToolbarUI(); //categories and brush/effect buttons
 
 		this.sketch = new P5Renderer();
 		this.joyManager = new JoyManager(this.effects.getEffects(), this.brushstrokes, this.sketch, this.eventBus);
 		
+		this.ui = new UIManager(this.effects.getEffects(), this.eventBus);
+		this.ui.generateEffectToolbarUI(); //categories and brush/effect buttons
+
 		this._initUI();
 
 		this.activeBrushstroke = null;
@@ -86,7 +86,8 @@ class MotifApp {
 							this.sketch);
 						this.brushstrokes.addBrushstroke(this.activeBrushstroke);
 						if(activeEffect.getValue('mouseActionType') == 'single-click') {
-						  this.joyManager.addEvent(...this.activeBrushstroke.makeJoyEvent());
+						  // this.joyManager.addEvent(...this.activeBrushstroke.makeJoyEvent());
+							this.joyManager.addCurrentAction();
 						  this.sketch.loop(); //render preview of brushstroke
 						}
 					}
@@ -159,7 +160,8 @@ class MotifApp {
 			if(this.activeBrushstroke) {
 				this.activeBrushstroke.addPoint({x: this.sketch.mouseX, y: this.sketch.mouseY});
 				if(this.activeBrushstroke.getMouseActionType() === 'drag') {
-					this.joyManager.addEvent(...this.activeBrushstroke.makeJoyEvent());
+					this.joyManager.addCurrentAction(this.activeBrushstroke.getPathAsJoyData());
+					// this.joyManager.addEvent(...this.activeBrushstroke.makeJoyEvent());
 					
 					// if(activeEffect == 'straight line') {
 					// 	this.joyManager.addEvent('motif', activeEffect, {

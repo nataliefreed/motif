@@ -76,6 +76,7 @@ export class Brushstroke {
   // let brushAction = brushstrokeManager.getOnActByID(my.data.id);
   //     brushAction(my.data);
 
+  //construct object to pass to Joy
   makeJoyEvent() {
     let data = {};
     data.id = this.id;
@@ -90,6 +91,12 @@ export class Brushstroke {
       this.effect.tag + "/" + this.effect.name,
       data
     ]
+  }
+
+  getPathAsJoyData() {
+    let data = {};
+    data.path = { type: 'path', value: this.path.getPointsAsArray() };
+    return data;
   }
 
   addPoint(point) {

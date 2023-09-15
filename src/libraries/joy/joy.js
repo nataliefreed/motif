@@ -348,7 +348,6 @@ class Actor {
     // If you didn't already pass in a data object, let's figure it out!
     // Use the provided data or fall back to the actor's current data property
     this.data = this.data || data;
-    console.log("data", this, this.data);
 
     // If still no data, determine where the data should come from
     if (!this.data) {
