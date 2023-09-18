@@ -26,8 +26,8 @@ Joy.add({
 
     // When data's changed, externally
     this.onDataChange = () => {
-      var value = self.getData("value"); // value is a list of points
-      this.pathWidget.setPath(value);
+      var value = this.getData("value"); // value is a list of points
+      this.pathWidget.setPoints(value);
     };
   },
   onget: function(my){
@@ -41,24 +41,32 @@ Joy.add({
 class PathWidget {
   constructor(config) {
     this.points = [];
-    this.setPoints(config.value);
-
     this.dom = document.createElement("div");
     this.dom.className = "path-widget-container";
-
+    // Calling this will update the path preview
+    this.setPoints(config.value);
+  }
+  
+  updatePathpreview() {
+    let oldPathPreview = this.pathPreview;
     this.pathPreview = this.getPathView(this.points, 20, 20, 600, 600);
-    this.pathPreview.classList.add("path-preview");
-    this.dom.appendChild(this.pathPreview);
-
     // add a click event to the path preview, eventually will open a modal
+    this.pathPreview.classList.add("path-preview");
+    if(oldPathPreview) {
+      this.dom.replaceChild(this.pathPreview, oldPathPreview);
+    }
+    else {
+      this.dom.appendChild(this.pathPreview);
+    }
   }
 
   setPoints(pointsList) {
-    // Basic validation: ensure it's an array of objects with x and y properties.
+    // Basic validation: ensure it's an array
     if (Array.isArray(pointsList)) {
       this.points = pointsList;
+      this.updatePathpreview();
     } else {
-      console.error("Invalid points data provided.");
+      console.error("Invalid points data provided.", this.points);
     }
   }
 
@@ -861,7 +869,8 @@ Joy.add({
   initWidget: function() {
       this.dom = document.createElement("li");
       this.dom.className = "joy-single-action";
-
+      // Flag that determines if entry has preview data that should be rendered
+      this.entryEnabled = false;
       this.entry = {}; // Initially empty
   },
   setAction: function(actionType, actionOptions={}) {
@@ -871,37 +880,73 @@ Joy.add({
         this.removeChild(this.entry.actor);
         this.entry = {};
       }
+      this.entryEnabled = false;
 
       // Create and add the new action's widget
       let newActor = this.addChild({type: actionType}, actionOptions);
-      console.log("newActor in preview", newActor);
       let newWidget = newActor.createWidget();
       newWidget.classList.add("joy-widget");
       this.dom.appendChild(newWidget);
       
       this.entry.actor = newActor;
       this.entry.widget = newWidget;
-      this.entry.actionData = actionOptions;
+      this.entry.actionData = actionOptions; //is this the same object as this.entry.actor.data??
       this.update();
   },
   getActionData: function() {
+    let target = {};
+    let entryActor = this.entry.actor;
+    if(!entryActor) return {};
+    let data = _clone(entryActor.data);
+    entryActor.children.forEach((child) => {
+      const dataID = child.dataID;
+      if (dataID) {
+        const value = child.get(target);
+        data[dataID] = value;
+      }
+    });
+    console.log("data is", data);
     let actionDataCopy = _clone(this.entry.actionData);
+    console.log("actionDataCopy is", actionDataCopy);
+    // TODO!: I think `data` is what we should be returning here
+    //   Looks like type used for initialization isn't matching though?
+    // return data;
     return { ...actionDataCopy };
+  },
+  setChildData(newData) {
+    console.log("newData is", newData);
+    console.log("before update: this.entry.actor is", this.entry.actor);
+
+    for (let key in newData) {
+        if (this.entry.actor.hasOwnProperty(key)) {
+          for (let child of this.entry.actor.children) {
+            if(child.dataID == key) {
+              child.switchData(newData[key]);
+              // child.setData(key, newData[key], true);
+              break;
+            }
+          }
+          // child.setData(newData[key]);
+          // this.entry.actor.data[key].value = newData[key].value; //why is this not updating the value?????????????
+        }
+    }
+    this.entry.actor.update(); //not sure if needed, will test
+    this.entryEnabled = true;
+    console.log("after update: this.entry.actor is", this.entry.actor);
   },
   getActionType: function() {
     return this.entry.actor.type;
   },
   onact: function(my) {
-    // if (my.data.action) {
-    //     let actor = this.children[0]; // Assuming the single action actor is the first child
-    //     let actorMessage = actor.act(my.target, my.data.action);
-    //     if (actorMessage === "STOP") return actorMessage;
-    // }
+    if(this.entry.actor && this.entryEnabled) {
+      this.entry.actor.act(my.target, this.getActionData());
+    }
   },
   placeholder: {
       action: {}
   }
 });
+
 
 
 // class GroupUI {

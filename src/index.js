@@ -8,11 +8,9 @@ import { UIManager } from './ui/ui-manager.js';
 import * as utilities from './utils/color-utils.js'; 
 import { JoyManager } from './models/joy-manager.js';
 
-let currentColorRGB, currentColorHSV;
 let currentLineWeight = 6;
 
 window.addEventListener('load', e => {
-	randomizeCurrentColor();
 	const app = new MotifApp(effectList);
 });
 
@@ -82,13 +80,20 @@ class MotifApp {
 						this.activeBrushstroke = new Brushstroke(
 							activeEffect,
 							point,
-							currentColorHSV,
+							[0, 0, 0],
 							this.sketch);
 						this.brushstrokes.addBrushstroke(this.activeBrushstroke);
-						if(activeEffect.getValue('mouseActionType') == 'single-click') {
+						let mouseActionType = activeEffect.getValue('mouseActionType');
+
+						if(mouseActionType === 'single-click') {
 						  // this.joyManager.addEvent(...this.activeBrushstroke.makeJoyEvent());
-							this.joyManager.addCurrentAction();
-						  this.sketch.loop(); //render preview of brushstroke
+							this.joyManager.addCurrentAction(this.activeBrushstroke.getPathAndPoint());
+
+							//update preview action
+						}
+						else if(mouseActionType === 'drag') {
+							this.joyManager.updatePreviewData(this.activeBrushstroke.getPathAndPoint());
+								this.sketch.loop(); //render preview of brushstroke
 						}
 					}
 				// else if(activeEffect.getValue('mouseActionType') == 'single-click2') {
@@ -128,6 +133,7 @@ class MotifApp {
 				// }
 
 			}
+
 		});
 
 		document.getElementById('drawing-canvas').addEventListener('mousemove', e => {
@@ -144,7 +150,8 @@ class MotifApp {
 				if(this.activeBrushstroke) {
 					this.activeBrushstroke.addPoint({x: this.sketch.mouseX, y: this.sketch.mouseY});
 					if(this.activeBrushstroke.getMouseActionType() === 'drag') {
-					  this.activeBrushstroke.renderPreview({}); //current canvas settings go here
+						this.joyManager.updatePreviewData(this.activeBrushstroke.getPathAndPoint());
+					  // this.activeBrushstroke.renderPreview({}); //current canvas settings go here
 					}
 				}
 				else {
@@ -157,52 +164,15 @@ class MotifApp {
 			console.log("mouse up!");
 			mouseDownOverCanvas = false;
 
-			if(this.activeBrushstroke) {
+			if(this.activeBrushstroke) {	
 				this.activeBrushstroke.addPoint({x: this.sketch.mouseX, y: this.sketch.mouseY});
 				if(this.activeBrushstroke.getMouseActionType() === 'drag') {
-					this.joyManager.addCurrentAction(this.activeBrushstroke.getPathAsJoyData());
-					// this.joyManager.addEvent(...this.activeBrushstroke.makeJoyEvent());
-					
-					// if(activeEffect == 'straight line') {
-					// 	this.joyManager.addEvent('motif', activeEffect, {
-					// 		x1: { type:'number', value: Math.round(this.mousePath.getPoint(0).x) },
-					// 		y1: { type:'number', value: Math.round(this.mousePath.getPoint(0).y) },
-					// 		x2: { type:'number', value: Math.round(this.mousePath.getLastPoint().x) },
-					// 		y2: { type:'number', value: Math.round(this.mousePath.getLastPoint().y) },
-					// 		lineWeight: {type:'number', value: currentLineWeight},
-					// 	});
-					// }
-					// "new brushes"
-					// else if(this.effects[activeEffect].category == "NewBrushes") {
-					// 	// console.log("adding event: " + activeEffect);
-					// 	// console.log("star brush: ", brushes.starBrush);
-
-					// 	if(this.brushstroke) {
-					// 		this.addEvent('motif', activeEffect, { 
-					// 			pointsList: { type:'path', value: this.brushstroke.getPoints()},
-					// 			lineWeight: {type:'path', value: currentLineWeight},
-					// 			minSize: {type:'number', value: currentLineWeight},
-					// 			maxSize: {type:'number', value: currentLineWeight*2},
-					// 			id: this.brushstroke.getID()
-					// 		});
-					// 	}
-					// }
-					//NOT "new brushes"
-					// else { //TODO: make this more general
-					// 	this.addEvent('motif', activeEffect, { 
-					// 		pointsList: { type:'number', value: this.brushstroke.getPoints()},
-					// 		lineWeight: {type:'number', value: currentLineWeight},
-					// 	  minSize: {type:'number', value: currentLineWeight},
-					// 	  maxSize: {type:'number', value: currentLineWeight*2}
-					// 	});
-					// }
-					
-					
+					let pathAndPoint = this.activeBrushstroke.getPathAndPoint();
+					this.joyManager.addCurrentAction(pathAndPoint);
 				}
 				this.activeBrushstroke = null;
 				this.sketch.noLoop();
 			}
-			randomizeCurrentColor();
 		});
 
     document.getElementById('clear-all-button').addEventListener("click", (e) => {
@@ -223,7 +193,3 @@ class MotifApp {
 	}
 }
 
-let randomizeCurrentColor = () => {
-	currentColorHSV = [Math.random()*360, 0.8, 0.8];
-	currentColorRGB = utilities.HSVToRGBString(currentColorHSV);
-}

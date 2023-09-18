@@ -7,9 +7,12 @@ export class JoyManager {
   constructor(effects, brushstrokes, sketch, eventBus) {
 		this.eventBus = eventBus;
 
-    let data = Joy.loadFromURL();
+		this.currentColorHSV = [Math.random()*360, 0.8, 0.8];
 
-		console.log("this is the url loaded", data);
+		this.previewCanvas = sketch.getPreviewCanvas();
+    this.staticCanvas = sketch.getStaticCanvas();
+
+    let data = Joy.loadFromURL();
 
     this.loadEffects(effects);
 		this.sketch = sketch;
@@ -44,15 +47,21 @@ export class JoyManager {
 			}
 		});
 
+		let previewCanvas = this.previewCanvas;
 		// preview current action in menu bar
 		this.joyPreview = new Joy({
 			container: "#joy-preview",
-			id:'joy-preview',
 			init: "{id:'action', type:'singleAction'}",
 			modules: ['motif', 'sequences', 'stencils'],
 			onupdate: function(my) {
-				console.log("preview updated");
-				//set the current values
+				//works - makes it run action when you click on it
+				/*
+				my.action.act(sketch);
+				sketch.render();
+				*/
+				// this.previewCanvas
+				console.log("on update preview", my);
+				my.action.act(previewCanvas);
 			}
 		});
 		this.previewActionList = this.joyPreview.rootActor.action;
@@ -61,14 +70,14 @@ export class JoyManager {
 
 		this.eventBus.addEventListener('effectSelected', (e) => {
 			this.effectType = e.detail.effectType;
-			this._updatePreview(this.effectType);
-
-			// this._addEvent('action-preview', this.effectType); //add current one to preview panel
+			if(this.effectType != this.previousEffectType) {
+				this._updatePreview();
+				this.previousEffectType = this.effectType;
+			}
 		});
   }
 
   loadEffects(effects) {
-		console.log("effects passed to joy", effects);
 		Joy.module("motif", function() {
 			//Add from effects list, but filter out stencils
 			let motifEffects = Object.values(effects).filter((e) => {
@@ -111,17 +120,32 @@ export class JoyManager {
     });
 	}
 
-	_updatePreview(type, data) {
-		this.previewActionList.setAction(type, data);
+	// update preview value
+	_updatePreview(saveCurrentSettings=false) 
+	{
+		let data = {};
+		data.color = { type: 'color', value: this.currentColorHSV }; // add latest color
+		data.color1 = { type: 'color', value: this.currentColorHSV }; // add latest color
+		if(saveCurrentSettings) {
+			data = {...this.previewActionList.getActionData(), ...data};
+		}
+		this.previewActionList.setAction(this.effectType, data);
+	}
+
+	updatePreviewData(newData) {
+		this.previewActionList.setChildData(newData);
 	}
 
 	addCurrentAction(data) {
 		let actionData = this.previewActionList.getActionData();
 		let type = this.previewActionList.getActionType();
-		console.log("preview data", actionData);
-		console.log('data from user', data);
 		let combinedData = {...actionData, ...data};
+		// TODO!: This is a dangerous way to track if previewActionList is previewing. Probably should structure this better
+		this.previewActionList.entryEnabled = false;
 		this._addEvent('motif', type, combinedData);
+
+		this.currentColorHSV = [Math.random()*360, 0.8, 0.8]; //re-randomize color
+		this._updatePreview(true);
 		// this.previewActionList.getAction();
 		// console.log("preview actor", this.previewActionList.actor, "widget", this.previewActionList.widget, "data", this.previewActionList.getAction());
 		// if(this.effectType) {

@@ -49,6 +49,7 @@ export const effectList = [
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
+      console.log(my.data.position);
       my.target.addCircle({ color: my.data.color, x: my.data.position.x, y: my.data.position.y, r: my.data.radius });
     }
   },
@@ -133,6 +134,8 @@ export const effectList = [
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'drag',
     onact: (my) => {
+      console.log("heart brush onact", my.data.path.length);
+      console.log("heart brush onact", my);
       for(let i=0;i<my.data.path.length;i++) {
         //offset experiment // my.target.heart({ color: my.data.color, x: my.data.path[i][0]+my.data.position.x-my.data.path[0][0], y: my.data.path[i][1]+my.data.position.y-my.data.path[0][1], size: my.data.size });
         my.target.heart({ color: my.data.color, x: my.data.path[i][0], y: my.data.path[i][1], size: my.data.size });

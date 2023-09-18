@@ -286,6 +286,8 @@ class Actor {
     this.top = this.parent ? this.parent.top : this;  // if no parent, I'M top dog.
     this.previewData = null;
     this.data = data;
+    // For debugging references to actors
+    this.uuid = crypto.randomUUID();
     
     // If an actor type is provided in options, fetch the corresponding template
     // and configure this actor based on that template
@@ -298,6 +300,7 @@ class Actor {
     _configure(this, this.options);
 
     this.children = []; // Children actors, if any
+    this._cachedChildren = [];
     this.dom = null;  // The DOM representation of this actor. Initialized later in "createWidget"
     this._myEditLock = false;
 

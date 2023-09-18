@@ -7,7 +7,6 @@ export class BrushstrokeManager {
 
   addBrushstroke(brushstroke) {
     this.brushstrokes.push(brushstroke);
-    console.log("all brushstrokes: ", this.brushstrokes);
     return brushstroke;
   }
 
@@ -31,15 +30,12 @@ export class BrushstrokeManager {
 export class Brushstroke {
   constructor(effect, startPoint, color, sketch) {
     this.effect = effect;
-    console.log("effect", effect);
     this.path = new Path(startPoint.x, startPoint.y);
     this.color = color;
     this.previewCanvas = sketch.getPreviewCanvas();
     this.finalCanvas = sketch.getStaticCanvas();
 
     this.id = uuidv4();
-
-    console.log("new brushstroke with id " + this.id);
   }
 
   renderPreview(data) {
@@ -50,18 +46,11 @@ export class Brushstroke {
   }
 
   renderFinal(data) {
-    console.log("rendering final");
     // TODO: if nothing has changed, use cached version
     this.effect.render(data, this.path.getPoints(), this.finalCanvas);
   }
 
   getPoints() {
-    // let points = [ this.path.getPoint(0) ];
-    // if(this.pathComplete) {
-    //   points = this.path.getPoints();
-    //   console.log("getting points!");
-    // }
-    // return points;
     return this.path.getPoints();
   }
 
@@ -72,9 +61,6 @@ export class Brushstroke {
   getID() {
     return this.id;
   }
-
-  // let brushAction = brushstrokeManager.getOnActByID(my.data.id);
-  //     brushAction(my.data);
 
   //construct object to pass to Joy
   makeJoyEvent() {
@@ -93,10 +79,22 @@ export class Brushstroke {
     ]
   }
 
-  getPathAsJoyData() {
+  getPath() {
+    return { type: 'path', value: this.path.getPointsAsArray() };
+  }
+
+  getFirstPoint() {
     let data = {};
-    data.path = { type: 'path', value: this.path.getPointsAsArray() };
+    let x = Math.round(this.path.getPoint(0).x);
+    let y = Math.round(this.path.getPoint(0).y);
+    data.position = { type: 'coordinate', value: [x, y] };
+    data.x = { type: 'number', value: x };
+    data.y = { type: 'number', value: y};
     return data;
+  }
+
+  getPathAndPoint() {
+    return { path: this.getPath(), ...this.getFirstPoint() };
   }
 
   addPoint(point) {

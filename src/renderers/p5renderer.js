@@ -28,9 +28,11 @@ export class P5Renderer {
         p.createCanvas(600, 600);
         s = p.createGraphics(p.width, p.height);
         t = p.createGraphics(p.width, p.height);
+        t.heart = (params) => { return p.heart_on(t, params); }
+        // TODO!: Switch over effects to take a graphics argument instead of the whole sketch
         p.background(255);
         p.setupFinished = true;
-        p.noLoop();		
+        p.noLoop();
       };
       
       p.draw = () => { //show a preview of brush strokes while actively dragging mouse
@@ -307,21 +309,24 @@ export class P5Renderer {
       }
 
       //heart by Mithru: https://editor.p5js.org/Mithru/sketches/Hk1N1mMQg
-      p.heart = (params) => {
+      p.heart_on = (graphics, params) => {
         if(!p.setupFinished) return;
         let x = params.x;
         let y = params.y;
         let size = params.size;
-        s.push();
-        s.translate(0, -size/2);
-        s.fill(params.color);
-        s.noStroke();
-        s.beginShape();
-        s.vertex(x, y);
-        s.bezierVertex(x - size / 2, y - size / 2, x - size, y + size / 3, x, y + size);
-        s.bezierVertex(x + size, y + size / 3, x + size / 2, y - size / 2, x, y);
-        s.endShape(s.CLOSE);
-        s.pop();
+        graphics.push();
+        graphics.translate(0, -size/2);
+        graphics.fill(params.color);
+        graphics.noStroke();
+        graphics.beginShape();
+        graphics.vertex(x, y);
+        graphics.bezierVertex(x - size / 2, y - size / 2, x - size, y + size / 3, x, y + size);
+        graphics.bezierVertex(x + size, y + size / 3, x + size / 2, y - size / 2, x, y);
+        graphics.endShape(s.CLOSE);
+        graphics.pop();
+      }
+      p.heart = (params) => {
+        p.heart_on(s, params);
       }
 
       p.applyFilter = (params) => {

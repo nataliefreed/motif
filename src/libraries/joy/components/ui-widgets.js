@@ -71,7 +71,6 @@ export class ChooserButton extends JoyButton {
   constructor(config) {
 
     const initialLabel = config.staticLabel !== undefined ? config.staticLabel : "";
-    console.log("initial label", initialLabel);
 
     config.label = initialLabel;
     config.onclick = () => this.showChooserModal();
