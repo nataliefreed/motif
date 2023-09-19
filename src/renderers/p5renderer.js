@@ -28,58 +28,14 @@ export class P5Renderer {
         p.createCanvas(600, 600);
         s = p.createGraphics(p.width, p.height);
         t = p.createGraphics(p.width, p.height);
-        t.heart = (params) => { return p.heart_on(t, params); }
-        // TODO!: Switch over effects to take a graphics argument instead of the whole sketch
         p.background(255);
         p.setupFinished = true;
         p.noLoop();
       };
       
       p.draw = () => { //show a preview of brush strokes while actively dragging mouse
-        p.image(t, 0, 0);
-        // if(points) {
-        // 	switch(activeEffectName) {
-        // 		case 'rainbow brush':
-        // 		  p.addRainbowBrush({ minSize: currentLineWeight, maxSize: currentLineWeight*2, pointsList: points.toString() });
-        // 		  break;
-        // 		case 'brush':
-        // 			p.addBrushStroke({ color:currentColorRGB, lineWeight: currentLineWeight, pointsList: points.toString() });
-        // 			break;
-        // 		case 'straight line':
-        // 			t.clear();
-        // 			p.addPreviewLine({ color:currentColorRGB, lineWeight: currentLineWeight, x1: p.getPoint(0).x, y1: p.getPoint(0).y, x2: p.getLastPoint().x, y2: p.getLastPoint().y }, t); 
-        // 			break;
-        // 		case 'porcupine brush':
-        // 			t.clear();
-        // 			p.porcupineBrush({ color:currentColorRGB, lineWeight: currentLineWeight, pointsList: points.toString() }, t);
-        // 			break;
-        // 		case 'lines brush':
-        // 			t.clear();
-        // 			p.linesBrush({ color:currentColorRGB, lineWeight: currentLineWeight, pointsList: points.toString() }, t);
-        // 		// case 'star brush':
-        // 		// 	p.metaBrush({
-        // 		// 		scale: 100,
-        // 		// 		pointsList: points.toString(), 
-        // 		// 		shapes:
-        // 		// 		[
-        // 		// 			(x, y, size, c) => {
-        // 		// 				c.star({color: my.data.color, x: x, y: y, r1: size, r2: size/2, npoints: 5});
-        // 		// 			},
-        // 		// 		],
-        // 		// 		sizes: [10, 20, 30, 40, 50, 40, 30, 20],
-        // 		// 		colors:
-        // 		// 		[
-        // 		// 			[255, 165,   0], // Orange
-        // 		// 			[255, 215,   0], // Gold
-        // 		// 		],
-        // 		// 		alpha: 0.75,
-        // 		// 	}, t);
-        // 			break;
-        // 		default: break;
-        // 	}
-        // }
-        // p.image(s, 0, 0);
         
+        p.image(t, 0, 0);
       };
 
       p.render = () => {
@@ -93,31 +49,28 @@ export class P5Renderer {
         t.clear();
       }
     
-      p.addCircle = (params) => {
-        if(!p.setupFinished) return;
-        s.fill(params.color);
-        s.noStroke();
-        s.circle(params.x, params.y, params.r*2);
-      }
-
-      p.addSquare = (params) => {
-        s.push();
-        s.rectMode(s.CENTER);
-        s.fill(params.color);
-        s.noStroke();
-        s.rect(params.x, params.y, params.size, params.size);
-        s.pop();
-      }
+      p5.prototype.addCircle = function(params) {
+        this.fill(params.color);
+        this.noStroke();
+        this.circle(params.x, params.y, params.r*2);
+      };
     
-      p.addFill = (params) => {
-        if(!p.setupFinished) return;
-        s.fill(params.color);
-        s.noStroke();
-        s.rect(0, 0, p.width, p.height);
-      }
+      p5.prototype.addSquare = function(params) {
+          this.push();
+          this.rectMode(this.CENTER);
+          this.fill(params.color);
+          this.noStroke();
+          this.rect(params.x, params.y, params.size, params.size);
+          this.pop();
+      };
+      
+      p5.prototype.addFill = function(params) {
+          this.fill(params.color);
+          this.noStroke();
+          this.rect(0, 0, this.width, this.height);
+      };
 
       p5.prototype.star = function(params) {
-        if(!p.setupFinished) return;
         this.push(); // Save current drawing style
         let x = params.x;
         let y = params.y;
@@ -140,70 +93,67 @@ export class P5Renderer {
         this.pop(); // Restore original drawing style
       }
 
-      p.polygon = (params) => {
-        if(!p.setupFinished) return;
+      p5.prototype.polygon = function(params) {
         let nsides = Math.abs(params.nsides);
-        s.fill(params.color);
-        s.noStroke();
-        let angle = s.TWO_PI / nsides;
-        s.beginShape();
-        for (let a = 0; a < s.TWO_PI; a += angle) {
-          let sx = params.x + s.cos(a) * params.r;
-          let sy = params.y + s.sin(a) * params.r;
-          s.vertex(sx, sy);
+        this.fill(params.color);
+        this.noStroke();
+        let angle = this.TWO_PI / nsides;
+        this.beginShape();
+        for (let a = 0; a < this.TWO_PI; a += angle) {
+            let sx = params.x + this.cos(a) * params.r;
+            let sy = params.y + this.sin(a) * params.r;
+            this.vertex(sx, sy);
         }
-        s.endShape(s.CLOSE);
-      }
-
-      p.gradient = (params) => {
-        if(!p.setupFinished) return;
-        let pcolor1 = s.color(params.color1);
-        let pcolor2 = s.color(params.color2);
-        s.noFill();
-        s.strokeWeight(1);
-        for(let i=0;i<p.height;i++) {
-          s.stroke(s.lerpColor(pcolor1, pcolor2, i/p.height));
-          s.line(0, i, p.width, i);
+        this.endShape(this.CLOSE);
+      };
+    
+      p5.prototype.gradient = function(params) {
+        let pcolor1 = this.color(params.color1);
+        let pcolor2 = this.color(params.color2);
+        this.noFill();
+        this.strokeWeight(1);
+        for(let i = 0; i < this.height; i++) {
+          this.stroke(this.lerpColor(pcolor1, pcolor2, i / this.height));
+          this.line(0, i, this.width, i);
         }
-      }
-
-      p.stripes = (params) => {
-        if(!p.setupFinished) return;
+      };
+      
+      p5.prototype.stripes = function(params) {
         let stripeWidth = params.stripeWidth;
-        s.push();
-        s.translate(0, stripeWidth/2); //so that top stripe is fully shown
-        let pcolor1 = s.color(params.color1);
-        let pcolor2 = s.color(params.color2);
-        s.noFill();
-        s.strokeWeight(stripeWidth);
-        for(let i=0;i<p.height;i+=stripeWidth) {
-          let c = s.lerpColor(pcolor1, pcolor2, i/(p.height-stripeWidth));
-          s.stroke(c);
-          s.line(0, i, p.width, i);
+        this.push();
+        this.translate(0, stripeWidth / 2); //so that top stripe is fully shown
+        let pcolor1 = this.color(params.color1);
+        let pcolor2 = this.color(params.color2);
+        this.noFill();
+        this.strokeWeight(stripeWidth);
+        for(let i = 0; i < this.height; i += stripeWidth) {
+          let c = this.lerpColor(pcolor1, pcolor2, i / (this.height - stripeWidth));
+          this.stroke(c);
+          this.line(0, i, this.width, i);
         }
-        s.pop();
-      }
-
-      p.shift = (params) => {
+        this.pop();
+      };
+      
+      p5.prototype.shift = function(params) {
         let lineHeight = params.height;
         let offset = params.offset;
-        if(params.orientation == "horizontal") {
-          for(let i=0;i<p.height/lineHeight;i++) {
-            if(i%2 == 0) {
-              s.image(s, offset, i*lineHeight, p.width, lineHeight, 0, i*lineHeight, p.width, lineHeight);
-              s.image(s, 0, i*lineHeight, offset, lineHeight, p.width - offset, i*lineHeight, offset, lineHeight); //wrap
+        if(params.orientation === "horizontal") {
+          for(let i = 0; i < this.height / lineHeight; i++) {
+            if(i % 2 === 0) {
+              this.image(this, offset, i * lineHeight, this.width, lineHeight, 0, i * lineHeight, this.width, lineHeight);
+              this.image(this, 0, i * lineHeight, offset, lineHeight, this.width - offset, i * lineHeight, offset, lineHeight); //wrap
+            }
+          }
+        } else if(params.orientation === "vertical") {
+          for(let i = 0; i < this.width / lineHeight; i++) {
+            if(i % 2 === 0) {
+              this.image(this, i * lineHeight, offset, lineHeight, this.height, i * lineHeight, 0, lineHeight, this.height);
+              this.image(this, i * lineHeight, 0, lineHeight, offset, i * lineHeight, this.height - offset, lineHeight, offset); //wrap
             }
           }
         }
-        else if(params.orientation == "vertical") {
-          for(let i=0;i<p.height/lineHeight;i++) {
-            if(i%2 == 0) {
-              s.image(s, i*lineHeight, offset, lineHeight, p.height, i*lineHeight, 0, lineHeight, p.height);
-              s.image(s, i*lineHeight, 0, lineHeight, offset, i*lineHeight, p.width - offset, lineHeight, offset); //wrap
-            }
-          }
-        }
-      }
+      };
+    
 
       // p._convertToVectors = (pointString) => {
       // 	let points = pointString.split(',');
@@ -240,7 +190,27 @@ export class P5Renderer {
         }
       }
 
-      p.tile = (params) => {
+      
+    
+
+      //heart by Mithru: https://editor.p5js.org/Mithru/sketches/Hk1N1mMQg
+      p5.prototype.heart = function(params) {
+        let x = params.x;
+        let y = params.y;
+        let size = params.size;
+        this.push();
+        this.translate(0, -size/2);
+        this.fill(params.color);
+        this.noStroke();
+        this.beginShape();
+        this.vertex(x, y);
+        this.bezierVertex(x - size / 2, y - size / 2, x - size, y + size / 3, x, y + size);
+        this.bezierVertex(x + size, y + size / 3, x + size / 2, y - size / 2, x, y);
+        this.endShape(this.CLOSE);
+        this.pop();
+      };
+
+      p5.prototype.tile = function(params) {
         let w = params.width;
         let h = params.height;
         let tiling = params.tiling;
@@ -249,56 +219,52 @@ export class P5Renderer {
       
         let sx = x - w / 2;
         let sy = y - h / 2;
-
-        s.noFill();
-        s.stroke(100);
-
+      
+        this.noFill();
+        this.stroke(100);
+      
         let snapshot = p.createGraphics(w, h); // for captured rectangle
-        snapshot.image(s, 0, 0, w, h, sx, sy, w, h); // w * h rectangle centered at x, y 
-
-        s.stroke(0);
-        s.noFill();
+        snapshot.image(this, 0, 0, w, h, sx, sy, w, h); // w * h rectangle centered at x, y 
+      
+        this.stroke(0);
+        this.noFill();
       
         switch (tiling) {
-          case 'straight grid': // take a and repeat it in a straight grid pattern across the full width and height of the canvas
-            for (let dx = 0; dx < s.width; dx += w) {
-              for (let dy = 0; dy < s.height; dy += h) {
-                s.image(snapshot, dx, dy, w, h, 0, 0, w, h);
-                // s.rect(dx, dy, w-5, h-5);
+          case 'straight grid':
+            for (let dx = 0; dx < this.width; dx += w) {
+              for (let dy = 0; dy < this.height; dy += h) {
+                this.image(snapshot, dx, dy, w, h, 0, 0, w, h);
               }
             }
             break;
           case 'brick':
-            // every other row should be shifted over by half the width of each unit
             let shiftRow = false;
-            for (let dy = 0; dy < p.height; dy += h) {
+            for (let dy = 0; dy < this.height; dy += h) {
               let startX = shiftRow ? - w / 2 : 0;
-              for (let dx = startX; dx < p.width; dx += w) {
-                s.image(snapshot, dx, dy, w, h, 0, 0, w, h);
+              for (let dx = startX; dx < this.width; dx += w) {
+                this.image(snapshot, dx, dy, w, h, 0, 0, w, h);
               }
               shiftRow = !shiftRow;
             }
             break;
           case 'half drop':
-            // every other column should be shifted down by half the height of each unit
             let halfColumnHeight = h / 2;
             let shiftColumn = false;
-            for (let dx = 0; dx < p.width; dx += w) {
+            for (let dx = 0; dx < this.width; dx += w) {
               let startY = shiftColumn ? -halfColumnHeight : 0;
-              for (let dy = startY; dy < p.height; dy += h) {
-                s.image(snapshot, dx, dy, w, h, 0, 0, w, h);
+              for (let dy = startY; dy < this.height; dy += h) {
+                this.image(snapshot, dx, dy, w, h, 0, 0, w, h);
               }
               shiftColumn = !shiftColumn;
             }
             break;
           case 'checkerboard':
-            // only tile every other unit, shift over for the next row like a checkerboard
-            for (let dy = 0; dy < p.height; dy += h) {
+            for (let dy = 0; dy < this.height; dy += h) {
               let isEvenRow = dy / h % 2 === 0;
-              for (let dx = 0; dx < p.width; dx += w) {
+              for (let dx = 0; dx < this.width; dx += w) {
                 let isEvenColumn = dx / w % 2 === 0;
                 if (isEvenRow !== isEvenColumn) {
-                  s.image(snapshot, dx, dy, w, h, 0, 0, w, h);
+                  this.image(snapshot, dx, dy, w, h, 0, 0, w, h);
                 }
               }
             }
@@ -307,94 +273,120 @@ export class P5Renderer {
             break;
         }
       }
-
-      //heart by Mithru: https://editor.p5js.org/Mithru/sketches/Hk1N1mMQg
-      p.heart_on = (graphics, params) => {
-        if(!p.setupFinished) return;
-        let x = params.x;
-        let y = params.y;
-        let size = params.size;
-        graphics.push();
-        graphics.translate(0, -size/2);
-        graphics.fill(params.color);
-        graphics.noStroke();
-        graphics.beginShape();
-        graphics.vertex(x, y);
-        graphics.bezierVertex(x - size / 2, y - size / 2, x - size, y + size / 3, x, y + size);
-        graphics.bezierVertex(x + size, y + size / 3, x + size / 2, y - size / 2, x, y);
-        graphics.endShape(s.CLOSE);
-        graphics.pop();
-      }
-      p.heart = (params) => {
-        p.heart_on(s, params);
-      }
-
-      p.applyFilter = (params) => {
-        s.filter(s[params.filter.toUpperCase()]);
-      }
-
-      p.box = (params) => {
-        s.push();
-        let l = params.length;
+      
+      p5.prototype.grow = function(params) {
         let w = params.width;
         let h = params.height;
-        s.translate(p.width/4-w/2, p.height/4-l/2);
-        s.noFill();
-        s.stroke(0);
-        s.strokeWeight(2);
-        const dc = [l, w, l, w];
-        const dr = [l, h, l];
-        const r = [10];
-        const c = [10];
-        for(const d of dr) { r.push(r[r.length - 1] + d); }
-        for(const d of dc) { c.push(c[c.length - 1] + d); }
+        let scaleBy = params.scaleBy / 100; // Convert the percentage to a decimal
+        
+        let sx = params.x - w / 2;
+        let sy = params.y - h / 2;
+      
+        let snapshot = p.createGraphics(w, h);
+        snapshot.image(this, 0, 0, w, h, sx, sy, w, h);
+      
+        let enlargedWidth = w * scaleBy;
+        let enlargedHeight = h * scaleBy;
+        
+        let dx = params.x - enlargedWidth / 2;
+        let dy = params.y - enlargedHeight / 2;
+        
+        this.image(snapshot, dx, dy, enlargedWidth, enlargedHeight, 0, 0, w, h);
+      }
+      
+
+      p5.prototype.applyFilter = function(params) {
+        this.filter(this[params.filter.toUpperCase()]);
+      }
+
+      p5.prototype.foldableBoxStencil = function(params) {
+        this.push();
+        const { length: l, width: w, height: h } = params;
+
+        // Calculate centering offsets
+        const offsetX = (this.width - (2 * l + h)) / 2; // symmetrical so no tab calculation
+        const offsetY = (this.height - (2 * l + 2 * w) + 0.2 * h) / 2;
+
+        this.translate(offsetX, offsetY);
+
+        this.noFill();
+        this.stroke(0);
+        this.strokeWeight(2);
+
+        const calculatePoints = (initial, dimensions) => {
+          const points = [initial];
+          for (const d of dimensions) {
+            points.push(points[points.length - 1] + d);
+          }
+          return points;
+        }
+
+        const r = calculatePoints(0, [l, h, l]);
+        const c = calculatePoints(0, [l, w, l, w]);
+        
         const cut = (r0, c0, r1, c1) => {
-          s.stroke(0);
-          s.line(r[r0], c[c0], r[r1], c[c1]);
+          this.stroke(0);
+          this.line(r[r0], c[c0], r[r1], c[c1]);
         }
+
         const fold = (r0, c0, r1, c1) => {
-          s.stroke(128);
-          s.line(r[r0], c[c0], r[r1], c[c1]);
+          this.stroke(128);
+          this.line(r[r0], c[c0], r[r1], c[c1]);
         }
+
         const tab = (r0, c0, r1, c1) => {
-          s.stroke(0);
           const u = [r[r1] - r[r0], c[c1] - c[c0]];
           const v = [-u[1], u[0]];
-          var prev = [0,0]; 
-          for(const [du, dv] of [
+          let prev = [0, 0]; 
+
+          for (const [du, dv] of [
             [0.1, 0.2],
             [0.9, 0.2],
-            [1.0, 0.0]]) {
-            s.line(r[r0] + u[0] * prev[0] + v[0] * prev[1],
-                c[c0] + u[1] * prev[0] + v[1] * prev[1],
-                r[r0] + u[0] * du + v[0] * dv,
-                c[c0] + u[1] * du + v[1] * dv);
-            prev = [du, dv];						
+            [1.0, 0.0]
+          ]) {
+            this.line(r[r0] + u[0] * prev[0] + v[0] * prev[1],
+              c[c0] + u[1] * prev[0] + v[1] * prev[1],
+              r[r0] + u[0] * du + v[0] * dv,
+              c[c0] + u[1] * du + v[1] * dv
+            );
+            prev = [du, dv];
           }
+          
           fold(r0, c0, r1, c1);
         }
-        tab(1,0,1,1);
-        cut(1,1,0,1);
-        cut(0,1,0,2);
-        cut(0,2,1,2);
-        tab(1,2,1,3);
-        tab(1,3,1,4);
-        cut(1,4,2,4);
-        tab(2,4,2,3);
-        tab(2,3,2,2);
-        cut(2,2,3,2);
-        cut(3,2,3,1);
-        cut(3,1,2,1);
-        tab(2,1,2,0);
-        tab(2,0,1,0);
-        // extra folds that aren't for tabs
-        fold(1,1,1,2);
-        fold(1,2,2,2);
-        fold(2,2,2,1);
-        fold(2,1,1,1);
-        fold(1,3,2,3);
-        s.pop();
+
+        // Proceeds counterclockwise from top left corner
+        cut(1, 0, 1, 1);   // Top face's left edge
+
+        tab(1, 1, 0, 1);   // Left face's top edge
+        tab(0, 1, 0, 2);   // Left face's left edge
+        tab(0, 2, 1, 2);   // Left face's bottom edge
+
+        cut(1, 2, 1, 3);   // Bottom face's left edge
+
+        cut(1, 3, 1, 4);   // Front face's left edge
+        cut(1, 4, 2, 4);   // Front face's bottom edge
+        cut(2, 4, 2, 3);   // Front face's right edge
+
+        cut(2, 3, 2, 2);   // Bottom face's right edge
+
+        tab(2, 2, 3, 2);   // Right face's bottom edge
+        tab(3, 2, 3, 1);   // Right face's right edge
+        tab(3, 1, 2, 1);   // Right face's top edge
+
+        cut(2, 1, 2, 0);   // Top face's right edge
+        tab(2, 0, 1, 0);   // Top face's top edge
+
+        // Extra folds that aren't for tabs
+        fold(1, 1, 1, 2);  // Back face left fold
+        fold(1, 2, 2, 2);  // Back face bottom fold
+        fold(2, 2, 2, 1);  // Back face right fold
+        fold(2, 1, 1, 1);  // Back face top fold (lid hinge)
+        fold(1, 3, 2, 3);  // Front face to bottom face fold
+
+        this.pop();
       }
+      
 
       let paperdolls = { // paper doll stencils
         outfits: [],
@@ -429,16 +421,10 @@ export class P5Renderer {
         }
       }
 
-      // p.paperdoll = (params) => {
-      // 	s.image(paperdolls.dollFill, 0, 0, p.width, p.height);
-      // }
-
-      p.paperdoll = (params) => {
-
-        const MASK = false;
-
+      p5.prototype.paperdoll = function(params) {
+  
         // Get the color value from params.
-        let c = s.color(params.skinTone);
+        let skinTone = p.color(params.skinTone);
         
         // Parse the outfit and hairstyle numbers from params
         let outfitNumber = parseInt(params.outfit);
@@ -455,111 +441,58 @@ export class P5Renderer {
       
         // Create a new graphics object to draw the paper doll and its outfit and hairstyle fills
         let dollCanvas = p.createGraphics(p.width, p.height);
-        var outfitCanvas = p.createGraphics(p.width, p.height); //weird example where block scope didn't work!
+        var outfitCanvas = p.createGraphics(p.width, p.height);
         var hairstyleCanvas = p.createGraphics(p.width, p.height);
       
         //Tint and then draw the doll fill
-        dollCanvas.tint(c); // Apply the tint for the doll's fill image
-        dollCanvas.image(paperdolls.dollFill, 0, 0, p.width, p.height); // Draw the doll's fill image
-        dollCanvas.noTint(); // Remove the tint before drawing the other images
-        dollCanvas.image(paperdolls.underlayerFill, 0, 0, p.width, p.height); // Undies!
+        // dollCanvas.tint(skinTone);
+        // dollCanvas.image(paperdolls.dollFill, 0, 0, p.width, p.height);
+        // dollCanvas.noTint();
+        // dollCanvas.image(paperdolls.underlayerFill, 0, 0, p.width, p.height);
 
+
+        // Use doll fill as a mask for the skin tone
+        dollCanvas.image(paperdolls.dollFill, 0, 0, p.width, p.height);
+        dollCanvas.drawingContext.globalCompositeOperation = 'source-in';
+        let skinToneCanvas = p.createGraphics(p.width, p.height);
+        skinToneCanvas.background(skinTone);
+        dollCanvas.image(skinToneCanvas, 0, 0);
+      
         // Prepare the outfit fill as a mask
         outfitCanvas.image(outfit.fill, 0, 0, p.width, p.height);
-        outfitCanvas.image(paperdolls.underlayerFill, 0, 0, p.width, p.height);
+        outfitCanvas.image(paperdolls.underlayerFill, 0, 0, p.width, p.height); // underwear!
         outfitCanvas.drawingContext.globalCompositeOperation = 'source-in';
-        outfitCanvas.image(s, 0, 0, p.width, p.height);
+        outfitCanvas.image(this, 0, 0, p.width, p.height);
       
         // Prepare the hairstyle fill as a mask
         hairstyleCanvas.image(hairstyle.fill, 0, 0, p.width, p.height);
         hairstyleCanvas.drawingContext.globalCompositeOperation = 'source-in';
-        hairstyleCanvas.image(s, 0, 0, p.width, p.height);
+        hairstyleCanvas.image(this, 0, 0, p.width, p.height);
       
         // Lighten the original painting
-        s.noStroke();
-        s.fill(255, 220);
-        s.rect(0, 0, p.width, p.height);
-        
-
+        this.noStroke();
+        this.fill(255, 220);
+        this.rect(0, 0, p.width, p.height);
+      
         // Draw the doll fill
-        s.image(dollCanvas, 0, 0);
-
-          // Draw the outfit fill
-          s.image(outfitCanvas, 0, 0);
-
+        this.image(dollCanvas, 0, 0);
+      
+        // Draw the outfit fill
+        this.image(outfitCanvas, 0, 0);
+      
         // Draw the outfit outline
         if(outfit.outline){
-          s.image(outfit.outline, 0, 0, s.width, s.height);
+          this.image(outfit.outline, 0, 0, this.width, this.height);
         }
-
-          // Draw the hair fill
-         s.image(hairstyleCanvas, 0, 0);
+      
+        // Draw the hair fill
+        this.image(hairstyleCanvas, 0, 0);
       
         // Draw the hair outline
         if(hairstyle.outline){
-          s.image(hairstyle.outline, 0, 0, s.width, s.height);
+          this.image(hairstyle.outline, 0, 0, this.width, this.height);
         }
-
-        // // s.image(g, 0, 0);
-        
-        // // Apply the outfit fill as a mask
-        // outfitCanvas.image(outfit.fill, 0, 0, p.width, p.height);
-        // outfitCanvas.drawingContext.globalCompositeOperation = 'source-in';
-        // outfitCanvas.image(s, 0, 0, p.width, p.height);
-        
-        // // Lighten everything that is not within the mask, then draw the masked image
-        // s.noStroke();
-        // s.fill(255, 220);
-        // s.rect(0, 0, p.width, p.height);
-        // s.image(dollCanvas, 0, 0);
-        // s.image(outfitCanvas, 0, 0);
-      
-        // // Draw the outfit's outline image
-        // if(outfit.outline){
-        //   s.image(outfit.outline, 0, 0, s.width, s.height);
-        // }
-  }
-
-      
-      // p.paperdoll = (params) => {
-      // 	let c = s.color(params.color);
-        
-      // 	// Parse the outfit and hairstyle numbers from params
-      // 	let outfitNumber = parseInt(params.outfit);
-      // 	let hairstyleNumber = parseInt(params.hairstyle);
-      
-      // 	// Find the corresponding outfit and hairstyle objects in paperdolls
-      // 	let outfit = paperdolls.outfits.find(o => o.number === outfitNumber);
-      // 	let hairstyle = paperdolls.hairstyles.find(h => h.number === hairstyleNumber);
-      
-      // 	if (!outfit || !hairstyle) {
-      // 		console.error('Could not find outfit and/or hairstyle:', outfitNumber, hairstyleNumber);
-      // 		return;
-      // 	}
-      
-      // 	// Draw the images in the correct order
-      // 	s.tint(c); // Apply the tint for the doll's fill image
-      // 	s.image(paperdolls.dollFill, 0, 0, p.width, p.height); // Draw the doll's fill image
-      // 	s.noTint(); // Remove the tint before drawing the other images
-        
-      // 	if(outfit.fill){
-      // 		s.image(outfit.fill, 0, 0, s.width, s.height); // Draw the outfit's fill image
-      // 	}
-      
-      // 	if(outfit.outline){
-      // 		s.image(outfit.outline, 0, 0, s.width, s.height); // Draw the outfit's outline image
-      // 	}
-        
-      // 	if(hairstyle.fill){
-      // 		s.tint(255); // Apply white tint to prevent color from previous tint interfering
-      // 		s.image(hairstyle.fill, 0, 0, s.width, s.height); // Draw the hairstyle's fill image
-      // 		s.noTint(); // Remove the tint before drawing the other images
-      // 	}
-      
-      // 	if(hairstyle.outline){
-      // 		s.image(hairstyle.outline, 0, 0, s.width, s.height); // Draw the hairstyle's outline image
-      // 	}
-      // }
+      }
       
 
       p.addLine = (params) => {
@@ -568,14 +501,6 @@ export class P5Renderer {
         s.noFill();
         s.stroke(params.color);
         s.line(params.x1, params.y1, params.x2, params.y2);
-      }
-
-      p.addPreviewLine = (params, c) => { //TODO: integrate choosing canvas into all drawing functions
-        if(!p.setupFinished) return;
-        c.strokeWeight(params.lineWeight);
-        c.noFill();
-        c.stroke(params.color);
-        c.line(params.x1, params.y1, params.x2, params.y2);
       }
 
       p.addBrushStroke = (params) => {

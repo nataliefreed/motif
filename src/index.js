@@ -93,59 +93,22 @@ class MotifApp {
 						}
 						else if(mouseActionType === 'drag') {
 							this.joyManager.updatePreviewData(this.activeBrushstroke.getPathAndPoint());
-								this.sketch.loop(); //render preview of brushstroke
+							this.joyManager.previewActionEnabled = true;
+							this.sketch.loop(); //render preview of brushstroke
 						}
 					}
-				// else if(activeEffect.getValue('mouseActionType') == 'single-click2') {
-				// 	let brushtap = new Brushstroke(
-				// 		activeEffect,
-				// 		{ x: this.canvasRenderer.mouseX, y: this.canvasRenderer.mouseY },
-				// 		currentColorHSV,
-				// if(activeEffect.getValue('mouseActionType') != 'drag') {
-				// 	this.activeBrushstroke = null;
-				// 	this.noLoop();
-				// }
-
-				// 	)
-				// }
-					// this.addEvent('motif', activeEffect.getValue('name'), {
-					// 	pointsList: { type:'path', value: this.brushstroke.getPoints()},
-					// 	)
-					// this.addEvent('motif', activeEffect, { 
-					// 	pointsList: { type:'path', value: this.brushstroke.getPoints()},
-					// 	lineWeight: {type:'path', value: currentLineWeight},
-					// 	minSize: {type:'number', value: currentLineWeight},
-					// 	maxSize: {type:'number', value: currentLineWeight*2},
-					// 	id: this.brushstroke.getID()
-					// });
-				// else if(activeEffect.category == "Stencils") {
-				// 	this.addEvent('stencils', activeEffect, {
-				// 		x: { type:'number', value: Math.round(this.sketch.mouseX)},
-				// 		y: { type:'number', value: Math.round(this.sketch.mouseY)}
-				// 	});
-				// }
-				// else {
-				// 	//if action type is not "drag", event added on mousedown
-				// 	this.addEvent('motif', activeEffect, {
-				// 			x: { type:'number', value: Math.round(this.sketch.mouseX)},
-				// 			y: { type:'number', value: Math.round(this.sketch.mouseY)}
-				// 		});
-				// }
-
 			}
 
 		});
 
 		document.getElementById('drawing-canvas').addEventListener('mousemove', e => {
-			if(mouseDownOverCanvas) {
-				dragging = true;
-
-				/*
+			/*
 					When mouse is down over canvas and mouse is moving,
 					- add more points to the current path, making sure the Joy event gets the updates
 					- render current preview of brushstroke to "preview" canvas
-
-				*/
+			*/
+			if(mouseDownOverCanvas) {
+				dragging = true;
 
 				if(this.activeBrushstroke) {
 					this.activeBrushstroke.addPoint({x: this.sketch.mouseX, y: this.sketch.mouseY});
@@ -158,10 +121,17 @@ class MotifApp {
 					console.log("No active brushstroke found");
 				}
 			}
+			else {
+				// // preview follows mouse pointer
+				// if(this.effects.getEffectByName(this.ui.getSelectedEffect()).getValue('mouseActionType') === 'single-click') {
+				//   this.sketch.loop();
+				// 	this.joyManager.updatePreviewData({position: [this.sketch.mouseX, this.sketch.mouseY]});
+				// 	this.joyManager.previewActionEnabled = true;
+				// }
+			}
 		});
 
 		document.getElementById('drawing-canvas').addEventListener('mouseup', e => {
-			console.log("mouse up!");
 			mouseDownOverCanvas = false;
 
 			if(this.activeBrushstroke) {	
@@ -171,6 +141,7 @@ class MotifApp {
 					this.joyManager.addCurrentAction(pathAndPoint);
 				}
 				this.activeBrushstroke = null;
+				this.joyManager.previewActionEnabled = false;
 				this.sketch.noLoop();
 			}
 		});

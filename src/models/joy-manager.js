@@ -9,13 +9,19 @@ export class JoyManager {
 
 		this.currentColorHSV = [Math.random()*360, 0.8, 0.8];
 
-		this.previewCanvas = sketch.getPreviewCanvas();
-    this.staticCanvas = sketch.getStaticCanvas();
-
     let data = Joy.loadFromURL();
 
     this.loadEffects(effects);
 		this.sketch = sketch;
+		this.previewCanvas = sketch.getPreviewCanvas();
+    this.staticCanvas = sketch.getStaticCanvas();
+
+		this.previewActionEnabled = false; //run the preview action?
+
+		/**************************************/
+	  /******* Main Joy List of Actions *****/
+	  /**************************************/
+
     this.joy = new Joy({
 			// Where the Joy editor goes:
 			container: "#joy",
@@ -38,14 +44,19 @@ export class JoyManager {
 			previewNumbers: true,
 		
 			// What to do when the user makes a change:
-			onupdate: function(my) {
+			onupdate: (my) => {
         sketch.clear();
-        my.paintingActionList.act(sketch);
-        my.stencilActionList.act(sketch);
+				// TODO!: Change this to use the static canvas 
+        my.paintingActionList.act(this.staticCanvas);
+        my.stencilActionList.act(this.staticCanvas);
 				// draw the preview canvas
         sketch.render();
 			}
 		});
+
+	/**************************************/
+	/*** Next & Current Action Preview ****/
+	/**************************************/
 
 		let previewCanvas = this.previewCanvas;
 		// preview current action in menu bar
@@ -53,15 +64,10 @@ export class JoyManager {
 			container: "#joy-preview",
 			init: "{id:'action', type:'singleAction'}",
 			modules: ['motif', 'sequences', 'stencils'],
-			onupdate: function(my) {
-				//works - makes it run action when you click on it
-				/*
-				my.action.act(sketch);
-				sketch.render();
-				*/
-				// this.previewCanvas
-				console.log("on update preview", my);
-				my.action.act(previewCanvas);
+			onupdate: (my) => {
+				if(this.previewActionEnabled) {
+				 my.action.act(previewCanvas);
+				}
 			}
 		});
 		this.previewActionList = this.joyPreview.rootActor.action;
@@ -73,11 +79,75 @@ export class JoyManager {
 			if(this.effectType != this.previousEffectType) {
 				this._updatePreview();
 				this.previousEffectType = this.effectType;
+				this.previewActionEnabled = false;
 			}
 		});
   }
 
-  loadEffects(effects) {
+	// update preview value
+	_updatePreview(saveCurrentSettings=false) 
+	{
+		let data = {};
+		data.color = { type: 'color', value: this.currentColorHSV }; // add latest color
+		data.color1 = { type: 'color', value: this.currentColorHSV }; // add latest color
+		if(saveCurrentSettings) {
+			data = {...this.previewActionList.getActionData(), ...data};
+		}
+		this.previewActionList.setAction(this.effectType, data);
+	}
+
+	updatePreviewData(newData) {
+		this.previewActionList.setChildData(newData);
+	}
+
+	addCurrentAction(data) {
+		let actionData = this.previewActionList.getActionData();
+		let type = this.previewActionList.getActionType();
+		let combinedData = {...actionData, ...data};
+		this.previewActionEnabled = false;
+
+		const category = type.split('/')[0];
+		if(category === 'stencils') {
+			this._addEvent('stencils', type, combinedData);
+		}
+		else {
+			this._addEvent('motif', type, combinedData);
+		}
+
+		this.currentColorHSV = [Math.random()*360, 0.8, 0.8]; //re-randomize color
+		this._updatePreview(true);
+		// this.previewActionList.getAction();
+		// console.log("preview actor", this.previewActionList.actor, "widget", this.previewActionList.widget, "data", this.previewActionList.getAction());
+		// if(this.effectType) {
+		// 	this._addEvent(listName, this.effectType, data);
+		// }
+	}
+
+	_getParentList(listName) {
+		if (listName == 'motif') {
+			return this.joy.rootActor.paintingActionList;
+		}
+		else if (listName == 'stencils') {
+			return this.joy.rootActor.stencilActionList;
+		}
+		else {
+			throw new Error("No list found with name " + listName);
+		}
+	}
+
+	_addEvent(listName, type, data) {
+		const target = this._getParentList(listName);
+		target.addAction(type, undefined, data);
+		target.update();
+	}
+
+	moveAction(listName, oldIndex, newIndex) {
+		const target = this._getParentList(listName);
+		target.moveAction(oldIndex, newIndex);
+		target.update();
+	}
+
+	loadEffects(effects) {
 		Joy.module("motif", function() {
 			//Add from effects list, but filter out stencils
 			let motifEffects = Object.values(effects).filter((e) => {
@@ -118,62 +188,5 @@ export class JoyManager {
 				Joy.add(template);	
 			});
     });
-	}
-
-	// update preview value
-	_updatePreview(saveCurrentSettings=false) 
-	{
-		let data = {};
-		data.color = { type: 'color', value: this.currentColorHSV }; // add latest color
-		data.color1 = { type: 'color', value: this.currentColorHSV }; // add latest color
-		if(saveCurrentSettings) {
-			data = {...this.previewActionList.getActionData(), ...data};
-		}
-		this.previewActionList.setAction(this.effectType, data);
-	}
-
-	updatePreviewData(newData) {
-		this.previewActionList.setChildData(newData);
-	}
-
-	addCurrentAction(data) {
-		let actionData = this.previewActionList.getActionData();
-		let type = this.previewActionList.getActionType();
-		let combinedData = {...actionData, ...data};
-		// TODO!: This is a dangerous way to track if previewActionList is previewing. Probably should structure this better
-		this.previewActionList.entryEnabled = false;
-		this._addEvent('motif', type, combinedData);
-
-		this.currentColorHSV = [Math.random()*360, 0.8, 0.8]; //re-randomize color
-		this._updatePreview(true);
-		// this.previewActionList.getAction();
-		// console.log("preview actor", this.previewActionList.actor, "widget", this.previewActionList.widget, "data", this.previewActionList.getAction());
-		// if(this.effectType) {
-		// 	this._addEvent(listName, this.effectType, data);
-		// }
-	}
-
-	_getParentList(listName) {
-		if (listName == 'motif') {
-			return this.joy.rootActor.paintingActionList;
-		}
-		else if (listName == 'stencils') {
-			return this.joy.rootActor.stencilActionList;
-		}
-		else {
-			throw new Error("No list found with name " + listName);
-		}
-	}
-
-	_addEvent(listName, type, data) {
-		const target = this._getParentList(listName);
-		target.addAction(type, undefined, data);
-		target.update();
-	}
-
-	moveAction(listName, oldIndex, newIndex) {
-		const target = this._getParentList(listName);
-		target.moveAction(oldIndex, newIndex);
-		target.update();
 	}
 }

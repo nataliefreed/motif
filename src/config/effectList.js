@@ -49,8 +49,7 @@ export const effectList = [
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
-      console.log(my.data.position);
-      my.target.addCircle({ color: my.data.color, x: my.data.position.x, y: my.data.position.y, r: my.data.radius });
+      my.target.addCircle({ color: my.data.color, x: my.data.position[0], y: my.data.position[1], r: my.data.radius });
     }
   },
   {
@@ -60,12 +59,11 @@ export const effectList = [
     tag: 'motif',
     init: `Square of size {id:'size', type:'numberslider', min:1, max:600, placeholder:40}
     in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
-    at ({id:'x', type:'numberslider', min:0, max:600, placeholder:200},
-    {id:'y', type:'numberslider', min:0, max:600, placeholder:200})`,
+    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
-      my.target.addSquare({ color: my.data.color, x: my.data.x, y: my.data.y, size: my.data.size });
+      my.target.addSquare({ color: my.data.color, x: my.data.position[0], y: my.data.position[1], size: my.data.size });
     }
   },
   {
@@ -76,12 +74,11 @@ export const effectList = [
     init: `Polygon with {id:'nsides', type:'numberslider', min:3, max:50, placeholder:6} sides 
     and radius {id:'radius', type:'numberslider', min:1, max:600, placeholder:20} 
     in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
-    at ({id:'x', type:'numberslider', min:0, max:600, placeholder:200},
-    {id:'y', type:'numberslider', min:0, max:600, placeholder:200})`,
+    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
-      my.target.polygon({ color: my.data.color, x: my.data.x, y: my.data.y, r: my.data.radius, nsides: my.data.nsides });
+      my.target.polygon({ color: my.data.color, x: my.data.position[0], y: my.data.position[1], r: my.data.radius, nsides: my.data.nsides });
     }
   },
   {
@@ -93,18 +90,11 @@ export const effectList = [
     outer {id:'r1', type:'numberslider', min:1, max:600, placeholder:20}, 
     inner {id:'r2', type:'numberslider', min:1, max:600, placeholder:10} 
     in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
-    at ({id:'x', type:'numberslider', min:0, max:600, placeholder:200}, 
-    {id:'y', type:'numberslider', min:0, max:600, placeholder:200})`,
+    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
-      my.target.star({color: my.data.color, x: my.data.x, y: my.data.y, r1: my.data.r1, r2: my.data.r2, npoints: my.data.npoints});
-    },
-    config:
-    {
-      shape: (data, canvas) => {
-        canvas.star({color: data.color, x: data.x, y: data.y, r1: data.r1, r2: data.r2, npoints: data.npoints});
-      }
+      my.target.star({color: my.data.color, x: my.data.position[0], y: my.data.position[1], r1: my.data.r1, r2: my.data.r2, npoints: my.data.npoints});
     }
   },
   {
@@ -114,31 +104,56 @@ export const effectList = [
     tag: 'motif',
     init: `Heart of size {id:'size', type:'numberslider', min:-600, max:600, placeholder:40} 
     in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
-    at ({id:'x', type:'numberslider', min:0, max:600, placeholder:200}, 
-    {id:'y', type:'numberslider', min:0, max:600, placeholder:200})`,
+    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
-      my.target.heart({ color: my.data.color, x: my.data.x, y: my.data.y, size: my.data.size });
+      console.log("heart");
+      my.target.heart({ color: my.data.color, x: my.data.position[0], y: my.data.position[1], size: my.data.size });
     }
   },
   {
     name: 'heart brush',
     dropdownName: 'heart brush',
-    category: 'Brushes2',
+    category: 'Brushes',
     tag: 'motif',
     init: `Along path {id:'path', type:'path', placeholder:[[20,50],[600,250]]} 
     Heart of size {id:'size', type:'numberslider', min:-600, max:600, placeholder:10} 
     in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
-    at {id:'position', type:'coordinate', placeholder:[200, 200]}`,
+    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'drag',
     onact: (my) => {
-      console.log("heart brush onact", my.data.path.length);
-      console.log("heart brush onact", my);
+      /*if(hover) {
+
+      }
+      else if(preview) {
+
+      }*/
       for(let i=0;i<my.data.path.length;i++) {
         //offset experiment // my.target.heart({ color: my.data.color, x: my.data.path[i][0]+my.data.position.x-my.data.path[0][0], y: my.data.path[i][1]+my.data.position.y-my.data.path[0][1], size: my.data.size });
         my.target.heart({ color: my.data.color, x: my.data.path[i][0], y: my.data.path[i][1], size: my.data.size });
+      }
+    }
+  },
+  {
+    name: 'star brush',
+    dropdownName: 'star brush',
+    category: 'Brushes',
+    tag: 'motif',
+    init: `Along path {id:'path', type:'path', placeholder:[[20,50],[600,250]]} 
+    Star with {id:'npoints', type:'numberslider', min:3, max:60, placeholder:5} points, 
+    outer {id:'r1', type:'numberslider', min:1, max:600, placeholder:20}, 
+    inner {id:'r2', type:'numberslider', min:1, max:600, placeholder:10} 
+    in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}`,
+    cursor: './assets/cursors/star-solid.svg',
+    mouseActionType: 'drag',
+    onact: (my) => {
+      console.log("star brush onact", my.data.path.length);
+      console.log("star brush onact", my);
+      for(let i=0;i<my.data.path.length;i++) {
+        my.target.star({color: my.data.color, x: my.data.path[i][0], y: my.data.path[i][1], r1: my.data.r1, r2: my.data.r2, npoints: my.data.npoints});
+        console.log({color: my.data.color, x: my.data.path[i][0], y: my.data.path[i][1], r1: my.data.r1, r2: my.data.r2, npoints: my.data.npoints});
       }
     }
   },
@@ -173,42 +188,42 @@ export const effectList = [
       my.target.addBrushStroke({ color: my.data.color, lineWeight: my.data.lineWeight, pointsList: my.data.pointsList });
     }
   },
-  {
-    name: 'star brush',
-    dropdownName: 'Star Brush',
-    category: 'NewBrushes',
-    tag: 'motif',
-    init: `Star brush in {id:'color', type:'color', placeholder:[20, 0.8, 1.0]} 
-    with scale {id: 'scale', type: 'numberslider', min:1, max:600, placeholder: 20}% 
-    along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
-    cursor: './assets/cursors/star-solid.svg',
-    mouseActionType: 'drag',
-    onact: (my) => {
+  // {
+  //   name: 'star brush',
+  //   dropdownName: 'Star Brush',
+  //   category: 'NewBrushes',
+  //   tag: 'motif',
+  //   init: `Star brush in {id:'color', type:'color', placeholder:[20, 0.8, 1.0]} 
+  //   with scale {id: 'scale', type: 'numberslider', min:1, max:600, placeholder: 20}% 
+  //   along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   mouseActionType: 'drag',
+  //   onact: (my) => {
 
-    },
-    config: {
-      scale: 20,
-      shapes: [
-        (x, y, size, c) => {
-          c.star({color: [255, 0, 255], x: x, y: y, r1: size, r2: size/2, npoints: 5});
-        },
-      ],
-      sizes: [10, 20, 30, 40, 50, 40, 30, 20],
-      colors: [
-        (i) => { return [255, 165,   0]; }, // Orange
-        (i) => { return [255, 215,   0]; }, // Gold
-      ],
-      alpha: 0.75,
-      stepSize: 20
-    },
-    render: (settings) => {
-      return renderPath(settings, config);
-    }
-  },
+  //   },
+  //   config: {
+  //     scale: 20,
+  //     shapes: [
+  //       (x, y, size, c) => {
+  //         c.star({color: [255, 0, 255], x: x, y: y, r1: size, r2: size/2, npoints: 5});
+  //       },
+  //     ],
+  //     sizes: [10, 20, 30, 40, 50, 40, 30, 20],
+  //     colors: [
+  //       (i) => { return [255, 165,   0]; }, // Orange
+  //       (i) => { return [255, 215,   0]; }, // Gold
+  //     ],
+  //     alpha: 0.75,
+  //     stepSize: 20
+  //   },
+  //   render: (settings) => {
+  //     return renderPath(settings, config);
+  //   }
+  // },
   {
     name: 'mosaic brush',
     dropdownName: 'Mosaic Brush',
-    category: 'NewBrushes',
+    category: 'Brushes',
     tag: 'motif',
     init: `Mosaic brush with scale {id: 'scale', type: 'numberslider', min:25, max:600, placeholder: 100} 
     % along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
@@ -255,7 +270,7 @@ export const effectList = [
   {
     name: 'stripe brush',
     dropdownName: 'Stripe Brush',
-    category: 'NewBrushes',
+    category: 'Brushes',
     tag: 'motif',
     init: `Stripe brush with scale {id: 'scale', type: 'numberslider', min:25, max:600, placeholder: 100} 
     % along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
@@ -396,17 +411,63 @@ export const effectList = [
   {
     name: 'tile',
     dropdownName: 'Tile',
-    category: 'Patterns',
+    category: 'Effects',
     tag: 'motif',
     init: `{id:'tiling', type:'choose', options:['straight grid', 'brick', 'half drop', 'checkerboard'], placeholder:'straight grid'} 
     with width {id:'width', type:'numberslider', min:1, max:600, placeholder:100} 
     and height {id:'height', type:'numberslider', min:1, max:600, placeholder:100}
-    at ({id:'x', type:'numberslider', min:0, max:600, placeholder:200}, 
-    {id:'y', type:'numberslider', min:0, max:600, placeholder:200})`,
+    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
-      my.target.tile({ width: my.data.width, height: my.data.height, tiling: my.data.tiling, x: my.data.x, y: my.data.y });
+      my.target.tile({
+        width: my.data.width,
+        height: my.data.height,
+        tiling: my.data.tiling,
+        x: my.data.position[0],
+        y: my.data.position[1] });
+    }
+  },
+  {
+    name: 'grow',
+    dropdownName: 'Grow',
+    category: 'Effects',
+    tag: 'motif',
+    init: `Scale by {id:'scaleBy', type:'numberslider', min:0, max:600, placeholder:300}%
+    width {id:'width', type:'numberslider', min:1, max:600, placeholder:100} 
+    and height {id:'height', type:'numberslider', min:1, max:600, placeholder:100}
+    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
+    cursor: './assets/cursors/star-solid.svg',
+    mouseActionType: 'single-click',
+    onact: (my) => {
+      my.target.grow({ 
+        width: my.data.width, 
+        height: my.data.height, 
+        scaleBy: my.data.scaleBy, 
+        x: my.data.position[0], 
+        y: my.data.position[1] 
+      });
+    }
+  },
+  {
+    name: 'shrink',
+    dropdownName: 'Shrink',
+    category: 'Effects',
+    tag: 'motif',
+    init: `Scale by {id:'scaleBy', type:'numberslider', min:0, max:600, placeholder:50}%
+    width {id:'width', type:'numberslider', min:1, max:600, placeholder:100} 
+    and height {id:'height', type:'numberslider', min:1, max:600, placeholder:100}
+    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
+    cursor: './assets/cursors/star-solid.svg',
+    mouseActionType: 'single-click',
+    onact: (my) => {
+      my.target.grow({ 
+        width: my.data.width, 
+        height: my.data.height, 
+        scaleBy: my.data.scaleBy, 
+        x: my.data.position[0], 
+        y: my.data.position[1] 
+      });
     }
   },
   {
@@ -471,7 +532,7 @@ export const effectList = [
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
-      my.target.box({ length: my.data.length, width: my.data.width, height: my.data.height });
+      my.target.foldableBoxStencil({ length: my.data.length, width: my.data.width, height: my.data.height });
     }
   },
   {

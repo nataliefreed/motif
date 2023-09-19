@@ -677,11 +677,13 @@ Joy.add({
   initWidget: function() {
     // DOM representation for the widget
     let dom = document.createElement("div");
-    dom.className = "coordinate-widget";
+    dom.classList.add("coordinate-widget");
+    dom.classList.add("underline-editable");
 
     let x = this.getX(); // set initial value in the DOM
     let y = this.getY();
     dom.innerHTML = `(${x}, ${y})`;
+    // dom.innerHTML = ` at <span class="underline-coordinates">(${x}, ${y})</span>`
 
     dom.onclick = () => {
       // Create and show the grid modal
@@ -703,10 +705,10 @@ Joy.add({
     this.dom = dom;
   },
   onget: function(my) {
-    return { x: my.data.value[0], y: my.data.value[1] };
+    return [my.data.value[0], my.data.value[1]];
   },
   placeholder: function() {
-    return { x: 0, y: 0 }; // placeholder if we never set the value originally, does this ever get used?
+    return [0, 0]; // placeholder if we never set the value originally, does this ever get used?
   },
   getX() {
     return parseInt(this.getData('value')[0]);
@@ -869,8 +871,6 @@ Joy.add({
   initWidget: function() {
       this.dom = document.createElement("li");
       this.dom.className = "joy-single-action";
-      // Flag that determines if entry has preview data that should be rendered
-      this.entryEnabled = false;
       this.entry = {}; // Initially empty
   },
   setAction: function(actionType, actionOptions={}) {
@@ -880,7 +880,6 @@ Joy.add({
         this.removeChild(this.entry.actor);
         this.entry = {};
       }
-      this.entryEnabled = false;
 
       // Create and add the new action's widget
       let newActor = this.addChild({type: actionType}, actionOptions);
@@ -931,14 +930,13 @@ Joy.add({
         }
     }
     this.entry.actor.update(); //not sure if needed, will test
-    this.entryEnabled = true;
     console.log("after update: this.entry.actor is", this.entry.actor);
   },
   getActionType: function() {
     return this.entry.actor.type;
   },
   onact: function(my) {
-    if(this.entry.actor && this.entryEnabled) {
+    if(this.entry.actor) {
       this.entry.actor.act(my.target, this.getActionData());
     }
   },
