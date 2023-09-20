@@ -27,41 +27,71 @@ class MotifApp {
 		this.ui = new UIManager(this.effects.getEffects(), this.eventBus);
 		this.ui.generateEffectToolbarUI(); //categories and brush/effect buttons
 
-		this._initUI();
+		this._setupDraggables();
+		this._setupEventListeners();
 
 		this.activeBrushstroke = null;
-		
-		// const slider = document.getElementById('numberSlider');
-		// 	const input = document.getElementById('numberInput');
-
-		// 	slider.addEventListener('input', () => {
-		// 		input.value = slider.value;
-		// 	});
-
-		// 	input.addEventListener('input', () => {
-		// 		if (input.value < parseInt(input.min) || input.value > parseInt(input.max)) {
-		// 				alert('Value must be between ' + input.min + ' and ' + input.max);
-		// 				input.value = slider.value;
-		// 		} else {
-		// 				slider.value = input.value;
-		// 		}
-		//   });
 	}
 	
-	_initUI() {
+	_setupDraggables() {
 		
 		//List sorting
     // Sortable.mount(new MultiDrag());
-		let sortablelist = document.getElementById('paintingActionList-joy-list');
-    new Sortable(sortablelist, {
+
+		let paintingActions = document.getElementById('paintingActionList-joy-list');
+    new Sortable(paintingActions, {
 	    animation: 150,
 	    ghostClass: 'sortable-ghost',
+			chosenClass: "sortable-chosen",
+			dragClass: "sortable-drag",
+			handle: '.joy-bullet-container',
+			filter: '.joy-add-item',
+			// removeOnSpill: true,
+			// revertOnSpill: true,
+			scroll: true,
 			// multiDrag: true,
 			// selectedClass: 'selected',
+			group: {
+				name: "shared"
+			},
 			onUpdate: (e) => {
 				this.joyManager.moveAction('motif', e.oldIndex, e.newIndex);
+				console.log("moved", e.item, e.oldIndex, e.newIndex);
+			},
+			onMove: (e) => {
+				if(e.related.classList.contains('joy-add-item')) { //keep + at end of list
+					return false; 
+				} 
+			},
+			// onSpill: (e) => {
+			// 	console.log("spilled", e.item);
+			// },
+    });
+
+		let stencilActions = document.getElementById('stencilActionList-joy-list');
+		new Sortable(stencilActions, {
+	    animation: 150,
+	    ghostClass: 'sortable-ghost',
+			onUpdate: (e) => {
+				this.joyManager.moveAction('stencils', e.oldIndex, e.newIndex);
 			}
     });
+
+		let trash = document.getElementById('trash');
+		Sortable.create(trash, {
+			group: 'shared',
+			ghostClass: 'sortable-ghost-delete',
+			chosenClass: 'sortable-chosen-delete',
+			onAdd: (e) => {
+				// var el = e.item;
+				// el.parentNode.removeChild(el);
+				console.log(e.oldIndex, 'dropped from', e.from.id);
+				this.joyManager.deleteAction(e.from.id, e.oldIndex);
+			}
+		});
+	}
+
+	_setupEventListeners() {
 
 		//Mouse event listeners
 		let dragging = false;
@@ -158,8 +188,8 @@ class MotifApp {
 				console.log("shuffle all");
 		});
 
-		document.getElementById('shuffle-button').addEventListener("click", (e) => {
-			console.log("remix all");
+		document.getElementById('save-button').addEventListener("click", (e) => {
+			this.joyManager.saveURLToClipboard();
 	  });
 	}
 }

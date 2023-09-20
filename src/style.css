@@ -71,7 +71,7 @@
 
 .light-button {
     background-color: white;
-    margin: 10px 5px 10px 5px;
+    margin: 16px 5px 10px 5px;
     padding: 7px;
     border-radius: 5px;
     border: solid;
@@ -83,7 +83,7 @@
 }
 
 .code-button {
-    margin: 5px;
+    /* margin: 5px; */
     padding: 10px;
 }
 
@@ -100,11 +100,15 @@
     margin-top: 20px;
 }
 
-#download-button{
+#download-button, #save-button{
     float: right;
-    margin: 5px;
+    /* margin: 5px; */
     padding: 10px;
-    /* background-color: rgb(45, 141, 77); */
+    background-color: rgb(232, 232, 232);
+}
+
+#download-button:hover, #save-button:hover{
+    background-color: gray;
 }
 
 body {
@@ -140,9 +144,9 @@ body {
     cursor: url('./assets/cursors/paintbrush-solid.svg') 0 28, pointer;
 }
 
-.joy-list-item {
+/* .joy-list-item {
     cursor: grab;
-}
+} */
 
 /* .joy-list-item.selected { // for selectable list items
     outline: 1px solid gray;
@@ -150,20 +154,25 @@ body {
     background-color: lightgray;
 } */
 
-.path-widget-container { /*todo: center vertically like buttons */
+.path-widget-container {
     display: inline-block;
+    /* align-self: center; */
     /* margin: 5px 0px 0px 0px; */
-    text-align: center;
-    line-height: 1.5em;
-    padding: 0 0.3em;
+    /* text-align: center; */
+    /* height: 2em; */
+    /* translate: 0px 10px; */
+    padding: 0;
+    margin: 0;
+    /* border: 1px dashed blue; */
 }
 
 .path-preview {
-    display: inline-block;
+    /* display: inline-block; */
     /* padding: 5px 0px 0px 0px; */
-    text-align: center;
-    width: 1.5em;
-	height: 1.5em;
+    /* text-align: center; */
+    /* align-self: center; */
+    /* width: 1.5em; */
+	/* height: 1.5em; */
 }
 
 .thumbnail-canvas {
@@ -192,7 +201,7 @@ body{
 
 #joy{
     width:600px;
-    height:545px;
+    height:496px;
     /* margin: 10px 10px 10px; */
     background: #ffffff;
     overflow: scroll;
@@ -205,6 +214,13 @@ body{
     /* left: 600px;
     top: 100px; */
     float: right; /* TODO: line up with Joy */
+}
+
+#replay-button {
+    /* background-color:#060; */
+    float: left;
+    margin-right: 50px;
+    margin-left: 0px;
 }
 
 .hidden {
@@ -502,6 +518,46 @@ input[type="number"].numberbox-for-slider:focus {
     font-family: 'FuturaHandwritten';
 }
 
+.drag-handle {
+    cursor: grab;
+}
+
+#trash-icon {
+    margin: auto;
+    /* translate: 0px 10px; */
+    font-size: 2em;
+    text-align: center;
+    color: gray;
+    pointer-events: none;
+}
+
+#trash {
+    position: relative;
+    border: 2px dashed gray;
+    background-color: white;
+    color: gray;
+    text-align: center;
+    min-height: 40px;
+  }
+  
+ /* #trash:hover {
+    border: 2px dashed gray;
+ } */
+ 
+ #trash > * {
+    color: gray;
+    text-align: center;
+    text-decoration: line-through;
+  }
+  
+/* #trash > * {
+    position: absolute;
+    line-height: 70px;
+    font-size: 50px;
+    text-align: center;
+    text-decoration: line-through;
+  } */
+
 
 
 /* .grid-cell {
@@ -514,3 +570,41 @@ input[type="number"].numberbox-for-slider:focus {
 .grid-cell:hover {
     background-color: #c5c5c5;
 } */
+
+
+.sortable-chosen {
+    /* background-color: yellow; */
+    /* margin-left: 100px; */
+}
+
+.sortable-ghost {
+    /* background-color: pink; */
+    /* margin-left: 100px; */
+}
+
+.sortable-ghost-delete {
+    /* background-color: blue; */
+    display: none;
+}
+
+.sortable-chosen-delete {
+    /* background-color: pink; */
+}
+
+::-webkit-scrollbar { /* Mac OS X hides scrollbars */
+    -webkit-appearance: none;
+    width: 10px;
+}
+  
+::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, .5);
+    box-shadow: 0 0 1px rgba(255, 255, 255, .5);
+}
+
+
+.joy-single-action {
+    /* opacity: 0.7;
+    text-decoration: */
+    font-style: italic;
+}

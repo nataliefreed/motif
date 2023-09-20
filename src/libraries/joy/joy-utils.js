@@ -16,6 +16,7 @@ export function _configure(target, config){
 // Array stuff
 export function _removeFromArray(array, toDelete){
   var index = array.indexOf(toDelete);
+  console.log("index of item removed", index);
   if(index<0) return false;
   array.splice(index,1);
   return true;

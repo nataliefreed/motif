@@ -49,7 +49,7 @@ class PathWidget {
   
   updatePathpreview() {
     let oldPathPreview = this.pathPreview;
-    this.pathPreview = this.getPathView(this.points, 20, 20, 600, 600);
+    this.pathPreview = this.getPathView(this.points, 30, 30, 600, 600);
     // add a click event to the path preview, eventually will open a modal
     this.pathPreview.classList.add("path-preview");
     if(oldPathPreview) {
@@ -216,7 +216,7 @@ Joy.module("sequences", function() {
     name: "Along path",
     type: "sequences/alongpath",
     tags: ["sequences", "action"],
-    init: "Along path {id:'path', type:'path', placeholder:[[20,50],[600,250]]} " +
+    init: "Along path {id:'path', type:'path', placeholder:[[30,30],[600,250]]} " +
         // "{id:'actions', type:'actions', resetVariables:false}",
         "{id:'actions', type:'actions', listName:'brush name', resetVariables:false}", //name makes it collapsible, eventually - variable name
     onact: function(my){
@@ -432,10 +432,20 @@ Joy.add({
   
       // The Bullet is a Chooser!
       let bullet = _createBullet(entry); 
-      let bulletContainer = document.createElement("div");
+      bullet.dom.classList.add("drag-handle");
+      let bulletContainer = document.createElement("span");
       bulletContainer.className = "joy-bullet-container";
+      bulletContainer.classList.add("drag-handle");
       entryDOM.appendChild(bulletContainer);
       bulletContainer.appendChild(bullet.dom);
+      
+      // drag handle for moving actions
+      // let dragHandle = document.createElement("div");
+      // dragHandle.classList.add("action-drag-handle");
+      // dragHandle.innerHTML = '<i class="fa-solid fa-grip-lines"></i>';
+      // bulletContainer.appendChild(dragHandle);
+
+      
   
       // The Actor & Widget 
       let newActor = this.addChild({type:actionData.type}, actionData);
@@ -522,6 +532,34 @@ Joy.add({
       _updateBullets();
     };
     this.moveAction = _moveEntry;
+
+    let _deleteEntry = (index) => {
+      // let entry = this.entries[index];
+      // console.log("the entry", entry);
+      // console.log("removed from entries", _removeFromArray(this.entries, entry)); 
+      // console.log("removed from actions",_removeFromArray(actions, entry.actionData));  // Delete action from Data's Actions[]
+      // if (entry.dom.parentNode) {
+      //   entry.dom.parentNode.removeChild(entry.dom); // Delete entry from DOM
+      // }
+      // this.update();
+      // _updateBullets();
+      // this.removeChild(entry.actor); // Delete actor from Children
+
+
+      let entry = this.entries[index];
+      _removeFromArray(this.entries, entry); // Delete entry from Entries[]
+      _removeFromArray(actions, entry.actionData); // Delete action from Data's Actions[]
+      this.removeChild(entry.actor); // Delete actor from Children[]
+      // list.removeChild(entry.dom); // Delete entry from DOM
+      if (entry.dom.parentNode) {
+        entry.dom.parentNode.removeChild(entry.dom); // Delete entry from DOM
+      }
+      this.update(); // You oughta know!
+      _updateBullets(); // update the UI, re-number it.
+
+
+    };
+    this.deleteAction = _deleteEntry;
 
     ///////////////////////////////////////
     // Add Action /////////////////////////
@@ -619,6 +657,9 @@ Joy.add({
     // Reset all of target's variables?
     if(my.data.resetVariables) my.target._variables = {};
 
+    console.log("actions", my.data.actions);
+    console.log("actions length", my.data.actions.length)
+
     // Do those actions, baby!!!
     for(let i=0; i<my.data.actions.length; i++){
 
@@ -626,13 +667,12 @@ Joy.add({
       let actionData = my.data.actions[i];
       if(actionData.STOP) return "STOP";
 
+      console.log("entry at ", i, my.actor.entries[i]);
       // Run 
-      let actor = my.actor.entries[i].actor; // TODO: THIS IS A HACK AND SHOULD NOT RELY ON THAT
+      let actor = my.actor.entries[i].actor; // TODO: THIS IS A HACK AND SHOULD NOT RELY ON THAT - note: preview "STOP" action messes with this!
       let actorMessage = actor.act(my.target, actionData); // use ol' actor, but GIVEN data.
       if(actorMessage=="STOP") return actorMessage;
-
     }
-
   },
   placeholder: {
     actions: [],
@@ -1138,8 +1178,6 @@ export class ColorPalette extends BaseModal {
       }
     });
   }
-
-
 }
 
 
@@ -1210,6 +1248,8 @@ export class ColorPalette extends BaseModal {
   //     value: 3
   //   }
   // });
+
+  
   
   // export class NumberSlider extends JoyWidget {
   //   constructor(config) {

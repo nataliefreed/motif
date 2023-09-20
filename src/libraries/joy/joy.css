@@ -25,7 +25,7 @@ More prefixing to avoid NAME COLLISIONS
 	position: relative; /* Remove if not needed */
 	display: flex;
 	align-items: center;
-	overflow: hidden;
+	/* overflow: hidden; */
 }
 
 .joy-actions summary {
@@ -56,8 +56,9 @@ More prefixing to avoid NAME COLLISIONS
 
 .joy-list-item {
 	display: flex;
-	align-items: flex-start;
-	margin-bottom: 0.3em;
+	align-items: center;
+	/* margin-bottom: 0.3em; */
+	/* border: 1px dashed blue; */
 }
 
 .joy-add-item {
@@ -67,10 +68,10 @@ More prefixing to avoid NAME COLLISIONS
 .joy-bullet-container {
 	display: flex;
 	list-style: none;
-	align-items: flex-start;
+	align-items: center;
 	flex-shrink: 0;
 	flex-grow: 0;
-	width: 1.5em;
+	/* width: 1.5em; */
 	text-align: left;
 	margin-right: 10px;
 }
@@ -93,21 +94,24 @@ More prefixing to avoid NAME COLLISIONS
 
 .joy-save{
 	position: relative;
+	display: none;
 }
 .joy-save input{
 	display: block;
-    width: calc(100% - 80px);
+    width: calc(100% - 160px);
     position: absolute;
     top: 0;
     right: 0;
+		font-size: 12px;
+		line-height: 20px;
 }
-.joy-save #joy-save-info{
+/* .joy-save #joy-save-info{
 	position: absolute;
     bottom: 0px;
     left: 81px;
     font-size: 12px;
     line-height: 1em;
-}
+} */
 
 /***************/
 /* BUTTON ******/

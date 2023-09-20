@@ -32,7 +32,7 @@ export class JoyManager {
 				//   "Fill with {id:'color', type:'color', placeholder:[0.3, 0.8, 1.0]}" +
 				"With stencils: "+
 				"{id: 'stencilActionList', type:'actions', modules:['stencils']} "+  
-				"<hr> {type:'save'}", // a save button!
+				"{type:'save'}", // a save button!
 			
 			// Load data from URL, otherwise blank:
 			data: data,
@@ -124,10 +124,10 @@ export class JoyManager {
 	}
 
 	_getParentList(listName) {
-		if (listName == 'motif') {
+		if (listName == 'motif' || listName == 'paintingActionList-joy-list') {
 			return this.joy.rootActor.paintingActionList;
 		}
-		else if (listName == 'stencils') {
+		else if (listName == 'stencils' || listName == 'stencilActionList-joy-list') {
 			return this.joy.rootActor.stencilActionList;
 		}
 		else {
@@ -145,6 +145,17 @@ export class JoyManager {
 		const target = this._getParentList(listName);
 		target.moveAction(oldIndex, newIndex);
 		target.update();
+	}
+
+	deleteAction(listName, index) {
+		console.log(listName, index);
+		const target = this._getParentList(listName);
+		target.deleteAction(index);
+	}
+
+	saveURLToClipboard() {
+		let url = Joy.saveToURL(this.joy.rootActor.data);
+    navigator.clipboard.writeText(url);
 	}
 
 	loadEffects(effects) {

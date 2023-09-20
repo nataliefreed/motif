@@ -301,16 +301,17 @@ Joy.add({
     
     // Save Button
     this.saveButton = new JoyButton({
-      label: "save:",
+      label: "create project link",
       onclick: () => {
         
         let url = Joy.saveToURL(this.top.data);
         this.url.setValue(url);
         this.url.select();
+        // navigator.clipboard.writeText(url);
 
         // info
-        let chars = url.length;
-        this.info.innerHTML = "P.S: you can shorten your link with <a href='http://tinyurl.com/' target='_blank'>TinyURL</a>!"
+        // let chars = url.length;
+        // this.info.innerHTML = "P.S: you can shorten your link with <a href='http://tinyurl.com/' target='_blank'>TinyURL</a>!"
 
       }
     });
@@ -323,9 +324,9 @@ Joy.add({
     this.dom.appendChild(this.url.dom);
 
     // Details: chars & tinyurl link
-    this.info = document.createElement("div");
-    this.info.id = "joy-save-info";
-    this.dom.appendChild(this.info);    
+    // this.info = document.createElement("div");
+    // this.info.id = "joy-save-info";
+    // this.dom.appendChild(this.info);    
 
   }
 });
