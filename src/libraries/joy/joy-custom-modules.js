@@ -216,19 +216,95 @@ Joy.module("sequences", function() {
     name: "Along path",
     type: "sequences/alongpath",
     tags: ["sequences", "action"],
-    init: "Along path {id:'path', type:'path', placeholder:[[30,30],[600,250]]} " +
+    init: "Along path {id:'path', type:'path', placeholder:[[30,30],[40,40],[100,40],[100,100],[600,250]]} " +
         // "{id:'actions', type:'actions', resetVariables:false}",
         "{id:'actions', type:'actions', listName:'brush name', resetVariables:false}", //name makes it collapsible, eventually - variable name
     onact: function(my){
       // Previewing? How much to preview?
-      var param = 1;
-      if(my.data._PREVIEW!==undefined) param=my.data._PREVIEW;
+      // var param = 1;
+      // if(my.data._PREVIEW!==undefined) param=my.data._PREVIEW;
 
-      // Loop through it... (as far as preview shows, anyway)
-      var loops = Math.floor(my.data.count*param);
-      for(var i=0; i<loops; i++){
-        var message = my.actor.actions.act(my.target);
-        if(message=="STOP") return message; // STOP
+      // Create overrides, if not already there
+      // if(!my.target._overrides) my.target._overrides={}; 
+
+      // We shamelessly ignore good taste and directly grab actors out of our list of actions
+      const nestedActors = my.actor.actions.entries;
+      const nestedActorData = my.actor.actions.data.actions;
+      
+      // console.log("nestedActors", nestedActors);
+      // console.log("nestedActorData", nestedActorData);
+
+      if(nestedActors.length > 0) {
+        let nextPointIndex = 0;
+        let nextActionIndex = 0;
+        
+        let exitSentinal = {};
+        
+        const popPoint = () => {
+          const currPointIndex = nextPointIndex;
+          if(currPointIndex >= my.data.path.length) {
+            // console.log("Throwing exitSentinal from popPoint due to currPointIndex", currPointIndex, my.data.path.length);
+
+            throw exitSentinal; // Super-break all the way back
+            return undefined;
+          }
+          nextPointIndex++;
+          return my.data.path[currPointIndex];
+        };
+        const popActionIndex = () => {
+          const currActionIndex = nextActionIndex;
+          nextActionIndex = (nextActionIndex + 1) % nestedActors.length;
+          return currActionIndex;
+        };
+
+        const oldOverrides = my.target._overrides;
+        if(my.target._overrides === undefined) {
+          my.target._overrides = {};
+        }
+        else {
+          my.target._overrides = _clone(my.target._overrides);
+        }
+        my.target._overrides.coordinate = (childMy) => {
+          // If you only want to override based on id
+          // if(childMy.target.actor.dataID !== "position") return undefined;
+          return popPoint();
+          // Above code will throw exitSentinal when we run out of points
+          // This should skip remaining actions and break out of action loop below
+          // return my.data.path[my.data.path.length - 1];
+        };
+
+        try {
+          while(true) {
+            const actionIndex = popActionIndex();
+            // Now iterate over actions in more or less the same way the actions actor would
+            let actionData = nestedActorData[actionIndex];
+            if(actionData.STOP) return "STOP";
+            let actor = nestedActors[actionIndex].actor;
+            let actorMessage = actor.act(my.target, actionData);
+            if(actorMessage=="STOP") return actorMessage;
+            
+            // Check if we wrapped around to first action without using any points
+            // If so, we're probably stuck in an infinite loop
+            if(nextActionIndex==0 && nextPointIndex==0) {
+              // Looped through all actions without using any points!
+              // console.log("Throwing exitSentinal due to potential infinite loop.", nextActionIndex, nextPointIndex);
+              throw exitSentinal;
+              return undefined;
+            }
+          }
+        }
+        catch(e) {
+          // console.error("Caught error:", e, e === exitSentinal);
+          if(e !== exitSentinal) throw e;
+        }
+        finally {
+          if(oldOverrides === undefined) {
+            delete my.target._overrides.coordinate;
+          }
+          else {
+            my.target._overrides = oldOverrides;
+          }
+        }
       }
     }
   });
@@ -463,52 +539,54 @@ Joy.add({
 
       // PREVIEW ON HOVER
       // Also tell the action "_PREVIEW": how far in the action to go?
-      let _calculatePreviewParam = (event) => {
-        let param = event.offsetY / bullet.dom.getBoundingClientRect().height;
-        if(param<0) param=0;
-        if(param>1) param=1;
-        _previewAction._PREVIEW = param;
-        this.update();
-      };
-      let _previewAction;
-      let _previewStyle;
-      bulletContainer.onmouseenter = (event) => {
+      
+      
+      // let _calculatePreviewParam = (event) => {
+      //   let param = event.offsetY / bullet.dom.getBoundingClientRect().height;
+      //   if(param<0) param=0;
+      //   if(param>1) param=1;
+      //   _previewAction._PREVIEW = param;
+      //   this.update();
+      // };
+      // let _previewAction;
+      // let _previewStyle;
+      // bulletContainer.onmouseenter = (event) => {
 
-        if(!this.top.canPreview("actions")) return;
+      //   if(!this.top.canPreview("actions")) return;
 
-        this.top.activePreview = this;
+      //   this.top.activePreview = this;
         
-        // Create Preview Data
-        this.previewData = _clone(this.data);
-        let actionIndex = this.entries.indexOf(entry);
-        _previewAction = this.previewData.actions[actionIndex];
+      //   // Create Preview Data
+      //   this.previewData = _clone(this.data);
+      //   let actionIndex = this.entries.indexOf(entry);
+      //   _previewAction = this.previewData.actions[actionIndex];
 
-        // STOP after that action!
-        this.previewData.actions.splice(actionIndex+1, 0, {STOP:true});
+      //   // STOP after that action!
+      //   this.previewData.actions.splice(actionIndex+1, 0, {STOP:true});
 
-        // How far to go along action?
-        _calculatePreviewParam(event);
+      //   // How far to go along action?
+      //   _calculatePreviewParam(event);
 
-        // Add in a style
-        _previewStyle = document.createElement("style");
-        document.head.appendChild(_previewStyle);
-        _previewStyle.sheet.insertRule('.joy-actions.joy-previewing > #joy-list > div:nth-child(n+'+(actionIndex+2)+') { opacity:0.1; }');
-        _previewStyle.sheet.insertRule('.joy-actions.joy-previewing > div.joy-bullet { opacity:0.1; }');
-        this.dom.classList.add("joy-previewing");
+      //   // Add in a style
+      //   _previewStyle = document.createElement("style");
+      //   document.head.appendChild(_previewStyle);
+      //   _previewStyle.sheet.insertRule('.joy-actions.joy-previewing > #joy-list > div:nth-child(n+'+(actionIndex+2)+') { opacity:0.1; }');
+      //   _previewStyle.sheet.insertRule('.joy-actions.joy-previewing > div.joy-bullet { opacity:0.1; }');
+      //   this.dom.classList.add("joy-previewing");
 
-      };
-      bulletContainer.onmousemove = (event) => {
-        if(this.previewData) _calculatePreviewParam(event);
-      };
-      bulletContainer.onmouseleave = () => {
-        if(this.previewData){
-          this.previewData = null;
-          this.top.activePreview = null;
-          this.update();
-          document.head.removeChild(_previewStyle);
-          this.dom.classList.remove("joy-previewing");
-        }
-      };
+      // };
+      // bulletContainer.onmousemove = (event) => {
+      //   if(this.previewData) _calculatePreviewParam(event);
+      // };
+      // bulletContainer.onmouseleave = () => {
+      //   if(this.previewData){
+      //     this.previewData = null;
+      //     this.top.activePreview = null;
+      //     this.update();
+      //     document.head.removeChild(_previewStyle);
+      //     this.dom.classList.remove("joy-previewing");
+      //   }
+      // };
 
       // select or deselect when clicked
       // entryDOM.addEventListener('click', function() {
@@ -657,8 +735,8 @@ Joy.add({
     // Reset all of target's variables?
     if(my.data.resetVariables) my.target._variables = {};
 
-    console.log("actions", my.data.actions);
-    console.log("actions length", my.data.actions.length)
+    // console.log("actions", my.data.actions);
+    // console.log("actions length", my.data.actions.length);
 
     // Do those actions, baby!!!
     for(let i=0; i<my.data.actions.length; i++){
@@ -667,7 +745,7 @@ Joy.add({
       let actionData = my.data.actions[i];
       if(actionData.STOP) return "STOP";
 
-      console.log("entry at ", i, my.actor.entries[i]);
+      console.log("entry at ", i, my.actor.entries[i].actor.init);
       // Run 
       let actor = my.actor.entries[i].actor; // TODO: THIS IS A HACK AND SHOULD NOT RELY ON THAT - note: preview "STOP" action messes with this!
       let actorMessage = actor.act(my.target, actionData); // use ol' actor, but GIVEN data.
@@ -745,6 +823,12 @@ Joy.add({
     this.dom = dom;
   },
   onget: function(my) {
+    if(my.target && my.target._overrides && my.target._overrides.hasOwnProperty("coordinate")) {
+      const override = my.target._overrides.coordinate(my);
+      if(override !== undefined) {
+        return override;
+      }
+    }
     return [my.data.value[0], my.data.value[1]];
   },
   placeholder: function() {
