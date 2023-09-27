@@ -46,12 +46,12 @@ export class JoyManager {
 		
 			// What to do when the user makes a change:
 			onupdate: (my) => {
-        sketch.clear();
-				// TODO!: Change this to use the static canvas 
-        my.paintingActionList.act(this.staticCanvas);
-        my.stencilActionList.act(this.staticCanvas);
-				// draw the preview canvas
-        sketch.render();
+				sketch.clear();
+						// TODO!: Change this to use the static canvas 
+				my.paintingActionList.act(this.staticCanvas);
+				my.stencilActionList.act(this.staticCanvas);
+						// draw the preview canvas
+				sketch.render();
 			}
 		});
 
@@ -84,6 +84,12 @@ export class JoyManager {
 			}
 		});
   }
+
+  	runWithDelay(millis) {
+		this.sketch.clear();
+		let options = { delay: millis };
+		this.joy.rootActor.paintingActionList.act(this.sketch, null, options);
+	}
 
 	// update preview value
 	_updatePreview(saveCurrentSettings=false) 

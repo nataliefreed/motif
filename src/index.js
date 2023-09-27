@@ -176,6 +176,10 @@ class MotifApp {
 			}
 		});
 
+	document.getElementById('replay-button').addEventListener("click", (e) => {
+		this.joyManager.runWithDelay(200);
+	});
+
     document.getElementById('clear-all-button').addEventListener("click", (e) => {
 				console.log("clear all");
 		});
