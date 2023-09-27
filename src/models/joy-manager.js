@@ -47,7 +47,6 @@ export class JoyManager {
 			// What to do when the user makes a change:
 			onupdate: (my) => {
         sketch.clear();
-				// TODO!: Change this to use the static canvas 
         my.paintingActionList.act(this.staticCanvas);
         my.stencilActionList.act(this.staticCanvas);
 				// draw the preview canvas
@@ -102,20 +101,23 @@ export class JoyManager {
 	}
 
 	addCurrentAction(data) {
-		let actionData = this.previewActionList.getActionData();
+		if(data) {
+		// 	debugger;
+			this.previewActionList.setChildData(data);
+		}
+		let entryData = this.previewActionList.getEntryData();
 		let type = this.previewActionList.getActionType();
-		let combinedData = {...actionData, ...data};
-
+		
 		this.previewActionEnabled = false;
 
-		console.log("\t\t\tadding action", type, actionData, combinedData);
+		console.log("\t\t\tadding action", type, entryData);
 
 		const category = type.split('/')[0];
 		if(category === 'stencils') {
-			this.addAction('stencils', type, combinedData);
+			this.addAction('stencils', type, entryData);
 		}
 		else {
-			this.addAction('motif', type, combinedData);
+			this.addAction('motif', type, entryData);
 		}
 
 		this.currentColorHSV = [Math.random()*360, 0.8, 0.8]; //re-randomize color

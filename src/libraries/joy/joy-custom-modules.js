@@ -1205,6 +1205,12 @@ Joy.add({
       this.entry.actionData = settings;
       this.update();
   },
+  getEntryData: function() {
+    let entryActor = this.entry.actor;
+    if(!entryActor) return {};
+    return entryActor.getAllData();
+  },
+  
   getActionData: function() {
     let target = {};
     let entryActor = this.entry.actor;
@@ -1222,27 +1228,22 @@ Joy.add({
     console.log("actionDataCopy is", actionDataCopy);
     // TODO!: I think `data` is what we should be returning here
     //   Looks like type used for initialization isn't matching though?
-    // return data;
-    return { ...actionDataCopy };
+    return data;
+    // return { ...actionDataCopy };
   },
-  setChildData(newData, targetActor=this.entry.actor) { //<---- TODO!!!
+  setChildData(newData) { //<---- TODO!!!
+    const targetActor = this.entry.actor;
     console.log("newData is", newData);
     console.log("current actor is", targetActor);
-  
     for (let key in newData) {
       console.log("\t\tLooking for key", key, "in actor", targetActor);
-      if (targetActor.hasOwnProperty(key)) {
-        console.log("\t\tactor has key ", key);
-  
-        // If actor has children, loop through them
-        if (targetActor.children && targetActor.children.length > 0) {
-          for (let child of targetActor.children) {
-            if (child.dataID == key) {
-              child.switchData(newData[key]);
-              break;
-            }
-          }
-        }
+      const child = targetActor.findChild(key);
+      if (child) {
+        console.log("\t\t\tFound child", child);
+        child.switchData(newData[key]);
+      }
+      else {
+        console.log("\t\t\tDidn't find child for", key);
       }
     }
     targetActor.update();

@@ -1,3 +1,4 @@
+import { parse } from 'uuid';
 import { HSVtoRGB } from '../utils/color-utils.js';
 export const effectList = [
   {
@@ -144,9 +145,9 @@ export const effectList = [
     init: function() {
       let listname = 'stars';
       let configString = `{id:'alongpath', type:'sequences/alongpath',
-                         pathData: '[[30,30],[40,40],[100,40],[100,100],[600,250]]',
-                         listname: '${listname}'}`;
-      
+        pathData: '[[30,30],[40,40],[100,40],[100,100],[600,250]]',
+        listname: '${listname}'}`;
+
       let parseResult = this.parseActorMarkup(configString);
       let initActions = [
         {type:'motif/star', data: {color: [255, 0, 255], x: 0, y: 0, r1: 20, r2: 10, npoints: 5}},
@@ -158,6 +159,39 @@ export const effectList = [
       }
       this.initializeDOM(parseResult);
 
+      // // let configString = `{id:'alongpath', type:'sequences/alongpath',
+      // //                    pathData: '[[30,30],[40,40],[100,40],[100,100],[600,250]]',
+      // //                    listname: '${listname}'}`;
+      
+      // let initActions = [
+      //   {type:'motif/star', data: {color: [255, 0, 255], x: 0, y: 0, r1: 20, r2: 10, npoints: 5}},
+      //   {type:'motif/circle', 
+      //     color:{id:'color', type:'color', value:[0,0,255]},
+      //     data: {color: [0, 0, 255], x: 50, y: 100, r1: 20, r2: 10, npoints: 5}}
+      // ];
+      // let alongpathOption = {
+      //   "id": "alongpath",
+      //   "dataID": "alongpath",
+      //   "type": "sequences/alongpath",
+      //   "listname": "stars",
+      //   "path": {
+      //     "type": "path",
+      //     "value": [[30,30],[40,40],[100,40],[100,100],[600,250]],
+      //   },
+      //   "data": {
+      //     "actions": {
+      //       "actions": initActions,
+      //       "resetVariables": false,
+      //       "type": "actions"
+      //     },
+      //   }
+      // };
+      // // Call parseActorMarkup to get the html span, but we will clobber actorOptions
+      // let parseResult = this.parseActorMarkup(`{id:'alongpath'}`);
+      // parseResult.actorOptions = [alongpathOption];
+      // // debugger;
+      // this.initializeDOM(parseResult);
+            // this.alongpath.actions.actions[1].data.color = [50, 0.8, 0];
 
       // console.assert(parseResult.actorOptions[0].id == 'alongpath');
       // console.log("actor options", parseResult.actorOptions);

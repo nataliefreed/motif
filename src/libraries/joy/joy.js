@@ -447,6 +447,7 @@ class Actor {
 
     // Initialize child actors from extracted options
     actorOptions.forEach((actorOption) => {
+      // this.addChild({type:actorOption.type}, actorOption);
       this.addChild(actorOption);
     });
 
@@ -487,7 +488,24 @@ class Actor {
    
     return child;
   }
-
+  findChild(id) {
+    // Do a breadth-first search for the child with the given ID.
+    // breadth-first will make it more likely that we find a child up at the top instead of some deeply nested child with the same name
+    let queue = [];
+    for(const child of this.children) {
+      queue.push(child);
+    }
+    while(queue.length !== 0) {
+      const current = queue.shift();
+      if(current.dataID == id) {
+        return current;
+      }
+      for(const child of current.children) {
+        queue.push(child);
+      }
+    }
+    return undefined;
+  }
   removeChild(child) {
     this.children = this.children.filter(c => c !== child);
     child.kill();
@@ -595,8 +613,20 @@ class Actor {
     });
   }
 
+  // Recursively collect data from actor and its children
+  getAllData() {
+    let data = _clone(this.data);
+    this.children.forEach(child => {
+      if (child.dataID) {
+        data[child.dataID] = child.getAllData();
+      }
+    });
+    return data;
+  }
+  
   // ...or GET INFO from targets.
-  onget() {
+  onget(my) {
+    return my.data;
   }
 
   get(target) {
