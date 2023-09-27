@@ -579,7 +579,7 @@ class Actor {
 
   }
 
-  act(target, altData) {
+  act(target, altData, options={}) {
     let data;
     // Determine which data to use:
     // - Use provided 'altData' if available.
@@ -609,7 +609,8 @@ class Actor {
     return this.onact({
       actor: this,
       target: target,
-      data: data
+      data: data,
+      options: options
     });
   }
 

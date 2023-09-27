@@ -916,31 +916,69 @@ Joy.add({
     addButtonLi.appendChild(addButton.dom);
     this.list.appendChild(addButtonLi);
   },
-  onact: function(my){
-
+  onact: function(my) {
     // Create _lets, if not already there
-    if(!my.target._variables) my.target._variables={}; 
-
+    if (!my.target._variables) my.target._variables = {};
+  
     // Reset all of target's variables?
-    if(my.data.resetVariables) my.target._variables = {};
-
-    // console.log("actions", my.data.actions);
-    // console.log("actions length", my.data.actions.length);
-
+    if (my.data.resetVariables) my.target._variables = {};
+  
+    // Get the delay option (default to 0 if not provided)
+    const delayBetweenActions = parseInt(my.options.delay) || 0;
+    console.log("delay is ", delayBetweenActions);
+  
     // Do those actions, baby!!!
-    for(let i=0; i<my.data.actions.length; i++){
-
-      // Stop?
-      let actionData = my.data.actions[i];
-      if(actionData.STOP) return "STOP";
-
-      // console.log("entry at ", i, my.actor.entries[i].actor.init);
-      // Run 
-      let actor = my.actor.entries[i].actor; // TODO: THIS IS A HACK AND SHOULD NOT RELY ON THAT - note: preview "STOP" action messes with this!
-      let actorMessage = actor.act(my.target, actionData); // use ol' actor, but GIVEN data.
-      if(actorMessage=="STOP") return actorMessage;
+    const runActions = async () => {
+      for (let i = 0; i < my.data.actions.length; i++) {
+        // Stop?
+        const actionData = my.data.actions[i];
+        if (actionData.STOP) return "STOP";
+  
+        // Run
+        const actor = my.actor.entries[i].actor; // TODO: THIS IS A HACK AND SHOULD NOT RELY ON THAT - note: preview "STOP" action messes with this!
+        const actorMessage = actor.act(my.target, actionData); // use ol' actor, but GIVEN data.
+        if (actorMessage == "STOP") return actorMessage;
+  
+        // Wait for the specified delay before the next action, but only if delay is greater than 0
+        if (delayBetweenActions > 0) {
+          await new Promise(resolve => setTimeout(resolve, delayBetweenActions));
+        }
+      }
+    };
+  
+    // If delayBetweenActions is 0 or less, execute the actions immediately
+    if (delayBetweenActions <= 0) {
+      runActions();
+    } else {
+      return runActions();
     }
   },
+  
+  // onact: function(my){
+
+  //   // Create _lets, if not already there
+  //   if(!my.target._variables) my.target._variables={}; 
+
+  //   // Reset all of target's variables?
+  //   if(my.data.resetVariables) my.target._variables = {};
+
+  //   // console.log("actions", my.data.actions);
+  //   // console.log("actions length", my.data.actions.length);
+
+  //   // Do those actions, baby!!!
+  //   for(let i=0; i<my.data.actions.length; i++){
+
+  //     // Stop?
+  //     let actionData = my.data.actions[i];
+  //     if(actionData.STOP) return "STOP";
+
+  //     // console.log("entry at ", i, my.actor.entries[i].actor.init);
+  //     // Run 
+  //     let actor = my.actor.entries[i].actor; // TODO: THIS IS A HACK AND SHOULD NOT RELY ON THAT - note: preview "STOP" action messes with this!
+  //     let actorMessage = actor.act(my.target, actionData); // use ol' actor, but GIVEN data.
+  //     if(actorMessage=="STOP") return actorMessage;
+  //   }
+  // },
   placeholder: {
     actions: [],
     resetVariables: true

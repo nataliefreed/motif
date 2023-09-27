@@ -85,6 +85,12 @@ export class JoyManager {
 		});
   }
 
+  	runWithDelay(millis) {
+		this.sketch.clear();
+		let options = { delay: millis };
+		this.joy.rootActor.paintingActionList.act(this.sketch, null, options);
+	}
+
 	// update preview value
 	_updatePreview(saveCurrentSettings=false) 
 	{
