@@ -359,26 +359,26 @@ Joy.module("sequences", function() {
 
 
   /******** Group  *********/
-  Joy.add({
-    name: "Group",
-    type: "sequences/group",
-    tags: ["sequences", "action"],
-    init: "{id:'groupname', type:'string', placeholder:'brush name'}"+
-        "{id:'actions', type:'actions', resetVariables:false}",
-    onact: function(my){
+  // Joy.add({
+  //   name: "Group",
+  //   type: "sequences/group",
+  //   tags: ["sequences", "action"],
+  //   init: "{id:'groupname', type:'string', placeholder:'brush name'}"+
+  //       "{id:'actions', type:'actions', resetVariables:false}",
+  //   onact: function(my){
       
-      // Previewing? How much to preview?
-      var param = 1;
-      if(my.data._PREVIEW!==undefined) param=my.data._PREVIEW;
+  //     // Previewing? How much to preview?
+  //     var param = 1;
+  //     if(my.data._PREVIEW!==undefined) param=my.data._PREVIEW;
 
-      // Loop through it... (as far as preview shows, anyway)
-      var loops = Math.floor(my.data.count*param);
-      for(var i=0; i<loops; i++){
-        var message = my.actor.actions.act(my.target);
-        if(message=="STOP") return message; // STOP
-      }
-    }
-  });
+  //     // Loop through it... (as far as preview shows, anyway)
+  //     var loops = Math.floor(my.data.count*param);
+  //     for(var i=0; i<loops; i++){
+  //       var message = my.actor.actions.act(my.target);
+  //       if(message=="STOP") return message; // STOP
+  //     }
+  //   }
+  // });
 });
 
 

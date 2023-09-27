@@ -45,7 +45,7 @@ export const effectList = [
     category: 'Shapes',
     tag: 'motif',
     init: `Circle of radius {id:'radius', type:'numberslider', min:1, max:600, placeholder:20}
-    in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
+    in color {id:'color', type:'color', placeholder:[75, 0.8, 1.0]}  
     at {id:'position', type:'coordinate', placeholder:[200, 200]}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
@@ -59,7 +59,7 @@ export const effectList = [
     category: 'Shapes',
     tag: 'motif',
     init: `Square of size {id:'size', type:'numberslider', min:1, max:600, placeholder:40}
-    in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
+    in color {id:'color', type:'color', placeholder:[325, 0.8, 1.0]}  
     at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
@@ -74,7 +74,7 @@ export const effectList = [
     tag: 'motif',
     init: `Polygon with {id:'nsides', type:'numberslider', min:3, max:50, placeholder:6} sides 
     and radius {id:'radius', type:'numberslider', min:1, max:600, placeholder:20} 
-    in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
+    in color {id:'color', type:'color', placeholder:[300, 0.8, 1.0]}  
     at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
@@ -90,7 +90,7 @@ export const effectList = [
     init: `Star with {id:'npoints', type:'numberslider', min:3, max:200, placeholder:7} points, 
     outer {id:'r1', type:'numberslider', min:1, max:600, placeholder:20}, 
     inner {id:'r2', type:'numberslider', min:1, max:600, placeholder:10} 
-    in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
+    in color {id:'color', type:'color', placeholder:[120, 0.8, 1.0]}  
     at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
@@ -104,12 +104,11 @@ export const effectList = [
     category: 'Shapes',
     tag: 'motif',
     init: `Heart of size {id:'size', type:'numberslider', min:-600, max:600, placeholder:40} 
-    in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
+    in color {id:'color', type:'color', placeholder:[200, 0.8, 1.0]}  
     at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
-      console.log("heart");
       my.target.heart({ color: my.data.color, x: my.data.position[0], y: my.data.position[1], size: my.data.size });
     }
   },
@@ -120,7 +119,7 @@ export const effectList = [
     tag: 'motif',
     init: `Along path {id:'path', type:'path', placeholder:[[20,50],[600,250]]} 
     Heart of size {id:'size', type:'numberslider', min:-600, max:600, placeholder:10} 
-    in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}  
+    in color {id:'color', type:'color', placeholder:[175, 0.8, 1.0]}  
     at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'drag',
@@ -329,202 +328,262 @@ export const effectList = [
   //     return renderPath(settings, config);
   //   }
   // },
-  {
-    name: 'mosaic brush',
-    dropdownName: 'Mosaic Brush',
-    category: 'Brushes',
-    tag: 'motif',
-    init: `Mosaic brush with scale {id: 'scale', type: 'numberslider', min:25, max:600, placeholder: 100} 
-    % along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
-    cursor: './assets/cursors/star-solid.svg',
-    mouseActionType: 'drag',
-    config: {
-      scale: 50,
-      shapes:
-      [
-        (x, y, size, pg) => {
-          pg.ellipse(x, y, size, size);
-        },
-        (x, y, size, pg) => {
-          pg.rect(x, y, size, size);
-        },
-        (x, y, size, pg) => {
-          pg.triangle(
-            x + size / 2,
-            y + size / 2,
-            x - size / 2,
-            y + size / 2,
-            x,
-            y - size / 2
-          );
-        },
-      ],
-      sizes: [10, 20, 15, 8],
-      colors: [
-        (i) => { return [255,   0,   0]; }, // Red
-        (i) => { return [255, 165,   0]; }, // Orange
-        (i) => { return [255, 215,   0]; }, // Gold
-        (i) => { return [128, 128,   0]; }, // Olive
-        (i) => { return [  0, 128,   0]; }, // Green
-        (i) => { return [ 38, 162, 224]; }, // Light blue
-        (i) => { return [  0,   0, 255]; }, // Blue
-        (i) => { return [ 75,   0, 130]; }, // Indigo
-        (i) => { return [128,   0, 128]; }, // Purple
-        (i) => { return [238, 130, 238]; }, // Violet
-        (i) => { return [255, 192, 203]; }, // Pink
-      ],
-      alpha: 0.75,
-    },
-  },
-  {
-    name: 'stripe brush',
-    dropdownName: 'Stripe Brush',
-    category: 'Brushes',
-    tag: 'motif',
-    init: `Stripe brush with scale {id: 'scale', type: 'numberslider', min:25, max:600, placeholder: 100} 
-    % along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
-    cursor: './assets/cursors/star-solid.svg',
-    mouseActionType: 'drag',
-    config: {
-      scale: 100,
-      shapes:
-      [
-        (x, y, size, pg) => {
-          pg.noStroke();
-          pg.rect(x, y, Math.abs(size), size*5);
-        }
-      ],
-      sizes: [10, -20, 15, -8, 4, -20, 15, -10, 9, -12, 8, -15, 20],
-      colors:
-      [
-        (i) => { return [255,   0,   0] }, // Red
-        (i) => { return [255, 165,   0] }, // Orange
-        (i) => { return [128,   0, 128] }, // Purple
-        (i) => { return [238, 130, 238] }, // Violet
-        (i) => { return [255, 192, 203] }, // Pink
-      ],
-      alpha: 0.75,
-    }
-  },
-  {
-    name: 'rainbow brush',
-    dropdownName: 'Rainbow Brush',
-    category: 'Brushes',
-    tag: 'motif',
-    init: `Rainbow brush in size {id: 'minSize', type: 'numberslider', min:1, max:600, placeholder: 4} 
-    to {id: 'maxSize', type: 'numberslider', min:1, max:600, placeholder: 10} 
-    along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
-    cursor: './assets/cursors/star-solid.svg',
-    mouseActionType: 'drag',
-    config: {
-      scale: 100,
-      shapes:
-      [
-        (x, y, size, pg) => {
-          pg.ellipse(x, y, size, size);
-        }
-      ],
-      sizes: (() => {
-        let sizes = [];
-        for(let i=10;i<50;i+=0.5) {
-          sizes.push(i);
-        }
-        for(let i=50;i>10;i-=0.5) {
-          sizes.push(i);
-        }
-        return sizes;
-      })(),
-      colors:
-      [
-        (i) => {
-          let hue = i*10%360;
-          let rgb = HSVtoRGB(hue, 1, 1);
-          return rgb;
-        }
-      ]
-    }
+  // {
+  //   name: 'mosaic brush',
+  //   dropdownName: 'Mosaic Brush',
+  //   category: 'Brushes',
+  //   tag: 'motif',
+  //   init: `Mosaic brush with scale {id: 'scale', type: 'numberslider', min:25, max:600, placeholder: 100} 
+  //   % along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   mouseActionType: 'drag',
+  //   config: {
+  //     scale: 50,
+  //     shapes:
+  //     [
+  //       (x, y, size, pg) => {
+  //         pg.ellipse(x, y, size, size);
+  //       },
+  //       (x, y, size, pg) => {
+  //         pg.rect(x, y, size, size);
+  //       },
+  //       (x, y, size, pg) => {
+  //         pg.triangle(
+  //           x + size / 2,
+  //           y + size / 2,
+  //           x - size / 2,
+  //           y + size / 2,
+  //           x,
+  //           y - size / 2
+  //         );
+  //       },
+  //     ],
+  //     sizes: [10, 20, 15, 8],
+  //     colors: [
+  //       (i) => { return [255,   0,   0]; }, // Red
+  //       (i) => { return [255, 165,   0]; }, // Orange
+  //       (i) => { return [255, 215,   0]; }, // Gold
+  //       (i) => { return [128, 128,   0]; }, // Olive
+  //       (i) => { return [  0, 128,   0]; }, // Green
+  //       (i) => { return [ 38, 162, 224]; }, // Light blue
+  //       (i) => { return [  0,   0, 255]; }, // Blue
+  //       (i) => { return [ 75,   0, 130]; }, // Indigo
+  //       (i) => { return [128,   0, 128]; }, // Purple
+  //       (i) => { return [238, 130, 238]; }, // Violet
+  //       (i) => { return [255, 192, 203]; }, // Pink
+  //     ],
+  //     alpha: 0.75,
+  //   },
+  // },
+  // {
+  //   name: 'stripe brush',
+  //   dropdownName: 'Stripe Brush',
+  //   category: 'Brushes',
+  //   tag: 'motif',
+  //   init: `Stripe brush with scale {id: 'scale', type: 'numberslider', min:25, max:600, placeholder: 100} 
+  //   % along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   mouseActionType: 'drag',
+  //   config: {
+  //     scale: 100,
+  //     shapes:
+  //     [
+  //       (x, y, size, pg) => {
+  //         pg.noStroke();
+  //         pg.rect(x, y, Math.abs(size), size*5);
+  //       }
+  //     ],
+  //     sizes: [10, -20, 15, -8, 4, -20, 15, -10, 9, -12, 8, -15, 20],
+  //     colors:
+  //     [
+  //       (i) => { return [255,   0,   0] }, // Red
+  //       (i) => { return [255, 165,   0] }, // Orange
+  //       (i) => { return [128,   0, 128] }, // Purple
+  //       (i) => { return [238, 130, 238] }, // Violet
+  //       (i) => { return [255, 192, 203] }, // Pink
+  //     ],
+  //     alpha: 0.75,
+  //   }
+  // },
+  // {
+  //   name: 'rainbow brush',
+  //   dropdownName: 'Rainbow Brush',
+  //   category: 'Brushes',
+  //   tag: 'motif',
+  //   init: `Rainbow brush in size {id: 'minSize', type: 'numberslider', min:1, max:600, placeholder: 4} 
+  //   to {id: 'maxSize', type: 'numberslider', min:1, max:600, placeholder: 10} 
+  //   along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   mouseActionType: 'drag',
+  //   config: {
+  //     scale: 100,
+  //     shapes:
+  //     [
+  //       (x, y, size, pg) => {
+  //         pg.ellipse(x, y, size, size);
+  //       }
+  //     ],
+  //     sizes: (() => {
+  //       let sizes = [];
+  //       for(let i=10;i<50;i+=0.5) {
+  //         sizes.push(i);
+  //       }
+  //       for(let i=50;i>10;i-=0.5) {
+  //         sizes.push(i);
+  //       }
+  //       return sizes;
+  //     })(),
+  //     colors:
+  //     [
+  //       (i) => {
+  //         let hue = i*10%360;
+  //         let rgb = HSVtoRGB(hue, 1, 1);
+  //         return rgb;
+  //       }
+  //     ]
+  //   }
     // onact: (my) => {
     //   // my.target.addRainbowBrush({ minSize: my.data.minSize, maxSize: my.data.maxSize, pointsList: my.data.pointsList });
     // }
-  },
+  // },
+  // {
+  //   name: 'blob brush',
+  //   dropdownName: 'Blob Brush',
+  //   category: 'Brushes',
+  //   tag: 'motif',
+  //   init: `Blob brush in size {id: 'minSize', type: 'numberslider', min:1, max:600, placeholder: 4} 
+  //   to {id: 'maxSize', type: 'numberslider', min:1, max:600, placeholder: 10} 
+  //   along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   mouseActionType: 'drag',
+  //   config: {
+  //     scale: 100,
+  //     shapes:
+  //     [
+  //       (x, y, size, pg) => {
+  //         pg.ellipse(x, y, size, size);
+  //       },
+  //       (x, y, size, pg) => {
+  //         pg.ellipse(x, y, size*2, size*2);
+  //       },
+  //       (x, y, size, pg) => {
+  //         pg.ellipse(x, y, size*3, size*3);
+  //       },
+  //     ],
+  //     sizes: (() => {
+  //       let sizes = [];
+  //       for (let i = 0; i < 100; i++) {
+  //         sizes.push(Math.random() * 10);
+  //       }
+  //       return sizes;
+  //     })(),
+  //     colors:
+  //     [
+  //       (i) => {
+  //         return HSVtoRGB(i/100, 1, 1);
+  //       }
+  //     ]
+  //   }
+  //   // onact: (my) => {
+  //   //   // my.target.addRainbowBrush({ minSize: my.data.minSize, maxSize: my.data.maxSize, pointsList: my.data.pointsList });
+  //   // }
+  // },
+  // {
+  //   name: 'porcupine brush',
+  //   dropdownName: 'Porcupine Brush',
+  //   category: 'Brushes',
+  //   tag: 'motif',
+  //   init: `Porcupine brush in {id:'color', type:'color', placeholder:[20, 0.8, 1.0]} 
+  //   with width {id: 'lineWeight', type: 'numberslider', min:1, max:600, placeholder: 8} 
+  //   along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   mouseActionType: 'drag1',
+  //   onact: (my) => {
+  //     my.target.porcupineBrush({ color: my.data.color, lineWeight: my.data.lineWeight, pointsList: my.data.pointsList });
+  //   }
+  // },
+  // {
+  //   name: 'lines brush',
+  //   dropdownName: 'Lines Brush',
+  //   category: 'Brushes',
+  //   tag: 'motif',
+  //   init: `Lines brush in {id:'color', type:'color', placeholder:[20, 0.8, 1.0]} 
+  //   with width {id: 'lineWeight', type: 'numberslider', min:1, max:600, placeholder: 8} 
+  //   along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   mouseActionType: 'drag1',
+  //   onact: (my) => {
+  //     my.target.linesBrush({ color: my.data.color, lineWeight: my.data.lineWeight, pointsList: my.data.pointsList });
+  //   }
+  // },
   {
-    name: 'blob brush',
-    dropdownName: 'Blob Brush',
-    category: 'Brushes',
-    tag: 'motif',
-    init: `Blob brush in size {id: 'minSize', type: 'numberslider', min:1, max:600, placeholder: 4} 
-    to {id: 'maxSize', type: 'numberslider', min:1, max:600, placeholder: 10} 
-    along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
-    cursor: './assets/cursors/star-solid.svg',
-    mouseActionType: 'drag',
-    config: {
-      scale: 100,
-      shapes:
-      [
-        (x, y, size, pg) => {
-          pg.ellipse(x, y, size, size);
-        },
-        (x, y, size, pg) => {
-          pg.ellipse(x, y, size*2, size*2);
-        },
-        (x, y, size, pg) => {
-          pg.ellipse(x, y, size*3, size*3);
-        },
-      ],
-      sizes: (() => {
-        let sizes = [];
-        for (let i = 0; i < 100; i++) {
-          sizes.push(Math.random() * 10);
-        }
-        return sizes;
-      })(),
-      colors:
-      [
-        (i) => {
-          return HSVtoRGB(i/100, 1, 1);
-        }
-      ]
-    }
-    // onact: (my) => {
-    //   // my.target.addRainbowBrush({ minSize: my.data.minSize, maxSize: my.data.maxSize, pointsList: my.data.pointsList });
-    // }
-  },
-  {
-    name: 'porcupine brush',
-    dropdownName: 'Porcupine Brush',
-    category: 'Brushes',
-    tag: 'motif',
-    init: `Porcupine brush in {id:'color', type:'color', placeholder:[20, 0.8, 1.0]} 
-    with width {id: 'lineWeight', type: 'numberslider', min:1, max:600, placeholder: 8} 
-    along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
-    cursor: './assets/cursors/star-solid.svg',
-    mouseActionType: 'drag1',
-    onact: (my) => {
-      my.target.porcupineBrush({ color: my.data.color, lineWeight: my.data.lineWeight, pointsList: my.data.pointsList });
-    }
-  },
-  {
-    name: 'lines brush',
-    dropdownName: 'Lines Brush',
-    category: 'Brushes',
-    tag: 'motif',
-    init: `Lines brush in {id:'color', type:'color', placeholder:[20, 0.8, 1.0]} 
-    with width {id: 'lineWeight', type: 'numberslider', min:1, max:600, placeholder: 8} 
-    along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
-    cursor: './assets/cursors/star-solid.svg',
-    mouseActionType: 'drag1',
-    onact: (my) => {
-      my.target.linesBrush({ color: my.data.color, lineWeight: my.data.lineWeight, pointsList: my.data.pointsList });
-    }
-  },
-  {
-    name: 'tile',
-    dropdownName: 'Tile',
-    category: 'Effects',
+    name: 'straight grid',
+    dropdownName: 'Straight Grid',
+    category: 'Patterns',
     tag: 'motif',
     init: `{id:'tiling', type:'choose', options:['straight grid', 'brick', 'half drop', 'checkerboard'], placeholder:'straight grid'} 
-    with width {id:'width', type:'numberslider', min:1, max:600, placeholder:100} 
-    and height {id:'height', type:'numberslider', min:1, max:600, placeholder:100}
+    with width {id:'width', type:'numberslider', min:5, max:600, placeholder:100} 
+    and height {id:'height', type:'numberslider', min:5, max:600, placeholder:100}
+    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
+    cursor: './assets/cursors/star-solid.svg',
+    mouseActionType: 'single-click',
+    onact: (my) => {
+      my.target.tile({
+        width: my.data.width,
+        height: my.data.height,
+        tiling: my.data.tiling,
+        x: my.data.position[0],
+        y: my.data.position[1] });
+    }
+  },
+  {
+    name: 'brick',
+    dropdownName: 'Brick',
+    category: 'Patterns',
+    tag: 'motif',
+    init: `{id:'tiling', type:'choose', options:['straight grid', 'brick', 'half drop', 'checkerboard'], placeholder:'brick'} 
+    with width {id:'width', type:'numberslider', min:5, max:600, placeholder:100} 
+    and height {id:'height', type:'numberslider', min:5, max:600, placeholder:40}
+    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
+    cursor: './assets/cursors/star-solid.svg',
+    mouseActionType: 'single-click',
+    onact: (my) => {
+      my.target.tile({
+        width: my.data.width,
+        height: my.data.height,
+        tiling: my.data.tiling,
+        x: my.data.position[0],
+        y: my.data.position[1] });
+    }
+  },
+  {
+    name: 'half drop',
+    dropdownName: 'Half Drop',
+    category: 'Patterns',
+    tag: 'motif',
+    init: `{id:'tiling', type:'choose', options:['straight grid', 'brick', 'half drop', 'checkerboard'], placeholder:'half drop'} 
+    with width {id:'width', type:'numberslider', min:5, max:600, placeholder:150} 
+    and height {id:'height', type:'numberslider', min:5, max:600, placeholder:250}
+    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
+    cursor: './assets/cursors/star-solid.svg',
+    mouseActionType: 'single-click',
+    onact: (my) => {
+      my.target.tile({
+        width: my.data.width,
+        height: my.data.height,
+        tiling: my.data.tiling,
+        x: my.data.position[0],
+        y: my.data.position[1] });
+    }
+  },
+  {
+    name: 'checkerboard',
+    dropdownName: 'Checkerboard',
+    category: 'Patterns',
+    tag: 'motif',
+    init: `{id:'tiling', type:'choose', options:['straight grid', 'brick', 'half drop', 'checkerboard'], placeholder:'checkerboard'} 
+    with width {id:'width', type:'numberslider', min:5, max:600, placeholder:50} 
+    and height {id:'height', type:'numberslider', min:5, max:600, placeholder:50}
     at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
@@ -582,7 +641,7 @@ export const effectList = [
   {
     name: 'shift',
     dropdownName: 'Shift',
-    category: 'Patterns',
+    category: 'Effects',
     tag: 'motif',
     init: `{id:'orientation', type:'choose', options:['vertical','horizontal'], placeholder:'vertical'} shift 
     with height {id:'height', type:'numberslider', min:1, max:600, placeholder:50} 

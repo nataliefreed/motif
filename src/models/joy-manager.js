@@ -76,6 +76,7 @@ export class JoyManager {
 
 		this.eventBus.addEventListener('effectSelected', (e) => {
 			this.effectType = e.detail.effectType;
+			this.currentColorHSV = [Math.random()*360, 0.8, 0.8]; //re-randomize color
 			if(this.effectType != this.previousEffectType) {
 				this._updatePreview();
 				this.previousEffectType = this.effectType;

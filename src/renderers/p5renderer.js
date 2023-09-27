@@ -310,7 +310,7 @@ export class P5Renderer {
         this.translate(offsetX, offsetY);
 
         this.noFill();
-        this.stroke(0);
+        this.stroke(50);
         this.strokeWeight(2);
 
         const calculatePoints = (initial, dimensions) => {
@@ -325,16 +325,17 @@ export class P5Renderer {
         const c = calculatePoints(0, [l, w, l, w]);
         
         const cut = (r0, c0, r1, c1) => {
-          this.stroke(0);
+          this.stroke(50);
           this.line(r[r0], c[c0], r[r1], c[c1]);
         }
 
         const fold = (r0, c0, r1, c1) => {
-          this.stroke(128);
+          this.stroke(120);
           this.line(r[r0], c[c0], r[r1], c[c1]);
         }
 
         const tab = (r0, c0, r1, c1) => {
+          this.stroke(50);
           const u = [r[r1] - r[r0], c[c1] - c[c0]];
           const v = [-u[1], u[0]];
           let prev = [0, 0]; 
