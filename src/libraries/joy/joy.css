@@ -56,7 +56,7 @@ More prefixing to avoid NAME COLLISIONS
 
 .joy-list-item {
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
 	/* margin-bottom: 0.3em; */
 	/* border: 1px dashed blue; */
 }

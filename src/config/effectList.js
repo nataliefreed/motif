@@ -141,20 +141,95 @@ export const effectList = [
     dropdownName: 'star brush',
     category: 'Brushes',
     tag: 'motif',
-    init: `Along path {id:'path', type:'path', placeholder:[[20,50],[600,250]]} 
-    Star with {id:'npoints', type:'numberslider', min:3, max:60, placeholder:5} points, 
-    outer {id:'r1', type:'numberslider', min:1, max:600, placeholder:20}, 
-    inner {id:'r2', type:'numberslider', min:1, max:600, placeholder:10} 
-    in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}`,
+    init: function() {
+      let listname = 'stars';
+      let configString = `{id:'alongpath', type:'sequences/alongpath',
+                         pathData: '[[30,30],[40,40],[100,40],[100,100],[600,250]]',
+                         listname: '${listname}'}`;
+      
+      let parseResult = this.parseActorMarkup(configString);
+      let initActions = [
+        {type:'motif/star', data: {color: [255, 0, 255], x: 0, y: 0, r1: 20, r2: 10, npoints: 5}},
+        {type:'motif/circle', data: {color: [0, 0, 255], x: 50, y: 100, r1: 20, r2: 10, npoints: 5}}
+      ];
+      let alongpathOption = parseResult.actorOptions.find(obj => obj.id === 'alongpath');
+      if(alongpathOption) {
+        alongpathOption.initActions = initActions; //pass in the starter actions
+      }
+      this.initializeDOM(parseResult);
+
+
+      // console.assert(parseResult.actorOptions[0].id == 'alongpath');
+      // console.log("actor options", parseResult.actorOptions);
+      // console.log("html", parseResult.html);
+      // parseResult.actorOptions[0].initActions = initActions;
+      // debugger;
+      // for(let action in initActions) {
+      //    this.alongpath.actions.addAction(action.type, undefined, action.data);
+      // }
+      // debugger;
+
+      // // debugger;
+      // console.log("star brush actions addAction", this.alongpath.actions.addAction);
+      // console.log("star brush actions", this.alongpath.actions);
+    },
+    postInit: function() {
+      // let initActions = [
+      //   {type:'motif/star', data: {color: [255, 0, 255], x: 0, y: 0, r1: 20, r2: 10, npoints: 5}},
+      //   {type:'motif/star', data: {color: [0, 0, 255], x: 0, y: 0, r1: 20, r2: 10, npoints: 5}}
+      // ];
+      // console.log("actions in alongpath", this.alongpath.actions);
+      
+      // for(let action in initActions) {
+      //    this.alongpath.actions.addAction(action.type, undefined, action.data);
+      // }
+      // debugger;
+    },
+
+
+    // init: function() {
+    //   this.doNormalInit();
+    //   // let actionConfig = {
+    //   for(action in starBrushTemplateActions) {
+    //     this.actions.addChild(actionConfig);
+    //   }
+    //   let args = {};
+    //   args.id = 'alongpath';
+    //   args.type = 'sequences/alongpath';
+    //   args.listname = 'star brush';
+    //   args.path = '[[500,50],[600,250]]';
+    //   args.startActions = [
+    //     {type:'motif/star', data:{color: [255, 0, 255], x: 0, y: 0, r1: 20, r2: 10, npoints: 5}},
+    //   ];
+    //   return JSON.stringify(args);
+    // }(), // immediately call this function to get the string
+    // this.alongpath.actions.actions.addAction('motif/star', undefined, {color: [255, 0, 255], x: 0, y: 0, r1: 20, r2: 10, npoints: 5});
+    
+    // init: {
+    //   id: "alongpath",
+    //   type: "sequences/alongpath",
+    //   listname: "stars",
+    //   path: [[0, 0], [10, 20]],
+    //   startActions: [
+    //     {type:'motif/star', data: {color: [255, 0, 255], x: 0, y: 0, r1: 20, r2: 10, npoints: 5}},
+    //     {type:'motif/star', data: {color: [0, 0, 255], x: 0, y: 0, r1: 20, r2: 10, npoints: 5}}
+    //   ]
+    // },
+  //   init: `{id:'alongpath', type:'sequences/alongpath'}
+  //   Star with {id:'npoints', type:'numberslider', min:3, max:60, placeholder:5} points, 
+  //   outer {id:'r1', type:'numberslider', min:1, max:600, placeholder:20}, 
+  //   inner {id:'r2', type:'numberslider', min:1, max:600, placeholder:10} 
+  //   in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'drag',
     onact: (my) => {
-      console.log("star brush onact", my.data.path.length);
-      console.log("star brush onact", my);
-      for(let i=0;i<my.data.path.length;i++) {
-        my.target.star({color: my.data.color, x: my.data.path[i][0], y: my.data.path[i][1], r1: my.data.r1, r2: my.data.r2, npoints: my.data.npoints});
-        console.log({color: my.data.color, x: my.data.path[i][0], y: my.data.path[i][1], r1: my.data.r1, r2: my.data.r2, npoints: my.data.npoints});
-      }
+      console.log(my);
+      my.actor.alongpath.act(my.target);
+      // my.target.star({color: my.data.color, x: my.data.path[0][0], y: my.data.path[0][1], r1: my.data.r1, r2: my.data.r2, npoints: my.data.npoints});
+      // for(let i=0;i<my.data.path.length;i++) {
+      //   my.target.star({color: my.data.color, x: my.data.path[i][0], y: my.data.path[i][1], r1: my.data.r1, r2: my.data.r2, npoints: my.data.npoints});
+      //   console.log({color: my.data.color, x: my.data.path[i][0], y: my.data.path[i][1], r1: my.data.r1, r2: my.data.r2, npoints: my.data.npoints});
+      // }
     }
   },
   {

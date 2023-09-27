@@ -37,12 +37,6 @@ export class Joy {
           options.modules.forEach(module => Joy.loadModule(module));
       }
 
-      // this.rootActor = new Actor({
-      //   init: options.init,
-      //   data: options.data,
-      //   onupdate: options.onupdate
-      // });
-
       this.rootActor = new Actor(options);
 
       initReferences(this.rootActor); // set up reference list to use for synchronized actors
@@ -106,7 +100,7 @@ export class Joy {
 
   _initUI() {
     // CSS
-    this.dom.classList.add("joy-master");
+    this.dom.className = "joy-master";
 
     // Manual Scroll (to prevent it propagating up...)
     this.container.addEventListener('wheel', this.handleScroll.bind(this));
@@ -292,24 +286,32 @@ class Actor {
     this.type = options.type;
     if (this.type) {
       let actorTemplate = Joy.getTemplateByType(this.type);
-      _configure(this, actorTemplate);
+      _configure(this, actorTemplate); //add template properties and values to this actor
     }
     // Now configure the actor with any additional options provided
-    _configure(this, this.options);
+    _configure(this, this.options); //add 'options' properties and values to this actor
 
-    this.children = []; // Children actors, if any
+    this.children = []; // Placeholder for child actors
     this.dom = null;  // The DOM representation of this actor. Initialized later in "createWidget"
     this._myEditLock = false;
 
-    this._initData(this.data);
+    this._initData(this.data); // pass in placeholder or provided data
 
     // If there's an initialization method or string provided, use it.
     // This allows for custom setup logic when the actor is created.
     if(this.init){
       // If the init is a string, use it as an initialization script
-      if(typeof this.init==="string") this.initializeWithString(this.init);
+      if(typeof this.init==="string") {
+        this.initializeDOM(this.parseActorMarkup(this.init));
+      }
       // If the init is a function, call it and pass the current actor as the argument
-      if(typeof this.init==="function") this.init();
+      else if(typeof this.init==="function") {
+        this.init(this);
+      }
+      else if(typeof this.init === "object" && !Array.isArray(this.init) && this.init !== null) {
+        console.log("init is an object", this.init);
+        this.initializeDOM(this.parseActorObject(this.init));
+      }
     }
 
     // WATCH DATA
@@ -320,7 +322,6 @@ class Actor {
     /////////////////////////////////
     // ACTOR <-> DATA: //////////////
     /////////////////////////////////
-
 
     // If placeholder is undefined, set it to an empty object
     if (this.placeholder === undefined) {
@@ -371,50 +372,76 @@ class Actor {
   }
 
   parseActorMarkup(markup) {
-    let actorOptions = [];
-    let html = markup;
+      // Initialize an array to store parsed actor options.
+      let actorOptions = [];
+      let newHtml = markup; // Create a copy of the original markup.
+      // Regular expression to find the top-level JSON-like segments in the string.
+      const regex = /{[^{}]*}/g;
+      let match;
+      
+      // Iterate over all matches in the markup.
+      while ((match = regex.exec(markup)) !== null) {
+        // The matched segment is a JSON-like string. Clean it up to proper JSON format.
+        let jsonStr = match[0]
+            .replace(/(\w+)\:/g, "\"$1\":")  // Add double quotes around property names.
+            .replace(/\'/g, "\"");          // Replace single quotes with double quotes.
 
-    // Split the markup into Actor Options & Widget HTML
-    let startIndex = -1;
-    let endIndex = -1;
-    let stack = 0;
-    // Go through each character. When you find a top-level "{...}" JSON string,
-    // 1) parse it into an Actor Option
-    // 2) replace it in the markup with a <span> saying where its widget should go
-    for(var i=0; i<html.length; i++){
-      var character = html[i];
-
-      // ONLY the top-level {...}'s...
-      if(stack==0 && character=="{") startIndex=i;
-      if(character=="{") stack++;
-      if(character=="}") stack--;
-      if(stack==0 && character=="}"){
-        endIndex = i+1;
-
-        // Cut out start to end, save as JSON & replace markup with <span>
-        var json = html.slice(startIndex, endIndex);
-        json = json.replace(/(\w+)\:/g,"'$1':"); // cleanup: give nameerties quotes
-        json = json.replace(/\'/g,'"'); // cleanup: replace ' with "
-        json = JSON.parse(json);
-        json.dataID = json.dataID || json.id; // cleanup: dataID=id by default
-        actorOptions.push(json); // remember option!
-        html = html.substr(0, startIndex)
-            + "<span id='widget_"+json.id+"'></span>"
-            + html.substr(endIndex); // replace markup
-
-        // GO BACK TO THE BEGINNING & START OVER
-        // because i'm too lazy to calculate where the index should go now
-        i=0;
-        startIndex = -1;
-        endIndex = -1;
-        stack = 0;
+        try {
+            // Parse the cleaned up JSON string.
+            const json = JSON.parse(jsonStr);
+            
+            // Cleanup: set dataID to id by default if it doesn't exist.
+            json.dataID = json.dataID || json.id;
+            actorOptions.push(json);
+            
+            // Replace the matched segment in the newHtml with a corresponding <span> placeholder.
+            const spanTag = `<span id='widget_${json.id}'></span>`;
+            newHtml = newHtml.replace(match[0], spanTag);
+        } catch (error) {
+            console.error("Failed to parse actor option:", jsonStr);
+        }
       }
+
+    // console.log("parsing markup", markup);
+    // console.log("parsing result: actorOptions", actorOptions, "html", newHtml);
+    // Return the extracted actor options and the new HTML.
+    return { actorOptions: actorOptions, html: newHtml };
+  }
+
+  parseActorObject(obj) {
+    let actorOptions = [];
+    let html = "";
+
+    for (let key in obj) {
+        let value = obj[key];
+        
+        if (typeof value === "object" && value !== null) {
+            // If the object looks like an actor (based on having both 'id' and 'type' properties),
+            // then treat it as an actor.
+            if (value.id && value.type) {
+                actorOptions.push(value);
+
+                // Add a placeholder for this actor in the HTML.
+                html += `${key}: <span id='widget_${value.id}'></span> `;
+            } else {
+                // For nested objects that aren't actors or arrays.
+                html += `${key}: ${JSON.stringify(value)} `;
+            }
+        } else {
+            // Handle non-object values as just part of the HTML content.
+            html += `${key}: ${value} `;
+        }
     }
+
+    // console.log("parsing object", obj);
+    // console.log("parsing result: actorOptions", actorOptions, "html", html);
+
+    // Return the extracted actor options and the new HTML.
     return { actorOptions: actorOptions, html: html };
   }
 
-  initializeWithString(markup) {
-    let parseResult = this.parseActorMarkup(markup);
+
+  initializeDOM(parseResult) {
     let actorOptions = parseResult.actorOptions;
     let html = parseResult.html;
 
@@ -423,10 +450,12 @@ class Actor {
       this.addChild(actorOption);
     });
 
-    // Create the actor's widget using the processed markup.
+    // Create the actor's widget using the processed markup
+    // and replace the <span> placeholders with the child actors' widgets.
     this.createWidget = function() {
 
       this.dom = document.createElement("span");
+      this.dom.classList.add("joy-widget");
       this.dom.innerHTML = html;
   
       // Replace all <spans> with childrens' widgets.
@@ -446,9 +475,16 @@ class Actor {
   }
 
   addChild(child, data) {
-    if (child._class_ !== "Actor") child = new Actor(child, this, data);
+    // let newData = {};
+    // _configure(newData, data);
+    if (child._class_ !== "Actor") {
+      child = new Actor(child, this, data);
+    }
     this.children.push(child);
-    if (child.id) this[child.id] = child;
+    if (child.id) {
+      this[child.id] = child;
+    }
+   
     return child;
   }
 

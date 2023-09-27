@@ -34,12 +34,13 @@ export class EffectManager {
 }
 
 export class Effect {
-  constructor({name, dropdownName, category, tag, init, cursor, mouseActionType, onact}) { 
+  constructor({name, dropdownName, category, tag, init, postInit, cursor, mouseActionType, onact}) { 
     this.name = name;
     this.dropdownName = dropdownName;
     this.category = category;
     this.tag = tag;
     this.init = init;
+    this.postInit = postInit;
     this.cursor = cursor;
     this.mouseActionType = mouseActionType;
     this.onact = onact;
@@ -61,8 +62,8 @@ export class Effect {
 
 export class PathEffect extends Effect {
   
-  constructor({name, dropdownName, category, tag, init, cursor, mouseActionType, config}) { 
-    super({name, dropdownName, category, tag, init, cursor, mouseActionType, config});
+  constructor({name, dropdownName, category, tag, init, postInit, cursor, mouseActionType, config}) { 
+    super({name, dropdownName, category, tag, init, postInit, cursor, mouseActionType, config});
     this.scale = parseFloat(config.scale);
     this.shapes = config.shapes;
     this.sizes = config.sizes;
@@ -94,8 +95,8 @@ export class PathEffect extends Effect {
 
 export class PointEffect extends Effect {
   // effects with mouse action type 'single-click', only have one point rather than a path
-  constructor({name, dropdownName, category, tag, init, cursor, mouseActionType, onact}) {
-    super({name, dropdownName, category, tag, init, cursor, mouseActionType, onact});
+  constructor({name, dropdownName, category, tag, init, postInit, cursor, mouseActionType, onact}) {
+    super({name, dropdownName, category, tag, init, postInit, cursor, mouseActionType, onact});
   }
   render(data, points, canvas) {
     let point = points[0];

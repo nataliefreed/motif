@@ -2,15 +2,6 @@
 import { ChooserModal } from './modals.js';
 import { _preventWeirdCopyPaste, _blurOnEnter, _selectAll, _unselectAll, _fixStringInput } from '../joy-utils.js';
 
-/********************
-Button's config:
-{
-  label: "derp",
-  onclick: function(){},
-  styles: ["round", "hollow"] // optional
-}
-********************/
-
 export class JoyWidget {
   constructor(config) {
 

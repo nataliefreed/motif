@@ -216,10 +216,58 @@ Joy.module("sequences", function() {
     name: "Along path",
     type: "sequences/alongpath",
     tags: ["sequences", "action"],
-    init: "Along path {id:'path', type:'path', placeholder:[[30,30],[40,40],[100,40],[100,100],[600,250]]} " +
-        // "{id:'actions', type:'actions', resetVariables:false}",
-        "{id:'actions', type:'actions', listName:'brush name', resetVariables:false}", //name makes it collapsible, eventually - variable name
+    init: function() {
+      let listname = this.listname? this.listname : 'brush name';
+      let pathData = this.pathData? this.pathData : '[[30,30],[10,10]]';
+      let configString = `Along path {id:'path', type:'path', placeholder:${pathData}}
+      {id:'actions', type:'actions', listName:"${listname}", resetVariables:false}`;
+      let parseResult = this.parseActorMarkup(configString);
+
+      let actionOption = parseResult.actorOptions.find(obj => obj.id === 'actions');
+      if(actionOption && this.initActions) {
+        actionOption.initActions = [...this.initActions];
+      }
+      delete this.initActions;
+      
+      // for(let option in actionOptions) {
+      //   actionOption.initActions = this.initActions; //pass in the starter actions
+      //   console.log("setting", actionOption.initActions, "to", this.initActions);
+      // }
+
+      // for(let opts of parseResult.actorOptions) {
+      //   if(opts.id == 'actions') {
+      //     opts.initActions = this.initActions;
+      //   }
+      // }
+      this.initializeDOM(parseResult);
+    },
+      // console.log("alongpath actor structure", this);
+      // console.log("initActions", this.parent.initActions, "in", this.parent);
+      // console.log(Object.getOwnPropertyNames(this));
+      // console.log(Object.getOwnPropertyNames(this.parent));
+      // const descriptor = Object.getOwnPropertyDescriptor(this.parent, 'initActions');
+      // console.log(descriptor);
+      // console.log("proxy?", this.parent.initActions === Object.getPrototypeOf(this.parent).initActions);
+      // console.log(this.parent.hasOwnProperty('initActions'));  // Check directly on the object
+      // console.log(Object.getPrototypeOf(this.parent).hasOwnProperty('initActions')); // Check on its prototype
+      // let proto = this.parent;
+      // while (proto) {
+      //   console.log(proto.hasOwnProperty('initActions'));
+      //   proto = Object.getPrototypeOf(proto);
+      // }
+  
+      // console.log('alongpath actions after init', this.actions);
+      // then actions needs to be populated with the list of markup strings in startActions
+
+    //   // console.log(this.actions);
+    //   // // console.log(this.actions.addAction);
+    //   // this.actions.addAction('motif/star', undefined);
+    // },
+    
+    // "Along path {id:'path', type:'path', placeholder:[[30,30],[40,40],[100,40],[100,100],[600,250]]} " +
+    //     "{id:'actions', type:'actions', listName:'brush name', resetVariables:false}", //if it gets a name, list of actions is collapsible
     onact: function(my){
+      console.log("on act for alongpath");
       // Previewing? How much to preview?
       // var param = 1;
       // if(my.data._PREVIEW!==undefined) param=my.data._PREVIEW;
@@ -227,12 +275,12 @@ Joy.module("sequences", function() {
       // Create overrides, if not already there
       // if(!my.target._overrides) my.target._overrides={}; 
 
-      // We shamelessly ignore good taste and directly grab actors out of our list of actions
+      // Just directly grab actors out of our list of actions
       const nestedActors = my.actor.actions.entries;
       const nestedActorData = my.actor.actions.data.actions;
       
-      // console.log("nestedActors", nestedActors);
-      // console.log("nestedActorData", nestedActorData);
+      console.log("nestedActors", nestedActors);
+      console.log("nestedActorData", nestedActorData);
 
       if(nestedActors.length > 0) {
         let nextPointIndex = 0;
@@ -333,6 +381,172 @@ Joy.module("sequences", function() {
   });
 });
 
+
+// class ActionList {
+//   constructor(listname, id) {
+//     this.listname = listname;
+//     this.id = id;
+//     this.dom = this.createDOM();
+//   }
+//   addAction() {
+
+//   }
+//   removeAction() {
+
+//   }
+//   moveAction() {
+
+//   }
+//   createDOM() {
+//     let dom = document.createElement("li");
+//     dom.className = "joy-list-item";
+
+//     // Details for Actions List
+//     let detailsElement = document.createElement("details");
+//     detailsElement.className = "joy-actions";
+//     dom.appendChild(detailsElement);
+
+//     // Summary
+//     let summary = document.createElement("summary");
+//     let arrowSpan = document.createElement("span");
+//     arrowSpan.className = "toggle-arrow";
+//     summary.appendChild(arrowSpan);
+
+//     // Check if list name is defined
+//     let listName = this.listName;
+//     if (listName) {
+//       // If list name is defined, make the list collapsible
+//       let titleSpan = document.createElement("span");
+//       titleSpan.className = "list-title";
+//       titleSpan.textContent = listName;
+//       summary.appendChild(titleSpan);
+//     } else {
+//       // If list name is not defined, make the list non-collapsible
+//       detailsElement.removeAttribute("open");
+//       detailsElement.setAttribute("open", "open");
+//       arrowSpan.style.display = "none";  // Hide the arrow
+//     }
+
+//     detailsElement.appendChild(summary);
+
+//     // List
+//     let list = document.createElement("ul");
+//     list.classList.add('joy-list');
+//     list.id = this.id + "-joy-list";
+//     detailsElement.appendChild(list);
+
+//     //////////////////////////////////////////
+//     // Create Bullet /////////////////////////
+//     //////////////////////////////////////////
+
+//     let bulletOptions = [
+//       {label:"Add action above", value:"action_above"},
+//       {label:"Add action below", value:"action_below"},
+//       {label:"Delete", value:"delete"}
+//     ];
+//     let _onBulletChoice = (entry, choice) => {
+
+//       // ACTION ABOVE or BELOW
+//       let newActionWhere = 0;
+//       if(choice=="action_above") newActionWhere=-1; // above
+//       if(choice=="action_below") newActionWhere=1; // below
+//       if(newActionWhere!=0){ // not NOT new action
+        
+//         let newEntryIndex = this.entries.indexOf(entry);
+//         if(newActionWhere>0) newEntryIndex+=1;
+
+//         // Chooser Modal!
+//         let chooser = new ChooserModal({
+//           position: "left",
+//           source: entry.bullet.dom,
+//           options: actionOptions,
+//           onchange: (value) => {
+//             _addAction(value, newEntryIndex);
+//             this.update(); // You oughta know!
+//             _updateBullets(); // update the UI, re-number it.
+//           }
+//         }).show();
+//       }
+
+//       // DELETE
+//       if(choice=="delete"){
+//         _removeFromArray(this.entries, entry); // Delete entry from Entries[]
+//         _removeFromArray(actions, entry.actionData); // Delete action from Data's Actions[]
+//         this.removeChild(entry.actor); // Delete actor from Children[]
+//         list.removeChild(entry.dom); // Delete entry from DOM
+//         this.update(); // You oughta know!
+//         _updateBullets(); // update the UI, re-number it.
+//       }
+
+//     };
+//     let _createBullet = (entry) => {
+    
+//       let bullet = new ChooserButton({
+//         position: "left",
+//         staticLabel: _getBulletLabel(entry),
+//         options: bulletOptions,
+//         onchange: (choice) => {
+//           _onBulletChoice(entry, choice);
+//         },
+//         styles: ["joy-bullet"]
+//       });
+//       bullet.dom.classList.add("joy-bullet");
+
+//       return bullet;
+
+//     };
+
+//     // Get the digit (or letter, or roman) for this bullet...
+//     let _getBulletLabel = (entry) => {
+
+//       // What index am I?
+//       let index = this.entries.indexOf(entry)+1;
+
+//       // How many levels deep in "actions" am I?
+//       let levelsDeep = 0;
+//       let parent = this.parent;
+//       while(parent){
+//         if(parent.type=="actions") levelsDeep++;
+//         parent = parent.parent;
+//       }
+
+//       // Digit, Letter, or Roman? (Cycle around)
+//       let label;
+//       switch(levelsDeep%3){
+//         case 0: label=index; break; // digits
+//         case 1: label=_numberToAlphabet(index); break; // letter
+//         case 2: label=_numberToRoman(index); break; // roman
+//       }
+
+//       return label;
+
+//     };
+
+//     // Re-number ALL these bad boys
+//     let _updateBullets = () => {
+//       for(let i=0; i<this.entries.length; i++){
+//         let entry = this.entries[i];
+//         let bullet = entry.bullet;
+//         let label = _getBulletLabel(entry);
+//         bullet.setLabel(label);
+//       }
+//     };
+//   }
+//   return dom;
+// }
+
+// class Action {
+//   constructor() {
+
+//   }
+//   getDOM() {
+//     if(!this.dom) {
+//       //create it
+//     }
+//     return this.dom;
+//   }
+// }
+
 /****************
 
 A collapsible list of actions.
@@ -345,13 +559,19 @@ WidgetConfig:
 Joy.add({
   type: "actions",
   tags: ["ui"],
-  init: function(){
+  init: function() {
     if(this.resetVariables!==undefined) this.data.resetVariables=this.resetVariables;
   },
   initWidget: function(){
 
     let data = this.data;
     let actions = data.actions;
+
+    if(this.data.actions.length <= 0 && this.initActions) { // saved actions could be from action preview widget or from data
+      for(let action of this.initActions) {
+        this.data.actions.push(action);
+      }
+    }
 
     // DOM
     this.dom = document.createElement("li");
@@ -391,6 +611,42 @@ Joy.add({
     list.id = this.id + "-joy-list";
     detailsElement.appendChild(list);
     this.list = list;
+
+    // Actions you can add:
+    let actionOptions = [];
+    // Determine base set of action templates based on criteria.
+    let baseActionTemplates = [];
+    if(this.onlyActions){ 
+        this.onlyActions.forEach(actionType => {
+            baseActionTemplates.push(Joy.getTemplateByType(actionType));
+        });
+    } else {
+        baseActionTemplates = Joy.getTemplatesByTag("action");
+    }
+    // Further filter by modules if specified.
+    let modules = this.modules || [];
+    if (modules.length > 0) {
+        baseActionTemplates = baseActionTemplates.filter(template => {
+            return modules.some(module => {
+                return template.tags.includes(module);
+            });
+        });
+    }
+    // Create the actionOptions based on the filtered list of templates.
+    baseActionTemplates.forEach(actionTemplate => {
+        let notActionTag = actionTemplate.tags.filter(tag => tag !== "action")[0];
+        actionOptions.push({
+            label: actionTemplate.name,
+            value: actionTemplate.type,
+            category: notActionTag
+        });
+    });
+    // Remove duplicates if any
+    // TODO: figure out why there are duplicates
+    actionOptions = actionOptions.filter((option, index, self) => 
+    index === self.findIndex((o) => (
+        o.label === option.label && o.value === option.value && o.category === option.category
+    )));
 
     //////////////////////////////////////////
     // Create Bullet /////////////////////////
@@ -474,9 +730,7 @@ Joy.add({
         case 1: label=_numberToAlphabet(index); break; // letter
         case 2: label=_numberToRoman(index); break; // roman
       }
-
       return label;
-
     };
 
     // Re-number ALL these bad boys
@@ -520,13 +774,11 @@ Joy.add({
       // dragHandle.classList.add("action-drag-handle");
       // dragHandle.innerHTML = '<i class="fa-solid fa-grip-lines"></i>';
       // bulletContainer.appendChild(dragHandle);
-
-      
   
       // The Actor & Widget 
       let newActor = this.addChild({type:actionData.type}, actionData);
       let newWidget = newActor.createWidget();
-      newWidget.classList.add("joy-widget");
+      newWidget.className = "joy-action-widget";
       entryDOM.appendChild(newWidget);
   
       // Storing data
@@ -598,11 +850,14 @@ Joy.add({
 
     };
     // add all INITIAL actions as widgets
-    for(let i=0;i<actions.length;i++) _addEntry(actions[i]);
+      for(let i=0;i<actions.length;i++) {
+        // debugger;
+        _addEntry(actions[i]);
+      }
 
-    // ///////////////////////////////////////
-    // // Reorder Entries - NF added /////////
-    // ///////////////////////////////////////
+    /////////////////////////////////////////
+    //// Reorder Entries /////////////////
+    /////////////////////////////////////////
     let _moveEntry = (oldIndex, newIndex) => {
       let item = this.entries.splice(oldIndex, 1)[0];
       this.entries.splice(newIndex, 0, item);
@@ -612,18 +867,6 @@ Joy.add({
     this.moveAction = _moveEntry;
 
     let _deleteEntry = (index) => {
-      // let entry = this.entries[index];
-      // console.log("the entry", entry);
-      // console.log("removed from entries", _removeFromArray(this.entries, entry)); 
-      // console.log("removed from actions",_removeFromArray(actions, entry.actionData));  // Delete action from Data's Actions[]
-      // if (entry.dom.parentNode) {
-      //   entry.dom.parentNode.removeChild(entry.dom); // Delete entry from DOM
-      // }
-      // this.update();
-      // _updateBullets();
-      // this.removeChild(entry.actor); // Delete actor from Children
-
-
       let entry = this.entries[index];
       _removeFromArray(this.entries, entry); // Delete entry from Entries[]
       _removeFromArray(actions, entry.actionData); // Delete action from Data's Actions[]
@@ -634,8 +877,6 @@ Joy.add({
       }
       this.update(); // You oughta know!
       _updateBullets(); // update the UI, re-number it.
-
-
     };
     this.deleteAction = _deleteEntry;
 
@@ -659,57 +900,6 @@ Joy.add({
     };
     this.addAction = _addAction; //available to other modules
 
-    // Actions you can add:
-    // TODO: INCLUDE ALIASED ACTIONS
-    let actionOptions = [];
-
-    //TODO: refactor into functions
-
-    if(this.onlyActions){ //get a specific list of types
-      for(let i=0;i<this.onlyActions.length;i++){
-        let actionType = this.onlyActions[i];
-        let actorTemplate = Joy.getTemplateByType(actionType);
-        let notActionTag = actorTemplate.tags.filter((tag) => {
-          return tag!="action"; // first tag that's NOT "action" (so that actions categorized in the chooser menu based on their secondary tag)
-        })[0];
-        actionOptions.push({
-          label: actorTemplate.name,
-          value: actionType,
-          category: notActionTag
-        });
-      }
-    }else{ //find anything tagged action
-      let actionActors = Joy.getTemplatesByTag("action");
-      for(let i=0;i<actionActors.length;i++){
-        let actionActor = actionActors[i];
-        let notActionTag = actionActor.tags.filter((tag) => {
-          return tag!="action";
-        })[0];
-        actionOptions.push({
-          label: actionActor.name,
-          value: actionActor.type,
-          category: notActionTag
-        });
-      }
-    }
-
-    // NF: Add only actions in specified modules to chooser menu
-    // TODO: merge with previous filter code
-    let modules = this.modules || [];
-    let moduleOptions = [];
-    modules.forEach((module) => {
-      let moduleActors = Joy.getTemplatesByTag(module);
-      moduleActors.forEach((moduleActor) => {
-        let notActionTag = moduleActor.tags.filter((tag) => {
-          return tag!="action";
-        })[0];
-        moduleOptions.push({
-          label: moduleActor.name,
-          value: moduleActor.type,
-          category: notActionTag
-        });
-      });
-    });
 
     // "+" Button: When clicked, prompt what actions to add!
     let addButton = new ChooserButton({
@@ -725,7 +915,6 @@ Joy.add({
     addButtonLi.classList.add('joy-add-item');
     addButtonLi.appendChild(addButton.dom);
     this.list.appendChild(addButtonLi);
-
   },
   onact: function(my){
 
@@ -745,7 +934,7 @@ Joy.add({
       let actionData = my.data.actions[i];
       if(actionData.STOP) return "STOP";
 
-      console.log("entry at ", i, my.actor.entries[i].actor.init);
+      // console.log("entry at ", i, my.actor.entries[i].actor.init);
       // Run 
       let actor = my.actor.entries[i].actor; // TODO: THIS IS A HACK AND SHOULD NOT RELY ON THAT - note: preview "STOP" action messes with this!
       let actorMessage = actor.act(my.target, actionData); // use ol' actor, but GIVEN data.
@@ -997,7 +1186,7 @@ Joy.add({
       this.dom.className = "joy-single-action";
       this.entry = {}; // Initially empty
   },
-  setAction: function(actionType, actionOptions={}) {
+  setAction: function(actionType, settings={}) {
       // Remove previous action's representation if exists
       if(this.entry.actor) {
         this.dom.removeChild(this.entry.widget);
@@ -1006,14 +1195,14 @@ Joy.add({
       }
 
       // Create and add the new action's widget
-      let newActor = this.addChild({type: actionType}, actionOptions);
+      let newActor = this.addChild({type: actionType}, settings); //this mutates 'settings' (becomes actor.data)
       let newWidget = newActor.createWidget();
-      newWidget.classList.add("joy-widget");
+      newWidget.classList.add("joy-single-action-widget");
       this.dom.appendChild(newWidget);
       
       this.entry.actor = newActor;
       this.entry.widget = newWidget;
-      this.entry.actionData = actionOptions; //is this the same object as this.entry.actor.data??
+      this.entry.actionData = settings;
       this.update();
   },
   getActionData: function() {
@@ -1036,25 +1225,28 @@ Joy.add({
     // return data;
     return { ...actionDataCopy };
   },
-  setChildData(newData) {
+  setChildData(newData, targetActor=this.entry.actor) { //<---- TODO!!!
     console.log("newData is", newData);
-    console.log("before update: this.entry.actor is", this.entry.actor);
-
+    console.log("current actor is", targetActor);
+  
     for (let key in newData) {
-        if (this.entry.actor.hasOwnProperty(key)) {
-          for (let child of this.entry.actor.children) {
-            if(child.dataID == key) {
+      console.log("\t\tLooking for key", key, "in actor", targetActor);
+      if (targetActor.hasOwnProperty(key)) {
+        console.log("\t\tactor has key ", key);
+  
+        // If actor has children, loop through them
+        if (targetActor.children && targetActor.children.length > 0) {
+          for (let child of targetActor.children) {
+            if (child.dataID == key) {
               child.switchData(newData[key]);
-              // child.setData(key, newData[key], true);
               break;
             }
           }
-          // child.setData(newData[key]);
-          // this.entry.actor.data[key].value = newData[key].value; //why is this not updating the value?????????????
         }
+      }
     }
-    this.entry.actor.update(); //not sure if needed, will test
-    console.log("after update: this.entry.actor is", this.entry.actor);
+    targetActor.update();
+    console.log("after update: actor is", targetActor);
   },
   getActionType: function() {
     return this.entry.actor.type;

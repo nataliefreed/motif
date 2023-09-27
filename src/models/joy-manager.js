@@ -10,6 +10,7 @@ export class JoyManager {
 		this.currentColorHSV = [Math.random()*360, 0.8, 0.8];
 
     let data = Joy.loadFromURL();
+		console.log("loaded data: ", data);
 
     this.loadEffects(effects);
 		this.sketch = sketch;
@@ -90,9 +91,9 @@ export class JoyManager {
 		let data = {};
 		data.color = { type: 'color', value: this.currentColorHSV }; // add latest color
 		data.color1 = { type: 'color', value: this.currentColorHSV }; // add latest color
-		if(saveCurrentSettings) {
-			data = {...this.previewActionList.getActionData(), ...data};
-		}
+	// 	// if(saveCurrentSettings) {
+	// 	// 	data = {...this.previewActionList.getActionData(), ...data};
+	// 	// }
 		this.previewActionList.setAction(this.effectType, data);
 	}
 
@@ -104,18 +105,21 @@ export class JoyManager {
 		let actionData = this.previewActionList.getActionData();
 		let type = this.previewActionList.getActionType();
 		let combinedData = {...actionData, ...data};
+
 		this.previewActionEnabled = false;
+
+		console.log("\t\t\tadding action", type, actionData, combinedData);
 
 		const category = type.split('/')[0];
 		if(category === 'stencils') {
-			this._addEvent('stencils', type, combinedData);
+			this.addAction('stencils', type, combinedData);
 		}
 		else {
-			this._addEvent('motif', type, combinedData);
+			this.addAction('motif', type, combinedData);
 		}
 
 		this.currentColorHSV = [Math.random()*360, 0.8, 0.8]; //re-randomize color
-		this._updatePreview(true);
+		// this._updatePreview(true);
 		// this.previewActionList.getAction();
 		// console.log("preview actor", this.previewActionList.actor, "widget", this.previewActionList.widget, "data", this.previewActionList.getAction());
 		// if(this.effectType) {
@@ -135,7 +139,7 @@ export class JoyManager {
 		}
 	}
 
-	_addEvent(listName, type, data) {
+	addAction(listName, type, data) {
 		const target = this._getParentList(listName);
 		target.addAction(type, undefined, data);
 		target.update();
@@ -170,6 +174,7 @@ export class JoyManager {
 					type: "motif/" + effect.name,
 					tags: ["motif", "action"],
 					init: effect.init,
+					postInit: effect.postInit,
 					onact: effect.onact
 					// onact: (my) => { 
 					// 	//find brushstroke by id, generate and call its onact function
