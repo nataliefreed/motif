@@ -215,7 +215,7 @@ body{
     /* margin: 10px 10px 10px; */
     /* left: 600px;
     top: 100px; */
-    float: right; /* TODO: line up with Joy */
+    float: left; /* TODO: line up with Joy */
 }
 
 #replay-button {

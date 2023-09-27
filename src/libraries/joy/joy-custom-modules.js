@@ -359,26 +359,26 @@ Joy.module("sequences", function() {
 
 
   /******** Group  *********/
-  Joy.add({
-    name: "Group",
-    type: "sequences/group",
-    tags: ["sequences", "action"],
-    init: "{id:'groupname', type:'string', placeholder:'brush name'}"+
-        "{id:'actions', type:'actions', resetVariables:false}",
-    onact: function(my){
+  // Joy.add({
+  //   name: "Group",
+  //   type: "sequences/group",
+  //   tags: ["sequences", "action"],
+  //   init: "{id:'groupname', type:'string', placeholder:'brush name'}"+
+  //       "{id:'actions', type:'actions', resetVariables:false}",
+  //   onact: function(my){
       
-      // Previewing? How much to preview?
-      var param = 1;
-      if(my.data._PREVIEW!==undefined) param=my.data._PREVIEW;
+  //     // Previewing? How much to preview?
+  //     var param = 1;
+  //     if(my.data._PREVIEW!==undefined) param=my.data._PREVIEW;
 
-      // Loop through it... (as far as preview shows, anyway)
-      var loops = Math.floor(my.data.count*param);
-      for(var i=0; i<loops; i++){
-        var message = my.actor.actions.act(my.target);
-        if(message=="STOP") return message; // STOP
-      }
-    }
-  });
+  //     // Loop through it... (as far as preview shows, anyway)
+  //     var loops = Math.floor(my.data.count*param);
+  //     for(var i=0; i<loops; i++){
+  //       var message = my.actor.actions.act(my.target);
+  //       if(message=="STOP") return message; // STOP
+  //     }
+  //   }
+  // });
 });
 
 
@@ -1243,6 +1243,12 @@ Joy.add({
       this.entry.actionData = settings;
       this.update();
   },
+  getEntryData: function() {
+    let entryActor = this.entry.actor;
+    if(!entryActor) return {};
+    return entryActor.getAllData();
+  },
+  
   getActionData: function() {
     let target = {};
     let entryActor = this.entry.actor;
@@ -1260,27 +1266,22 @@ Joy.add({
     console.log("actionDataCopy is", actionDataCopy);
     // TODO!: I think `data` is what we should be returning here
     //   Looks like type used for initialization isn't matching though?
-    // return data;
-    return { ...actionDataCopy };
+    return data;
+    // return { ...actionDataCopy };
   },
-  setChildData(newData, targetActor=this.entry.actor) { //<---- TODO!!!
+  setChildData(newData) { //<---- TODO!!!
+    const targetActor = this.entry.actor;
     console.log("newData is", newData);
     console.log("current actor is", targetActor);
-  
     for (let key in newData) {
       console.log("\t\tLooking for key", key, "in actor", targetActor);
-      if (targetActor.hasOwnProperty(key)) {
-        console.log("\t\tactor has key ", key);
-  
-        // If actor has children, loop through them
-        if (targetActor.children && targetActor.children.length > 0) {
-          for (let child of targetActor.children) {
-            if (child.dataID == key) {
-              child.switchData(newData[key]);
-              break;
-            }
-          }
-        }
+      const child = targetActor.findChild(key);
+      if (child) {
+        console.log("\t\t\tFound child", child);
+        child.switchData(newData[key]);
+      }
+      else {
+        console.log("\t\t\tDidn't find child for", key);
       }
     }
     targetActor.update();
