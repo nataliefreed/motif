@@ -175,6 +175,7 @@ export class Joy {
   static getTemplateByType(type) {
       const template = this.templates.find(temp => temp.type === type);
       if (!template) throw Error(`No actor template of type '${type}'!`);
+      // console.log("template:", template);
       return template;
   }
 
@@ -205,6 +206,39 @@ export class Joy {
       }
       this.add(newTemplate);  // Add the modified/new template
   }
+
+  static toJoyDataFormat(type, data) {
+    const template = Joy.getTemplateByType(type);
+  
+    if (!template) {
+      throw new Error(`No template found for type ${type}`);
+    }
+  
+    const initString = template.init;
+    const regex = /{id:'(.*?)', type:'(.*?)'/g;
+    let matches;
+    const idTypeMapping = {};
+  
+    // Create a mapping of id to type from the init string
+    while ((matches = regex.exec(initString)) !== null) {
+      idTypeMapping[matches[1]] = matches[2];
+    }
+  
+    const result = { type };
+  
+    // Loop through the data and convert it to the required format
+    for (let key in data) {
+      if (idTypeMapping[key]) {
+        result[key] = {
+          type: idTypeMapping[key],
+          value: data[key]
+        };
+      }
+    }
+  
+    return result;
+  }
+  
 
   /*****************
 
@@ -309,7 +343,7 @@ class Actor {
         this.init(this);
       }
       else if(typeof this.init === "object" && !Array.isArray(this.init) && this.init !== null) {
-        console.log("init is an object", this.init);
+        // console.log("init is an object", this.init);
         this.initializeDOM(this.parseActorObject(this.init));
       }
     }

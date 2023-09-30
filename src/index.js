@@ -21,11 +21,16 @@ class MotifApp {
 		this.effects = new EffectManager(effectList);
 		this.brushstrokes = new BrushstrokeManager();
 
-		this.sketch = new P5Renderer();
+		let rootStyles = getComputedStyle(document.documentElement);
+		let w = parseInt(rootStyles.getPropertyValue('--canvas-width').trim(), 10);
+		let h = parseInt(rootStyles.getPropertyValue('--canvas-height').trim(), 10);
+		this.sketch = new P5Renderer(w, h);
 		this.joyManager = new JoyManager(this.effects.getEffects(), this.brushstrokes, this.sketch, this.eventBus);
 		
 		this.ui = new UIManager(this.effects.getEffects(), this.eventBus);
 		this.ui.generateEffectToolbarUI(); //categories and brush/effect buttons
+		let numRings = parseInt(rootStyles.getPropertyValue('--num-rings').trim(), 10);
+		this.ui.addNotebookRings(numRings);
 
 		this._setupDraggables();
 		this._setupEventListeners();
