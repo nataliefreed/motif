@@ -3,63 +3,121 @@
 <html>
 <head>
 	<link rel="stylesheet" type="text/css" href="./src/libraries/joy/joy.css">
+	<!-- <link rel="stylesheet" type="text/css" href="./src/style.css"> -->
+	<link rel="stylesheet" type="text/css" href="./src/layout.css">
 	<link rel="stylesheet" type="text/css" href="./src/style.css">
 	<script src="https://kit.fontawesome.com/7ce97ca89e.js" crossorigin="anonymous"></script>
 	<script src="./src/libraries/p5.js"></script>
 	<link rel="stylesheet" href="/src/libraries/coloris/coloris.css"/>
   <script src="/src/libraries/coloris/coloris.js"></script>
 </head>
-	<body>
-			<div class="frame">
-				<div class = "categories-and-settings">
-					<!-- <input type="color" id="color-picker" value="#ffaaff"> -->
-					<div class="category-toolbar"></div>
-				</div>
-				<div class="effect-toolbar">
-					<div class="effect-controls">
-					  <!-- <button id="redo-button"class="light-button drawing-control-button" >redo</button>
-					  <button id="undo-button"class="light-button drawing-control-button" >undo</button> -->
-				  </div>
-				</div>
-				<div class="middle-row">
-					<div id="drawing-canvas"></div>
-
-					<div class="program-panel">
-						<div id="joy">
-							
-						</div>
-						<div id="trash"></div>
-						
-						<div id="code buttons">
-							<!-- <button id="move-up-button" class="code-button light-button">^</button>
-							<button id="move-down-button" class="code-button light-button">v</button>
-							<button id="add-above-button" class="code-button light-button">+ above</button>
-							<button id="add-below-button" class="code-button light-button">+ below</button> -->
-							<!-- <button id="remix-button" class="code-button light-button">remix</button> -->
-							<button id="replay-button" class="code-button light-button"><i class="fa-solid fa-play fa-lg"></i></button>
-
-							<button id="shuffle-button" class="code-button light-button">shuffle</button>
-
-							<button id="clear-all-button"class="code-button light-button">clear all</button>
-
-							<button id="save-button" class="light-button drawing-control-button">copy project link</button>
-
-							<button id="download-button" class="light-button drawing-control-button">download my drawing</button>
-							<!-- <button id="group-button" class="code-button light-button">group</button> -->
-							<!-- <button id="delete-button" class="code-button light-button">delete</button> -->
-						</div>
-
-						<!-- <div class="bottom-instructions">
-							<p id="print-instruction"><a href="">Print</a> and then cut out!</p>
-						</div> -->
-
+<body>
+  <div class="notebook">
+    <div class="cover">
+      <div class="left-page">
+        <div id="drawing-canvas"></div>
+				<div id="tool-palette">
+					<div id="category-tabs"></div>
+					<div id="tool-palette-surface">
+						<div id="effect-toolbar" class="neumorphic neumorphic--pressed"></div>
 					</div>
 				</div>
-
-				<div id="joy-preview"></div>
-			</div>
+      </div>
+    </div>
+    <div class="rings"></div>
+    <div class="cover">
+      <div class="right-page">
+				<div class="right-panel">
+					<div id="joy"></div>
+					<div class="bottom-right-section">
+						<div id="code-buttons">
+							<button id="shuffle-button" class="light-button">shuffle</button>
+									<button id="clear-all-button"class="light-button">clear all</button>
+									<button id="replay-button" class="light-button"><i class="fa-solid fa-play fa-lg"></i></button>
+									<button id="placeholder-button" class="light-button">fold</button>
+									<button id="save-button" class="light-button drawing-control-button">share</button>
+									<button id="download-button" class="light-button drawing-control-button">download</button>
+						</div>
+						<div id="trash"><i class="fa-solid fa-trash-can"></i></div>
+					</div>
+				</div>
+      </div>
+			<div id="code-toolbar">
+				<button class="code-control-buttons" data-tooltip="Repeat">
+					<i class="fa fa-repeat"></i>
+			  </button>
+				<button class="code-control-buttons" data-tooltip="Delete">
+						<i class="fas fa-trash-alt"></i>
+				</button>
+				<button class="code-control-buttons" data-tooltip="Sample">
+					<i class="fa-solid fa-eye-dropper"></i>
+			  </button>
+				<button class="code-control-buttons" data-tooltip="Shuffle/Reorder">
+						<i class="fas fa-random"></i>
+				</button>
+				<button class="code-control-buttons" data-tooltip="Duplicate">
+						<i class="fas fa-copy"></i>
+				</button>
+				<button class="code-control-buttons" data-tooltip="Clear All">
+						<i class="fa-solid fa-snowplow"></i>
+						<!-- <i class="fas fa-ban"></i> -->
+				</button>
+				<button class="code-control-buttons" data-tooltip="Share">
+						<i class="fas fa-share-nodes"></i>
+						<!-- <i class="fa-solid fa-link"></i> -->
+				</button>
+				<button class="code-control-buttons" data-tooltip="Share">
+					<i class="fa-solid fa-download"></i>
+				</button>
 		</div>
-	</body>
+			<div id="joy-preview">
+				<button id="button-save-action" data-tooltip="Bookmark">
+					<!-- <i class="fa-solid fa-heart-circle-plus"></i> -->
+					<i class="fa-regular fa-square-plus"></i>
+			  </button>
+			</div>
+    </div>
+  </div>
+</body>
+
+		
+		<!-- <div class="notebook">
+			<div class="cover">
+					<div class="left-page">
+						<div class="left-panel">
+							<div id="drawing-canvas"></div>
+						</div> -->
+						<!-- <canvas id="pattern-canvas"></canvas> -->
+						<!-- <div class="bottom-left-panel">
+							<div class="effect-toolbar"></div>
+							<div class="category-toolbar"></div>
+						</div>
+					</div>
+			</div>
+			<div class="rings"></div>
+			<div class="cover">
+					<div class="right-page">
+						<div class="right-panel">
+							<div id="joy"></div>
+							<div id="trash"></div>
+					  </div>
+					  <div class="bottom-right-panel">
+							<div id="joy-preview"></div>
+							<div id="code-buttons">
+								
+							</div>
+						</div>
+					</div>
+			</div>
+	</div>
+</body> -->
+		<!-- <div class="main-panel">
+			
+			
+			
+			
+	</div> -->
+	
 </html>
 
 <script type="module" src="./src/index.js"></script>

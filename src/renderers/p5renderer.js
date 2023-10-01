@@ -1,13 +1,13 @@
 export class P5Renderer {
-  constructor() {
-    this.sketch = this.getSketch();
+  constructor(w, h) {
+    this.sketch = this.getSketch(w, h);
     this.sketch.addFill({color:'#aaaaaa'});
 		this.sketch.clear('#aaaaaa');
     this.sketch.loadStencils();
     return this.sketch;
   }
 
-  getSketch() {
+  getSketch(w, h) {
     return new p5(p => {
       
       let points = null;
@@ -25,7 +25,7 @@ export class P5Renderer {
       }
 
       p.setup = () => {
-        p.createCanvas(600, 600);
+        p.createCanvas(w, h);
         s = p.createGraphics(p.width, p.height);
         t = p.createGraphics(p.width, p.height);
         p.background(255);

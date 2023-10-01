@@ -1,5 +1,6 @@
 import { parse } from 'uuid';
 import { HSVtoRGB } from '../utils/color-utils.js';
+import { Joy } from '../libraries/joy/joy.js';
 export const effectList = [
   {
     name: 'solid fill',
@@ -134,135 +135,6 @@ export const effectList = [
         //offset experiment // my.target.heart({ color: my.data.color, x: my.data.path[i][0]+my.data.position.x-my.data.path[0][0], y: my.data.path[i][1]+my.data.position.y-my.data.path[0][1], size: my.data.size });
         my.target.heart({ color: my.data.color, x: my.data.path[i][0], y: my.data.path[i][1], size: my.data.size });
       }
-    }
-  },
-  {
-    name: 'star brush',
-    dropdownName: 'star brush',
-    category: 'Brushes',
-    tag: 'motif',
-    init: function() {
-      let listname = 'stars';
-      let configString = `{id:'alongpath', type:'sequences/alongpath',
-        pathData: '[[30,30],[40,40],[100,40],[100,100],[600,250]]',
-        listname: '${listname}'}`;
-
-      let parseResult = this.parseActorMarkup(configString);
-      let initActions = [
-        {type:'motif/star', data: {color: [255, 0, 255], x: 0, y: 0, r1: 20, r2: 10, npoints: 5}},
-        {type:'motif/circle', data: {color: [0, 0, 255], x: 50, y: 100, r1: 20, r2: 10, npoints: 5}}
-      ];
-      let alongpathOption = parseResult.actorOptions.find(obj => obj.id === 'alongpath');
-      if(alongpathOption) {
-        alongpathOption.initActions = initActions; //pass in the starter actions
-      }
-      this.initializeDOM(parseResult);
-
-      // // let configString = `{id:'alongpath', type:'sequences/alongpath',
-      // //                    pathData: '[[30,30],[40,40],[100,40],[100,100],[600,250]]',
-      // //                    listname: '${listname}'}`;
-      
-      // let initActions = [
-      //   {type:'motif/star', data: {color: [255, 0, 255], x: 0, y: 0, r1: 20, r2: 10, npoints: 5}},
-      //   {type:'motif/circle', 
-      //     color:{id:'color', type:'color', value:[0,0,255]},
-      //     data: {color: [0, 0, 255], x: 50, y: 100, r1: 20, r2: 10, npoints: 5}}
-      // ];
-      // let alongpathOption = {
-      //   "id": "alongpath",
-      //   "dataID": "alongpath",
-      //   "type": "sequences/alongpath",
-      //   "listname": "stars",
-      //   "path": {
-      //     "type": "path",
-      //     "value": [[30,30],[40,40],[100,40],[100,100],[600,250]],
-      //   },
-      //   "data": {
-      //     "actions": {
-      //       "actions": initActions,
-      //       "resetVariables": false,
-      //       "type": "actions"
-      //     },
-      //   }
-      // };
-      // // Call parseActorMarkup to get the html span, but we will clobber actorOptions
-      // let parseResult = this.parseActorMarkup(`{id:'alongpath'}`);
-      // parseResult.actorOptions = [alongpathOption];
-      // // debugger;
-      // this.initializeDOM(parseResult);
-            // this.alongpath.actions.actions[1].data.color = [50, 0.8, 0];
-
-      // console.assert(parseResult.actorOptions[0].id == 'alongpath');
-      // console.log("actor options", parseResult.actorOptions);
-      // console.log("html", parseResult.html);
-      // parseResult.actorOptions[0].initActions = initActions;
-      // debugger;
-      // for(let action in initActions) {
-      //    this.alongpath.actions.addAction(action.type, undefined, action.data);
-      // }
-      // debugger;
-
-      // // debugger;
-      // console.log("star brush actions addAction", this.alongpath.actions.addAction);
-      // console.log("star brush actions", this.alongpath.actions);
-    },
-    postInit: function() {
-      // let initActions = [
-      //   {type:'motif/star', data: {color: [255, 0, 255], x: 0, y: 0, r1: 20, r2: 10, npoints: 5}},
-      //   {type:'motif/star', data: {color: [0, 0, 255], x: 0, y: 0, r1: 20, r2: 10, npoints: 5}}
-      // ];
-      // console.log("actions in alongpath", this.alongpath.actions);
-      
-      // for(let action in initActions) {
-      //    this.alongpath.actions.addAction(action.type, undefined, action.data);
-      // }
-      // debugger;
-    },
-
-
-    // init: function() {
-    //   this.doNormalInit();
-    //   // let actionConfig = {
-    //   for(action in starBrushTemplateActions) {
-    //     this.actions.addChild(actionConfig);
-    //   }
-    //   let args = {};
-    //   args.id = 'alongpath';
-    //   args.type = 'sequences/alongpath';
-    //   args.listname = 'star brush';
-    //   args.path = '[[500,50],[600,250]]';
-    //   args.startActions = [
-    //     {type:'motif/star', data:{color: [255, 0, 255], x: 0, y: 0, r1: 20, r2: 10, npoints: 5}},
-    //   ];
-    //   return JSON.stringify(args);
-    // }(), // immediately call this function to get the string
-    // this.alongpath.actions.actions.addAction('motif/star', undefined, {color: [255, 0, 255], x: 0, y: 0, r1: 20, r2: 10, npoints: 5});
-    
-    // init: {
-    //   id: "alongpath",
-    //   type: "sequences/alongpath",
-    //   listname: "stars",
-    //   path: [[0, 0], [10, 20]],
-    //   startActions: [
-    //     {type:'motif/star', data: {color: [255, 0, 255], x: 0, y: 0, r1: 20, r2: 10, npoints: 5}},
-    //     {type:'motif/star', data: {color: [0, 0, 255], x: 0, y: 0, r1: 20, r2: 10, npoints: 5}}
-    //   ]
-    // },
-  //   init: `{id:'alongpath', type:'sequences/alongpath'}
-  //   Star with {id:'npoints', type:'numberslider', min:3, max:60, placeholder:5} points, 
-  //   outer {id:'r1', type:'numberslider', min:1, max:600, placeholder:20}, 
-  //   inner {id:'r2', type:'numberslider', min:1, max:600, placeholder:10} 
-  //   in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}`,
-    cursor: './assets/cursors/star-solid.svg',
-    mouseActionType: 'drag',
-    onact: (my) => {
-      console.log(my);
-      my.actor.alongpath.act(my.target);
-      // my.target.star({color: my.data.color, x: my.data.path[0][0], y: my.data.path[0][1], r1: my.data.r1, r2: my.data.r2, npoints: my.data.npoints});
-      // for(let i=0;i<my.data.path.length;i++) {
-      //   my.target.star({color: my.data.color, x: my.data.path[i][0], y: my.data.path[i][1], r1: my.data.r1, r2: my.data.r2, npoints: my.data.npoints});
-      //   console.log({color: my.data.color, x: my.data.path[i][0], y: my.data.path[i][1], r1: my.data.r1, r2: my.data.r2, npoints: my.data.npoints});
-      // }
     }
   },
   {
@@ -725,6 +597,59 @@ export const effectList = [
     mouseActionType: 'single-click',
     onact: (my) => {
       my.target.paperdoll({ skinTone: my.data.skinTone, hairstyle: my.data.hairstyle, outfit: my.data.outfit});
+    }
+  },
+  {
+    name: 'star brush',
+    dropdownName: 'star brush',
+    category: 'Brushes',
+    tag: 'motif',
+    init: function() {
+      let listname = 'stars';
+      let configString = `{id:'alongpath', type:'sequences/alongpath',
+        pathData: '[[30,30],[40,40],[100,40],[100,100],[600,250]]',
+        listname: '${listname}'}`;
+
+      let parseResult = this.parseActorMarkup(configString);
+      let initActions = [
+        Joy.toJoyDataFormat('motif/star', {color: [200, 0.8, 1], x: 0, y: 0, r1: 10, r2: 7, npoints: 5}),
+        Joy.toJoyDataFormat('motif/star', {color: [50, 0.8, 1], x: 0, y: 0, r1: 12, r2: 6, npoints: 7}),
+        {
+          type: 'motif/star',
+          color: {
+              type: 'color',
+              value: [100, 0.8, 1]
+          },
+          r1: {
+              type: 'numberslider',
+              value: 12
+          },
+          r2: {
+              type: 'numberslider',
+              value: 5
+          },
+          npoints: {
+              type: 'numberslider',
+              value: 15
+          }
+      }
+      ];
+      let alongpathOption = parseResult.actorOptions.find(obj  => obj.id === 'alongpath');
+      if(alongpathOption) {
+        alongpathOption.initActions = initActions; //pass in the starter actions
+      }
+      this.initializeDOM(parseResult);
+    },
+    cursor: './assets/cursors/star-solid.svg',
+    mouseActionType: 'drag',
+    onact: (my) => {
+      console.log(my);
+      my.actor.alongpath.act(my.target);
+      // my.target.star({color: my.data.color, x: my.data.path[0][0], y: my.data.path[0][1], r1: my.data.r1, r2: my.data.r2, npoints: my.data.npoints});
+      // for(let i=0;i<my.data.path.length;i++) {
+      //   my.target.star({color: my.data.color, x: my.data.path[i][0], y: my.data.path[i][1], r1: my.data.r1, r2: my.data.r2, npoints: my.data.npoints});
+      //   console.log({color: my.data.color, x: my.data.path[i][0], y: my.data.path[i][1], r1: my.data.r1, r2: my.data.r2, npoints: my.data.npoints});
+      // }
     }
   },
 ];

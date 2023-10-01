@@ -267,7 +267,7 @@ Joy.module("sequences", function() {
     // "Along path {id:'path', type:'path', placeholder:[[30,30],[40,40],[100,40],[100,100],[600,250]]} " +
     //     "{id:'actions', type:'actions', listName:'brush name', resetVariables:false}", //if it gets a name, list of actions is collapsible
     onact: function(my){
-      console.log("on act for alongpath");
+      // console.log("on act for alongpath");
       // Previewing? How much to preview?
       // var param = 1;
       // if(my.data._PREVIEW!==undefined) param=my.data._PREVIEW;
@@ -279,8 +279,8 @@ Joy.module("sequences", function() {
       const nestedActors = my.actor.actions.entries;
       const nestedActorData = my.actor.actions.data.actions;
       
-      console.log("nestedActors", nestedActors);
-      console.log("nestedActorData", nestedActorData);
+      // console.log("nestedActors", nestedActors);
+      // console.log("nestedActorData", nestedActorData);
 
       if(nestedActors.length > 0) {
         let nextPointIndex = 0;
@@ -1261,9 +1261,9 @@ Joy.add({
         data[dataID] = value;
       }
     });
-    console.log("data is", data);
+    // console.log("data is", data);
     let actionDataCopy = _clone(this.entry.actionData);
-    console.log("actionDataCopy is", actionDataCopy);
+    // console.log("actionDataCopy is", actionDataCopy);
     // TODO!: I think `data` is what we should be returning here
     //   Looks like type used for initialization isn't matching though?
     return data;
@@ -1271,21 +1271,21 @@ Joy.add({
   },
   setChildData(newData) { //<---- TODO!!!
     const targetActor = this.entry.actor;
-    console.log("newData is", newData);
-    console.log("current actor is", targetActor);
+    // console.log("newData is", newData);
+    // console.log("current actor is", targetActor);
     for (let key in newData) {
-      console.log("\t\tLooking for key", key, "in actor", targetActor);
+      // console.log("\t\tLooking for key", key, "in actor", targetActor);
       const child = targetActor.findChild(key);
       if (child) {
-        console.log("\t\t\tFound child", child);
+        // console.log("\t\t\tFound child", child);
         child.switchData(newData[key]);
       }
       else {
-        console.log("\t\t\tDidn't find child for", key);
+        // console.log("\t\t\tDidn't find child for", key);
       }
     }
     targetActor.update();
-    console.log("after update: actor is", targetActor);
+    // console.log("after update: actor is", targetActor);
   },
   getActionType: function() {
     return this.entry.actor.type;

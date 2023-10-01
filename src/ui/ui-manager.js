@@ -7,9 +7,9 @@ export class UIManager {
 
   generateEffectToolbarUI() {
     // toolbar containing category tabs
-		let categoryToolbar = document.getElementsByClassName('category-toolbar')[0];
+		let categoryToolbar = document.getElementById('category-tabs');
     // panel containing effect buttons
-		let effectToolbar = document.getElementsByClassName('effect-toolbar')[0];
+		let effectToolbar = document.getElementById('effect-toolbar');
 
     if(this.categories) {
       this.categories.forEach((c) => {
@@ -113,5 +113,28 @@ export class UIManager {
     });
     div.setAttribute("id", id);
     return div;
+  }
+
+  addNotebookRings(numRings) {
+    const numberOfRings = numRings;
+    const ringsElement = document.querySelector('.rings');
+    
+    for(let i = 0; i < numberOfRings; i++) {
+        const ringDiv = document.createElement('div');
+        ringDiv.classList.add('ring');
+
+        // Create left circle, line, and right circle for the ring
+        const leftCircle = document.createElement('div');
+        leftCircle.classList.add('circle', 'left-circle');
+
+        const rightCircle = document.createElement('div');
+        rightCircle.classList.add('circle', 'right-circle');
+
+        const line = document.createElement('div');
+        line.classList.add('line');
+
+        ringDiv.append(leftCircle, line, rightCircle);
+        ringsElement.appendChild(ringDiv);
+    }
   }
 }
