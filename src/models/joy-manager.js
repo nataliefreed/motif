@@ -128,6 +128,7 @@ export class JoyManager {
 		}
 
 		this.currentColorHSV = [Math.random()*360, 0.8, 0.8]; //re-randomize color
+		this._updatePreview();
 		// this._updatePreview(true);
 		// this.previewActionList.getAction();
 		// console.log("preview actor", this.previewActionList.actor, "widget", this.previewActionList.widget, "data", this.previewActionList.getAction());

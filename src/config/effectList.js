@@ -599,8 +599,6 @@ export const effectList = [
       my.target.paperdoll({ skinTone: my.data.skinTone, hairstyle: my.data.hairstyle, outfit: my.data.outfit});
     }
   },
-  /* "Meta" brushes that depend on other brush definitions in this file must be defined at the end*/
-  // TODO: fix this brush
   {
     name: 'star brush',
     dropdownName: 'star brush',
@@ -614,7 +612,8 @@ export const effectList = [
 
       let parseResult = this.parseActorMarkup(configString);
       let initActions = [
-        Joy.toJoyDataFormat({type:'motif/star', data: {color: [255, 0, 255], x: 0, y: 0, r1: 20, r2: 10, npoints: 5}}),
+        Joy.toJoyDataFormat('motif/star', {color: [200, 0.8, 1], x: 0, y: 0, r1: 10, r2: 7, npoints: 5}),
+        Joy.toJoyDataFormat('motif/star', {color: [50, 0.8, 1], x: 0, y: 0, r1: 12, r2: 6, npoints: 7}),
         {
           type: 'motif/star',
           color: {
@@ -623,20 +622,19 @@ export const effectList = [
           },
           r1: {
               type: 'numberslider',
-              value: 100
+              value: 12
           },
           r2: {
               type: 'numberslider',
-              value: 10
+              value: 5
           },
           npoints: {
               type: 'numberslider',
               value: 15
           }
-      },
-        Joy.toJoyDataFormat({type:'motif/circle', data: {color: [0, 0, 255], x: 50, y: 100, r1: 20, r2: 10, npoints: 5}})
+      }
       ];
-      let alongpathOption = parseResult.actorOptions.find(obj => obj.id === 'alongpath');
+      let alongpathOption = parseResult.actorOptions.find(obj  => obj.id === 'alongpath');
       if(alongpathOption) {
         alongpathOption.initActions = initActions; //pass in the starter actions
       }

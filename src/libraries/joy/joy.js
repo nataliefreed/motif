@@ -208,6 +208,7 @@ export class Joy {
   }
 
   static toJoyDataFormat(type, data) {
+    console.log("trying to get joy data format for ", type, "with data", data);
     const template = Joy.getTemplateByType(type);
   
     if (!template) {
