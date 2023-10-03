@@ -10,7 +10,7 @@ export class JoyManager {
 		this.currentColorHSV = [Math.random()*360, 0.8, 0.8];
 
     let data = Joy.loadFromURL();
-		console.log("loaded data: ", data);
+		console.log("loaded data from URL: ", data);
 
     this.loadEffects(effects);
 		this.sketch = sketch;
@@ -109,7 +109,6 @@ export class JoyManager {
 
 	addCurrentAction(data) {
 		if(data) {
-		// 	debugger;
 			this.previewActionList.setChildData(data);
 		}
 		let entryData = this.previewActionList.getEntryData();
@@ -117,7 +116,7 @@ export class JoyManager {
 		
 		this.previewActionEnabled = false;
 
-		console.log("\t\t\tadding action", type, entryData);
+		// console.log("\t\t\tadding action", type, entryData);
 
 		const category = type.split('/')[0];
 		if(category === 'stencils') {
@@ -162,7 +161,7 @@ export class JoyManager {
 	}
 
 	deleteAction(listName, index) {
-		console.log(listName, index);
+		// console.log(listName, index);
 		const target = this._getParentList(listName);
 		target.deleteAction(index);
 	}

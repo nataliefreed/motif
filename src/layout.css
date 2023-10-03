@@ -337,8 +337,9 @@ body {
   margin: auto 0 5px 0;
   border-radius: 4px;
   bottom: 0px;
+  padding: 5px 10px;
   /* color: gray; */
   background-color: #eeeeee;
-  font-size: 15px;
-  border: 1px solid black;
+  font-size: 26px;
+  /* border: 1px solid black; */
 }

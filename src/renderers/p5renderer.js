@@ -34,25 +34,32 @@ export class P5Renderer {
       };
       
       p.draw = () => { //show a preview of brush strokes while actively dragging mouse
-        
         p.image(t, 0, 0);
       };
 
       p.render = () => {
         p.image(s, 0, 0);
-      }
+      };
     
       p.clear = () => {
         if(!p.setupFinished) return;
         p.background(255);
         s.background(255);
         t.clear();
+      };
+
+      p5.prototype.flippedMouseY = function() {
+        return this.flipY(this.mouseY);
+      }
+
+      p5.prototype.flipY = function(y) {
+        return this.height - y;
       }
     
       p5.prototype.addCircle = function(params) {
         this.fill(params.color);
         this.noStroke();
-        this.circle(params.x, params.y, params.r*2);
+        this.circle(params.x, this.flipY(params.y), params.r*2);
       };
     
       p5.prototype.addSquare = function(params) {
@@ -60,20 +67,31 @@ export class P5Renderer {
           this.rectMode(this.CENTER);
           this.fill(params.color);
           this.noStroke();
-          this.rect(params.x, params.y, params.size, params.size);
+          this.rect(params.x, this.flipY(params.y), params.size, params.size);
           this.pop();
       };
+
+      p5.prototype.addRectangle = function(params) {
+        this.push();
+        this.rectMode(this.CENTER);
+        this.fill(params.color);
+        this.noStroke();
+        this.rect(params.x, this.flipY(params.y), params.w, params.h);
+        this.pop();
+    };
       
       p5.prototype.addFill = function(params) {
-          this.fill(params.color);
-          this.noStroke();
-          this.rect(0, 0, this.width, this.height);
+        this.push();
+        this.fill(params.color);
+        this.noStroke();
+        this.rect(0, 0, this.width, this.height);
+        this.pop();
       };
 
       p5.prototype.star = function(params) {
         this.push(); // Save current drawing style
         let x = params.x;
-        let y = params.y;
+        let y = this.flipY(params.y);
         let r1 = params.r1;
         let r2 = params.r2;
         let angle = this.TWO_PI / params.npoints;
@@ -95,13 +113,15 @@ export class P5Renderer {
 
       p5.prototype.polygon = function(params) {
         let nsides = Math.abs(params.nsides);
+        let x = params.x;
+        let y = this.flipY(params.y);
         this.fill(params.color);
         this.noStroke();
         let angle = this.TWO_PI / nsides;
         this.beginShape();
         for (let a = 0; a < this.TWO_PI; a += angle) {
-            let sx = params.x + this.cos(a) * params.r;
-            let sy = params.y + this.sin(a) * params.r;
+            let sx = x + this.cos(a) * params.r;
+            let sy = y + this.sin(a) * params.r;
             this.vertex(sx, sy);
         }
         this.endShape(this.CLOSE);
@@ -196,7 +216,7 @@ export class P5Renderer {
       //heart by Mithru: https://editor.p5js.org/Mithru/sketches/Hk1N1mMQg
       p5.prototype.heart = function(params) {
         let x = params.x;
-        let y = params.y;
+        let y = this.flipY(params.y);
         let size = params.size;
         this.push();
         this.translate(0, -size/2);
@@ -215,7 +235,7 @@ export class P5Renderer {
         let h = params.height;
         let tiling = params.tiling;
         let x = params.x;
-        let y = params.y;
+        let y = this.flipY(params.y);
       
         let sx = x - w / 2;
         let sy = y - h / 2;
@@ -280,7 +300,7 @@ export class P5Renderer {
         let scaleBy = params.scaleBy / 100; // Convert the percentage to a decimal
         
         let sx = params.x - w / 2;
-        let sy = params.y - h / 2;
+        let sy = this.flipY(params.y) - h / 2;
       
         let snapshot = p.createGraphics(w, h);
         snapshot.image(this, 0, 0, w, h, sx, sy, w, h);
@@ -289,7 +309,7 @@ export class P5Renderer {
         let enlargedHeight = h * scaleBy;
         
         let dx = params.x - enlargedWidth / 2;
-        let dy = params.y - enlargedHeight / 2;
+        let dy = this.flipY(params.y) - enlargedHeight / 2;
         
         this.image(snapshot, dx, dy, enlargedWidth, enlargedHeight, 0, 0, w, h);
       }
@@ -495,13 +515,12 @@ export class P5Renderer {
         }
       }
       
-
       p.addLine = (params) => {
         if(!p.setupFinished) return;
         s.strokeWeight(params.lineWeight);
         s.noFill();
         s.stroke(params.color);
-        s.line(params.x1, params.y1, params.x2, params.y2);
+        s.line(params.x1, this.flipY(params.y1), params.x2, this.flipY(params.y2));
       }
 
       p.addBrushStroke = (params) => {

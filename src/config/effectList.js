@@ -529,7 +529,7 @@ export const effectList = [
     dropdownName: 'Invert',
     category: 'Effects',
     tag: 'motif',
-    init: `Color shift of type {id:'filter', type:'choose', options:['invert','threshold', 'gray', 'dilate', 'blur'], placeholder:'invert'}`,
+    init: `Color shift of type {id:'filter', type:'choose', options:['invert','threshold', 'gray'], placeholder:'invert'}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
@@ -541,7 +541,7 @@ export const effectList = [
     dropdownName: 'Grayscale',
     category: 'Effects',
     tag: 'motif',
-    init: `Color shift of type {id:'filter', type:'choose', options:['invert','threshold', 'gray', 'dilate', 'blur'], placeholder:'gray'}`,
+    init: `Color shift of type {id:'filter', type:'choose', options:['invert','threshold', 'gray'], placeholder:'gray'}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
@@ -553,13 +553,25 @@ export const effectList = [
     dropdownName: 'Threshold',
     category: 'Effects',
     tag: 'motif',
-    init: `Color shift of type {id:'filter', type:'choose', options:['invert','threshold', 'gray', 'dilate', 'blur'], placeholder:'threshold'}`,
+    init: `Color shift of type {id:'filter', type:'choose', options:['invert','threshold', 'gray'], placeholder:'threshold'}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
       my.target.applyFilter({ filter: my.data.filter });
     }
   },
+  // {
+  //   name: 'snapshot',
+  //   dropdownName: 'Take Snapshot',
+  //   category: 'Effects',
+  //   tag: 'motif',
+  //   init: `Snapshot {id:'snapshot', type:'image'}`,
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   mouseActionType: 'single-click',
+  //   onact: (my) => {
+  //     my.target.snapshot(my.data.image);
+  //   }
+  // },
   {
     name: 'box',
     dropdownName: 'Box',
@@ -643,7 +655,7 @@ export const effectList = [
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'drag',
     onact: (my) => {
-      console.log(my);
+      // console.log(my);
       my.actor.alongpath.act(my.target);
       // my.target.star({color: my.data.color, x: my.data.path[0][0], y: my.data.path[0][1], r1: my.data.r1, r2: my.data.r2, npoints: my.data.npoints});
       // for(let i=0;i<my.data.path.length;i++) {

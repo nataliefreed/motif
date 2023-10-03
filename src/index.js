@@ -120,7 +120,7 @@ class MotifApp {
 			let activeEffect = this.effects.getEffectByName(this.ui.getSelectedEffect());
 
 			if(activeEffect) {
-				let point = { x: this.sketch.mouseX, y: this.sketch.mouseY };
+				let point = { x: this.sketch.mouseX, y: this.sketch.flippedMouseY() };
 
 					if(!this.activeBrushstroke) {
 						this.activeBrushstroke = new Brushstroke(
@@ -157,7 +157,7 @@ class MotifApp {
 				dragging = true;
 
 				if(this.activeBrushstroke) {
-					this.activeBrushstroke.addPoint({x: this.sketch.mouseX, y: this.sketch.mouseY});
+					this.activeBrushstroke.addPoint({x: this.sketch.mouseX, y: this.sketch.flippedMouseY()});
 					if(this.activeBrushstroke.getMouseActionType() === 'drag') {
 						this.joyManager.updatePreviewData(this.activeBrushstroke.getPathAndPoint());
 					  // this.activeBrushstroke.renderPreview({}); //current canvas settings go here
@@ -181,7 +181,7 @@ class MotifApp {
 			mouseDownOverCanvas = false;
 
 			if(this.activeBrushstroke) {	
-				this.activeBrushstroke.addPoint({x: this.sketch.mouseX, y: this.sketch.mouseY});
+				this.activeBrushstroke.addPoint({x: this.sketch.mouseX, y: this.sketch.flippedMouseY()});
 				if(this.activeBrushstroke.getMouseActionType() === 'drag') {
 					let pathAndPoint = this.activeBrushstroke.getPathAndPoint();
 					this.joyManager.addCurrentAction(pathAndPoint);

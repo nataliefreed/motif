@@ -20,7 +20,9 @@ Joy.add({
       value: this.getData("value"),
       onchange: (value) => {
         this.setData("value", value);
-      }
+      },
+      originWidth: 540,
+      originHeight: 540
     });
     this.dom = this.pathWidget.dom;
 
@@ -43,13 +45,14 @@ class PathWidget {
     this.points = [];
     this.dom = document.createElement("div");
     this.dom.className = "path-widget-container";
-    // Calling this will update the path preview
-    this.setPoints(config.value);
+    this.originWidth = config.originWidth;
+    this.originHeight = config.originHeight;
+    this.setPoints(config.value);  // Calling this will update the path preview
   }
   
-  updatePathpreview() {
+  updatePathPreview() {
     let oldPathPreview = this.pathPreview;
-    this.pathPreview = this.getPathView(this.points, 30, 30, 600, 600);
+    this.pathPreview = this.getPathView(this.points, 30, 30, this.originWidth, this.originHeight);
     // add a click event to the path preview, eventually will open a modal
     this.pathPreview.classList.add("path-preview");
     if(oldPathPreview) {
@@ -64,7 +67,7 @@ class PathWidget {
     // Basic validation: ensure it's an array
     if (Array.isArray(pointsList)) {
       this.points = pointsList;
-      this.updatePathpreview();
+      this.updatePathPreview();
     } else {
       console.error("Invalid points data provided.", this.points);
     }
@@ -75,13 +78,13 @@ class PathWidget {
     const svg = document.createElementNS(svgNS, "svg");
     svg.setAttribute('width', width);
     svg.setAttribute('height', height);
-    svg.style.background = "white";
+    // svg.style.background = "white";
     svg.style.border = '1px solid #888';
 
     // Draw lines connecting the points
     const pathData = points.map((pt, index) => {
       const x = (pt[0] / originWidth) * width;
-      const y = (pt[1] / originHeight) * height;
+      const y = height - (pt[1] / originHeight) * height;
 
       return `${index === 0 ? 'M' : 'L'} ${x},${y}`;
     }).join(' ');
@@ -96,7 +99,7 @@ class PathWidget {
     points.forEach(pt => {
       const circle = document.createElementNS(svgNS, "circle");
       circle.setAttribute('cx', (pt[0] / originWidth) * width);
-      circle.setAttribute('cy', (pt[1] / originHeight) * height);
+      circle.setAttribute('cy', height - (pt[1] / originHeight) * height);
       circle.setAttribute('r', 0.5);
       circle.setAttribute('fill', 'black');
       svg.appendChild(circle);
@@ -105,41 +108,6 @@ class PathWidget {
     return svg;
   }
 }
-
-  // old version with canvas
-  // getCanvas(points, width, height, originWidth, originHeight) {
-    
-  //   const canvas = document.createElement('canvas');
-  //   canvas.width = width;
-  //   canvas.height = height;
-  //   canvas.style.background = "white";
-  //   canvas.style.border = '1px solid #888';
-    
-  //   const ctx = canvas.getContext('2d');
-  //   ctx.clearRect(0, 0, width, height);
-  //   ctx.scale(width/originWidth, height/originHeight);
-    
-  //   const firstPoint = points[0];
-  //   ctx.beginPath();
-  //   ctx.moveTo(firstPoint.x, firstPoint.y);
-    
-  //   for (let i = 1; i < points.length; i++) {
-  // 	  const { x, y } = points[i];
-  // 	  ctx.lineTo(x, y);
-  //   }
-    
-  //   ctx.strokeStyle = 'black';
-  //   ctx.lineWidth = 3;
-  //   ctx.stroke();
-    
-  //   ctx.fillStyle = 'black';
-  //   for (const { x, y } of this.points) {
-  // 	ctx.beginPath();
-  // 	ctx.arc(x, y, 8, 0, Math.PI * 2);
-  // 	ctx.fill();
-  //   }
-  //   return canvas;
-  // }  
 
 /************
 
@@ -219,7 +187,7 @@ Joy.module("sequences", function() {
     init: function() {
       let listname = this.listname? this.listname : 'brush name';
       let pathData = this.pathData? this.pathData : '[[30,30],[10,10]]';
-      let configString = `Along path {id:'path', type:'path', placeholder:${pathData}}
+      let configString = `In this pattern {id:'path', type:'path', placeholder:${pathData}}
       {id:'actions', type:'actions', listName:"${listname}", resetVariables:false}`;
       let parseResult = this.parseActorMarkup(configString);
 
@@ -886,6 +854,7 @@ Joy.add({
 
     // Manually add New Action To Actions + Widgets + DOM
     let _addAction = (actorType, atIndex, data={}) => {
+      // console.log("adding action at index", atIndex, "with data ", data);
       // Create that new entry & everything
       let newAction = {type:actorType, ...data};
       if(atIndex===undefined){
@@ -925,7 +894,7 @@ Joy.add({
   
     // Get the delay option (default to 0 if not provided)
     const delayBetweenActions = parseInt(my.options.delay) || 0;
-    console.log("delay is ", delayBetweenActions);
+    // console.log("delay is ", delayBetweenActions);
   
     // Do those actions, baby!!!
     const runActions = async () => {
@@ -985,36 +954,36 @@ Joy.add({
   }
 });
 
-//new widget
-Joy.add({
-  type: "group",
-  tags: ["ui"],
-  initWidget: function(self){
+// group widget WIP
+// Joy.add({
+//   type: "group",
+//   tags: ["ui"],
+//   initWidget: function(self){
 
-    // String *IS* DOM
-    var o = this.options;
-    self.groupUI = new GroupUI({
-      prefix: o.prefix,
-      suffix: o.suffix,
-      color: o.color, 
-      value: this.getData("value"),
-      onchange: function(value){
-        this.setData("value", value);
-      }
-    });
-    this.dom = this.groupUI.dom;
+//     // String *IS* DOM
+//     var o = this.options;
+//     self.groupUI = new GroupUI({
+//       prefix: o.prefix,
+//       suffix: o.suffix,
+//       color: o.color, 
+//       value: this.getData("value"),
+//       onchange: function(value){
+//         this.setData("value", value);
+//       }
+//     });
+//     this.dom = this.groupUI.dom;
 
-    // When data's changed, externally
-    self.onDataChange = function(){
-      var value = self.getData("value");
-      self.pathUI.setPath(value);
-    };
-  },
-  onget: function(my){
-    return my.data.value;
-  },
-  placeholder: "group name"
-});
+//     // When data's changed, externally
+//     self.onDataChange = function(){
+//       var value = self.getData("value");
+//       self.pathUI.setPath(value);
+//     };
+//   },
+//   onget: function(my){
+//     return my.data.value;
+//   },
+//   placeholder: "group name"
+// });
 
 Joy.add({
   type: "coordinate",
@@ -1075,9 +1044,9 @@ class GridModal extends BaseModal {
 
     this.cache = {}; //memoization experiment
 
-    this.scaleFactor = 5; // 5 pixels in the grid corresponds to 1 pixel in the canvas
+    this.scaleFactor = 4.5; // 4.5 pixels in the grid corresponds to 1 pixel in the canvas
     this.min = 0;
-    this.max = 600; //size of canvas
+    this.max = 550; //size of canvas
 
     let outerGridContainer = document.createElement("div");
     outerGridContainer.classList.add("outer-grid-container");
@@ -1174,10 +1143,13 @@ class GridModal extends BaseModal {
   scaleCoords(viewportX, viewportY) {
     let origin = this.getOrigin(); //top left corner of the grid element
     let x = Math.round(viewportX - origin.left) * this.scaleFactor; // x relative to grid
-    let y = Math.round(viewportY - origin.top) * this.scaleFactor; // y relative to grid
-
+  
+    // Transform y-coordinate to make origin at bottom left
+    let y = Math.round(this.max - (viewportY - origin.top) * this.scaleFactor);
+  
     return [x, y];
   }
+  
 
   updateCoordinates(x, y) {
     x = parseInt(x);
@@ -1209,7 +1181,9 @@ class GridModal extends BaseModal {
 
   setCursorPos(x, y) {
     this.cursorCircle.style.left = `${x}px`;
-    this.cursorCircle.style.top = `${y}px`;
+  
+    // Transform y-coordinate for positioning on the UI
+    this.cursorCircle.style.top = `${this.max / this.scaleFactor - y}px`;
   }
 }
 
