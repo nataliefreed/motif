@@ -12,111 +12,73 @@
   <script src="/src/libraries/coloris/coloris.js"></script>
 </head>
 <body>
-  <div class="notebook">
-    <div class="cover">
-      <div class="left-page">
-        <div id="drawing-canvas"></div>
-				<div id="tool-palette">
-					<div id="category-tabs"></div>
-					<div id="tool-palette-surface">
-						<div id="effect-toolbar" class="neumorphic neumorphic--pressed"></div>
-					</div>
-				</div>
-      </div>
-    </div>
-    <div class="rings"></div>
-    <div class="cover">
-      <div class="right-page">
-				<div class="right-panel">
-					<div id="joy"></div>
-					<div class="bottom-right-section">
-						<div id="code-buttons">
-							<button id="shuffle-button" class="light-button">shuffle</button>
-									<button id="clear-all-button"class="light-button">clear all</button>
-									<button id="replay-button" class="light-button"><i class="fa-solid fa-play fa-lg"></i></button>
-									<button id="placeholder-button" class="light-button">fold</button>
-									<button id="save-button" class="light-button drawing-control-button">share</button>
-									<button id="download-button" class="light-button drawing-control-button">download</button>
-						</div>
-						<div id="trash"><i class="fa-solid fa-trash-can"></i></div>
-					</div>
-				</div>
-      </div>
-			<div id="code-toolbar">
-				<button class="code-control-buttons" data-tooltip="Repeat">
-					<i class="fa fa-repeat"></i>
-			  </button>
-				<button class="code-control-buttons" data-tooltip="Delete">
-						<i class="fas fa-trash-alt"></i>
-				</button>
-				<button class="code-control-buttons" data-tooltip="Sample">
-					<i class="fa-solid fa-eye-dropper"></i>
-			  </button>
-				<button class="code-control-buttons" data-tooltip="Shuffle/Reorder">
-						<i class="fas fa-random"></i>
-				</button>
-				<button class="code-control-buttons" data-tooltip="Duplicate">
-						<i class="fas fa-copy"></i>
-				</button>
-				<button class="code-control-buttons" data-tooltip="Clear All">
-						<i class="fa-solid fa-snowplow"></i>
-						<!-- <i class="fas fa-ban"></i> -->
-				</button>
-				<button class="code-control-buttons" data-tooltip="Share">
-						<i class="fas fa-share-nodes"></i>
-						<!-- <i class="fa-solid fa-link"></i> -->
-				</button>
-				<button class="code-control-buttons" data-tooltip="Share">
-					<i class="fa-solid fa-download"></i>
-				</button>
-		</div>
-			<div id="joy-preview">
-				<button id="button-save-action" data-tooltip="Bookmark">
-					<!-- <i class="fa-solid fa-heart-circle-plus"></i> -->
-					<i class="fa-regular fa-square-plus"></i>
-			  </button>
-			</div>
-    </div>
-  </div>
-</body>
-
-		
-		<!-- <div class="notebook">
+	<div class="outer-container">
+		<div class="notebook">
 			<div class="cover">
-					<div class="left-page">
-						<div class="left-panel">
-							<div id="drawing-canvas"></div>
-						</div> -->
-						<!-- <canvas id="pattern-canvas"></canvas> -->
-						<!-- <div class="bottom-left-panel">
-							<div class="effect-toolbar"></div>
-							<div class="category-toolbar"></div>
-						</div>
+				<div class="left-page">
+					<div id="drawing-canvas">
+						<div class="canvas-corner"></div>
 					</div>
+				</div>
 			</div>
 			<div class="rings"></div>
 			<div class="cover">
-					<div class="right-page">
-						<div class="right-panel">
-							<div id="joy"></div>
-							<div id="trash"></div>
-					  </div>
-					  <div class="bottom-right-panel">
-							<div id="joy-preview"></div>
-							<div id="code-buttons">
-								
-							</div>
+				<div class="right-page">
+						<!-- <div id="joy-container"> -->
+						<div id="joy"></div>
+					<!-- </div> -->
+						<div id="general-buttons">
+							<!-- <button id="shuffle-button" class="light-button">shuffle</button> -->
+									<!-- <button id="clear-all-button"class="light-button">clear all</button> -->
+									<button id="replay-button" class="general-button"><i class="fa-solid fa-play fa-lg"></i></button>
+									<!-- <button id="placeholder-button" class="light-button">fold</button> -->
+									<button id="save-button" class="general-button"><i class="fas fa-share-nodes"></i></button>
+									<button id="download-button" class="general-button"><i class="fa-solid fa-download"></i></button>
 						</div>
-					</div>
+								<!-- <div id="trash"><i class="fa-solid fa-trash-can"></i></div> -->
+				</div>
+					<div id="code-toolbar">
+						<button class="code-control-button" data-tooltip="Insert">
+						<i class="fa-regular fa-square-plus"></i>
+					</button>
+						<button class="code-control-button" data-tooltip="Insert">
+							<i class="fa-solid fa-i-cursor"></i>
+						</button>
+						<button class="code-control-button" data-tooltip="Sample">
+							<i class="fa-solid fa-eye-dropper"></i>
+						</button>
+						<button class="code-control-button" data-tooltip="Shuffle/Reorder">
+								<i class="fas fa-random"></i>
+						</button>
+						<button class="code-control-button" data-tooltip="Delete">
+							<i class="fas fa-trash-alt"></i>
+					</button>
+						<button class="code-control-button" data-tooltip="Duplicate">
+								<i class="fas fa-copy"></i>
+						</button>
+				</div>
 			</div>
+			<div id="tool-palette">
+				<div id="category-tabs"></div>
+				<div id="tool-palette-surface">
+						<div id="effect-toolbar" class="neumorphic neumorphic--pressed"></div>
+						<div id="joy-preview"></div>
+						<div id="effect-settings">
+							<label class="form-control">
+								<input type="checkbox" name="checkbox-checked" id="randomize-color-checkbox" checked />randomize colors
+							</label>
+							<label class="form-control">
+								<input type="checkbox" name="checkbox-checked" id="randomize-size-checkbox" unchecked />randomize sizes
+							</label>
+							<button class="general-button" id="button-save-effect">
+								save to my tools
+						</button>
+						</div>
+				</div>
+			</div>
+		</div>
 	</div>
-</body> -->
-		<!-- <div class="main-panel">
-			
-			
-			
-			
-	</div> -->
+</body>
 	
 </html>
 

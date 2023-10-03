@@ -35,6 +35,7 @@ class MotifApp {
 
 		this._setupDraggables();
 		this._setupEventListeners();
+		this.adjustAlignment();
 
 		this.activeBrushstroke = null;
 	}
@@ -83,19 +84,28 @@ class MotifApp {
 			}
     });
 
-		let trash = document.getElementById('trash');
-		Sortable.create(trash, {
-			group: 'shared',
-			ghostClass: 'sortable-ghost-delete',
-			chosenClass: 'sortable-chosen-delete',
-			onAdd: (e) => {
-				// var el = e.item;
-				// el.parentNode.removeChild(el);
-				console.log(e.oldIndex, 'dropped from', e.from.id);
-				this.joyManager.deleteAction(e.from.id, e.oldIndex);
-			}
-		});
+		// let trash = document.getElementById('trash');
+		// Sortable.create(trash, {
+		// 	group: 'shared',
+		// 	ghostClass: 'sortable-ghost-delete',
+		// 	chosenClass: 'sortable-chosen-delete',
+		// 	onAdd: (e) => {
+		// 		// var el = e.item;
+		// 		// el.parentNode.removeChild(el);
+		// 		console.log(e.oldIndex, 'dropped from', e.from.id);
+		// 		this.joyManager.deleteAction(e.from.id, e.oldIndex);
+		// 	}
+		// });
 	}
+
+  adjustAlignment() {
+    const outerContainer = document.querySelector('.outer-container');
+    if (window.innerWidth > 1482) {
+        outerContainer.style.alignItems = 'center';
+    } else {
+        outerContainer.style.alignItems = 'flex-start';
+    }
+  }
 
 	_setupEventListeners() {
 
@@ -186,21 +196,23 @@ class MotifApp {
 		this.joyManager.runWithDelay(200);
 	});
 
-    document.getElementById('clear-all-button').addEventListener("click", (e) => {
-				console.log("clear all");
-		});
+    // document.getElementById('clear-all-button').addEventListener("click", (e) => {
+		// 		console.log("clear all");
+		// });
 		
 		document.getElementById('download-button').addEventListener("click", (e) => {
 			this.sketch.save('my drawing.jpg');
 		});
 		
-		document.getElementById('shuffle-button').addEventListener("click", (e) => {
-				console.log("shuffle all");
-		});
+		// document.getElementById('shuffle-button').addEventListener("click", (e) => {
+		// 		console.log("shuffle all");
+		// });
 
 		document.getElementById('save-button').addEventListener("click", (e) => {
 			this.joyManager.saveURLToClipboard();
 	  });
+
+		window.addEventListener('resize', this.adjustAlignment);
 	}
 }
 
