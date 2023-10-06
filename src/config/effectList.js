@@ -1,5 +1,5 @@
 import { parse } from 'uuid';
-import { HSVtoRGB } from '../utils/color-utils.js';
+import { HSVtoRGB, RGBtoHSV } from '../utils/color-utils.js';
 import { Joy } from '../libraries/joy/joy.js';
 export const effectList = [
   {
@@ -7,7 +7,7 @@ export const effectList = [
     dropdownName: 'Solid Fill',
     category: 'Backgrounds',
     tag: 'motif',
-    init: "Fill with {id:'color', type:'color', placeholder:[50, 0.8, 1.0]}",
+    init: "Fill with {id:'color', type:'color', placeholder:'#ffaa00'}",
     cursor: './assets/cursors/fill-drip-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
@@ -114,61 +114,433 @@ export const effectList = [
     }
   },
   {
-    name: 'heart brush',
-    dropdownName: 'heart brush',
-    category: 'Brushes',
+    name: 'rectangle',
+    dropdownName: 'Rectangle',
+    category: 'Shapes',
     tag: 'motif',
-    init: `Along path {id:'path', type:'path', placeholder:[[20,50],[600,250]]} 
-    Heart of size {id:'size', type:'numberslider', min:-600, max:600, placeholder:10} 
-    in color {id:'color', type:'color', placeholder:[175, 0.8, 1.0]}  
+    init: `Rectangle with width {id:'width', type:'numberslider', min:-600, max:600, placeholder:50}
+     and height {id:'height', type:'numberslider', min:-600, max:600, placeholder:30}
+    in color {id:'color', type:'color', placeholder:[220, 0.8, 1.0]}
     at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
     cursor: './assets/cursors/star-solid.svg',
-    mouseActionType: 'drag',
+    mouseActionType: 'single-click',
     onact: (my) => {
-      /*if(hover) {
-
-      }
-      else if(preview) {
-
-      }*/
-      for(let i=0;i<my.data.path.length;i++) {
-        //offset experiment // my.target.heart({ color: my.data.color, x: my.data.path[i][0]+my.data.position.x-my.data.path[0][0], y: my.data.path[i][1]+my.data.position.y-my.data.path[0][1], size: my.data.size });
-        my.target.heart({ color: my.data.color, x: my.data.path[i][0], y: my.data.path[i][1], size: my.data.size });
-      }
+      my.target.addRectangle({ color: my.data.color, x: my.data.position[0], y: my.data.position[1], w: my.data.width, h: my.data.height, size: my.data.size });
     }
   },
   {
-    name: 'straight line',
+    name: 'triangle',
+    dropdownName: 'Triangle',
+    category: 'Shapes',
+    tag: 'motif',
+    init: `Triangle of size {id:'size', type:'numberslider', min:-600, max:600, placeholder:40} 
+    in color {id:'color', type:'color', placeholder:[100, 0.8, 1.0]}  
+    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
+    cursor: './assets/cursors/star-solid.svg',
+    mouseActionType: 'single-click',
+    onact: (my) => {
+      my.target.addTriangle({ color: my.data.color, x: my.data.position[0], y: my.data.position[1], size: my.data.size });
+    }
+  },
+  {
+    name: 'straight line',  //TODO: make sure this gets a first and last point when it's added
     dropdownName: 'straight line',
     category: 'Brushes',
     tag: 'motif',
-    init: `Straight line from ({id:'x1', type:'numberslider', min:0, max:600, placeholder:100}, 
-    {id:'y1', type:'numberslider', min:0, max:600, placeholder:100})
-    to ({id:'x2', type:'numberslider', min:0, max:600, placeholder:200}, 
-    {id:'y2', type:'numberslider', min:0, max:600, placeholder:200})
+    init: `Straight line
+    from {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}
+    to {id:'position2', type:'coordinate', min:0, max:600, placeholder:[300, 300]}
     in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}
-    with width {id: 'lineWeight', type: 'numberslider', min:1, max:600, placeholder: 5}`,
+    in width {id: 'lineWeight', type: 'numberslider', min:1, max:600, placeholder: 5}`,
     cursor: './assets/cursors/star-solid.svg',
-    mouseActionType: 'drag1',
+    mouseActionType: 'drag',
     onact: (my) => {
-      my.target.addLine({ color: my.data.color, lineWeight: my.data.lineWeight, x1: my.data.x1, y1: my.data.y1, x2: my.data.x2, y2: my.data.y2});
-    }
-  },
-  {
-    name: 'brush',
-    dropdownName: 'Brush',
-    category: 'Brushes',
-    tag: 'motif',
-    init: `Brush in {id:'color', type:'color', placeholder:[20, 0.8, 1.0]} 
-    with width {id: 'lineWeight', type: 'numberslider', min:1, max:600, placeholder: 8} 
-    along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
-    cursor: './assets/cursors/star-solid.svg',
-    mouseActionType: 'drag1',
-    onact: (my) => {
-      my.target.addBrushStroke({ color: my.data.color, lineWeight: my.data.lineWeight, pointsList: my.data.pointsList });
+      debugger;
+      let lastPoint = my.data.path.last();
+      //this doesn't work because path is not one of its parameters
+      my.target.addLine({ color: my.data.color, lineWeight: my.data.lineWeight, x1: my.data.position[0], y1: my.data.position[1], x2: my.data.lastPoint[0], y2: my.data.lastPoint[1]});
     }
   },
   // {
+  //   name: 'brush',
+  //   dropdownName: 'Brush',
+  //   category: 'Brushes',
+  //   tag: 'motif',
+  //   init: `Brush in {id:'color', type:'color', placeholder:[20, 0.8, 1.0]} 
+  //   with width {id: 'lineWeight', type: 'numberslider', min:1, max:600, placeholder: 8} 
+  //   along path {id:'pointsList', type:'path', placeholder:'20,50,200,250'}`,
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   mouseActionType: 'drag',
+  //   onact: (my) => {
+  //     my.target.addBrushStroke({ color: my.data.color, lineWeight: my.data.lineWeight, pointsList: my.data.pointsList });
+  //   }
+  // },
+  {
+    name: 'straight grid',
+    dropdownName: 'Straight Grid',
+    category: 'Patterns',
+    tag: 'motif',
+    init: `{id:'tiling', type:'choose', options:['straight grid', 'brick', 'half drop', 'checkerboard'], placeholder:'straight grid'} 
+    with width {id:'width', type:'numberslider', min:5, max:600, placeholder:100} 
+    and height {id:'height', type:'numberslider', min:5, max:600, placeholder:100}
+    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
+    cursor: './assets/cursors/star-solid.svg',
+    mouseActionType: 'single-click',
+    onact: (my) => {
+      my.target.tile({
+        width: my.data.width,
+        height: my.data.height,
+        tiling: my.data.tiling,
+        x: my.data.position[0],
+        y: my.data.position[1] });
+    }
+  },
+  {
+    name: 'brick',
+    dropdownName: 'Brick',
+    category: 'Patterns',
+    tag: 'motif',
+    init: `{id:'tiling', type:'choose', options:['straight grid', 'brick', 'half drop', 'checkerboard'], placeholder:'brick'} 
+    with width {id:'width', type:'numberslider', min:5, max:600, placeholder:100} 
+    and height {id:'height', type:'numberslider', min:5, max:600, placeholder:40}
+    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
+    cursor: './assets/cursors/star-solid.svg',
+    mouseActionType: 'single-click',
+    onact: (my) => {
+      my.target.tile({
+        width: my.data.width,
+        height: my.data.height,
+        tiling: my.data.tiling,
+        x: my.data.position[0],
+        y: my.data.position[1] });
+    }
+  },
+  {
+    name: 'half drop',
+    dropdownName: 'Half Drop',
+    category: 'Patterns',
+    tag: 'motif',
+    init: `{id:'tiling', type:'choose', options:['straight grid', 'brick', 'half drop', 'checkerboard'], placeholder:'half drop'} 
+    with width {id:'width', type:'numberslider', min:5, max:600, placeholder:150} 
+    and height {id:'height', type:'numberslider', min:5, max:600, placeholder:250}
+    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
+    cursor: './assets/cursors/star-solid.svg',
+    mouseActionType: 'single-click',
+    onact: (my) => {
+      my.target.tile({
+        width: my.data.width,
+        height: my.data.height,
+        tiling: my.data.tiling,
+        x: my.data.position[0],
+        y: my.data.position[1] });
+    }
+  },
+  {
+    name: 'checkerboard',
+    dropdownName: 'Checkerboard',
+    category: 'Patterns',
+    tag: 'motif',
+    init: `{id:'tiling', type:'choose', options:['straight grid', 'brick', 'half drop', 'checkerboard'], placeholder:'checkerboard'} 
+    with width {id:'width', type:'numberslider', min:5, max:600, placeholder:50} 
+    and height {id:'height', type:'numberslider', min:5, max:600, placeholder:50}
+    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
+    cursor: './assets/cursors/star-solid.svg',
+    mouseActionType: 'single-click',
+    onact: (my) => {
+      my.target.tile({
+        width: my.data.width,
+        height: my.data.height,
+        tiling: my.data.tiling,
+        x: my.data.position[0],
+        y: my.data.position[1] });
+    }
+  },
+  {
+    name: 'grow',
+    dropdownName: 'Grow',
+    category: 'Effects',
+    tag: 'motif',
+    init: `Scale by {id:'scaleBy', type:'numberslider', min:0, max:600, placeholder:300}%
+    width {id:'width', type:'numberslider', min:1, max:600, placeholder:100} 
+    and height {id:'height', type:'numberslider', min:1, max:600, placeholder:100}
+    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
+    cursor: './assets/cursors/star-solid.svg',
+    mouseActionType: 'single-click',
+    onact: (my) => {
+      my.target.grow({ 
+        width: my.data.width, 
+        height: my.data.height, 
+        scaleBy: my.data.scaleBy, 
+        x: my.data.position[0], 
+        y: my.data.position[1] 
+      });
+    }
+  },
+  {
+    name: 'shrink',
+    dropdownName: 'Shrink',
+    category: 'Effects',
+    tag: 'motif',
+    init: `Scale by {id:'scaleBy', type:'numberslider', min:0, max:600, placeholder:50}%
+    width {id:'width', type:'numberslider', min:1, max:600, placeholder:100} 
+    and height {id:'height', type:'numberslider', min:1, max:600, placeholder:100}
+    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
+    cursor: './assets/cursors/star-solid.svg',
+    mouseActionType: 'single-click',
+    onact: (my) => {
+      my.target.grow({ 
+        width: my.data.width, 
+        height: my.data.height, 
+        scaleBy: my.data.scaleBy, 
+        x: my.data.position[0], 
+        y: my.data.position[1] 
+      });
+    }
+  },
+  {
+    name: 'shift',
+    dropdownName: 'Shift',
+    category: 'Effects',
+    tag: 'motif',
+    init: `{id:'orientation', type:'choose', options:['vertical','horizontal'], placeholder:'vertical'} shift 
+    with height {id:'height', type:'numberslider', min:1, max:600, placeholder:50} 
+    and offset {id:'offset', type:'numberslider', min:1, max:600, placeholder:20}`,
+    cursor: './assets/cursors/star-solid.svg',
+    mouseActionType: 'single-click',
+    onact: (my) => {
+      my.target.shift({ height: my.data.height, offset: my.data.offset, orientation: my.data.orientation });
+    }
+  },
+  {
+    name: 'invert',
+    dropdownName: 'Invert',
+    category: 'Effects',
+    tag: 'motif',
+    init: `Color shift of type {id:'filter', type:'choose', options:['invert','threshold', 'gray'], placeholder:'invert'}`,
+    cursor: './assets/cursors/star-solid.svg',
+    mouseActionType: 'single-click',
+    onact: (my) => {
+      my.target.applyFilter({ filter: my.data.filter });
+    }
+  },
+  {
+    name: 'grayscale',
+    dropdownName: 'Grayscale',
+    category: 'Effects',
+    tag: 'motif',
+    init: `Color shift of type {id:'filter', type:'choose', options:['invert','threshold', 'gray'], placeholder:'gray'}`,
+    cursor: './assets/cursors/star-solid.svg',
+    mouseActionType: 'single-click',
+    onact: (my) => {
+      my.target.applyFilter({ filter: my.data.filter });
+    }
+  },
+  {
+    name: 'threshold',
+    dropdownName: 'Threshold',
+    category: 'Effects',
+    tag: 'motif',
+    init: `Color shift of type {id:'filter', type:'choose', options:['invert','threshold', 'gray'], placeholder:'threshold'}`,
+    cursor: './assets/cursors/star-solid.svg',
+    mouseActionType: 'single-click',
+    onact: (my) => {
+      my.target.applyFilter({ filter: my.data.filter });
+    }
+  },
+  {
+    name: 'move',
+    dropdownName: 'move',
+    category: 'Move',
+    tag: 'motif',
+    init: `Move
+    {id: 'width', type: 'numberslider', min:1, max:600, placeholder: 50} x
+    {id: 'height', type: 'numberslider', min:1, max:600, placeholder: 50}
+    {id:'shape', type: 'choose', options:['circle', 'square', 'triangle', 'star', 'heart', 'rectangle'], placeholder: 'circle'}
+    from {id:'firstPoint', type:'coordinate', min:0, max:600, placeholder:[200, 200]}
+    to {id:'lastPoint', type:'coordinate', min:0, max:600, placeholder:[300, 300]}`,
+    cursor: './assets/cursors/star-solid.svg',
+    mouseActionType: 'drag',
+    onact: (my) => {
+      my.target.moveCutout({ width: my.data.width, height: my.data.height, shape: my.data.shape, x1: my.data.firstPoint[0], y1: my.data.firstPoint[1], x2: my.data.lastPoint[0], y2: my.data.lastPoint[1]});
+    }
+  },
+  // {
+  //   name: 'snapshot',
+  //   dropdownName: 'Take Snapshot',
+  //   category: 'Effects',
+  //   tag: 'motif',
+  //   init: `Snapshot {id:'snapshot', type:'image'}`,
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   mouseActionType: 'single-click',
+  //   onact: (my) => {
+  //     my.target.snapshot(my.data.image);
+  //   }
+  // },
+
+  {
+    name: 'heart brush',
+    dropdownName: 'Heart brush',
+    category: 'Brushes',
+    tag: 'motif',
+    init: function() {
+      let listname = 'heart brush';
+      let configString = `{id:'alongpath', type:'sequences/alongpath',
+        pathData: '[]',
+        listname: '${listname}'}`;
+      let parseResult = this.parseActorMarkup(configString);
+      let initActions = [
+        Joy.toJoyDataFormat('motif/heart', {color: [5, 0.8, 1], x: 0, y: 0, size: 7}), //todo: how to pass in color here?
+        Joy.toJoyDataFormat('motif/heart', {color: [20, 0.8, 1], x: 0, y: 0, size: 10})];        
+      let alongpathOption = parseResult.actorOptions.find(obj  => obj.id === 'alongpath');
+      if(alongpathOption) {
+        alongpathOption.initActions = initActions; //pass in the starter actions
+      }
+      this.initializeDOM(parseResult);
+    },
+    cursor: './assets/cursors/star-solid.svg',
+    mouseActionType: 'drag',
+    onact: (my) => {
+      console.log(my.data);
+      my.actor.alongpath.act(my.target);
+    }
+  },
+  {
+    name: 'star brush',
+    dropdownName: 'star brush',
+    category: 'Brushes',
+    tag: 'motif',
+    init: function() {
+      let listname = 'star brush';
+      let configString = `{id:'alongpath', type:'sequences/alongpath',
+        pathData: '[[30,30],[40,40],[100,40],[100,100],[600,250]]',
+        listname: '${listname}'}`;
+
+      let parseResult = this.parseActorMarkup(configString);
+      let initActions = [
+        Joy.toJoyDataFormat('motif/star', {color: [200, 0.8, 1], x: 0, y: 0, r1: 10, r2: 7, npoints: 5}),
+        Joy.toJoyDataFormat('motif/star', {color: [50, 0.8, 1], x: 0, y: 0, r1: 12, r2: 6, npoints: 7}),
+        Joy.toJoyDataFormat('motif/star', {color: [100, 0.8, 1], x: 0, y: 0, r1: 12, r2: 5, npoints: 15})];        
+      let alongpathOption = parseResult.actorOptions.find(obj  => obj.id === 'alongpath');
+      if(alongpathOption) {
+        alongpathOption.initActions = initActions; //pass in the starter actions
+      }
+      this.initializeDOM(parseResult);
+    },
+    cursor: './assets/cursors/star-solid.svg',
+    mouseActionType: 'drag',
+    onact: (my) => {
+      my.actor.alongpath.act(my.target);
+    }
+  },
+  {
+    name: 'mosaic brush',
+    dropdownName: 'mosaic brush',
+    category: 'Brushes',
+    tag: 'motif',
+    init: function() {
+      let listname = 'mosaic';
+      let configString = `{id:'alongpath', type:'sequences/alongpath',
+        pathData: '[[]]',
+        listname: '${listname}'}`;
+      let parseResult = this.parseActorMarkup(configString);
+
+      let colors = [
+        [255,   0,   0], // Red
+        [255, 165,   0], // Orange
+        [255, 215,   0], // Gold
+        [128, 128,   0], // Olive
+        [  0, 128,   0], // Green
+        [ 38, 162, 224], // Light blue
+        [  0,   0, 255], // Blue
+        [ 75,   0, 130], // Indigo
+        [128,   0, 128], // Purple
+        [238, 130, 238], // Violet
+        [255, 192, 203] // Pink
+      ];
+
+      let initActions = [];
+
+      let shapes =
+      [
+        "motif/circle",
+        "motif/triangle",
+        "motif/rectangle",
+      ];
+
+      let sizes = [10, 20, 15, 8];
+
+      for(let i=0;i<colors.length;i++) {
+        let size = sizes[i%sizes.length];
+        let shape = shapes[i%shapes.length];
+        let width = size;
+        let height = size*1.5;
+        let radius = size / 2;
+        let color = RGBtoHSV(colors[i]);
+        initActions.push(Joy.toJoyDataFormat(shape, {color: color, x: 0, y: 0, size: size, width: width, height: height, radius: radius }));
+      }
+      
+      // let initActions = [
+      //   Joy.toJoyDataFormat('motif/star', {color: [200, 0.8, 1], x: 0, y: 0, r1: 10, r2: 7, npoints: 5}),
+      //   Joy.toJoyDataFormat('motif/star', {color: [50, 0.8, 1], x: 0, y: 0, r1: 12, r2: 6, npoints: 7}),
+      //   Joy.toJoyDataFormat('motif/star', {color: [100, 0.8, 1], x: 0, y: 0, r1: 12, r2: 5, npoints: 15})];        
+      
+      let alongpathOption = parseResult.actorOptions.find(obj  => obj.id === 'alongpath');
+      if(alongpathOption) {
+        alongpathOption.initActions = initActions; //pass in the starter actions
+      }
+      this.initializeDOM(parseResult);
+    },
+    cursor: './assets/cursors/star-solid.svg',
+    mouseActionType: 'drag',
+    onact: (my) => {
+      my.actor.alongpath.act(my.target);
+    }
+  },
+  {
+    name: 'box',
+    dropdownName: 'Box',
+    category: 'Stencils',
+    tag: 'stencils',
+    init: `Box with length 
+    {id:'length', type:'numberslider', placeholder:120, min:20}, 
+    width {id:'width', type:'numberslider', placeholder:120, min:20}, 
+    height {id:'height', type:'numberslider', placeholder:120, min:20}`,
+    cursor: './assets/cursors/star-solid.svg',
+    mouseActionType: 'single-click',
+    onact: (my) => {
+      my.target.foldableBoxStencil({ length: my.data.length, width: my.data.width, height: my.data.height });
+    }
+  },
+  {
+    name: 'paper doll',
+    dropdownName: 'Doll',
+    category: 'Stencils',
+    tag: 'stencils',
+    init: `Paper doll with skin tone 
+    {id:'skinTone', type:'colorpalette', placeholder:'#552E1F',
+    colorOptions: [
+      '#552E1F','#60311F','#A16F4C','#BB815C','#BC8F68','#CA9978',
+      '#DCBA9E','#F3D7C2','#653728','#B77E53','#D6A98A','#F0CBB0',
+      '#A6734A','#422E29','#4E2E2A','#683F38','#7A4943','#492F29',
+      '#51342C','#643E31','#774D3D','#4A3123','#543626','#61402E',
+      '#331707','#462008','#58280A','#7A370F','#DFBDA2','#E4C9B6',
+      '#3E2C1E','#5F442C','#7E573B','#060403','#8A5414','#B57033',
+      '#744D36','#FDF0D5','#FADCA9','#EDB178','#DF9D56','#D38C45',
+      '#F6D4B9','#DEBA96','#DAB08C','#CD865A','#B37858','#96624D'],
+      formatToggle: false,
+      swatchesOnly: true,
+      alphaEnabled: false},
+    hairstyle {id:'hairstyle', type:'choose', options:['1', '2'], placeholder:'1'},
+    outfit set {id:'outfit', type:'choose', options:['1'], placeholder:'1'}`,
+    cursor: './assets/cursors/star-solid.svg',
+    mouseActionType: 'single-click',
+    onact: (my) => {
+      my.target.paperdoll({ skinTone: my.data.skinTone, hairstyle: my.data.hairstyle, outfit: my.data.outfit});
+    }
+  },
+];
+
+// {
   //   name: 'star brush',
   //   dropdownName: 'Star Brush',
   //   category: 'NewBrushes',
@@ -388,280 +760,33 @@ export const effectList = [
   //     my.target.linesBrush({ color: my.data.color, lineWeight: my.data.lineWeight, pointsList: my.data.pointsList });
   //   }
   // },
-  {
-    name: 'straight grid',
-    dropdownName: 'Straight Grid',
-    category: 'Patterns',
-    tag: 'motif',
-    init: `{id:'tiling', type:'choose', options:['straight grid', 'brick', 'half drop', 'checkerboard'], placeholder:'straight grid'} 
-    with width {id:'width', type:'numberslider', min:5, max:600, placeholder:100} 
-    and height {id:'height', type:'numberslider', min:5, max:600, placeholder:100}
-    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
-    cursor: './assets/cursors/star-solid.svg',
-    mouseActionType: 'single-click',
-    onact: (my) => {
-      my.target.tile({
-        width: my.data.width,
-        height: my.data.height,
-        tiling: my.data.tiling,
-        x: my.data.position[0],
-        y: my.data.position[1] });
-    }
-  },
-  {
-    name: 'brick',
-    dropdownName: 'Brick',
-    category: 'Patterns',
-    tag: 'motif',
-    init: `{id:'tiling', type:'choose', options:['straight grid', 'brick', 'half drop', 'checkerboard'], placeholder:'brick'} 
-    with width {id:'width', type:'numberslider', min:5, max:600, placeholder:100} 
-    and height {id:'height', type:'numberslider', min:5, max:600, placeholder:40}
-    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
-    cursor: './assets/cursors/star-solid.svg',
-    mouseActionType: 'single-click',
-    onact: (my) => {
-      my.target.tile({
-        width: my.data.width,
-        height: my.data.height,
-        tiling: my.data.tiling,
-        x: my.data.position[0],
-        y: my.data.position[1] });
-    }
-  },
-  {
-    name: 'half drop',
-    dropdownName: 'Half Drop',
-    category: 'Patterns',
-    tag: 'motif',
-    init: `{id:'tiling', type:'choose', options:['straight grid', 'brick', 'half drop', 'checkerboard'], placeholder:'half drop'} 
-    with width {id:'width', type:'numberslider', min:5, max:600, placeholder:150} 
-    and height {id:'height', type:'numberslider', min:5, max:600, placeholder:250}
-    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
-    cursor: './assets/cursors/star-solid.svg',
-    mouseActionType: 'single-click',
-    onact: (my) => {
-      my.target.tile({
-        width: my.data.width,
-        height: my.data.height,
-        tiling: my.data.tiling,
-        x: my.data.position[0],
-        y: my.data.position[1] });
-    }
-  },
-  {
-    name: 'checkerboard',
-    dropdownName: 'Checkerboard',
-    category: 'Patterns',
-    tag: 'motif',
-    init: `{id:'tiling', type:'choose', options:['straight grid', 'brick', 'half drop', 'checkerboard'], placeholder:'checkerboard'} 
-    with width {id:'width', type:'numberslider', min:5, max:600, placeholder:50} 
-    and height {id:'height', type:'numberslider', min:5, max:600, placeholder:50}
-    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
-    cursor: './assets/cursors/star-solid.svg',
-    mouseActionType: 'single-click',
-    onact: (my) => {
-      my.target.tile({
-        width: my.data.width,
-        height: my.data.height,
-        tiling: my.data.tiling,
-        x: my.data.position[0],
-        y: my.data.position[1] });
-    }
-  },
-  {
-    name: 'grow',
-    dropdownName: 'Grow',
-    category: 'Effects',
-    tag: 'motif',
-    init: `Scale by {id:'scaleBy', type:'numberslider', min:0, max:600, placeholder:300}%
-    width {id:'width', type:'numberslider', min:1, max:600, placeholder:100} 
-    and height {id:'height', type:'numberslider', min:1, max:600, placeholder:100}
-    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
-    cursor: './assets/cursors/star-solid.svg',
-    mouseActionType: 'single-click',
-    onact: (my) => {
-      my.target.grow({ 
-        width: my.data.width, 
-        height: my.data.height, 
-        scaleBy: my.data.scaleBy, 
-        x: my.data.position[0], 
-        y: my.data.position[1] 
-      });
-    }
-  },
-  {
-    name: 'shrink',
-    dropdownName: 'Shrink',
-    category: 'Effects',
-    tag: 'motif',
-    init: `Scale by {id:'scaleBy', type:'numberslider', min:0, max:600, placeholder:50}%
-    width {id:'width', type:'numberslider', min:1, max:600, placeholder:100} 
-    and height {id:'height', type:'numberslider', min:1, max:600, placeholder:100}
-    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
-    cursor: './assets/cursors/star-solid.svg',
-    mouseActionType: 'single-click',
-    onact: (my) => {
-      my.target.grow({ 
-        width: my.data.width, 
-        height: my.data.height, 
-        scaleBy: my.data.scaleBy, 
-        x: my.data.position[0], 
-        y: my.data.position[1] 
-      });
-    }
-  },
-  {
-    name: 'shift',
-    dropdownName: 'Shift',
-    category: 'Effects',
-    tag: 'motif',
-    init: `{id:'orientation', type:'choose', options:['vertical','horizontal'], placeholder:'vertical'} shift 
-    with height {id:'height', type:'numberslider', min:1, max:600, placeholder:50} 
-    and offset {id:'offset', type:'numberslider', min:1, max:600, placeholder:20}`,
-    cursor: './assets/cursors/star-solid.svg',
-    mouseActionType: 'single-click',
-    onact: (my) => {
-      my.target.shift({ height: my.data.height, offset: my.data.offset, orientation: my.data.orientation });
-    }
-  },
-  {
-    name: 'invert',
-    dropdownName: 'Invert',
-    category: 'Effects',
-    tag: 'motif',
-    init: `Color shift of type {id:'filter', type:'choose', options:['invert','threshold', 'gray'], placeholder:'invert'}`,
-    cursor: './assets/cursors/star-solid.svg',
-    mouseActionType: 'single-click',
-    onact: (my) => {
-      my.target.applyFilter({ filter: my.data.filter });
-    }
-  },
-  {
-    name: 'grayscale',
-    dropdownName: 'Grayscale',
-    category: 'Effects',
-    tag: 'motif',
-    init: `Color shift of type {id:'filter', type:'choose', options:['invert','threshold', 'gray'], placeholder:'gray'}`,
-    cursor: './assets/cursors/star-solid.svg',
-    mouseActionType: 'single-click',
-    onact: (my) => {
-      my.target.applyFilter({ filter: my.data.filter });
-    }
-  },
-  {
-    name: 'threshold',
-    dropdownName: 'Threshold',
-    category: 'Effects',
-    tag: 'motif',
-    init: `Color shift of type {id:'filter', type:'choose', options:['invert','threshold', 'gray'], placeholder:'threshold'}`,
-    cursor: './assets/cursors/star-solid.svg',
-    mouseActionType: 'single-click',
-    onact: (my) => {
-      my.target.applyFilter({ filter: my.data.filter });
-    }
-  },
-  // {
-  //   name: 'snapshot',
-  //   dropdownName: 'Take Snapshot',
-  //   category: 'Effects',
-  //   tag: 'motif',
-  //   init: `Snapshot {id:'snapshot', type:'image'}`,
-  //   cursor: './assets/cursors/star-solid.svg',
-  //   mouseActionType: 'single-click',
-  //   onact: (my) => {
-  //     my.target.snapshot(my.data.image);
-  //   }
-  // },
-  {
-    name: 'box',
-    dropdownName: 'Box',
-    category: 'Stencils',
-    tag: 'stencils',
-    init: `Box with length 
-    {id:'length', type:'numberslider', placeholder:120, min:20}, 
-    width {id:'width', type:'numberslider', placeholder:120, min:20}, 
-    height {id:'height', type:'numberslider', placeholder:120, min:20}`,
-    cursor: './assets/cursors/star-solid.svg',
-    mouseActionType: 'single-click',
-    onact: (my) => {
-      my.target.foldableBoxStencil({ length: my.data.length, width: my.data.width, height: my.data.height });
-    }
-  },
-  {
-    name: 'paper doll',
-    dropdownName: 'Doll',
-    category: 'Stencils',
-    tag: 'stencils',
-    init: `Paper doll with skin tone 
-    {id:'skinTone', type:'colorpalette', placeholder:'#552E1F',
-    colorOptions: [
-      '#552E1F','#60311F','#A16F4C','#BB815C','#BC8F68','#CA9978',
-      '#DCBA9E','#F3D7C2','#653728','#B77E53','#D6A98A','#F0CBB0',
-      '#A6734A','#422E29','#4E2E2A','#683F38','#7A4943','#492F29',
-      '#51342C','#643E31','#774D3D','#4A3123','#543626','#61402E',
-      '#331707','#462008','#58280A','#7A370F','#DFBDA2','#E4C9B6',
-      '#3E2C1E','#5F442C','#7E573B','#060403','#8A5414','#B57033',
-      '#744D36','#FDF0D5','#FADCA9','#EDB178','#DF9D56','#D38C45',
-      '#F6D4B9','#DEBA96','#DAB08C','#CD865A','#B37858','#96624D']},
-    hairstyle {id:'hairstyle', type:'choose', options:['1', '2'], placeholder:'1'},
-    outfit set {id:'outfit', type:'choose', options:['1'], placeholder:'1'}`,
-    cursor: './assets/cursors/star-solid.svg',
-    mouseActionType: 'single-click',
-    onact: (my) => {
-      my.target.paperdoll({ skinTone: my.data.skinTone, hairstyle: my.data.hairstyle, outfit: my.data.outfit});
-    }
-  },
-  {
-    name: 'star brush',
-    dropdownName: 'star brush',
-    category: 'Brushes',
-    tag: 'motif',
-    init: function() {
-      let listname = 'stars';
-      let configString = `{id:'alongpath', type:'sequences/alongpath',
-        pathData: '[[30,30],[40,40],[100,40],[100,100],[600,250]]',
-        listname: '${listname}'}`;
 
-      let parseResult = this.parseActorMarkup(configString);
-      let initActions = [
-        Joy.toJoyDataFormat('motif/star', {color: [200, 0.8, 1], x: 0, y: 0, r1: 10, r2: 7, npoints: 5}),
-        Joy.toJoyDataFormat('motif/star', {color: [50, 0.8, 1], x: 0, y: 0, r1: 12, r2: 6, npoints: 7}),
-        {
-          type: 'motif/star',
-          color: {
-              type: 'color',
-              value: [100, 0.8, 1]
-          },
-          r1: {
-              type: 'numberslider',
-              value: 12
-          },
-          r2: {
-              type: 'numberslider',
-              value: 5
-          },
-          npoints: {
-              type: 'numberslider',
-              value: 15
-          }
-      }
-      ];
-      let alongpathOption = parseResult.actorOptions.find(obj  => obj.id === 'alongpath');
-      if(alongpathOption) {
-        alongpathOption.initActions = initActions; //pass in the starter actions
-      }
-      this.initializeDOM(parseResult);
-    },
-    cursor: './assets/cursors/star-solid.svg',
-    mouseActionType: 'drag',
-    onact: (my) => {
-      // console.log(my);
-      my.actor.alongpath.act(my.target);
-      // my.target.star({color: my.data.color, x: my.data.path[0][0], y: my.data.path[0][1], r1: my.data.r1, r2: my.data.r2, npoints: my.data.npoints});
-      // for(let i=0;i<my.data.path.length;i++) {
-      //   my.target.star({color: my.data.color, x: my.data.path[i][0], y: my.data.path[i][1], r1: my.data.r1, r2: my.data.r2, npoints: my.data.npoints});
-      //   console.log({color: my.data.color, x: my.data.path[i][0], y: my.data.path[i][1], r1: my.data.r1, r2: my.data.r2, npoints: my.data.npoints});
-      // }
-    }
-  },
-];
+//   const swatchColors  =
+// ;
+
+// const defaultColorPalette = (id, placeholder) => {
+//   return `{id:'${id}',
+//   type:'colorpalette',
+//   placeholder:'${placeholder}',
+//     colorOptions: [
+//       '#FF0000', // Red
+//       '#FFA500', // Orange
+//       '#FFD700', // Gold
+//       '#808000', // Olive
+//       '#008000', // Green
+//       '#26A2E0', // Light blue
+//       '#0000FF', // Blue
+//       '#4B0082', // Indigo
+//       '#800080', // Purple
+//       '#EE82EE', // Violet
+//       '#FFC0CB', // Pink
+//       '#808080', // Gray
+//       '#FFFFFF', // White
+//       '#000000', // Black
+//       '#5E2109', // Brown
+//       '#D2B48C'  // Tan
+//     ],
+//     formatToggle: false,
+//     swatchesOnly: true,
+//     alphaEnabled: false
+// }`};

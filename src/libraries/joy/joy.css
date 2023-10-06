@@ -52,12 +52,13 @@ More prefixing to avoid NAME COLLISIONS
 .joy-list {
 	padding-left: 0;
 	margin-left: 0;
+	margin: 0;
 }
 
 .joy-list-item {
 	display: flex;
 	align-items: flex-start;
-	/* margin-bottom: 0.3em; */
+	margin-bottom: 0.3em;
 	/* border: 1px dashed blue; */
 }
 

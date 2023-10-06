@@ -34,8 +34,14 @@ export class P5Renderer {
       };
       
       p.draw = () => { //show a preview of brush strokes while actively dragging mouse
-        p.image(t, 0, 0);
+        
       };
+
+      p.mouseDragged = () => {  
+        p.image(s, 0, 0);
+        p.image(t, 0, 0);
+        t.clear(); 
+      }
 
       p.render = () => {
         p.image(s, 0, 0);
@@ -70,18 +76,40 @@ export class P5Renderer {
           this.rect(params.x, this.flipY(params.y), params.size, params.size);
           this.pop();
       };
+          
+      p5.prototype.addTriangle = function(params) {
+        let x = params.x;
+        let y = this.flipY(params.y);
+        let size = params.size;
+        this.fill(params.color);
+        this.noStroke();
+        this.push();
+        this.triangle(
+          x + size / 2,
+          y + size / 2,
+          x - size / 2,
+          y + size / 2,
+          x,
+          y - size / 2
+        );
+        this.pop();
+      };
 
       p5.prototype.addRectangle = function(params) {
+        let x = params.x;
+        let y = this.flipY(params.y);
         this.push();
         this.rectMode(this.CENTER);
         this.fill(params.color);
         this.noStroke();
-        this.rect(params.x, this.flipY(params.y), params.w, params.h);
+        this.rect(x, y, params.w, params.h);
         this.pop();
     };
       
       p5.prototype.addFill = function(params) {
         this.push();
+        this.rectMode(this.CORNER);
+        console.log("the color", params.color);
         this.fill(params.color);
         this.noStroke();
         this.rect(0, 0, this.width, this.height);
@@ -514,17 +542,37 @@ export class P5Renderer {
           this.image(hairstyle.outline, 0, 0, this.width, this.height);
         }
       }
+
+      p5.prototype.moveCutout = function(params) {
+        this.push();
+
+        let w = params.width;
+        let h = params.height;
+        let x1 = params.x1;
+        let y1 = this.flipY(params.y1);
+        let x2 = params.x2;
+        let y2 = this.flipY(params.y2);
+
+        let snapshot = p.createGraphics(w, h); // for captured rectangle
+        this.imageMode(p.CENTER);
+        // snapshot.imageMode(p.CENTER);
+        snapshot.image(s, 0, 0, w, h, x1 - w/2, y1 - h/2, w, h); // w * h rectangle centered at x1, y1 from static canvas
+        //TODO: if you use p, it will capture the cleared canvas when released, but if you use s, it will not add the cutouts along path
+        this.image(snapshot, x2, y2, w, h, 0, 0, w, h);
+
+        this.pop();
+      }
       
-      p.addLine = (params) => {
-        if(!p.setupFinished) return;
+      p5.prototype.addLine = function(params) {
+        p.push();
         s.strokeWeight(params.lineWeight);
         s.noFill();
         s.stroke(params.color);
         s.line(params.x1, this.flipY(params.y1), params.x2, this.flipY(params.y2));
-      }
+        p.pop();
+      };
 
       p.addBrushStroke = (params) => {
-        if(!p.setupFinished) return;
         s.push();
         s.noFill();
         s.strokeWeight(params.lineWeight);

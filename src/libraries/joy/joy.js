@@ -43,14 +43,14 @@ export class Joy {
 
       // Allow previewing of... actions, numbers, variables?
       this.previewActions = this.previewActions === undefined ? true : this.previewActions;
-      this.previewNumbers = this.previewNumbers === undefined ? true : this.previewNumbers;
+      this.previewWidgets = this.previewWidgets === undefined ? true : this.previewWidgets;
       this.activePreview = null;
 
       // And: automatically create MY widget!
       this.rootActor.createWidget();
       this.dom = this.rootActor.dom;
 
-      this.rootActor.canPreview = (type) => {
+      this.rootActor.canPreview = (type) => { // can I preview this type of thing, and am I not actively previewing already?
         type = type.charAt(0).toUpperCase() + type.slice(1);
         const allowed = this["preview" + type];
         return allowed && !this.activePreview;
@@ -208,7 +208,7 @@ export class Joy {
   }
 
   static toJoyDataFormat(type, data) {
-    console.log("trying to get joy data format for ", type, "with data", data);
+    // console.log("trying to get joy data format for ", type, "with data", data);
     const template = Joy.getTemplateByType(type);
   
     if (!template) {
@@ -603,7 +603,52 @@ class Actor {
 
   createWidget() {
     this.initWidget();
+    if(this.widgetPreview)  {
+      this.attachWidgetPreviewListeners(this.widgetPreview);
+    }
     return this.dom;
+  }
+
+  attachWidgetPreviewListeners(options) {
+    const { duration, amplitudeFunc, updateValueFunc } = options;
+
+    let _ticker;
+
+    this.dom.onmouseenter = () => {
+      if (!this.top.canPreview("widgets")) return;
+
+      this.previewData = _clone(this.data);
+
+      _ticker = this.oscillateValue(this.data.value, amplitudeFunc, updateValueFunc, duration);
+    };
+
+    const _stopPreview = () => {
+      if (_ticker) clearInterval(_ticker);
+      this.previewData = null;
+      this.update();
+    };
+
+    this.dom.onmouseleave = _stopPreview;
+  }
+
+  oscillateValue(initialValue, amplitudeFunc, updateValueFunc, duration, fps = 30) {
+    let _timer = 0;
+    const _ticker = setInterval(() => {
+        _timer += (2 * Math.PI / fps) / duration; // One full oscillation over the specified duration
+        const amplitude = amplitudeFunc();
+        if(amplitude == 0) amplitude = 1;
+        const newValue = updateValueFunc(initialValue, Math.sin(_timer) * amplitude);
+
+        console.log("new value", newValue);
+        this.previewData.value = newValue;
+        this.update(); // Update the widget
+  
+        if (_timer > 2 * Math.PI) clearInterval(_ticker); // One full oscillation done
+  
+        return newValue;
+    }, 1000 / fps);
+    
+    return _ticker;
   }
 
   /////////////////////////////////

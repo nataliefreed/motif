@@ -1,42 +1,41 @@
 .category-tab {
     background-color: #e6e6e6;
-    /* margin: 0px 0px 5px 0px; */
     padding: 7px 15px 5px 15px;
     border-radius: 10px 10px 0px 0px;
     border: 2px rgb(149, 149, 149);
     border-style: solid solid hidden solid;
-    /* border-top: #ffffff; */
     cursor: pointer;
     margin: 2px 3px 0px 3px;
     font-family: 'FuturaHandwritten';
     font-size: 16px;
     color: #454545;
-    /* opacity: 50%; */
 }
   
 .category-tab:hover, .effect-button:hover, .general-button:hover {
-    background-color: #cacaca;
+    background-color: #b3b3b3;
 }
 
 .category-tab.selected {
     transform: translate(0px, -3px);
     -webkit-transform: translate(0px, -3px);
-    margin: 0px 3px -3.5px 0px;
+    margin-top: 0px;
+    margin-bottom: -3px;
     background-color: #cacaca;
     border: 2px gray;
     border-style: solid solid hidden solid;
-    /* box-shadow: 1px -1.5px 2px 0px gray; */
     color: black;
     z-index: 3;
-    /* opacity: 100%; */
 }
 
 .category-tab:active, .effect-button:active, .general-button:active {
   transform: translate(0px, 5px);
   -webkit-transform: translate(0px, 5px);
   border-style: solid solid hidden solid;
-  /* box-shadow: 0px 1px 0px 0px; */
 }
+
+#category-tabs > .category-tab.selected:first-child {
+    margin-left: 0px;
+  }
   
 .effect-button {
     background-color: white;
@@ -579,6 +578,11 @@ form {
   input[type="checkbox"]:hover {
     outline: max(2px, 0.15em) solid gray;
     outline-offset: max(2px, 0.15em);
+  }
+
+  span.list-title {
+    margin-top: 0px;
+    margin-bottom: 0px;
   }
 
 

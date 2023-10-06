@@ -2,12 +2,14 @@ import { Joy } from '../libraries/joy/joy.js';
 import '../libraries/joy/joy-standard-modules.js'; //add the modules, ie. import for side effects
 import '../libraries/joy/joy-custom-modules.js';
 import { _configure } from '../libraries/joy/joy-utils.js'
+import { randomHexColor } from '../utils/color-utils.js';
+// import { randomHexColor } from '../utils/color-utils.js';
 
 export class JoyManager {
   constructor(effects, brushstrokes, sketch, eventBus) {
 		this.eventBus = eventBus;
 
-		this.currentColorHSV = [Math.random()*360, 0.8, 0.8];
+		this.currentColor = randomHexColor();
 
     let data = Joy.loadFromURL();
 		console.log("loaded data from URL: ", data);
@@ -42,7 +44,7 @@ export class JoyManager {
 			modules: ['motif', 'sequences', 'stencils', 'instructions'], //TODO: 'math' module removes min and max settings on Scrubber - see line 1032 and 2813
 		
 			previewActions: true,
-			previewNumbers: true,
+			previewWidgets: true,
 		
 			// What to do when the user makes a change:
 			onupdate: (my) => {
@@ -72,11 +74,13 @@ export class JoyManager {
 		});
 		this.previewActionList = this.joyPreview.rootActor.action;
 
-		// this.addEvent('action-preview', fillAction.type, fillAction);
+				// Get the checkboxes by their IDs
+		this._randomizeColorCheckbox = document.getElementById('randomize-color-checkbox');
+		this._randomizeSizeCheckbox = document.getElementById('randomize-size-checkbox');
 
 		this.eventBus.addEventListener('effectSelected', (e) => {
 			this.effectType = e.detail.effectType;
-			this.currentColorHSV = [Math.random()*360, 0.8, 0.8]; //re-randomize color
+			if(this._randomizeColorCheckbox.checked) this.currentColor = randomHexColor();
 			if(this.effectType != this.previousEffectType) {
 				this._updatePreview();
 				this.previousEffectType = this.effectType;
@@ -95,8 +99,8 @@ export class JoyManager {
 	_updatePreview(saveCurrentSettings=false) 
 	{
 		let data = {};
-		data.color = { type: 'color', value: this.currentColorHSV }; // add latest color
-		data.color1 = { type: 'color', value: this.currentColorHSV }; // add latest color
+		data.color = { type: 'color', value: this.currentColor }; // add latest color
+		data.color1 = { type: 'color', value: this.currentColor }; // add latest color
 	// 	// if(saveCurrentSettings) {
 	// 	// 	data = {...this.previewActionList.getActionData(), ...data};
 	// 	// }
@@ -126,7 +130,7 @@ export class JoyManager {
 			this.addAction('motif', type, entryData);
 		}
 
-		this.currentColorHSV = [Math.random()*360, 0.8, 0.8]; //re-randomize color
+		if(this._randomizeColorCheckbox.checked) this.currentColor = randomHexColor();
 		this._updatePreview();
 		// this._updatePreview(true);
 		// this.previewActionList.getAction();

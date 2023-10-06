@@ -87,9 +87,13 @@ export class Brushstroke {
     let data = {};
     let x = Math.round(this.path.getPoint(0).x);
     let y = Math.round(this.path.getPoint(0).y);
+    let lastX = Math.round(this.path.getLastPoint().x);
+    let lastY = Math.round(this.path.getLastPoint().y);
     data.position = { type: 'coordinate', value: [x, y] };
     data.x = { type: 'number', value: x };
     data.y = { type: 'number', value: y};
+    data.firstPoint = { type: 'coordinate', value: [x, y] };
+    data.lastPoint = { type: 'coordinate', value: [lastX, lastY] };
     return data;
   }
 
