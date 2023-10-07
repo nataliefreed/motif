@@ -533,8 +533,8 @@ export const effectList = [
       formatToggle: false,
       swatchesOnly: true,
       alphaEnabled: false},
-    hairstyle {id:'hairstyle', type:'choose', options:['1', '2'], placeholder:'1'},
-    outfit set {id:'outfit', type:'choose', options:['1'], placeholder:'1'}`,
+    hairstyle {id:'hairstyle', type:'choose', options:['1', '2', '3'], placeholder:'1'},
+    outfit set {id:'outfit', type:'choose', options:['1', '2'], placeholder:'2'}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {

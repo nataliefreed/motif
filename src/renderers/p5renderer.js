@@ -450,8 +450,8 @@ export class P5Renderer {
       };
 
       p.loadStencils = () => {
-        let outfitNames = ['01'];
-        let hairstyleNames = ['01', '02'];
+        let outfitNames = ['01', '02'];
+        let hairstyleNames = ['01', '02', '03'];
       
         // Load doll fill
         paperdolls.dollFill = p.loadImage(`src/assets/stencils/paper-dolls/outfits/doll-fill.png`);
