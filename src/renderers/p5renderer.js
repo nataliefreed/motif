@@ -28,8 +28,8 @@ export class P5Renderer {
         p.createCanvas(w, h);
         s = p.createGraphics(p.width, p.height);
         t = p.createGraphics(p.width, p.height);
-        tt = p.createGraphics(p.width, p.height);
         p.background(255);
+        console.log("p5 setup");
         p.setupFinished = true;
         p.noLoop();
       };
@@ -54,7 +54,9 @@ export class P5Renderer {
       };
     
       p.clearAllCanvases = () => {
+        p.clear();
         p.background(255);
+        s.clear();
         s.background(255);
         t.clear();
       };
@@ -322,6 +324,8 @@ export class P5Renderer {
           default:
             break;
         }
+
+        snapshot.remove();
       }
       
       p5.prototype.grow = function(params) {
@@ -342,6 +346,7 @@ export class P5Renderer {
         let dy = this.flipY(params.y) - enlargedHeight / 2;
         
         this.image(snapshot, dx, dy, enlargedWidth, enlargedHeight, 0, 0, w, h);
+        snapshot.remove();
       }
       
 
@@ -543,6 +548,11 @@ export class P5Renderer {
         if(hairstyle.outline){
           this.image(hairstyle.outline, 0, 0, this.width, this.height);
         }
+
+        dollCanvas.remove();
+        outfitCanvas.remove();
+        hairstyleCanvas.remove();
+        skinToneCanvas.remove();
       }
 
       p5.prototype.copyCutout = function(params) {
@@ -570,6 +580,8 @@ export class P5Renderer {
           snapshot.rect(0, 0, w, h);
         }
         this.image(snapshot, x2, y2, w, h, 0, 0, w, h); // draw the moved rectangle onto the active canvas
+
+        snapshot.remove();
 
         this.pop();
       }
