@@ -997,7 +997,16 @@ Joy.add({
 
     let x = this.getX(); // set initial value in the DOM
     let y = this.getY();
-    dom.innerHTML = `(${x}, ${y})`;
+
+    this.setDisplayValue = (x, y) => {
+      let displayX = x;
+      let displayY = y;
+      if(isNaN(x)) displayX = 'x';
+      if(isNaN(y)) displayY = 'y';
+      dom.innerHTML = `(${displayX}, ${displayY})`;
+    };
+
+    this.setDisplayValue(x, y);
     // dom.innerHTML = ` at <span class="underline-coordinates">(${x}, ${y})</span>`
 
     dom.onclick = () => {
@@ -1005,7 +1014,7 @@ Joy.add({
       new GridModal({
         source: this.dom,
         onchange: (x, y) => {
-          dom.innerHTML = `(${x}, ${y})`;
+          this.setDisplayValue(x, y);
           this.setData("value", [x, y]);
         },
         getX: () => {
@@ -1016,7 +1025,6 @@ Joy.add({
         }
       }).show();
     };
-
     this.dom = dom;
   },
   widgetPreview: {
@@ -1249,14 +1257,10 @@ Joy.add({
       }
     });
     // console.log("data is", data);
-    let actionDataCopy = _clone(this.entry.actionData);
-    // console.log("actionDataCopy is", actionDataCopy);
-    // TODO!: I think `data` is what we should be returning here
-    //   Looks like type used for initialization isn't matching though?
+    // let actionDataCopy = _clone(this.entry.actionData);
     return data;
-    // return { ...actionDataCopy };
   },
-  setChildData(newData) { //<---- TODO!!!
+  setChildData(newData) {
     const targetActor = this.entry.actor;
     // console.log("newData is", newData);
     // console.log("current actor is", targetActor);
@@ -1273,6 +1277,19 @@ Joy.add({
     }
     targetActor.update();
     // console.log("after update: actor is", targetActor);
+  },
+  setChildDataByType(type, valueFunction) {
+    const targetActor = this.entry.actor;
+    // console.log("looking for...");
+    for (let key in targetActor.data) {
+      if (targetActor.data[key].type === type) {
+        const child = targetActor.findChild(key);
+        if (child) {
+          child.switchData({ type: type, value: valueFunction() });
+        }
+      }
+    }
+    targetActor.update();
   },
   getActionType: function() {
     return this.entry.actor.type;
@@ -1478,7 +1495,11 @@ Joy.add({
     return tinycolor(my.data.value).toRgbString();
   },
   placeholder: function(){
-    return '#aaaaaa';
+    if(this.colorOptions) {
+      return this.colorOptions[Math.floor(Math.random() * this.colorOptions.length)];
+    } else {
+      return '#aaaaaa';
+    }
   }
 });
 

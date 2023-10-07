@@ -1,3 +1,5 @@
+import tinycolor from 'tinycolor2';
+
 export function RGBToHSL(rgb) {
 	// const [r, g, b] = rgbStr.slice(4, -1).split(',').map(Number);
 	const [r, g, b] = Object.values(rgb);
@@ -115,16 +117,18 @@ export function RGBtoHSV(r, g, b) {
 
 export function randomHexColor() {
 	const h = Math.random() * 360;
-	const s = randomBetween(60, 100);
-	const l = randomBetween(40, 60);
-	return HSLToHex(h, s, l);
+	const s = randomBetween(80, 100);
+	// const s = 100;
+	// const l = randomBetween(45, 55);
+	const l = 60;
+	return tinycolor({h: h, s: s, l: l}).toHexString();
 }
 
 export function randomRGBColor() {
 	const h = Math.random() * 360;
 	const s = randomBetween(60, 100);
-	const l = randomBetween(40, 60);
-	return HSLtoRGB(h, s, l);
+	const l = 30;
+	return tinycolor({h: h, s: s, l: l}).toRgbString();
 }
 
 function HSLtoRGB(h, s, l) {

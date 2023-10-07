@@ -446,6 +446,7 @@ input[type="number"].numberbox-for-slider:focus {
 
 .path-widget-container {
     display: inline-block;
+    vertical-align: bottom;
     /* align-self: center; */
     /* margin: 5px 0px 0px 0px; */
     /* text-align: center; */
@@ -459,6 +460,7 @@ input[type="number"].numberbox-for-slider:focus {
 }
 
 .path-preview {
+    /* vertical-align: middle; */
     /* display: inline-block; */
     /* padding: 5px 0px 0px 0px; */
     /* text-align: center; */

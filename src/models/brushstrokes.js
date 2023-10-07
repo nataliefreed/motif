@@ -83,7 +83,7 @@ export class Brushstroke {
     return { type: 'path', value: this.path.getPointsAsArray() };
   }
 
-  getFirstPoint() {
+  getFirstAndLastPoints() {
     let data = {};
     let x = Math.round(this.path.getPoint(0).x);
     let y = Math.round(this.path.getPoint(0).y);
@@ -98,7 +98,7 @@ export class Brushstroke {
   }
 
   getPathAndPoint() {
-    return { path: this.getPath(), ...this.getFirstPoint() };
+    return { path: this.getPath(), ...this.getFirstAndLastPoints() };
   }
 
   addPoint(point) {

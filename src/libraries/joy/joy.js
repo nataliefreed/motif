@@ -636,7 +636,6 @@ class Actor {
     const _ticker = setInterval(() => {
         _timer += (2 * Math.PI / fps) / duration; // One full oscillation over the specified duration
         const amplitude = amplitudeFunc();
-        if(amplitude == 0) amplitude = 1;
         const newValue = updateValueFunc(initialValue, Math.sin(_timer) * amplitude);
 
         console.log("new value", newValue);

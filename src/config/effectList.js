@@ -19,7 +19,7 @@ export const effectList = [
     dropdownName: 'Gradient',
     category: 'Backgrounds',
     tag: 'motif',
-    init: "Gradient from {id:'color1', type:'color', placeholder:[50, 0.8, 1.0]} to {id:'color2', type:'color', placeholder:[100, 0.8, 1.0]}",
+    init: "Gradient from {id:'color1', type:'color', placeholder:'#79C2D7'} to {id:'color2', type:'color', placeholder:'#E869A3'}",
     cursor: './assets/cursors/fill-drip-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
@@ -32,8 +32,8 @@ export const effectList = [
     category: 'Backgrounds',
     tag: 'motif',
     init: `Stripes of width {id:'stripeWidth', type:'numberslider', min:1, max:300, placeholder:50}
-      from {id:'color1', type:'color', placeholder:[0, 0.7, 0.8]} 
-      to {id:'color2', type:'color', placeholder:[200, 0.7, 0.9]}`,
+      from {id:'color1', type:'color', placeholder:'#a8d863'} 
+      to {id:'color2', type:'color', placeholder:'#d967a7'}`,
     cursor: './assets/cursors/fill-drip-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
@@ -46,8 +46,8 @@ export const effectList = [
     category: 'Shapes',
     tag: 'motif',
     init: `Circle of radius {id:'radius', type:'numberslider', min:1, max:600, placeholder:20}
-    in color {id:'color', type:'color', placeholder:[75, 0.8, 1.0]}  
-    at {id:'position', type:'coordinate', placeholder:[200, 200]}`,
+    in color {id:'color', type:'color', placeholder:'#FFA76B'}  
+    at {id:'position', type:'coordinate', placeholder:[]}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
@@ -60,8 +60,8 @@ export const effectList = [
     category: 'Shapes',
     tag: 'motif',
     init: `Square of size {id:'size', type:'numberslider', min:1, max:600, placeholder:40}
-    in color {id:'color', type:'color', placeholder:[325, 0.8, 1.0]}  
-    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
+    in color {id:'color', type:'color', placeholder:'#FFA76B'}  
+    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[]}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
@@ -75,8 +75,8 @@ export const effectList = [
     tag: 'motif',
     init: `Polygon with {id:'nsides', type:'numberslider', min:3, max:50, placeholder:6} sides 
     and radius {id:'radius', type:'numberslider', min:1, max:600, placeholder:20} 
-    in color {id:'color', type:'color', placeholder:[300, 0.8, 1.0]}  
-    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
+    in color {id:'color', type:'color', placeholder:'#9c83e1'}  
+    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[]}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
@@ -91,8 +91,8 @@ export const effectList = [
     init: `Star with {id:'npoints', type:'numberslider', min:3, max:200, placeholder:7} points, 
     outer {id:'r1', type:'numberslider', min:1, max:600, placeholder:20}, 
     inner {id:'r2', type:'numberslider', min:1, max:600, placeholder:10} 
-    in color {id:'color', type:'color', placeholder:[120, 0.8, 1.0]}  
-    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
+    in color {id:'color', type:'color', placeholder:'#a2d16b'}  
+    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[]}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
@@ -105,8 +105,8 @@ export const effectList = [
     category: 'Shapes',
     tag: 'motif',
     init: `Heart of size {id:'size', type:'numberslider', min:-600, max:600, placeholder:40} 
-    in color {id:'color', type:'color', placeholder:[200, 0.8, 1.0]}  
-    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
+    in color {id:'color', type:'color', placeholder:'#da6bb1'}  
+    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[]}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
@@ -120,8 +120,8 @@ export const effectList = [
     tag: 'motif',
     init: `Rectangle with width {id:'width', type:'numberslider', min:-600, max:600, placeholder:50}
      and height {id:'height', type:'numberslider', min:-600, max:600, placeholder:30}
-    in color {id:'color', type:'color', placeholder:[220, 0.8, 1.0]}
-    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
+    in color {id:'color', type:'color', placeholder:'#52bf67'}
+    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[]}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
@@ -134,8 +134,8 @@ export const effectList = [
     category: 'Shapes',
     tag: 'motif',
     init: `Triangle of size {id:'size', type:'numberslider', min:-600, max:600, placeholder:40} 
-    in color {id:'color', type:'color', placeholder:[100, 0.8, 1.0]}  
-    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
+    in color {id:'color', type:'color', placeholder:'#62aed2'}  
+    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[]}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
@@ -148,17 +148,14 @@ export const effectList = [
     category: 'Brushes',
     tag: 'motif',
     init: `Straight line
-    from {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}
-    to {id:'position2', type:'coordinate', min:0, max:600, placeholder:[300, 300]}
-    in color {id:'color', type:'color', placeholder:[20, 0.8, 1.0]}
+    from {id:'firstPoint', type:'coordinate', min:0, max:600, placeholder:[100, 100]}
+    to {id:'lastPoint', type:'coordinate', min:0, max:600, placeholder:[300, 300]}
+    in color {id:'color', type:'color', placeholder:'#f57f7e'}
     in width {id: 'lineWeight', type: 'numberslider', min:1, max:600, placeholder: 5}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'drag',
     onact: (my) => {
-      debugger;
-      let lastPoint = my.data.path.last();
-      //this doesn't work because path is not one of its parameters
-      my.target.addLine({ color: my.data.color, lineWeight: my.data.lineWeight, x1: my.data.position[0], y1: my.data.position[1], x2: my.data.lastPoint[0], y2: my.data.lastPoint[1]});
+      my.target.addLine({ color: my.data.color, lineWeight: my.data.lineWeight, x1: my.data.firstPoint[0], y1: my.data.firstPoint[1], x2: my.data.lastPoint[0], y2: my.data.lastPoint[1]});
     }
   },
   // {
@@ -183,7 +180,7 @@ export const effectList = [
     init: `{id:'tiling', type:'choose', options:['straight grid', 'brick', 'half drop', 'checkerboard'], placeholder:'straight grid'} 
     with width {id:'width', type:'numberslider', min:5, max:600, placeholder:100} 
     and height {id:'height', type:'numberslider', min:5, max:600, placeholder:100}
-    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
+    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[]}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
@@ -203,7 +200,7 @@ export const effectList = [
     init: `{id:'tiling', type:'choose', options:['straight grid', 'brick', 'half drop', 'checkerboard'], placeholder:'brick'} 
     with width {id:'width', type:'numberslider', min:5, max:600, placeholder:100} 
     and height {id:'height', type:'numberslider', min:5, max:600, placeholder:40}
-    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
+    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[]}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
@@ -223,7 +220,7 @@ export const effectList = [
     init: `{id:'tiling', type:'choose', options:['straight grid', 'brick', 'half drop', 'checkerboard'], placeholder:'half drop'} 
     with width {id:'width', type:'numberslider', min:5, max:600, placeholder:150} 
     and height {id:'height', type:'numberslider', min:5, max:600, placeholder:250}
-    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
+    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[]}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
@@ -243,7 +240,7 @@ export const effectList = [
     init: `{id:'tiling', type:'choose', options:['straight grid', 'brick', 'half drop', 'checkerboard'], placeholder:'checkerboard'} 
     with width {id:'width', type:'numberslider', min:5, max:600, placeholder:50} 
     and height {id:'height', type:'numberslider', min:5, max:600, placeholder:50}
-    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
+    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[]}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
@@ -255,6 +252,7 @@ export const effectList = [
         y: my.data.position[1] });
     }
   },
+  //TODO: Radial!
   {
     name: 'grow',
     dropdownName: 'Grow',
@@ -263,7 +261,7 @@ export const effectList = [
     init: `Scale by {id:'scaleBy', type:'numberslider', min:0, max:600, placeholder:300}%
     width {id:'width', type:'numberslider', min:1, max:600, placeholder:100} 
     and height {id:'height', type:'numberslider', min:1, max:600, placeholder:100}
-    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
+    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[]}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
@@ -284,7 +282,7 @@ export const effectList = [
     init: `Scale by {id:'scaleBy', type:'numberslider', min:0, max:600, placeholder:50}%
     width {id:'width', type:'numberslider', min:1, max:600, placeholder:100} 
     and height {id:'height', type:'numberslider', min:1, max:600, placeholder:100}
-    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[200, 200]}`,
+    at {id:'position', type:'coordinate', min:0, max:600, placeholder:[]}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'single-click',
     onact: (my) => {
@@ -348,22 +346,23 @@ export const effectList = [
     }
   },
   {
-    name: 'move',
-    dropdownName: 'move',
-    category: 'Move',
+    name: 'copy',
+    dropdownName: 'Copy Shape',
+    category: 'Shapes',
     tag: 'motif',
-    init: `Move
+    init: `Copy
     {id: 'width', type: 'numberslider', min:1, max:600, placeholder: 50} x
     {id: 'height', type: 'numberslider', min:1, max:600, placeholder: 50}
-    {id:'shape', type: 'choose', options:['circle', 'square', 'triangle', 'star', 'heart', 'rectangle'], placeholder: 'circle'}
-    from {id:'firstPoint', type:'coordinate', min:0, max:600, placeholder:[200, 200]}
-    to {id:'lastPoint', type:'coordinate', min:0, max:600, placeholder:[300, 300]}`,
+    {id:'shape', type: 'choose', options:['rectangle'], placeholder: 'rectangle'} 
+    from {id:'firstPoint', type:'coordinate', min:0, max:600, placeholder:[]}
+    to {id:'lastPoint', type:'coordinate', min:0, max:600, placeholder:[]}`,
     cursor: './assets/cursors/star-solid.svg',
     mouseActionType: 'drag',
     onact: (my) => {
-      my.target.moveCutout({ width: my.data.width, height: my.data.height, shape: my.data.shape, x1: my.data.firstPoint[0], y1: my.data.firstPoint[1], x2: my.data.lastPoint[0], y2: my.data.lastPoint[1]});
+      my.target.copyCutout({ width: my.data.width, height: my.data.height, shape: my.data.shape, x1: my.data.firstPoint[0], y1: my.data.firstPoint[1], x2: my.data.lastPoint[0], y2: my.data.lastPoint[1]});
     }
   },
+  /*'circle', 'square', 'triangle', 'star', 'heart',*/
   // {
   //   name: 'snapshot',
   //   dropdownName: 'Take Snapshot',
@@ -389,8 +388,8 @@ export const effectList = [
         listname: '${listname}'}`;
       let parseResult = this.parseActorMarkup(configString);
       let initActions = [
-        Joy.toJoyDataFormat('motif/heart', {color: [5, 0.8, 1], x: 0, y: 0, size: 7}), //todo: how to pass in color here?
-        Joy.toJoyDataFormat('motif/heart', {color: [20, 0.8, 1], x: 0, y: 0, size: 10})];        
+        Joy.toJoyDataFormat('motif/heart', {color: '#f35b04', x: 0, y: 0, size: 7}), //todo: how to pass in color here?
+        Joy.toJoyDataFormat('motif/heart', {color: '#f18701', x: 0, y: 0, size: 10})];        
       let alongpathOption = parseResult.actorOptions.find(obj  => obj.id === 'alongpath');
       if(alongpathOption) {
         alongpathOption.initActions = initActions; //pass in the starter actions
@@ -417,9 +416,13 @@ export const effectList = [
 
       let parseResult = this.parseActorMarkup(configString);
       let initActions = [
-        Joy.toJoyDataFormat('motif/star', {color: [200, 0.8, 1], x: 0, y: 0, r1: 10, r2: 7, npoints: 5}),
-        Joy.toJoyDataFormat('motif/star', {color: [50, 0.8, 1], x: 0, y: 0, r1: 12, r2: 6, npoints: 7}),
-        Joy.toJoyDataFormat('motif/star', {color: [100, 0.8, 1], x: 0, y: 0, r1: 12, r2: 5, npoints: 15})];        
+        Joy.toJoyDataFormat('motif/star', {color: '#F72585', x: 0, y: 0, r1: 10, r2: 7, npoints: 5}),
+        Joy.toJoyDataFormat('motif/star', {color: '#7209B7', x: 0, y: 0, r1: 12, r2: 6, npoints: 7}),
+        Joy.toJoyDataFormat('motif/star', {color: '#3A0CA3', x: 0, y: 0, r1: 12, r2: 5, npoints: 15}),
+        Joy.toJoyDataFormat('motif/star', {color: '#4361EE', x: 0, y: 0, r1: 10, r2: 4, npoints: 4}),
+        Joy.toJoyDataFormat('motif/star', {color: '#4CC9F0', x: 0, y: 0, r1: 11, r2: 3, npoints: 15}),
+      
+      ];        
       let alongpathOption = parseResult.actorOptions.find(obj  => obj.id === 'alongpath');
       if(alongpathOption) {
         alongpathOption.initActions = initActions; //pass in the starter actions
@@ -445,17 +448,17 @@ export const effectList = [
       let parseResult = this.parseActorMarkup(configString);
 
       let colors = [
-        [255,   0,   0], // Red
-        [255, 165,   0], // Orange
-        [255, 215,   0], // Gold
-        [128, 128,   0], // Olive
-        [  0, 128,   0], // Green
-        [ 38, 162, 224], // Light blue
-        [  0,   0, 255], // Blue
-        [ 75,   0, 130], // Indigo
-        [128,   0, 128], // Purple
-        [238, 130, 238], // Violet
-        [255, 192, 203] // Pink
+        'rgb(255,   0,   0)', // Red
+        'rgb(255, 165,   0)', // Orange
+        'rgb(255, 215,   0)', // Gold
+        'rgb(128, 128,   0)', // Olive
+        'rgb(  0, 128,   0)', // Green
+        'rgb( 38, 162, 224)', // Light blue
+        'rgb(  0,   0, 255)', // Blue
+        'rgb( 75,   0, 130)', // Indigo
+        'rgb(128,   0, 128)', // Purple
+        'rgb(238, 130, 238)', // Violet
+        'rgb(255, 192, 203)' // Pink
       ];
 
       let initActions = [];
@@ -475,7 +478,7 @@ export const effectList = [
         let width = size;
         let height = size*1.5;
         let radius = size / 2;
-        let color = RGBtoHSV(colors[i]);
+        let color = colors[i];
         initActions.push(Joy.toJoyDataFormat(shape, {color: color, x: 0, y: 0, size: size, width: width, height: height, radius: radius }));
       }
       
@@ -517,7 +520,7 @@ export const effectList = [
     category: 'Stencils',
     tag: 'stencils',
     init: `Paper doll with skin tone 
-    {id:'skinTone', type:'colorpalette', placeholder:'#552E1F',
+    {id:'skinTone', type:'color',
     colorOptions: [
       '#552E1F','#60311F','#A16F4C','#BB815C','#BC8F68','#CA9978',
       '#DCBA9E','#F3D7C2','#653728','#B77E53','#D6A98A','#F0CBB0',

@@ -7,7 +7,7 @@ import { P5Renderer } from './renderers/p5renderer.js';
 import { UIManager } from './ui/ui-manager.js';
 import * as utilities from './utils/color-utils.js'; 
 import { JoyManager } from './models/joy-manager.js';
-import tippy from 'tippy.js'
+import { setTooltips } from './tooltips.js';
 
 let currentLineWeight = 6;
 
@@ -36,6 +36,7 @@ class MotifApp {
 		this._setupDraggables();
 		this._setupEventListeners();
 		this.adjustAlignment();
+		setTooltips();
 
 		this.activeBrushstroke = null;
 	}

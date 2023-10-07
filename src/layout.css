@@ -254,7 +254,7 @@ body {
   height: 160px;
   align-items: center;
   overflow: auto;
-  margin: 0 30px;
+  margin: 0 22px;
   /* min-height: var(--preview-min-height); */
   /* border: 1px solid gray; */
   box-shadow: inset 0px 0px 4px 1px gray;

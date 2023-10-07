@@ -14,7 +14,7 @@ export class P5Renderer {
       let activeEffectName = "";
       let strokeColor = 0;
       let strokeWeight = 5;
-      let s, t; //p is main sketch, s is static canvas, t is temporary for animations
+      let s, t, tt; //p is main sketch, s is static canvas, t is temporary for animations
 
       p.getPreviewCanvas = () => {
         return t;
@@ -28,27 +28,32 @@ export class P5Renderer {
         p.createCanvas(w, h);
         s = p.createGraphics(p.width, p.height);
         t = p.createGraphics(p.width, p.height);
+        tt = p.createGraphics(p.width, p.height);
         p.background(255);
         p.setupFinished = true;
         p.noLoop();
       };
       
-      p.draw = () => { //show a preview of brush strokes while actively dragging mouse
-        
+      p.draw = () => {
+
       };
 
-      p.mouseDragged = () => {  
+      p.mouseDragged = () => { //show a preview while actively dragging mouse 
         p.image(s, 0, 0);
         p.image(t, 0, 0);
-        t.clear(); 
+        t.clear();
       }
+
+      // p.mouseMoved = () => {
+      //   p.image(s, 0, 0);
+      //   p.circle(p.mouseX, p.mouseY, 10);
+      // }
 
       p.render = () => {
         p.image(s, 0, 0);
       };
     
-      p.clear = () => {
-        if(!p.setupFinished) return;
+      p.clearAllCanvases = () => {
         p.background(255);
         s.background(255);
         t.clear();
@@ -109,7 +114,7 @@ export class P5Renderer {
       p5.prototype.addFill = function(params) {
         this.push();
         this.rectMode(this.CORNER);
-        console.log("the color", params.color);
+        // console.log("the color", params.color);
         this.fill(params.color);
         this.noStroke();
         this.rect(0, 0, this.width, this.height);
@@ -237,9 +242,6 @@ export class P5Renderer {
             shapeCount++;
         }
       }
-
-      
-    
 
       //heart by Mithru: https://editor.p5js.org/Mithru/sketches/Hk1N1mMQg
       p5.prototype.heart = function(params) {
@@ -543,7 +545,7 @@ export class P5Renderer {
         }
       }
 
-      p5.prototype.moveCutout = function(params) {
+      p5.prototype.copyCutout = function(params) {
         this.push();
 
         let w = params.width;
@@ -555,21 +557,30 @@ export class P5Renderer {
 
         let snapshot = p.createGraphics(w, h); // for captured rectangle
         this.imageMode(p.CENTER);
-        // snapshot.imageMode(p.CENTER);
-        snapshot.image(s, 0, 0, w, h, x1 - w/2, y1 - h/2, w, h); // w * h rectangle centered at x1, y1 from static canvas
-        //TODO: if you use p, it will capture the cleared canvas when released, but if you use s, it will not add the cutouts along path
-        this.image(snapshot, x2, y2, w, h, 0, 0, w, h);
+
+        if(this===p) snapshot.image(this, 0, 0, w, h, x1 - w/2, y1 - h/2, w, h); // w * h rectangle centered at x1, y1 from static canvas
+        else snapshot.image(s, 0, 0, w, h, x1 - w/2, y1 - h/2, w, h);
+        
+        //TODO: if you use p, it will capture the cleared canvas when released, but if you use s, it will not add the cutouts in a cumulative way
+
+        if(this === t) { //if temp canvas, draw a border
+          snapshot.stroke(0);
+          snapshot.noFill();
+          snapshot.strokeWeight(2);
+          snapshot.rect(0, 0, w, h);
+        }
+        this.image(snapshot, x2, y2, w, h, 0, 0, w, h); // draw the moved rectangle onto the active canvas
 
         this.pop();
       }
       
       p5.prototype.addLine = function(params) {
-        p.push();
-        s.strokeWeight(params.lineWeight);
-        s.noFill();
-        s.stroke(params.color);
-        s.line(params.x1, this.flipY(params.y1), params.x2, this.flipY(params.y2));
-        p.pop();
+        this.push();
+        this.strokeWeight(params.lineWeight);
+        this.noFill();
+        this.stroke(params.color);
+        this.line(params.x1, this.flipY(params.y1), params.x2, this.flipY(params.y2));
+        this.pop();
       };
 
       p.addBrushStroke = (params) => {

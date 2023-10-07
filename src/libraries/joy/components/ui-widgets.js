@@ -100,7 +100,7 @@ export class ChooserButton extends JoyButton {
     let matchingOption = this.options.find(pair => pair.value === this.value);
     if (matchingOption) {
       this.setLabel(matchingOption.label);
-      console.log("setting label to ", matchingOption.label);
+      // console.log("setting label to ", matchingOption.label);
     }
   }
 }
