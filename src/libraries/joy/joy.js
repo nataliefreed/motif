@@ -638,7 +638,7 @@ class Actor {
         const amplitude = amplitudeFunc();
         const newValue = updateValueFunc(initialValue, Math.sin(_timer) * amplitude);
 
-        console.log("new value", newValue);
+        // console.log("new value", newValue);
         this.previewData.value = newValue;
         this.update(); // Update the widget
   
