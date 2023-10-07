@@ -14,7 +14,7 @@ export class P5Renderer {
       let activeEffectName = "";
       let strokeColor = 0;
       let strokeWeight = 5;
-      let s, t; //p is main sketch, s is static canvas, t is temporary for animations
+      let s, t, tt; //p is main sketch, s is static canvas, t is temporary for animations
 
       p.getPreviewCanvas = () => {
         return t;
@@ -28,31 +28,49 @@ export class P5Renderer {
         p.createCanvas(w, h);
         s = p.createGraphics(p.width, p.height);
         t = p.createGraphics(p.width, p.height);
+        tt = p.createGraphics(p.width, p.height);
         p.background(255);
         p.setupFinished = true;
         p.noLoop();
       };
       
-      p.draw = () => { //show a preview of brush strokes while actively dragging mouse
-        
-        p.image(t, 0, 0);
+      p.draw = () => {
+
       };
+
+      p.mouseDragged = () => { //show a preview while actively dragging mouse 
+        p.image(s, 0, 0);
+        p.image(t, 0, 0);
+        t.clear();
+      }
+
+      // p.mouseMoved = () => {
+      //   p.image(s, 0, 0);
+      //   p.circle(p.mouseX, p.mouseY, 10);
+      // }
 
       p.render = () => {
         p.image(s, 0, 0);
-      }
+      };
     
-      p.clear = () => {
-        if(!p.setupFinished) return;
+      p.clearAllCanvases = () => {
         p.background(255);
         s.background(255);
         t.clear();
+      };
+
+      p5.prototype.flippedMouseY = function() {
+        return this.flipY(this.mouseY);
+      }
+
+      p5.prototype.flipY = function(y) {
+        return this.height - y;
       }
     
       p5.prototype.addCircle = function(params) {
         this.fill(params.color);
         this.noStroke();
-        this.circle(params.x, params.y, params.r*2);
+        this.circle(params.x, this.flipY(params.y), params.r*2);
       };
     
       p5.prototype.addSquare = function(params) {
@@ -60,20 +78,53 @@ export class P5Renderer {
           this.rectMode(this.CENTER);
           this.fill(params.color);
           this.noStroke();
-          this.rect(params.x, params.y, params.size, params.size);
+          this.rect(params.x, this.flipY(params.y), params.size, params.size);
           this.pop();
       };
+          
+      p5.prototype.addTriangle = function(params) {
+        let x = params.x;
+        let y = this.flipY(params.y);
+        let size = params.size;
+        this.fill(params.color);
+        this.noStroke();
+        this.push();
+        this.triangle(
+          x + size / 2,
+          y + size / 2,
+          x - size / 2,
+          y + size / 2,
+          x,
+          y - size / 2
+        );
+        this.pop();
+      };
+
+      p5.prototype.addRectangle = function(params) {
+        let x = params.x;
+        let y = this.flipY(params.y);
+        this.push();
+        this.rectMode(this.CENTER);
+        this.fill(params.color);
+        this.noStroke();
+        this.rect(x, y, params.w, params.h);
+        this.pop();
+    };
       
       p5.prototype.addFill = function(params) {
-          this.fill(params.color);
-          this.noStroke();
-          this.rect(0, 0, this.width, this.height);
+        this.push();
+        this.rectMode(this.CORNER);
+        // console.log("the color", params.color);
+        this.fill(params.color);
+        this.noStroke();
+        this.rect(0, 0, this.width, this.height);
+        this.pop();
       };
 
       p5.prototype.star = function(params) {
         this.push(); // Save current drawing style
         let x = params.x;
-        let y = params.y;
+        let y = this.flipY(params.y);
         let r1 = params.r1;
         let r2 = params.r2;
         let angle = this.TWO_PI / params.npoints;
@@ -95,13 +146,15 @@ export class P5Renderer {
 
       p5.prototype.polygon = function(params) {
         let nsides = Math.abs(params.nsides);
+        let x = params.x;
+        let y = this.flipY(params.y);
         this.fill(params.color);
         this.noStroke();
         let angle = this.TWO_PI / nsides;
         this.beginShape();
         for (let a = 0; a < this.TWO_PI; a += angle) {
-            let sx = params.x + this.cos(a) * params.r;
-            let sy = params.y + this.sin(a) * params.r;
+            let sx = x + this.cos(a) * params.r;
+            let sy = y + this.sin(a) * params.r;
             this.vertex(sx, sy);
         }
         this.endShape(this.CLOSE);
@@ -190,13 +243,10 @@ export class P5Renderer {
         }
       }
 
-      
-    
-
       //heart by Mithru: https://editor.p5js.org/Mithru/sketches/Hk1N1mMQg
       p5.prototype.heart = function(params) {
         let x = params.x;
-        let y = params.y;
+        let y = this.flipY(params.y);
         let size = params.size;
         this.push();
         this.translate(0, -size/2);
@@ -215,7 +265,7 @@ export class P5Renderer {
         let h = params.height;
         let tiling = params.tiling;
         let x = params.x;
-        let y = params.y;
+        let y = this.flipY(params.y);
       
         let sx = x - w / 2;
         let sy = y - h / 2;
@@ -280,7 +330,7 @@ export class P5Renderer {
         let scaleBy = params.scaleBy / 100; // Convert the percentage to a decimal
         
         let sx = params.x - w / 2;
-        let sy = params.y - h / 2;
+        let sy = this.flipY(params.y) - h / 2;
       
         let snapshot = p.createGraphics(w, h);
         snapshot.image(this, 0, 0, w, h, sx, sy, w, h);
@@ -289,7 +339,7 @@ export class P5Renderer {
         let enlargedHeight = h * scaleBy;
         
         let dx = params.x - enlargedWidth / 2;
-        let dy = params.y - enlargedHeight / 2;
+        let dy = this.flipY(params.y) - enlargedHeight / 2;
         
         this.image(snapshot, dx, dy, enlargedWidth, enlargedHeight, 0, 0, w, h);
       }
@@ -494,18 +544,46 @@ export class P5Renderer {
           this.image(hairstyle.outline, 0, 0, this.width, this.height);
         }
       }
-      
 
-      p.addLine = (params) => {
-        if(!p.setupFinished) return;
-        s.strokeWeight(params.lineWeight);
-        s.noFill();
-        s.stroke(params.color);
-        s.line(params.x1, params.y1, params.x2, params.y2);
+      p5.prototype.copyCutout = function(params) {
+        this.push();
+
+        let w = params.width;
+        let h = params.height;
+        let x1 = params.x1;
+        let y1 = this.flipY(params.y1);
+        let x2 = params.x2;
+        let y2 = this.flipY(params.y2);
+
+        let snapshot = p.createGraphics(w, h); // for captured rectangle
+        this.imageMode(p.CENTER);
+
+        if(this===p) snapshot.image(this, 0, 0, w, h, x1 - w/2, y1 - h/2, w, h); // w * h rectangle centered at x1, y1 from static canvas
+        else snapshot.image(s, 0, 0, w, h, x1 - w/2, y1 - h/2, w, h);
+        
+        //TODO: if you use p, it will capture the cleared canvas when released, but if you use s, it will not add the cutouts in a cumulative way
+
+        if(this === t) { //if temp canvas, draw a border
+          snapshot.stroke(0);
+          snapshot.noFill();
+          snapshot.strokeWeight(2);
+          snapshot.rect(0, 0, w, h);
+        }
+        this.image(snapshot, x2, y2, w, h, 0, 0, w, h); // draw the moved rectangle onto the active canvas
+
+        this.pop();
       }
+      
+      p5.prototype.addLine = function(params) {
+        this.push();
+        this.strokeWeight(params.lineWeight);
+        this.noFill();
+        this.stroke(params.color);
+        this.line(params.x1, this.flipY(params.y1), params.x2, this.flipY(params.y2));
+        this.pop();
+      };
 
       p.addBrushStroke = (params) => {
-        if(!p.setupFinished) return;
         s.push();
         s.noFill();
         s.strokeWeight(params.lineWeight);

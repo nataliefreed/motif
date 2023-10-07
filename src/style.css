@@ -1,42 +1,41 @@
 .category-tab {
     background-color: #e6e6e6;
-    /* margin: 0px 0px 5px 0px; */
     padding: 7px 15px 5px 15px;
     border-radius: 10px 10px 0px 0px;
     border: 2px rgb(149, 149, 149);
     border-style: solid solid hidden solid;
-    /* border-top: #ffffff; */
     cursor: pointer;
-    margin: 2px 0px;
+    margin: 2px 3px 0px 3px;
     font-family: 'FuturaHandwritten';
     font-size: 16px;
     color: #454545;
-    /* opacity: 50%; */
 }
   
-.category-tab:hover, .effect-button:hover, .light-button:hover {
-    background-color: #cacaca;
+.category-tab:hover, .effect-button:hover, .general-button:hover {
+    background-color: #b3b3b3;
 }
 
 .category-tab.selected {
     transform: translate(0px, -3px);
     -webkit-transform: translate(0px, -3px);
-    margin: 0px 0px -3.5px 0px;
+    margin-top: 0px;
+    margin-bottom: -3px;
     background-color: #cacaca;
     border: 2px gray;
     border-style: solid solid hidden solid;
-    /* box-shadow: 1px -1.5px 2px 0px gray; */
     color: black;
     z-index: 3;
-    /* opacity: 100%; */
 }
 
-.category-tab:active, .effect-button:active, .light-button:active {
+.category-tab:active, .effect-button:active, .general-button:active {
   transform: translate(0px, 5px);
   -webkit-transform: translate(0px, 5px);
   border-style: solid solid hidden solid;
-  /* box-shadow: 0px 1px 0px 0px; */
 }
+
+#category-tabs > .category-tab.selected:first-child {
+    margin-left: 0px;
+  }
   
 .effect-button {
     background-color: white;
@@ -50,17 +49,16 @@
     font-size: 14px;
 }
 
-.light-button {
-    background-color: white;
+.general-button {
+    background-color: #d8d8d8;
     margin: 5px;
-    padding: 10px;
-    border-radius: 5px;
+    padding: 10px 15px;
+    border-radius: 6px;
     box-shadow: 1px 2px 0px 0px gray;
-    border: 1px solid;
-    border-color: gray;
+    border: 1px solid gray;
     cursor: pointer;
     font-family: 'FuturaHandwritten';
-    font-size: 14px;
+    font-size: 16px;
 }
 
 .light-button:hover {
@@ -74,16 +72,6 @@
 .save-buttons {
     display: flex;
     margin-top: 20px;
-}
-
-#download-button, #save-button{
-    float: right;
-    padding: 10px;
-    background-color: rgb(232, 232, 232);
-}
-
-#download-button:hover, #save-button:hover{
-    background-color: gray;
 }
 
 .thumbnail-canvas {
@@ -448,16 +436,17 @@ input[type="number"].numberbox-for-slider:focus {
 }
 
 .joy-list-item .joy-list-item:nth-child(odd) {
-    border: 1px solid #e4e4e4;
+    /* border: 1px solid #e4e4e4; */
 }
 
 .joy-list-item .joy-list-item:nth-child(even) {
-    border: 1px solid #e4e4e4;
-    background-color: #f7f7f7;
+    /* border: 1px solid #e4e4e4;
+    background-color: #f7f7f7; */
 }
 
 .path-widget-container {
     display: inline-block;
+    vertical-align: bottom;
     /* align-self: center; */
     /* margin: 5px 0px 0px 0px; */
     /* text-align: center; */
@@ -471,6 +460,7 @@ input[type="number"].numberbox-for-slider:focus {
 }
 
 .path-preview {
+    /* vertical-align: middle; */
     /* display: inline-block; */
     /* padding: 5px 0px 0px 0px; */
     /* text-align: center; */
@@ -478,6 +468,126 @@ input[type="number"].numberbox-for-slider:focus {
     /* width: 1.5em; */
 	/* height: 1.5em; */
 }
+
+#drawing-canvas {
+    position: relative; /* Ensures pseudo-elements are positioned relative to this container */
+}
+
+#drawing-canvas::before,
+#drawing-canvas::after,
+#drawing-canvas .canvas-corner::before,
+#drawing-canvas .canvas-corner::after {
+    content: ""; /* Needed for pseudo-elements */
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    z-index: 1; /* Place them above the canvas */
+}
+
+#drawing-canvas::before {
+    top: -10px; /* Adjust for how much you want it to overlap */
+    left: -10px;
+    border-width: 50px 50px 0 0;
+    border-color: rgba(0, 0, 0, 0.2) transparent transparent transparent; /* Upper-left corner triangle */
+    /* box-shadow: 1px 1px 2px 1px; */
+}
+
+#drawing-canvas::after {
+    top: -10px;
+    right: -10px;
+    border-width: 50px 0 0 50px;
+    border-color: rgba(0, 0, 0, 0.2) transparent transparent transparent; /* Upper-right corner triangle */
+}
+
+#drawing-canvas .canvas-corner::before {
+    bottom: -10px;
+    left: -10px;
+    border-width: 0 50px 50px 0;
+    border-color: transparent transparent rgba(0, 0, 0, 0.2) transparent; /* Lower-left corner triangle */
+}
+
+#drawing-canvas .canvas-corner::after {
+    bottom: -10px;
+    right: -10px;
+    border-width: 0 0 50px 50px;
+    border-color: transparent transparent rgba(0, 0, 0, 0.2) transparent; /* Lower-right corner triangle */
+}
+
+/* Checkbox styling from https://moderncss.dev/pure-css-custom-checkbox-style/ */
+form {
+    display: grid;
+    place-content: center;
+    min-height: 100vh;
+  }
+  
+  .form-control {
+    /* font-family: system-ui, sans-serif; */
+    font-size: 1em;
+    /* font-weight: bold; */
+    line-height: 1.1;
+    display: grid;
+    grid-template-columns: 1em auto;
+    gap: 0.75em;
+  }
+  
+  .form-control + .form-control {
+    margin-top: 1em;
+  }
+  
+  .form-control--disabled {
+    color: var(--form-control-disabled);
+    cursor: not-allowed;
+  }
+  
+  input[type="checkbox"] {
+    /* Add if not using autoprefixer */
+    -webkit-appearance: none;
+    /* Remove most all native input styles */
+    appearance: none;
+    /* Not removed via appearance */
+    margin: 0;
+  
+    font: inherit;
+    color: black;
+    width: 1.15em;
+    height: 1.15em;
+    border: 0.15em solid gray;
+    border-radius: 0.15em;
+    transform: translateY(-0.075em);
+  
+    display: grid;
+    place-content: center;
+  }
+  
+  input[type="checkbox"]::before {
+    content: "";
+    width: 0.65em;
+    height: 0.65em;
+    clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+    transform: scale(0);
+    transform-origin: bottom left;
+    transition: 120ms transform ease-in-out;
+    box-shadow: inset 1em 1em var(--form-control-color);
+    /* Windows High Contrast Mode */
+    background-color: CanvasText;
+  }
+  
+  input[type="checkbox"]:checked::before {
+    transform: scale(1);
+  }
+  
+  input[type="checkbox"]:hover {
+    outline: max(2px, 0.15em) solid gray;
+    outline-offset: max(2px, 0.15em);
+  }
+
+  span.list-title {
+    margin-top: 0px;
+    margin-bottom: 0px;
+  }
+
+
 
 
 

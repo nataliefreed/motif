@@ -2,15 +2,15 @@ import { Joy } from '../libraries/joy/joy.js';
 import '../libraries/joy/joy-standard-modules.js'; //add the modules, ie. import for side effects
 import '../libraries/joy/joy-custom-modules.js';
 import { _configure } from '../libraries/joy/joy-utils.js'
+import { randomHexColor } from '../utils/color-utils.js';
+// import { randomHexColor } from '../utils/color-utils.js';
 
 export class JoyManager {
   constructor(effects, brushstrokes, sketch, eventBus) {
 		this.eventBus = eventBus;
 
-		this.currentColorHSV = [Math.random()*360, 0.8, 0.8];
-
     let data = Joy.loadFromURL();
-		console.log("loaded data: ", data);
+		console.log("loaded data from URL: ", data);
 
     this.loadEffects(effects);
 		this.sketch = sketch;
@@ -18,6 +18,8 @@ export class JoyManager {
     this.staticCanvas = sketch.getStaticCanvas();
 
 		this.previewActionEnabled = false; //run the preview action?
+
+		sketch.background(255);
 
 		/**************************************/
 	  /******* Main Joy List of Actions *****/
@@ -42,17 +44,21 @@ export class JoyManager {
 			modules: ['motif', 'sequences', 'stencils', 'instructions'], //TODO: 'math' module removes min and max settings on Scrubber - see line 1032 and 2813
 		
 			previewActions: true,
-			previewNumbers: true,
+			previewWidgets: true,
 		
 			// What to do when the user makes a change:
 			onupdate: (my) => {
-        sketch.clear();
+				// sketch.clearAllCanvases();
+				this.previewCanvas.clear(); //this order matters so we can clear temporary shapes, but not clear background things are being copied from
+				this.staticCanvas.background(255);
         my.paintingActionList.act(this.staticCanvas);
         my.stencilActionList.act(this.staticCanvas);
-				// draw the preview canvas
+				sketch.background(255);
         sketch.render();
 			}
 		});
+
+		this.joy.rootActor.update(); // if there's initial data
 
 	/**************************************/
 	/*** Next & Current Action Preview ****/
@@ -72,11 +78,13 @@ export class JoyManager {
 		});
 		this.previewActionList = this.joyPreview.rootActor.action;
 
-		// this.addEvent('action-preview', fillAction.type, fillAction);
+				// Get the checkboxes by their IDs
+		this._randomizeColorCheckbox = document.getElementById('randomize-color-checkbox');
+		this._randomizeNumberCheckbox = document.getElementById('randomize-number-checkbox');
 
+		// TODO: investigate whether this triggers a re-render of the main canvas
 		this.eventBus.addEventListener('effectSelected', (e) => {
 			this.effectType = e.detail.effectType;
-			this.currentColorHSV = [Math.random()*360, 0.8, 0.8]; //re-randomize color
 			if(this.effectType != this.previousEffectType) {
 				this._updatePreview();
 				this.previousEffectType = this.effectType;
@@ -85,22 +93,42 @@ export class JoyManager {
 		});
   }
 
-  	runWithDelay(millis) {
-		this.sketch.clear();
+  async runWithDelay(millis) {
+		this.sketch.background(255);
 		let options = { delay: millis };
-		this.joy.rootActor.paintingActionList.act(this.sketch, null, options);
+		await this.joy.rootActor.paintingActionList.act(this.sketch, null, options);
+		this.joy.rootActor.stencilActionList.act(this.sketch, null, options);
 	}
 
 	// update preview value
 	_updatePreview(saveCurrentSettings=false) 
 	{
 		let data = {};
-		data.color = { type: 'color', value: this.currentColorHSV }; // add latest color
-		data.color1 = { type: 'color', value: this.currentColorHSV }; // add latest color
+		if(this._randomizeColorCheckbox.checked) {
+			data.color = { type: 'color', value: randomHexColor() }; //TODO: do this for all colors, regardless of id
+			data.color1 = { type: 'color', value: randomHexColor() };
+			data.color2 = { type: 'color', value: randomHexColor() };
+		}
+		if(this._randomizeNumberCheckbox.checked) {
+			// this.previewActionList.setChildDataByType('number', () => Math.floor(Math.random() * 100 + 10));
+			// TODO: generalize this!
+			data.width = { type: 'number', value: Math.floor(Math.random() * 60 + 5) };
+			data.height = { type: 'number', value: Math.floor(Math.random() * 60 + 5) };
+			data.radius = { type: 'number', value: Math.floor(Math.random() * 60 + 5) };
+			data.height = { type: 'number', value: Math.floor(Math.random() * 60 + 5) };
+			data.radius = { type: 'number', value: Math.floor(Math.random() * 60 + 5) };
+			data.size = { type: 'number', value: Math.floor(Math.random() * 60 + 5) };
+			data.r1 = data.radius;
+			data.r2 = { type: 'number', value: Math.floor(Math.random() * 60 + 5) };
+			data.npoints = { type: 'number', value: Math.floor(Math.random() * 30 + 5) };
+			data.nsides = data.npoints;
+			//randomize the numbers - between min and max?
+		}
 	// 	// if(saveCurrentSettings) {
 	// 	// 	data = {...this.previewActionList.getActionData(), ...data};
 	// 	// }
 		this.previewActionList.setAction(this.effectType, data);
+		//should this call updatePreviewData?
 	}
 
 	updatePreviewData(newData) {
@@ -109,7 +137,6 @@ export class JoyManager {
 
 	addCurrentAction(data) {
 		if(data) {
-		// 	debugger;
 			this.previewActionList.setChildData(data);
 		}
 		let entryData = this.previewActionList.getEntryData();
@@ -117,7 +144,7 @@ export class JoyManager {
 		
 		this.previewActionEnabled = false;
 
-		console.log("\t\t\tadding action", type, entryData);
+		// console.log("\t\t\tadding action", type, entryData);
 
 		const category = type.split('/')[0];
 		if(category === 'stencils') {
@@ -127,14 +154,7 @@ export class JoyManager {
 			this.addAction('motif', type, entryData);
 		}
 
-		this.currentColorHSV = [Math.random()*360, 0.8, 0.8]; //re-randomize color
 		this._updatePreview();
-		// this._updatePreview(true);
-		// this.previewActionList.getAction();
-		// console.log("preview actor", this.previewActionList.actor, "widget", this.previewActionList.widget, "data", this.previewActionList.getAction());
-		// if(this.effectType) {
-		// 	this._addEvent(listName, this.effectType, data);
-		// }
 	}
 
 	_getParentList(listName) {
@@ -162,7 +182,7 @@ export class JoyManager {
 	}
 
 	deleteAction(listName, index) {
-		console.log(listName, index);
+		// console.log(listName, index);
 		const target = this._getParentList(listName);
 		target.deleteAction(index);
 	}

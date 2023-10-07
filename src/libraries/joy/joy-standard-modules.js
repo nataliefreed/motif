@@ -99,7 +99,7 @@ Widget Options:
 ****************/
 
 Joy.add({
-  type: "color",
+  type: "color_original",
   tags: ["ui"],
   initWidget: function() {
 
@@ -180,7 +180,6 @@ Joy.add({
       this.update();
     };
     this.dom.onmouseleave = _stopPreview;
-
   },
   onget: function(my){
     return _HSVToRGBString(my.data.value);

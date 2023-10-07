@@ -7,7 +7,7 @@ import { P5Renderer } from './renderers/p5renderer.js';
 import { UIManager } from './ui/ui-manager.js';
 import * as utilities from './utils/color-utils.js'; 
 import { JoyManager } from './models/joy-manager.js';
-import tippy from 'tippy.js'
+import { setTooltips } from './tooltips.js';
 
 let currentLineWeight = 6;
 
@@ -35,6 +35,8 @@ class MotifApp {
 
 		this._setupDraggables();
 		this._setupEventListeners();
+		this.adjustAlignment();
+		setTooltips();
 
 		this.activeBrushstroke = null;
 	}
@@ -83,19 +85,28 @@ class MotifApp {
 			}
     });
 
-		let trash = document.getElementById('trash');
-		Sortable.create(trash, {
-			group: 'shared',
-			ghostClass: 'sortable-ghost-delete',
-			chosenClass: 'sortable-chosen-delete',
-			onAdd: (e) => {
-				// var el = e.item;
-				// el.parentNode.removeChild(el);
-				console.log(e.oldIndex, 'dropped from', e.from.id);
-				this.joyManager.deleteAction(e.from.id, e.oldIndex);
-			}
-		});
+		// let trash = document.getElementById('trash');
+		// Sortable.create(trash, {
+		// 	group: 'shared',
+		// 	ghostClass: 'sortable-ghost-delete',
+		// 	chosenClass: 'sortable-chosen-delete',
+		// 	onAdd: (e) => {
+		// 		// var el = e.item;
+		// 		// el.parentNode.removeChild(el);
+		// 		console.log(e.oldIndex, 'dropped from', e.from.id);
+		// 		this.joyManager.deleteAction(e.from.id, e.oldIndex);
+		// 	}
+		// });
 	}
+
+  adjustAlignment() {
+    const outerContainer = document.querySelector('.outer-container');
+    if (window.innerWidth > 1482) {
+        outerContainer.style.alignItems = 'center';
+    } else {
+        outerContainer.style.alignItems = 'flex-start';
+    }
+  }
 
 	_setupEventListeners() {
 
@@ -110,7 +121,7 @@ class MotifApp {
 			let activeEffect = this.effects.getEffectByName(this.ui.getSelectedEffect());
 
 			if(activeEffect) {
-				let point = { x: this.sketch.mouseX, y: this.sketch.mouseY };
+				let point = { x: this.sketch.mouseX, y: this.sketch.flippedMouseY() };
 
 					if(!this.activeBrushstroke) {
 						this.activeBrushstroke = new Brushstroke(
@@ -147,7 +158,7 @@ class MotifApp {
 				dragging = true;
 
 				if(this.activeBrushstroke) {
-					this.activeBrushstroke.addPoint({x: this.sketch.mouseX, y: this.sketch.mouseY});
+					this.activeBrushstroke.addPoint({x: this.sketch.mouseX, y: this.sketch.flippedMouseY()});
 					if(this.activeBrushstroke.getMouseActionType() === 'drag') {
 						this.joyManager.updatePreviewData(this.activeBrushstroke.getPathAndPoint());
 					  // this.activeBrushstroke.renderPreview({}); //current canvas settings go here
@@ -171,7 +182,7 @@ class MotifApp {
 			mouseDownOverCanvas = false;
 
 			if(this.activeBrushstroke) {	
-				this.activeBrushstroke.addPoint({x: this.sketch.mouseX, y: this.sketch.mouseY});
+				this.activeBrushstroke.addPoint({x: this.sketch.mouseX, y: this.sketch.flippedMouseY()});
 				if(this.activeBrushstroke.getMouseActionType() === 'drag') {
 					let pathAndPoint = this.activeBrushstroke.getPathAndPoint();
 					this.joyManager.addCurrentAction(pathAndPoint);
@@ -186,21 +197,23 @@ class MotifApp {
 		this.joyManager.runWithDelay(200);
 	});
 
-    document.getElementById('clear-all-button').addEventListener("click", (e) => {
-				console.log("clear all");
-		});
+    // document.getElementById('clear-all-button').addEventListener("click", (e) => {
+		// 		console.log("clear all");
+		// });
 		
 		document.getElementById('download-button').addEventListener("click", (e) => {
 			this.sketch.save('my drawing.jpg');
 		});
 		
-		document.getElementById('shuffle-button').addEventListener("click", (e) => {
-				console.log("shuffle all");
-		});
+		// document.getElementById('shuffle-button').addEventListener("click", (e) => {
+		// 		console.log("shuffle all");
+		// });
 
 		document.getElementById('save-button').addEventListener("click", (e) => {
 			this.joyManager.saveURLToClipboard();
 	  });
+
+		window.addEventListener('resize', this.adjustAlignment);
 	}
 }
 

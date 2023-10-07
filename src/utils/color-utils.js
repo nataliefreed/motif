@@ -1,4 +1,6 @@
-export function rgbToHsl(rgb) {
+import tinycolor from 'tinycolor2';
+
+export function RGBToHSL(rgb) {
 	// const [r, g, b] = rgbStr.slice(4, -1).split(',').map(Number);
 	const [r, g, b] = Object.values(rgb);
 	const max = Math.max(r, g, b)
@@ -16,7 +18,7 @@ export function rgbToHsl(rgb) {
 }
 
 /* https://gist.github.com/mjackson/5311256 by kigiri*/
-export function rgbStrToHsl(rgbStr) {
+export function RGBStrToHSL(rgbStr) {
 	const [r, g, b] = rgbStr.slice(4, -1).split(',').map(Number)
 	const max = Math.max(r, g, b)
 	const min = Math.min(r, g, b)
@@ -33,7 +35,7 @@ export function rgbStrToHsl(rgbStr) {
 }
 
 /* https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb */
-export function hexToRgb(hex) {
+export function hexToRGB(hex) {
 	// Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
 	var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
 	hex = hex.replace(shorthandRegex, function(m, r, g, b) {
@@ -48,12 +50,24 @@ export function hexToRgb(hex) {
 	} : null;
 }
 
+export function _hexToRGB(hex) { // does this do the same thing as previous function?
+	let bigint = parseInt(hex.substring(1), 16);
+	let r = (bigint >> 16) & 255;
+	let g = (bigint >> 8) & 255;
+	let b = bigint & 255;
+	return [r, g, b];
+}
+
 export function HSVToRGBString(h,s,v) { //duplicate from Joy.js
   if(arguments.length===1) {
         s=h[1], v=h[2], h=h[0]; // cast to different vars
     }
   var rgb = HSVtoRGB(h,s,v);
   return "rgb("+rgb[0]+","+rgb[1]+","+rgb[2]+")";
+}
+
+export function RGBtoString(rgb) {
+	return "rgb("+rgb[0]+","+rgb[1]+","+rgb[2]+")";
 }
 
 export function HSVtoRGB(h,s,v) { //duplicate from Joy.js
@@ -78,10 +92,72 @@ export function HSVtoRGB(h,s,v) { //duplicate from Joy.js
 	return [Math.round(r*255), Math.round(g*255), Math.round(b*255)];
 }
 
-export function _hexToRGB(hex) {
-	let bigint = parseInt(hex.substring(1), 16);
-	let r = (bigint >> 16) & 255;
-	let g = (bigint >> 8) & 255;
-	let b = bigint & 255;
+export function RGBtoHSV(r, g, b) {
+	r /= 255, g /= 255, b /= 255;
+
+	let max = Math.max(r, g, b), min = Math.min(r, g, b);
+	let h, s, v = max;
+
+	let d = max - min;
+	s = max === 0 ? 0 : d / max;
+
+	if (max === min) {
+			h = 0; // achromatic
+	} else {
+			switch (max) {
+					case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+					case g: h = (b - r) / d + 2; break;
+					case b: h = (r - g) / d + 4; break;
+			}
+			h /= 6;
+	}
+
+	return [h * 360, s * 100, v * 100];
+}
+
+export function randomHexColor() {
+	const h = Math.random() * 360;
+	const s = randomBetween(80, 100);
+	// const s = 100;
+	// const l = randomBetween(45, 55);
+	const l = 60;
+	return tinycolor({h: h, s: s, l: l}).toHexString();
+}
+
+export function randomRGBColor() {
+	const h = Math.random() * 360;
+	const s = randomBetween(60, 100);
+	const l = 30;
+	return tinycolor({h: h, s: s, l: l}).toRgbString();
+}
+
+function HSLtoRGB(h, s, l) {
+	s /= 100;
+	l /= 100;
+
+	const a = s * Math.min(l, 1 - l);
+	const f = (n, k = (n + h / 30) % 12) => l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+
+	const r = Math.round(f(0) * 255);
+	const g = Math.round(f(8) * 255);
+	const b = Math.round(f(4) * 255);
+
 	return [r, g, b];
 }
+
+function randomBetween(min, max) {
+	return min + Math.random() * (max - min);
+}
+
+function HSLToHex(h, s, l) {
+	s /= 100;
+	l /= 100;
+	const a = s * Math.min(l, 1 - l);
+	const f = n => {
+			const k = (n + h / 30) % 12;
+			const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+			return Math.round(255 * color).toString(16).padStart(2, '0');
+	};
+	return `#${f(0)}${f(8)}${f(4)}`;
+}
+
