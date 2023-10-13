@@ -164,15 +164,27 @@ body {
   border: 2px dashed gray;
   /* background-color: #ffcbcb; */
   color: gray;
+  position: absolute;
+  top: 0;
+  right: 10px;
+  width: 50px;
+  height: 50px;
   align-content: center;
   justify-content: center;
-  min-height: 20px;
-  width: 100%;
   display: flex;
-  padding: 5px;
   align-items: center;
-  font-size: 50px;
+  font-size: 20pt;
   margin: 10px 0px 10px 30px;
+  /* background-image: <i class="fa-solid fa-trash-can"></i>; */
+}
+
+#trash > li {
+  list-style-type: none;
+}
+
+#trash.hovered {
+  background-color: #ffcbcb;
+  color: lightred;
 }
 
 .rings {

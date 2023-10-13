@@ -89,6 +89,10 @@ export class JoyManager {
 				this._updatePreview();
 				this.previousEffectType = this.effectType;
 				this.previewActionEnabled = false;
+				// TODO: figure out hover preview
+				// let mouseActionType = this.effects.getEffectByName(e.detail.effectType).getValue('mouseActionType');
+				// if(mouseActionType === 'drag-with-hover-preview') sketch.hoverPreview = true;
+				// else sketch.hoverPreview = false;
 			}
 		});
   }
@@ -105,9 +109,9 @@ export class JoyManager {
 	{
 		let data = {};
 		if(this._randomizeColorCheckbox.checked) {
-			data.color = { type: 'color', value: randomHexColor() }; //TODO: do this for all colors, regardless of id
-			data.color1 = { type: 'color', value: randomHexColor() };
-			data.color2 = { type: 'color', value: randomHexColor() };
+			data.color = { type: 'color', value: randomHexColor(0.9) }; //TODO: do this for all colors, regardless of id
+			data.color1 = { type: 'color', value: randomHexColor(0.9) };
+			data.color2 = { type: 'color', value: randomHexColor(0.9) };
 		}
 		if(this._randomizeNumberCheckbox.checked) {
 			// this.previewActionList.setChildDataByType('number', () => Math.floor(Math.random() * 100 + 10));
@@ -154,7 +158,7 @@ export class JoyManager {
 			this.addAction('motif', type, entryData);
 		}
 
-		this._updatePreview();
+		// this._updatePreview();
 	}
 
 	_getParentList(listName) {

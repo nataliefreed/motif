@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import { toDegrees, mapValue } from '../utils/utils.js';
 
 export class BrushstrokeManager {
   constructor() {
@@ -62,7 +63,7 @@ export class Brushstroke {
     return this.id;
   }
 
-  //construct object to pass to Joy
+  //construct object to pass to Joy - TODO: no longer needed?
   makeJoyEvent() {
     let data = {};
     data.id = this.id;
@@ -90,10 +91,35 @@ export class Brushstroke {
     let lastX = Math.round(this.path.getLastPoint().x);
     let lastY = Math.round(this.path.getLastPoint().y);
     data.position = { type: 'coordinate', value: [x, y] };
-    data.x = { type: 'number', value: x };
-    data.y = { type: 'number', value: y};
+    data.x = { type: 'numberslider', value: x };
+    data.y = { type: 'numberslider', value: y};
     data.firstPoint = { type: 'coordinate', value: [x, y] };
     data.lastPoint = { type: 'coordinate', value: [lastX, lastY] };
+    // data.angle = { type: 'numberslider', value: Math.round(toDegrees(Math.atan2(lastY - y, lastX - x))) }; //angle between first and last point
+
+    data.angle = { type: 'numberslider', value:  Math.round(mapValue(lastY, 0, 540, 0, 360)) }; // version of angle that maps along x axis
+    data.stripeWidth = { type: 'numberslider', value:  Math.round(mapValue(lastX, 0, 540, 5, 100)) };
+
+    let radius = Math.round(Math.sqrt(Math.pow(lastX - x, 2) + Math.pow(lastY - y, 2)));
+    if(radius > 0 || this.path.length() > 1) {
+      radius += 5;
+      data.radius = { type: 'number', value: radius };
+    }
+    let width = Math.round(Math.abs(lastX - x));
+    if(width > 0 || this.path.length() > 1) {
+      width += 5;
+      data.width = { type: 'numberslider', value: width*2 };
+      data.size = data.width;
+      data.r1 = { type:'numberslider', value: width };
+      data.r2 = { type:'numberslider', value: width*0.5 };
+    }
+    let height = Math.round(Math.abs(lastY - y));
+    if(height > 0 || this.path.length() > 1) {
+      data.height = { type: 'numberslider', value: height*2 + 5};
+      data.npoints = { type:'numberslider', value: Math.round(height/10+5) };
+      data.nsides = { type:'numberslider', value: Math.round(height/10+3) };
+    }
+
     return data;
   }
 
@@ -142,6 +168,10 @@ export class Path {
 		this.points = [];
 		this.addPoint(x, y);
 	}
+
+  length() {
+    return this.points.length;
+  }
 	
 	addPoint(x, y) {
 		this.points.push({ x: x, y: y });

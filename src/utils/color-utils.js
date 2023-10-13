@@ -115,20 +115,23 @@ export function RGBtoHSV(r, g, b) {
 	return [h * 360, s * 100, v * 100];
 }
 
-export function randomHexColor() {
+export function randomHexColor(alpha=1) {
 	const h = Math.random() * 360;
 	const s = randomBetween(80, 100);
 	// const s = 100;
 	// const l = randomBetween(45, 55);
 	const l = 60;
-	return tinycolor({h: h, s: s, l: l}).toHexString();
+	console.log("alpha", alpha);
+	let color = tinycolor({h: h, s: s, l: l, a: alpha});
+	console.log("random hex color", color.toHex8String());
+	return color.toHex8String();
 }
 
-export function randomRGBColor() {
+export function randomRGBColor(alpha=1) {
 	const h = Math.random() * 360;
 	const s = randomBetween(60, 100);
 	const l = 30;
-	return tinycolor({h: h, s: s, l: l}).toRgbString();
+	return tinycolor({h: h, s: s, l: l, a:alpha}).toRgbString();
 }
 
 function HSLtoRGB(h, s, l) {

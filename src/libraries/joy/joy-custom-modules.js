@@ -1403,6 +1403,8 @@ Joy.add({
         max: this.max,
         value: this.getData("value"),
         onchange: (value) => {
+          // if(value < min) value = min;
+          // if(value > max) value = max;
           this.dom.innerHTML = value;
           this.setData("value", value);
           //value.toFixed(this.sigfigs);
@@ -1417,7 +1419,7 @@ Joy.add({
         return 0.1;
     },
     updateValueFunc: (initial, delta) => {
-      console.log("initial is", initial, "delta is ", delta);
+      // console.log("initial is", initial, "delta is ", delta);
       if(initial == 0) return 1;
       else return initial + delta * initial;
     }
@@ -1449,22 +1451,22 @@ Joy.add({
     colorButton.addEventListener('click', () => {
       new Coloris({
         swatches: this.colorOptions || [
-          '#FF0000', // Red
-          '#FFA500', // Orange
-          '#FFD700', // Gold
-          '#808000', // Olive
-          '#008000', // Green
-          '#26A2E0', // Light blue
-          '#0000FF', // Blue
-          '#4B0082', // Indigo
-          '#800080', // Purple
-          '#EE82EE', // Violet
-          '#FFC0CB', // Pink
-          '#808080', // Gray
-          '#FFFFFF', // White
-          '#000000', // Black
-          '#5E2109', // Brown
-          '#D2B48C'  // Tan
+          '#FF0000ff', // Red
+          '#FFA500ff', // Orange
+          '#FFD700ff', // Gold
+          '#808000ff', // Olive
+          '#008000ff', // Green
+          '#26A2E0ff', // Light blue
+          '#0000FFff', // Blue
+          '#4B0082ff', // Indigo
+          '#800080ff', // Purple
+          '#EE82EEff', // Violet
+          '#FFC0CBff', // Pink
+          '#808080ff', // Gray
+          '#FFFFFFff', // White
+          '#000000ff', // Black
+          '#5E2109ff', // Brown
+          '#D2B48Cff'  // Tan
         ],
         theme: 'polaroid',
         formatToggle: this.formatToggle !== undefined ? this.formatToggle : true,

@@ -46,34 +46,42 @@ class MotifApp {
 		//List sorting
     // Sortable.mount(new MultiDrag());
 
+		let droppedInTrash = false;
+
 		let paintingActions = document.getElementById('paintingActionList-joy-list');
     new Sortable(paintingActions, {
+			revertOnSpill: true,
+			group: {
+				name: 'trash'
+			},
 	    animation: 150,
 	    ghostClass: 'sortable-ghost',
 			chosenClass: "sortable-chosen",
 			dragClass: "sortable-drag",
 			handle: '.joy-bullet-container',
 			filter: '.joy-add-item',
-			// removeOnSpill: true,
-			// revertOnSpill: true,
 			scroll: true,
 			// multiDrag: true,
 			// selectedClass: 'selected',
-			group: {
-				name: "shared"
-			},
 			onUpdate: (e) => {
 				this.joyManager.moveAction('motif', e.oldIndex, e.newIndex);
-				console.log("moved", e.item, e.oldIndex, e.newIndex);
+				// console.log("moved", e.item, e.oldIndex, e.newIndex);
 			},
 			onMove: (e) => {
+				// Check if the element is the trash
+				// if (e.to && e.to.id === 'trash') {
+				// 		trash.classList.add('hovered'); // Make the trash turn light red
+				// } else {
+				// 		trash.classList.remove('hovered'); // Remove the light red color when not hovering over the trash
+				// }
+
 				if(e.related.classList.contains('joy-add-item')) { //keep + at end of list
 					return false; 
 				} 
 			},
-			// onSpill: (e) => {
-			// 	console.log("spilled", e.item);
-			// },
+			onEnd: (e) => {
+				trash.classList.remove('hovered');
+			},
     });
 
 		let stencilActions = document.getElementById('stencilActionList-joy-list');
@@ -85,19 +93,63 @@ class MotifApp {
 			}
     });
 
+		let trash = document.getElementById('trash');
+		trash.addEventListener('dragenter', (e) => {
+			trash.classList.add('hovered');
+			debugger;
+		});
+		trash.addEventListener('dragover', (e) => {
+			trash.classList.add('hovered');
+			console.log(e);
+			e.preventDefault(); // Required to allow dropping
+			// if(document.querySelector('.sortable-chosen')) {
+				
+			// }
+			// else {
+			// 	trash.classList.remove('hovered');
+			// }
+		});
+
+		trash.addEventListener('drop', (e) => {
+			// Use the class to find the dragged item
+			const draggedItem = document.querySelector('.sortable-chosen');
+			
+			if (draggedItem) {
+				console.log("deleting", draggedItem);
+				// Handle deletion
+				// draggedItem.parentNode.removeChild(draggedItem);
+				// If your manager has a method to handle deletion, call it
+				// Assuming it uses the id of the parent and the index of the item
+				// this.joyManager.deleteAction(draggedItem.parentNode.id, Array.from(draggedItem.parentNode.children).indexOf(draggedItem));
+			}
+	  });
+	}
+		// Sortable.create(trash, {
+    // group: {
+		// 	name:'trash',
+		// },
+    // ghostClass: 'sortable-ghost-delete',
+    // chosenClass: 'sortable-chosen-delete',
+		// swapThreshold: 1,
+		// invertSwap: true,
+    // onAdd: (e) => {
+    //     var el = e.item;
+    //     el.parentNode.removeChild(el);
+    //     this.joyManager.deleteAction(e.from.id, e.oldIndex);
+    // }
+
 		// let trash = document.getElementById('trash');
 		// Sortable.create(trash, {
 		// 	group: 'shared',
 		// 	ghostClass: 'sortable-ghost-delete',
 		// 	chosenClass: 'sortable-chosen-delete',
 		// 	onAdd: (e) => {
-		// 		// var el = e.item;
-		// 		// el.parentNode.removeChild(el);
-		// 		console.log(e.oldIndex, 'dropped from', e.from.id);
+		// 		var el = e.item;
+		// 		el.parentNode.removeChild(el);
+		// 		// console.log(e.oldIndex, 'dropped from', e.from.id);
 		// 		this.joyManager.deleteAction(e.from.id, e.oldIndex);
 		// 	}
 		// });
-	}
 
   adjustAlignment() {
     const outerContainer = document.querySelector('.outer-container');

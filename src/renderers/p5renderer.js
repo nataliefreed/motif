@@ -15,6 +15,7 @@ export class P5Renderer {
       let strokeColor = 0;
       let strokeWeight = 5;
       let s, t, tt; //p is main sketch, s is static canvas, t is temporary for animations
+      this.hoverActive = false;
 
       p.getPreviewCanvas = () => {
         return t;
@@ -44,10 +45,12 @@ export class P5Renderer {
         t.clear();
       }
 
-      // p.mouseMoved = () => {
-      //   p.image(s, 0, 0);
-      //   p.circle(p.mouseX, p.mouseY, 10);
-      // }
+      p.mouseMoved = () => {
+        if(this.hoverActive) {
+          p.image(s, 0, 0);
+          p.circle(p.mouseX, p.mouseY, 10);
+        }
+      }
 
       p.render = () => {
         p.image(s, 0, 0);
@@ -87,17 +90,19 @@ export class P5Renderer {
       p5.prototype.addTriangle = function(params) {
         let x = params.x;
         let y = this.flipY(params.y);
-        let size = params.size;
+        let w = params.width;
+        let h = params.height;
+        this.push();
         this.fill(params.color);
         this.noStroke();
-        this.push();
+        console.log(x, y, w, h);
         this.triangle(
-          x + size / 2,
-          y + size / 2,
-          x - size / 2,
-          y + size / 2,
+          x + w / 2,
+          y + h / 2,
+          x - w / 2,
+          y + h / 2,
           x,
-          y - size / 2
+          y - h / 2
         );
         this.pop();
       };
@@ -109,7 +114,7 @@ export class P5Renderer {
         this.rectMode(this.CENTER);
         this.fill(params.color);
         this.noStroke();
-        this.rect(x, y, params.w, params.h);
+        this.rect(x, y, params.width, params.height);
         this.pop();
     };
       
@@ -117,6 +122,8 @@ export class P5Renderer {
         this.push();
         this.rectMode(this.CORNER);
         // console.log("the color", params.color);
+        let color = this.color(params.color);
+        color.setAlpha(this.map(params.angle, 0, 360, 0, 255));
         this.fill(params.color);
         this.noStroke();
         this.rect(0, 0, this.width, this.height);
@@ -165,29 +172,49 @@ export class P5Renderer {
       p5.prototype.gradient = function(params) {
         let pcolor1 = this.color(params.color1);
         let pcolor2 = this.color(params.color2);
+        let angle = -this.radians(params.angle);
+      
+        let len = Math.sqrt(this.width * this.width + this.height * this.height); // diagonal length
+      
+        this.push();
+        this.translate(this.width / 2, this.height / 2); // Move the origin to the center
+        this.rotate(angle); // Rotate around the new origin
         this.noFill();
         this.strokeWeight(1);
-        for(let i = 0; i < this.height; i++) {
-          this.stroke(this.lerpColor(pcolor1, pcolor2, i / this.height));
-          this.line(0, i, this.width, i);
+      
+        for (let i = -len / 2; i < len / 2; i++) {
+          let percentage = this.map(i, -len / 2, len / 2, 0, 1);
+          this.stroke(this.lerpColor(pcolor1, pcolor2, percentage));
+          this.line(-len / 2, i, len / 2, i); // Draw from left to right, with i as the y-coordinate
         }
+      
+        this.pop();
       };
       
       p5.prototype.stripes = function(params) {
-        let stripeWidth = params.stripeWidth;
-        this.push();
-        this.translate(0, stripeWidth / 2); //so that top stripe is fully shown
         let pcolor1 = this.color(params.color1);
         let pcolor2 = this.color(params.color2);
+        let stripeWidth = params.stripeWidth;
+        let angle = this.radians(params.angle);
+        let len = Math.sqrt(this.width * this.width + this.height * this.height); // diagonal length
+    
+        this.push();
+        this.translate(this.width / 2, this.height / 2); // Move origin to center
+        this.rotate(angle); // Rotate around the new origin
+    
         this.noFill();
         this.strokeWeight(stripeWidth);
-        for(let i = 0; i < this.height; i += stripeWidth) {
-          let c = this.lerpColor(pcolor1, pcolor2, i / (this.height - stripeWidth));
+    
+        for(let i = -len / 2; i < len / 2; i += stripeWidth * 2) { 
+          // i += stripeWidth * 2 because we're accounting for both the drawn stripe and the gap in between
+          let c = this.lerpColor(pcolor1, pcolor2, (i + len / 2) / len); // Adjust the mapping for color interpolation
           this.stroke(c);
-          this.line(0, i, this.width, i);
+          this.line(-len / 2, i, len / 2, i); 
+          // Drawing line from negative to positive x-axis, with i as the y-coordinate
         }
         this.pop();
-      };
+    };
+    
       
       p5.prototype.shift = function(params) {
         let lineHeight = params.height;
@@ -268,6 +295,7 @@ export class P5Renderer {
         let tiling = params.tiling;
         let x = params.x;
         let y = this.flipY(params.y);
+        let numRings = params.numRings || this.map(params.x, 0, this.width, 1, 10);
       
         let sx = x - w / 2;
         let sy = y - h / 2;
@@ -319,6 +347,24 @@ export class P5Renderer {
                   this.image(snapshot, dx, dy, w, h, 0, 0, w, h);
                 }
               }
+            }
+            break;
+          case 'radial':
+            let centerX = this.width / 2;
+            let centerY = this.height / 2;
+
+            for (let ring = 0; ring < numRings; ring++) {
+                // Calculate circumference for the current ring
+                let radius = (ring + 1) * h;
+                let circumference = 2 * Math.PI * radius;
+                let numTiles = Math.floor(circumference / w);
+
+                for (let i = 0; i < numTiles; i++) {
+                    let angle = (i / numTiles) * 2 * Math.PI;
+                    let dx = centerX + radius * Math.cos(angle) - w / 2;
+                    let dy = centerY + radius * Math.sin(angle) - h / 2;
+                    this.image(snapshot, dx, dy, w, h, 0, 0, w, h);
+                }
             }
             break;
           default:

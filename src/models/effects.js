@@ -9,7 +9,7 @@ export class EffectManager {
       if(type === 'single-click') {
         this.effects[e.name] = new PointEffect(e);
       }
-      else if(type === 'drag') { //testing heart brush
+      else if(type === 'drag' || type === 'drag-with-hover-preview') {
         this.effects[e.name] = new Effect(e);
       }
       else {
