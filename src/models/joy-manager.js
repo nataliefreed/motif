@@ -33,8 +33,8 @@ export class JoyManager {
 			init: "To create my design: "+
 				  "{id:'paintingActionList', type:'actions', modules:['motif', 'sequences']} "+ // a list of actions
 				//   "Fill with {id:'color', type:'color', placeholder:[0.3, 0.8, 1.0]}" +
-				"With stencils: "+
-				"{id: 'stencilActionList', type:'actions', modules:['stencils']} "+  
+				// "With stencils: "+
+				// "{id: 'stencilActionList', type:'actions', modules:['stencils']} "+  
 				"{type:'save'}", // a save button!
 			
 			// Load data from URL, otherwise blank:
@@ -52,11 +52,17 @@ export class JoyManager {
 				this.previewCanvas.clear(); //this order matters so we can clear temporary shapes, but not clear background things are being copied from
 				this.staticCanvas.background(255);
         my.paintingActionList.act(this.staticCanvas);
-        my.stencilActionList.act(this.staticCanvas);
+        // my.stencilActionList.act(this.staticCanvas);
 				sketch.background(255);
         sketch.render();
 			}
 		});
+
+		// Locate the top-level + button
+		let addItemElement = document.querySelector('#paintingActionList-joy-list > .joy-add-item');
+		if(addItemElement) {
+      addItemElement.id = 'painting-list-add-item';
+		}
 
 		this.joy.rootActor.update(); // if there's initial data
 
@@ -67,7 +73,7 @@ export class JoyManager {
 		let previewCanvas = this.previewCanvas;
 		// preview current action in menu bar
 		this.joyPreview = new Joy({
-			container: "#joy-preview",
+			container: "#painting-list-add-item",
 			init: "{id:'action', type:'singleAction'}",
 			modules: ['motif', 'sequences', 'stencils'],
 			onupdate: (my) => {
@@ -151,12 +157,12 @@ export class JoyManager {
 		// console.log("\t\t\tadding action", type, entryData);
 
 		const category = type.split('/')[0];
-		if(category === 'stencils') {
-			this.addAction('stencils', type, entryData);
-		}
-		else {
+		// if(category === 'stencils') {
+		// 	this.addAction('stencils', type, entryData);
+		// }
+		// else {
 			this.addAction('motif', type, entryData);
-		}
+		// }
 
 		// this._updatePreview();
 	}

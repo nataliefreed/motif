@@ -403,8 +403,8 @@ textarea.joy-textbox{
 /*********************/
 
 .joy-single-action {
-	margin-top: 0.5em;
-	margin-bottom: 0.5em;
+	/* margin-top: 0.5em;
+	margin-bottom: 0.5em; */
 	position: relative;
 	display: flex;
 	align-items: center;

@@ -424,7 +424,7 @@ export const effectList = [
       this.initializeDOM(parseResult);
     },
     cursor: './assets/cursors/star-solid.svg',
-    mouseActionType: 'drag',
+    mouseActionType: 'drag-path',
     onact: (my) => {
       // console.log(my.data);
       my.actor.alongpath.act(my.target);
@@ -457,7 +457,7 @@ export const effectList = [
       this.initializeDOM(parseResult);
     },
     cursor: './assets/cursors/star-solid.svg',
-    mouseActionType: 'drag',
+    mouseActionType: 'drag-path',
     onact: (my) => {
       my.actor.alongpath.act(my.target);
     }

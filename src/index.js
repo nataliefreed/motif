@@ -25,6 +25,7 @@ class MotifApp {
 		let rootStyles = getComputedStyle(document.documentElement);
 		let w = parseInt(rootStyles.getPropertyValue('--canvas-width').trim(), 10);
 		let h = parseInt(rootStyles.getPropertyValue('--canvas-height').trim(), 10);
+		console.log("width and height", w, h);
 		this.sketch = new P5Renderer(w, h);
 		this.joyManager = new JoyManager(this.effects.getEffects(), this.brushstrokes, this.sketch, this.eventBus);
 		
@@ -84,14 +85,14 @@ class MotifApp {
 			},
     });
 
-		let stencilActions = document.getElementById('stencilActionList-joy-list');
-		new Sortable(stencilActions, {
-	    animation: 150,
-	    ghostClass: 'sortable-ghost',
-			onUpdate: (e) => {
-				this.joyManager.moveAction('stencils', e.oldIndex, e.newIndex);
-			}
-    });
+		// let stencilActions = document.getElementById('stencilActionList-joy-list');
+		// new Sortable(stencilActions, {
+	  //   animation: 150,
+	  //   ghostClass: 'sortable-ghost',
+		// 	onUpdate: (e) => {
+		// 		this.joyManager.moveAction('stencils', e.oldIndex, e.newIndex);
+		// 	}
+    // });
 
 		let trash = document.getElementById('trash');
 		trash.addEventListener('dragenter', (e) => {
@@ -195,6 +196,11 @@ class MotifApp {
 							this.joyManager.previewActionEnabled = true;
 							this.sketch.loop(); //render preview of brushstroke
 						}
+						else if(mouseActionType === 'drag-path') {
+							this.joyManager.updatePreviewData(this.activeBrushstroke.getPath());
+							this.joyManager.previewActionEnabled = true;
+							this.sketch.loop(); //render preview of brushstroke
+						}
 					}
 			}
 
@@ -215,6 +221,11 @@ class MotifApp {
 						this.joyManager.updatePreviewData(this.activeBrushstroke.getPathAndPoint());
 					  // this.activeBrushstroke.renderPreview({}); //current canvas settings go here
 					}
+					else if(this.activeBrushstroke.getMouseActionType() === 'drag-path') {
+						this.joyManager.updatePreviewData(this.activeBrushstroke.getPath());
+					  // this.activeBrushstroke.renderPreview({}); //current canvas settings go here
+					}
+
 				}
 				else {
 					console.log("No active brushstroke found");
@@ -238,6 +249,10 @@ class MotifApp {
 				if(this.activeBrushstroke.getMouseActionType() === 'drag') {
 					let pathAndPoint = this.activeBrushstroke.getPathAndPoint();
 					this.joyManager.addCurrentAction(pathAndPoint);
+				}
+				else if(this.activeBrushstroke.getMouseActionType() === 'drag-path') {
+					let path = this.activeBrushstroke.getPath();
+					this.joyManager.addCurrentAction(path);
 				}
 				this.activeBrushstroke = null;
 				this.joyManager.previewActionEnabled = false;

@@ -749,6 +749,20 @@ Joy.add({
       let newWidget = newActor.createWidget();
       newWidget.className = "joy-action-widget";
       entryDOM.appendChild(newWidget);
+      
+
+      // Scroll to new entry and select it - this might need to be only if added in certain ways
+
+      entryDOM.scrollIntoView({
+        behavior: 'smooth', // smooth scrolling
+        block: 'center', // align the bottom of the new item with the bottom of the viewport
+        inline: 'nearest' // keep the horizontal alignment as it is
+      });
+      document.querySelectorAll(".joy-list-item").forEach(e => {
+        e.classList.remove('selected');
+      });
+      entryDOM.classList.add('selected');
+      
   
       // Storing data
       entry.dom = entryDOM;

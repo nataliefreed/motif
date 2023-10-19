@@ -3,9 +3,9 @@
 <html>
 <head>
 	<link rel="stylesheet" type="text/css" href="./src/libraries/joy/joy.css">
-	<!-- <link rel="stylesheet" type="text/css" href="./src/style.css"> -->
-	<link rel="stylesheet" type="text/css" href="./src/layout.css">
-	<link rel="stylesheet" type="text/css" href="./src/style.css">
+	<link rel="stylesheet" type="text/css" href="./src/css/layout.css">
+	<link rel="stylesheet" type="text/css" href="./src/css/style.css">
+	<link rel="stylesheet" type="text/css" href="./src/css/toolbar.css">
 	<script src="https://kit.fontawesome.com/7ce97ca89e.js" crossorigin="anonymous"></script>
 	<script src="./src/libraries/p5.js"></script>
 	<link rel="stylesheet" href="/src/libraries/coloris/coloris.css"/>
@@ -62,29 +62,27 @@
 			</div>
 			<div id="tool-palette">
 				<div id="category-tabs"></div>
-				<div id="tool-palette-surface">
-						<div id="effect-toolbar" class="neumorphic neumorphic--pressed"></div>
-						<div id="joy-preview"></div>
-						<div id="effect-settings">
-							<label class="form-control">
-								<input type="checkbox" id="randomize-color-checkbox" checked />randomize colors
-							</label>
-							<label class="form-control">
-								<input type="checkbox" id="randomize-number-checkbox" unchecked />randomize numbers
-							</label>
-							<!-- <button class="general-button" id="button-save-effect">
-								<i class="fa-solid fa-toolbox"></i>
-								<i class="fa-solid fa-box-archive"></i>
-								<i class="fa-solid fa-swatchbook"></i>
-								<i class="fa-solid fa-palette"></i>
-						</button> -->
-						</div>
-				</div>
+					<div id="effect-toolbar"></div>
 			</div>
 		</div>
 	</div>
 </body>
-	
 </html>
 
 <script type="module" src="./src/index.js"></script>
+
+<!-- put these back somewhere - checkboxes for effect settings such as randomize colors, save effect -->
+<div id="effect-settings">
+	<label class="form-control">
+		<input type="checkbox" id="randomize-color-checkbox" checked />randomize colors
+	</label>
+	<label class="form-control">
+		<input type="checkbox" id="randomize-number-checkbox" unchecked />randomize numbers
+	</label>
+	<button class="general-button" id="button-save-effect">
+		<i class="fa-solid fa-toolbox"></i>
+		<i class="fa-solid fa-box-archive"></i>
+		<i class="fa-solid fa-swatchbook"></i>
+		<i class="fa-solid fa-palette"></i>
+</button>
+</div>
