@@ -16,10 +16,14 @@
 		<div class="notebook">
 			<div class="cover">
 				<div class="left-page">
-					<div id="drawing-canvas">
-						<div class="canvas-corner"></div>
+					<div class="left-page-content">
+						<div id="tool-palette">
+							<div id="category-tabs"></div>
+								<div id="effect-toolbar"></div>
+						</div>
+							<div id="drawing-canvas"></div>
 					</div>
-				</div>
+			  </div>
 			</div>
 			<div class="rings"></div>
 			<div class="cover">
@@ -27,7 +31,7 @@
 					<!-- <ul id="trash"><li></li></ul> -->
 					<div id="trash"><i class="fa-solid fa-trash-can"></i></div>
 						<!-- <div id="joy-container"> -->
-						<div id="joy"></div>
+						<div id="joy-painting"></div>
 					<!-- </div> -->
 						<div id="general-buttons">
 							<!-- <button id="shuffle-button" class="light-button">shuffle</button> -->
@@ -39,10 +43,10 @@
 						</div>
 								
 				</div>
-					<!-- <div id="code-toolbar">
+					<div id="code-toolbar">
 						<button class="code-control-button" data-tooltip="Insert">
-						<i class="fa-regular fa-square-plus"></i>
-					</button>
+						  <i class="fa-regular fa-square-plus"></i>
+					  </button>
 						<button class="code-control-button" data-tooltip="Insert">
 							<i class="fa-solid fa-i-cursor"></i>
 						</button>
@@ -50,19 +54,16 @@
 							<i class="fa-solid fa-eye-dropper"></i>
 						</button>
 						<button class="code-control-button" data-tooltip="Shuffle/Reorder">
-								<i class="fas fa-random"></i>
+							<i class="fas fa-random"></i>
 						</button>
 						<button class="code-control-button" data-tooltip="Delete">
 							<i class="fas fa-trash-alt"></i>
-					</button>
+					  </button>
 						<button class="code-control-button" data-tooltip="Duplicate">
-								<i class="fas fa-copy"></i>
+							<i class="fas fa-copy"></i>
 						</button>
-				</div> -->
-			</div>
-			<div id="tool-palette">
-				<div id="category-tabs"></div>
-					<div id="effect-toolbar"></div>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -72,7 +73,7 @@
 <script type="module" src="./src/index.js"></script>
 
 <!-- put these back somewhere - checkboxes for effect settings such as randomize colors, save effect -->
-<div id="effect-settings">
+<div id="effect-settings" class="hidden">
 	<label class="form-control">
 		<input type="checkbox" id="randomize-color-checkbox" checked />randomize colors
 	</label>

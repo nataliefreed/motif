@@ -1,54 +1,3 @@
-.category-tab {
-    background-color: #e6e6e6;
-    padding: 7px 15px 5px 15px;
-    border-radius: 10px 10px 0px 0px;
-    border: 2px rgb(149, 149, 149);
-    border-style: solid solid hidden solid;
-    cursor: pointer;
-    margin: 2px 3px 0px 3px;
-    font-family: 'FuturaHandwritten';
-    font-size: 16px;
-    color: #454545;
-}
-  
-.category-tab:hover, .effect-button:hover, .general-button:hover {
-    background-color: #b3b3b3;
-}
-
-.category-tab.selected {
-    transform: translate(0px, -3px);
-    -webkit-transform: translate(0px, -3px);
-    margin-top: 0px;
-    margin-bottom: -3px;
-    background-color: #cacaca;
-    border: 2px gray;
-    border-style: solid solid hidden solid;
-    color: black;
-    z-index: 3;
-}
-
-.category-tab:active, .effect-button:active, .general-button:active {
-  transform: translate(0px, 5px);
-  -webkit-transform: translate(0px, 5px);
-  border-style: solid solid hidden solid;
-}
-
-#category-tabs > .category-tab.selected:first-child {
-    margin-left: 0px;
-  }
-  
-.effect-button {
-    background-color: white;
-    margin: 10px 5px 10px 5px;
-    padding: 20px;
-    border-radius: 25px;
-    box-shadow: 1px 2px 2px 0px gray;
-    border: 2px solid gray;
-    cursor: pointer;
-    font-family: 'FuturaHandwritten';
-    font-size: 14px;
-}
-
 .general-button {
     background-color: #d8d8d8;
     margin: 5px;
@@ -65,10 +14,6 @@
     background-color:#b4b4b4;
 }
 
-.effect-button.selected {
-    background-color: rgb(255, 205, 40);
-}
-
 .save-buttons {
     display: flex;
     margin-top: 20px;
@@ -81,7 +26,7 @@
 @font-face{ 
     font-family: 'FuturaHandwritten';
     font-style: normal;
-    src: url('./assets/FuturaHandwritten.ttf') format('truetype');
+    src: url('../assets/FuturaHandwritten.ttf') format('truetype');
 }
 
 select {
@@ -91,7 +36,7 @@ select {
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 .bottom-instructions {
@@ -424,15 +369,22 @@ input[type="number"].numberbox-for-slider:focus {
     box-shadow: 0 0 1px rgba(255, 255, 255, .5);
 }
 
-.joy-single-action {
-    /* opacity: 0.7;
-    text-decoration: */
-    font-style: italic;
-}
-
 .joy-widget {
     /* display: flex;? */
     /* vertical-align: top; */
+}
+
+
+.joy-single-action {
+    font-style: italic;
+}
+
+#painting-list-add-item > .joy-master {
+    display: inline-block;
+    margin: 0 0 0 0.5em;
+    padding: 0px;
+    opacity: 0.3;
+    font-style: italic;
 }
 
 .joy-list-item .joy-list-item:nth-child(odd) {
@@ -442,6 +394,17 @@ input[type="number"].numberbox-for-slider:focus {
 .joy-list-item .joy-list-item:nth-child(even) {
     /* border: 1px solid #e4e4e4;
     background-color: #f7f7f7; */
+}
+
+.joy-list-item.selected {
+    background-color:#fcfbc0;
+    /* font-weight: bold; */
+    transform: scale(1.2); /* Adjust the scaling factor as needed */
+    transform-origin: left center; /* Makes the element scale from the left edge */
+    z-index: 1; /* Optional: Ensure the enlarged element appears on top */
+    transition: transform 0.3s ease;
+    /* border: 2px solid lightgray; */
+    margin: 0.5em 0;
 }
 
 .path-widget-container {
@@ -467,51 +430,6 @@ input[type="number"].numberbox-for-slider:focus {
     /* align-self: center; */
     /* width: 1.5em; */
 	/* height: 1.5em; */
-}
-
-#drawing-canvas {
-    position: relative; /* Ensures pseudo-elements are positioned relative to this container */
-}
-
-#drawing-canvas::before,
-#drawing-canvas::after,
-#drawing-canvas .canvas-corner::before,
-#drawing-canvas .canvas-corner::after {
-    content: ""; /* Needed for pseudo-elements */
-    position: absolute;
-    width: 0;
-    height: 0;
-    border-style: solid;
-    z-index: 1; /* Place them above the canvas */
-}
-
-#drawing-canvas::before {
-    top: -10px; /* Adjust for how much you want it to overlap */
-    left: -10px;
-    border-width: 50px 50px 0 0;
-    border-color: rgba(0, 0, 0, 0.2) transparent transparent transparent; /* Upper-left corner triangle */
-    /* box-shadow: 1px 1px 2px 1px; */
-}
-
-#drawing-canvas::after {
-    top: -10px;
-    right: -10px;
-    border-width: 50px 0 0 50px;
-    border-color: rgba(0, 0, 0, 0.2) transparent transparent transparent; /* Upper-right corner triangle */
-}
-
-#drawing-canvas .canvas-corner::before {
-    bottom: -10px;
-    left: -10px;
-    border-width: 0 50px 50px 0;
-    border-color: transparent transparent rgba(0, 0, 0, 0.2) transparent; /* Lower-left corner triangle */
-}
-
-#drawing-canvas .canvas-corner::after {
-    bottom: -10px;
-    right: -10px;
-    border-width: 0 0 50px 50px;
-    border-color: transparent transparent rgba(0, 0, 0, 0.2) transparent; /* Lower-right corner triangle */
 }
 
 /* Checkbox styling from https://moderncss.dev/pure-css-custom-checkbox-style/ */

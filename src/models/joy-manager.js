@@ -27,7 +27,7 @@ export class JoyManager {
 
     this.joy = new Joy({
 			// Where the Joy editor goes:
-			container: "#joy",
+			container: "#joy-painting",
 		
 			// The words and widgets inside the editor:
 			init: "To create my design: "+
