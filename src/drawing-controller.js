@@ -1,3 +1,81 @@
+class MotifApp {
+  constructor() {
+    this.effectToolbar = new EffectToolbar();
+    this.actionList = new ActionList();
+    this.activeAction = new ActiveAction();
+    this.undoQueue = new this.undoQueue();
+    this.initEventListeners();
+  }
+}
+
+class Canvas {
+  // Canvas related methods and attributes
+  constructor() {
+      this.previewCanvas = new P5Canvas();
+      this.staticCanvas = new P5Canvas();
+  }
+
+  renderAction(action) {
+      // Logic to render action to the static canvas
+  }
+
+  previewAction(action) {
+      // Logic to render a preview of the action (e.g., on mouseover)
+  }
+
+  // ... more methods ...
+}
+
+class EffectToolbar {
+  // Methods related to tool selection, getting effects, etc.
+  
+  getEffectByName(toolName) {
+      // Returns the corresponding effect for a tool
+  }
+  
+  // ... more methods ...
+}
+
+class ActionList {
+  // Methods and attributes related to maintaining a list of actions
+
+  addAction(action) {
+      // Logic to add an action to the list
+  }
+  
+  // ... more methods ...
+}
+
+class ActiveAction {
+  // Methods and attributes related to the currently active action and its parameters
+
+  setEffect(effect) {
+      // Logic to set the current effect
+  }
+
+  createAction(position) {
+      // Logic to create an action based on the current effect and given position
+  }
+
+  // ... more methods ...
+}
+
+class UndoQueue {
+  // Methods and attributes related to undo functionality
+
+  pop() {
+      // Logic to retrieve the last action for undoing
+  }
+  
+  // ... more methods ...
+}
+
+// Instantiate the main app
+const app = new MotifApp();
+
+
+
+
 /*
 
 User picks a brush

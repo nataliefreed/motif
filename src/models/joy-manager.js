@@ -3,10 +3,9 @@ import '../libraries/joy/joy-standard-modules.js'; //add the modules, ie. import
 import '../libraries/joy/joy-custom-modules.js';
 import { _configure } from '../libraries/joy/joy-utils.js'
 import { randomHexColor } from '../utils/color-utils.js';
-// import { randomHexColor } from '../utils/color-utils.js';
 
 export class JoyManager {
-  constructor(effects, brushstrokes, sketch, eventBus) {
+  constructor(effects, sketch, eventBus) {
 		this.eventBus = eventBus;
 
     let data = Joy.loadFromURL();
@@ -14,8 +13,9 @@ export class JoyManager {
 
     this.loadEffects(effects);
 		this.sketch = sketch;
-		this.previewCanvas = sketch.getPreviewCanvas();
-    this.staticCanvas = sketch.getStaticCanvas();
+		console.log(this.sketch);
+		this.previewCanvas = this.sketch.getPreviewCanvas();
+    this.staticCanvas = this.sketch.getStaticCanvas();
 
 		this.previewActionEnabled = false; //run the preview action?
 
@@ -103,6 +103,14 @@ export class JoyManager {
 		});
   }
 
+	getMainList() {
+		return this.joy.rootActor.paintingActionList;
+	}
+
+	getStagedAction() {
+		return this.joyPreview.rootActor.action;
+	}
+
   async runWithDelay(millis) {
 		this.sketch.background(255);
 		let options = { delay: millis };
@@ -110,7 +118,7 @@ export class JoyManager {
 		this.joy.rootActor.stencilActionList.act(this.sketch, null, options);
 	}
 
-	// update preview value
+	// update preview (active action) value
 	_updatePreview(saveCurrentSettings=false) 
 	{
 		let data = {};

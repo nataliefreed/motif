@@ -3,6 +3,9 @@ export class UIManager {
       this.effects = effects;
       this.categories = [...new Set(Object.values(effects).map(a => a.category))];
       this.eventBus = eventBus;
+      this.generateEffectToolbarUI(); //categories and brush/effect buttons
+      this.addNotebookRings(17);
+      this.adjustAlignment();
   }
 
   generateEffectToolbarUI() {
@@ -135,6 +138,15 @@ export class UIManager {
 
         ringDiv.append(leftCircle, line, rightCircle);
         ringsElement.appendChild(ringDiv);
+    }
+  }
+
+  adjustAlignment() {
+    const outerContainer = document.querySelector('.outer-container');
+    if (window.innerWidth > 1482) {
+        outerContainer.style.alignItems = 'center';
+    } else {
+        outerContainer.style.alignItems = 'flex-start';
     }
   }
 }
