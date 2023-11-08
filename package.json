@@ -1,22 +1,51 @@
 {
-    "name": "MOTIF-Joy",
-    "version": "1.0.0",
-    "description": "motif drawing tool with Joy.js",
-    "scripts": {
-        "start": "snowpack dev",
-        "build": "snowpack build"
-    },
-    "author": "Natalie Freed",
-    "dependencies": {
-        "@types/react-dom": "^18.2.7",
-        "jest": "^28.1.3",
-        "p5": "^1.4.2",
-        "sortablejs": "^1.15.0",
-        "tinycolor2": "^1.6.0",
-        "tippy.js": "^6.3.7",
-        "uuid": "^9.0.0"
-    },
-    "devDependencies": {
-        "snowpack": "^3.7.1"
-    }
+	"name": "motif-svelte",
+	"version": "0.0.1",
+	"private": true,
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview",
+		"test": "npm run test:integration && npm run test:unit",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"lint": "prettier --plugin-search-dir . --check . && eslint .",
+		"format": "prettier --plugin-search-dir . --write .",
+		"test:integration": "playwright test",
+		"test:unit": "vitest"
+	},
+	"devDependencies": {
+		"@jhubbardsf/svelte-sortablejs": "^1.1.0",
+		"@playwright/test": "^1.28.1",
+		"@sveltejs/adapter-auto": "^2.0.0",
+		"@sveltejs/kit": "^1.20.4",
+		"@types/p5": "^1.7.1",
+		"@types/sortablejs": "^1.15.4",
+		"@types/tinycolor2": "^1.4.5",
+		"@types/uuid": "^9.0.6",
+		"@typescript-eslint/eslint-plugin": "^6.0.0",
+		"@typescript-eslint/parser": "^6.0.0",
+		"eslint": "^8.28.0",
+		"eslint-config-prettier": "^8.5.0",
+		"eslint-plugin-svelte": "^2.30.0",
+		"prettier": "^2.8.0",
+		"prettier-plugin-svelte": "^2.10.1",
+		"svelte": "^4.0.5",
+		"svelte-check": "^3.4.3",
+		"tslib": "^2.4.1",
+		"typescript": "^5.0.0",
+		"vite": "^4.4.2",
+		"vitest": "^0.32.2"
+	},
+	"type": "module",
+	"dependencies": {
+		"@amandaghassaei/vector-math": "^1.0.16",
+		"@melloware/coloris": "^0.22.0",
+		"lodash": "^4.17.21",
+		"p5-svelte": "^3.1.2",
+		"sortablejs": "^1.15.0",
+		"tinycolor2": "^1.6.0",
+		"tippy.js": "^6.3.7",
+		"uuid": "^9.0.1"
+	}
 }

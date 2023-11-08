@@ -1,0 +1,61 @@
+:root {
+  --page-width: 40vw;
+  --page-height: 85vh;
+  --cover-margin: calc(var(--page-width) * 0.01);
+  --cover-gap: calc(var(--page-width) * 0.005);
+  --page-inset: calc(var(--page-width) * 0.015);
+  --ring-width: calc(var(--page-width) * 0.1);
+
+  --notebook-max-width: 1440px;
+  --notebook-max-height: 85vh;
+  --max-page-width: calc(var(--notebook-max-width)/2 - 2*var(--cover-margin) - 2*var(--page-inset));
+  --max-page-height: calc(var(--notebook-max-height) - 2*var(--cover-margin));
+  
+  --adjusted-page-width: min(var(--page-width), var(--max-page-width));
+  --adjusted-page-height: min(var(--page-height), var(--max-page-height));
+
+  --base-font-size: 15px;
+  --line-height-multiplier: 1.7;
+  --line-thickness: 1px;
+  --lined-paper-line-height: calc(var(--base-font-size) * var(--line-height-multiplier));
+  --lined-paper-line-height-blank: calc(var(--lined-paper-line-height) - var(--line-thickness));
+}
+
+ /* body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-color: #f7f8f9;
+        font-family: 'Courier New', Courier, monospace;
+    } */
+
+    /* * {
+        border: 1px solid red; 
+    } */
+
+    html, body {
+      height: 100%; /* Ensure full viewport height */
+      margin: 0;    /* Remove default margins */
+      overflow: hidden; /* Prevent scrolling at the body and html level */
+      font-size: var(--base-font-size);
+      line-height: calc(var(--line-height-multiplier) * 1em);
+      font-family: 'FuturaHandwritten';
+      font-weight: 100;
+      background-color: #e9e9e9;
+    }
+  
+    body {
+      display: flex;
+      justify-content: center; /* Horizontally center the child content/containers */
+      align-items: center;
+      height: 100vh;
+    }
+  
+    @font-face{ 
+        font-family: 'FuturaHandwritten';
+        font-style: normal;
+        src: url('./assets/FuturaHandwritten.ttf') format('truetype');
+    }
