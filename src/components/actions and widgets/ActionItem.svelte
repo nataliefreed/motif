@@ -14,7 +14,7 @@
 
   export let action: Action | null;
   export let depth = 0;
-  let isOpen = false;
+  export let isOpen = false;
 
 onMount(() => {
     if(action && action.category === 'top-level-list') {
@@ -52,7 +52,7 @@ onMount(() => {
                 <ActionList children={action.children} depth={depth} on:reorder />
             {/if}
         {:else if action.type === 'list' && action.params && Array.isArray(action.params.children) && action.params.children.length > 0}
-            {action.dropdownName} along <PathWidget points={action.params.path} on:valueChange={handleUpdate}/>
+            {action.dropdownName} along<PathWidget points={action.params.path} on:valueChange={handleUpdate}/>
             <!-- svelte-ignore a11y-click-events-have-key-events -->
             <span class="toggle-arrow" on:click={toggle}> {isOpen ? '▼' : '▶'}</span>
             {#if isOpen}

@@ -137,4 +137,14 @@ export function addEffectAsStagedAction(effect: Effect, params: { [key: string]:
   }
 }
 
+export function copySelectedActionToStagedAction() {
+  let actions = get(actionStore);
+  if(actions && actions.children) {
+    let action = actions.children.find(action => action.uuid === get(selectedActionID));
+    if(action) {
+      stagedAction.set(action);
+    }
+  }
+}
+
 // on:effectclicked={e => addEffectToActionsStore(e.detail)

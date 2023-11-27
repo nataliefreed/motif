@@ -33,5 +33,6 @@
   .path-widget {
     display: inline-block;
     vertical-align: top;
+    margin: 0 0.5em;
   }
 </style>

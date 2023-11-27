@@ -6,7 +6,7 @@
 	import type { Action } from '../types/types';
   import Canvas from './canvas/Canvas.svelte';
   import StagedAction from './actions and widgets/StagedAction.svelte';
-  import { saveMyTool, saveToHistory } from './action-utils';
+  import { saveMyTool, saveToHistory, copySelectedActionToStagedAction } from './action-utils';
   import EffectToolbar from './toolbars/EffectToolbar.svelte';
   import Notebook from './Notebook.svelte';
   import Page from './Page.svelte';
@@ -17,6 +17,7 @@
   import Tooltip from './Tooltip.svelte';
   import CategoryToolbar from './toolbars/CategoryToolbar.svelte';
   import { p5CanvasSize } from '../stores/canvasStore';
+  import tinycolor from "tinycolor2";
 
 
   const [send, receive] = crossfade({}); // TODO
@@ -40,12 +41,52 @@
     }
   }
 
+  let downloadCanvas: Function;
   function handleDownload() {
-    
+    downloadCanvas();
   }
 
   function undo() {
     historyStore.undo();
+  }
+
+  function eyedropperSelectedAction() {
+    copySelectedActionToStagedAction();
+  }
+
+  function randomizeAction() {
+    if ($stagedAction) {
+      $stagedAction.params = {
+        ...$stagedAction.params,
+        radius: Math.round(Math.random() * 250 + 5),
+        r1: Math.round(Math.random() * 250 + 5),
+        r2: Math.round(Math.random() * 250 + 5),
+        npoints: Math.round(Math.random() * 10 + 3),
+        nsides: Math.round(Math.random() * 10 + 3),
+        width: Math.round(Math.random() * 500 + 5),
+        height: Math.round(Math.random() * 500 + 5),
+        scaleBy: Math.round(Math.random() * 400 + 1),
+        size: Math.round(Math.random() * 500 + 5),
+        offset: Math.round(Math.random() * 100 + 5),
+        rotation: Math.round(Math.random() * 360),
+        color: tinycolor.random().toHexString(),
+      };
+      $stagedAction.params.children.forEach((child) => {
+        child.params = {
+          ...child.params,
+          radius: Math.round(Math.random() * 10 + 1),
+          r1: Math.round(Math.random() * 30 + 1),
+          r2: Math.round(Math.random() * 20 + 1),
+          npoints: Math.round(Math.random() * 10 + 1),
+          nsides: Math.round(Math.random() * 10 + 1),
+          width: Math.round(Math.random() * 20 + 1),
+          height: Math.round(Math.random() * 20 + 1),
+          scaleBy: Math.round(Math.random() * 400 + 1),
+          size: Math.round(Math.random() * 20 + 5),
+          color: tinycolor.random().toHexString(),
+        };
+      });
+    }
   }
 
   function clearAll() {
@@ -147,29 +188,27 @@
     <div class="drawing-grid-container">
 
       <!-- First Row -->
-      <div class="drawing-area"><Canvas downloadCallback={handleDownload} /></div> <!-- First column, first row -->
-      
+      <div class="drawing-area"><Canvas bind:downloadCanvas /></div>
+      <div></div>
   
-      <!-- Second Row -->
       <div class="category-toolbar"><CategoryToolbar categories={allCategories} /></div>
+      <div></div>
       <div class="drawing-effect-toolbar"><EffectToolbar /></div>
+      <div></div>
       <!-- <button class="icon-button">😮</button> -->
       
 
       <!-- Third Row -->
       <div class="staged-action-container">
         {#if $stagedAction}
-          <div class="staged-action" in:fade={{ duration: 300 }} out:fade={{ duration: 300 }}><ActionItem action={$stagedAction} /></div>
+          <div class="staged-action" in:fade={{ duration: 300 }} out:fade={{ duration: 300 }}><ActionItem action={$stagedAction} isOpen={true} /></div>
         {/if}
-        <div class="staged-action-buttons">
-          <button class="icon-button"><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M190.5 68.8L225.3 128H224 152c-22.1 0-40-17.9-40-40s17.9-40 40-40h2.2c14.9 0 28.8 7.9 36.3 20.8zM64 88c0 14.4 3.5 28 9.6 40H32c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32H480c17.7 0 32-14.3 32-32V160c0-17.7-14.3-32-32-32H438.4c6.1-12 9.6-25.6 9.6-40c0-48.6-39.4-88-88-88h-2.2c-31.9 0-61.5 16.9-77.7 44.4L256 85.5l-24.1-41C215.7 16.9 186.1 0 154.2 0H152C103.4 0 64 39.4 64 88zm336 0c0 22.1-17.9 40-40 40H288h-1.3l34.8-59.2C329.1 55.9 342.9 48 357.8 48H360c22.1 0 40 17.9 40 40zM32 288V464c0 26.5 21.5 48 48 48H224V288H32zM288 512H432c26.5 0 48-21.5 48-48V288H288V512z"/></svg></button>
-          <button class="icon-button"><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M341.6 29.2L240.1 130.8l-9.4-9.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-9.4-9.4L482.8 170.4c39-39 39-102.2 0-141.1s-102.2-39-141.1 0zM55.4 323.3c-15 15-23.4 35.4-23.4 56.6v42.4L5.4 462.2c-8.5 12.7-6.8 29.6 4 40.4s27.7 12.5 40.4 4L89.7 480h42.4c21.2 0 41.6-8.4 56.6-23.4L309.4 335.9l-45.3-45.3L143.4 411.3c-3 3-7.1 4.7-11.3 4.7H96V379.9c0-4.2 1.7-8.3 4.7-11.3L221.4 247.9l-45.3-45.3L55.4 323.3z"/></svg></button>
-          <button class="icon-button" id="saveToMyTools"on:click={() => saveMyTool($stagedAction) }><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 384 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M0 48C0 21.5 21.5 0 48 0l0 48V441.4l130.1-92.9c8.3-6 19.6-6 27.9 0L336 441.4V48H48V0H336c26.5 0 48 21.5 48 48V488c0 9-5 17.2-13 21.3s-17.6 3.4-24.9-1.8L192 397.5 37.9 507.5c-7.3 5.2-16.9 5.9-24.9 1.8S0 497 0 488V48z"/></svg></button>
-        </div>  
       </div>
-      
-    
-
+        <div class="staged-action-buttons">
+          <button class="icon-button" id="surpriseMeButton" on:click={randomizeAction}><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M190.5 68.8L225.3 128H224 152c-22.1 0-40-17.9-40-40s17.9-40 40-40h2.2c14.9 0 28.8 7.9 36.3 20.8zM64 88c0 14.4 3.5 28 9.6 40H32c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32H480c17.7 0 32-14.3 32-32V160c0-17.7-14.3-32-32-32H438.4c6.1-12 9.6-25.6 9.6-40c0-48.6-39.4-88-88-88h-2.2c-31.9 0-61.5 16.9-77.7 44.4L256 85.5l-24.1-41C215.7 16.9 186.1 0 154.2 0H152C103.4 0 64 39.4 64 88zm336 0c0 22.1-17.9 40-40 40H288h-1.3l34.8-59.2C329.1 55.9 342.9 48 357.8 48H360c22.1 0 40 17.9 40 40zM32 288V464c0 26.5 21.5 48 48 48H224V288H32zM288 512H432c26.5 0 48-21.5 48-48V288H288V512z"/></svg></button>
+          <button class="icon-button" id="eyedropperButton" on:click={eyedropperSelectedAction}><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M341.6 29.2L240.1 130.8l-9.4-9.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-9.4-9.4L482.8 170.4c39-39 39-102.2 0-141.1s-102.2-39-141.1 0zM55.4 323.3c-15 15-23.4 35.4-23.4 56.6v42.4L5.4 462.2c-8.5 12.7-6.8 29.6 4 40.4s27.7 12.5 40.4 4L89.7 480h42.4c21.2 0 41.6-8.4 56.6-23.4L309.4 335.9l-45.3-45.3L143.4 411.3c-3 3-7.1 4.7-11.3 4.7H96V379.9c0-4.2 1.7-8.3 4.7-11.3L221.4 247.9l-45.3-45.3L55.4 323.3z"/></svg></button>
+          <button class="icon-button" id="saveToMyTools" on:click={() => saveMyTool($stagedAction) }><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 384 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M0 48C0 21.5 21.5 0 48 0l0 48V441.4l130.1-92.9c8.3-6 19.6-6 27.9 0L336 441.4V48H48V0H336c26.5 0 48 21.5 48 48V488c0 9-5 17.2-13 21.3s-17.6 3.4-24.9-1.8L192 397.5 37.9 507.5c-7.3 5.2-16.9 5.9-24.9 1.8S0 497 0 488V48z"/></svg></button>
+        </div>  
     </div>
     
     
@@ -241,7 +280,7 @@
   .drawing-grid-container {
     display: grid;
     /* grid-template-columns: 1fr 40px; */
-    grid-template-columns: 501px;
+    grid-template-columns: 501px 30px;
     /* grid-template-rows: 3fr auto 1fr 40px; */
     grid-template-rows: 501px auto 37px 1fr;
     margin: 50px 20px auto 20px;
@@ -266,8 +305,9 @@
   .staged-action-container {
     border: 1px solid black;
     display: grid;
-    grid-template-columns: 1fr 30px;
+    grid-template-columns: auto;
     grid-template-rows: 150px;
+    
   }
 
   .staged-action-buttons {
@@ -282,12 +322,13 @@
   }
 
   .staged-action {
-    font-style: italic;
+    /* font-style: italic; */
     display: flex;
     justify-content: flex-start;
     align-items: center;
     padding: 0 20px;
     border: none;
+    overflow: scroll;
     /* margin-left: 2em; */
     /* width: calc(var(--canvas-width)*0.8); */
     /* padding: 30px;

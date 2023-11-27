@@ -8,7 +8,11 @@
   import tinycolor from "tinycolor2";
   import { getAntPath } from '../../utils/utils.ts';
 
-  export let downloadCallback;
+  export const downloadCanvas = () =>{
+    if(p5) {
+      p5.save('my design.jpg');
+    }
+  }
 	
   let x = 55;
 	let y = 55;
@@ -32,11 +36,7 @@
     canvasContainer.style.transform = `scale(${scaleFactor})`;
   }
 
-  function download() {
-    if(p5) {
-      p5.save('my drawing.jpg');
-    }
-  }
+
 
   onMount(() => {
     setScaleFactor();
