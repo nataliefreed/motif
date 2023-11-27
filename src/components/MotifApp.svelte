@@ -145,15 +145,15 @@
       allCategories = [...new Set(data.map(tool => tool.category))];
     });
 
-    actionStore.subscribe(action => {
-      console.log("actionStore:", $actionStore);
-    });
+    // actionStore.subscribe(action => {
+    //   console.log("actionStore:", $actionStore);
+    // });
   
   });
 
   // reorder action store to match DOM order
   function onReorder(event:any) {
-    console.log("actionStore:", {$actionStore});
+    // console.log("actionStore:", {$actionStore});
     const { oldIndex, newIndex } = event.detail;
     if (oldIndex === newIndex) return;
 
@@ -163,6 +163,14 @@
       currentData.children.splice(newIndex, 0, movedItem);
       return currentData;
     });
+    // actionStore.update(currentData => { //new array
+    //   if (!currentData.children) return currentData;
+    //   const newArr = [...currentData.children];
+    //   const [movedItem] = newArr.splice(oldIndex, 1);
+    //   newArr.splice(newIndex, 0, movedItem);
+    //   console.log("action store updated");
+    //   return { ...currentData, children: newArr };
+    // });
   }
 
   let count = 1;
@@ -210,6 +218,8 @@
           <button class="icon-button" id="saveToMyTools" on:click={() => saveMyTool($stagedAction) }><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 384 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M0 48C0 21.5 21.5 0 48 0l0 48V441.4l130.1-92.9c8.3-6 19.6-6 27.9 0L336 441.4V48H48V0H336c26.5 0 48 21.5 48 48V488c0 9-5 17.2-13 21.3s-17.6 3.4-24.9-1.8L192 397.5 37.9 507.5c-7.3 5.2-16.9 5.9-24.9 1.8S0 497 0 488V48z"/></svg></button>
         </div>  
     </div>
+
+    <CodeToolbar />
     
     
     <!-- <div class="drawing-area">
@@ -244,6 +254,7 @@
           <div class="stagedAction"><ActionItem action={$stagedAction} /></div>
         {/if} -->
       </LinedPaper>
+
       
     <!-- debugging <History /> -->
 

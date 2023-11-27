@@ -2,7 +2,7 @@
   import tippy from 'tippy.js';
   import 'tippy.js/dist/tippy.css'; 
   import 'tippy.js/themes/light-border.css';
-  import { onMount, beforeUpdate } from 'svelte';
+  import { onMount, onDestroy, beforeUpdate } from 'svelte';
   import { createEventDispatcher } from 'svelte';
   import { selectedCodeEffect } from '../../stores/dataStore';
 
@@ -24,8 +24,12 @@
     value = max;
   }
 
-  onMount(() => {
-    // Initialize the Tippy instance with the actual DOM element
+  $: if(numberWidget) {
+    reloadTippy();
+  }
+
+  function reloadTippy() {
+    if(tippyInstance) tippyInstance.destroy();
     tippyInstance = tippy(numberWidget, {
       content: sliderContainer,
       theme: 'light-border',
@@ -43,6 +47,17 @@
         sliderContainer.style.display = 'none';
       }
     });
+  }
+
+  onMount(() => {
+    // console.log("mounting number widget");
+    // Initialize the Tippy instance with the actual DOM element
+    reloadTippy();
+  });
+
+  onDestroy(() => {
+    // console.log("unmounting number widget");
+    if(tippyInstance) tippyInstance.destroy();
   });
 
   function updateValue(event: Event) {
