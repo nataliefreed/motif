@@ -289,6 +289,7 @@
 
   .drawing-area {
     overflow: hidden;
+    border: 1px solid black;
   }
 
   /* .code-area {
