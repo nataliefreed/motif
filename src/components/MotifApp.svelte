@@ -219,7 +219,7 @@
         </div>  
     </div>
 
-    <CodeToolbar />
+    <!-- <CodeToolbar /> -->
     
     
     <!-- <div class="drawing-area">

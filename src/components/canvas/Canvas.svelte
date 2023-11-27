@@ -269,6 +269,15 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
           let radius = Math.round(Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2))) + 1;
           updateStagedAction({ radius: radius });
         }
+        if($stagedAction.params.r1) {
+          let radius = Math.round(Math.abs(y - startY)) + 1;
+          let r2 = Math.round(radius/2);
+          updateStagedAction({ r1: radius, r2: r2 });
+        }
+        if($stagedAction.params.npoints) {
+          let npoints = Math.round(Math.abs(x - startX)) + 1;
+          updateStagedAction({ npoints: npoints });
+        }
         if($stagedAction.params.size) {
           let radius = Math.round(Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2))) + 1;
           updateStagedAction({ size: radius*2 });

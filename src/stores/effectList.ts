@@ -8,7 +8,7 @@ export const effectList = [
     category: 'backgrounds',
     tag: 'motif',
     cursor: './assets/cursors/fill-drip-solid.svg',
-    thumbnail: 'solid-fill.jpg',
+    thumbnail: 'solid_fill.jpg',
     mouseActionType: 'drag',
     params: {
       color: '#bbaa00'
@@ -76,7 +76,7 @@ export const effectList = [
     category: 'shapes',
     tag: 'motif',
     cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'polygon.jpg',
+    thumbnail: 'polygon.jpeg',
     mouseActionType: 'drag',
     params: {
       nsides: 6,
@@ -121,7 +121,7 @@ export const effectList = [
     category: 'shapes',
     tag: 'motif',
     cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'rectangle.jpg',
+    thumbnail: 'rectangle.jpeg',
     mouseActionType: 'drag',
     params: {
       width: 50,  
@@ -136,7 +136,7 @@ export const effectList = [
     category: 'shapes',
     tag: 'motif',
     cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'triangle.jpg',
+    thumbnail: 'triangle.jpeg',
     mouseActionType: 'drag',
     params: {
       width: 40,
@@ -414,7 +414,7 @@ export const effectList = [
     category: 'brushes',
     tag: 'motif',
     cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'star_brush.jpeg',
+    thumbnail: 'star_brush.png',
     mouseActionType: 'drag-path',
     params: {
       path: [],
