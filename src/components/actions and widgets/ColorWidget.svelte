@@ -81,6 +81,7 @@
   bind:this={hiddenColorInput}
   class="hidden-color-picker"
   on:input={handleColorChange}
+  value={value}
 />
 
 
@@ -99,7 +100,13 @@
   }
 
   .hidden-color-picker {
-    display: none;
+    width: 1px;
+    height: 1px;
+    margin-left: -1em;
+    margin-right: 0.5em;
+    border: none;
+    color: transparent;
+    background-color: transparent;
   }
 </style>
 
