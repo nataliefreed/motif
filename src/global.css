@@ -63,7 +63,7 @@
     @font-face{ 
         font-family: 'FuturaHandwritten';
         font-style: normal;
-        src: url('./assets/FuturaHandwritten.ttf') format('truetype');
+        src: url('/assets/FuturaHandwritten.ttf') format('truetype');
     }
 
     /* Range slider styling - thank you https://range-input-css.netlify.app/ */

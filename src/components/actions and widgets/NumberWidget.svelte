@@ -35,6 +35,7 @@
       placement: 'bottom',
       trigger: 'click',
       hideOnClick: true,
+      appendTo: document.body,
       onMount(instance) {
         sliderContainer.style.display = 'block';
     },

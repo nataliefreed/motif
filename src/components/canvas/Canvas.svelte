@@ -4,7 +4,7 @@
   import { actionStore, stagedAction, activeCategory, selectedEffect } from '../../stores/dataStore';
   import { renderers } from './Renderer.js';
   import { onMount, onDestroy } from 'svelte';
-  import { debounce } from 'lodash';
+  // import debounce from 'lodash';
   import tinycolor from "tinycolor2";
   import { getAntPath } from '../../utils/utils.ts';
 	
@@ -62,6 +62,10 @@
   const debouncedStagedActionUpdate = debounce(updateStagedAction, 10);
 
   const debouncedRenderAll = debounce(renderAll, 10);
+
+  function debounce(f) {
+    return f;
+  }
 
   export function getThumbnail(g, action, w, h) {
   // Use the appropriate renderer to draw the action onto the buffer
