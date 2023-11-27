@@ -202,6 +202,8 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     hoverCanvas = p5.getHoverCanvas();
     thumbnailCanvas = p5.getThumbnailCanvas();
 
+    console.log("canvases:", staticCanvas, dragCanvas, hoverCanvas, thumbnailCanvas)
+
     renderAll($actionStore); // render on start
     console.log("p5 instance created");
 	}
@@ -425,10 +427,10 @@ function handleMouseLeave(event) {
     /* top: calc(var(--lined-paper-line-height)*2); */
     /* overflow: hidden; */
     /* width: calc(var(--adjusted-page-width)*0.85); */
-    max-width: 500px;
-    max-height: 500px;
+    max-width: 501px;
+    max-height: 501px;
     border: 1px solid black;
-    box-shadow: 1px 1px 2px 2px gray;
+    /* box-shadow: 1px 1px 2px 2px gray; */
     cursor: url('/assets/cursors/paintbrush-solid.svg') 0 28, pointer;
   }
 
