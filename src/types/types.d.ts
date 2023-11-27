@@ -8,8 +8,10 @@ export interface Action {
   value?: string | number | Action[];
   children?: Action[];
   effect?: string;
+  dropdownName?: string;
   params?: { [key: string]: any };
   value?: string | number | Action[];
+  thumbnail?: string;
   children?: Action[];
 }
 

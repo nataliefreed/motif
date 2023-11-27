@@ -1,36 +1,81 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { actionStore, toolStore, selectedEffect, activeCategory, stagedAction } from '../stores/dataStore';
+  import { onMount, tick } from 'svelte';
+  import { actionStore, toolStore, selectedEffect, activeCategory, stagedAction, selectedActionID } from '../stores/dataStore';
   import LinedPaper from './LinedPaper.svelte';
   import ActionItem from './actions and widgets/ActionItem.svelte';
 	import type { Action } from '../types/types';
   import Canvas from './canvas/Canvas.svelte';
   import StagedAction from './actions and widgets/StagedAction.svelte';
-  import { addEffectAsStagedAction, saveMyTool } from './action-utils';
+  import { saveMyTool, saveToHistory } from './action-utils';
   import EffectToolbar from './toolbars/EffectToolbar.svelte';
   import Notebook from './Notebook.svelte';
   import Page from './Page.svelte';
   import { crossfade } from 'svelte/transition';
+  import CodeToolbar from './toolbars/CodeToolbar.svelte';
+  import { historyStore } from '../stores/history';
+  import { fade } from 'svelte/transition';
+  import Tooltip from './Tooltip.svelte';
+  import CategoryToolbar from './toolbars/CategoryToolbar.svelte';
+
+  import { p5CanvasSize } from '../stores/canvasStore';
 
 
-  const [send, receive] = crossfade({}); // add settings here
+  const [send, receive] = crossfade({}); // TODO
 
-  let allCategories:String[] = [];
+  let allCategories:string[] = [];
 
-  toolStore.subscribe(data => {
-    allCategories = [...new Set(data.map(tool => tool.category))];
-  });
+  $: if ($selectedActionID) {
+    scrollToSelectedAction($selectedActionID);
+  }
 
-  // if selectedEffect changed, update staged action accordingly
-  // TODO: potentially pass in current settings as params, eg. global color or random
-  selectedEffect.subscribe(effect => {
-    console.log("new effect is:", effect);
-    if(effect) {
-      addEffectAsStagedAction(effect, {});
+  async function scrollToSelectedAction(id: string) {
+    await tick(); // Wait for the DOM to update with the new item
+    const element = document.getElementById(`action-${id}`);
+    console.log("scrolling to element:", element);
+    if (element) {
+      element.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center', // align the bottom of the new item with the center of the viewport
+        inline: 'nearest' // keep the horizontal alignment as it is
+      });
     }
-    console.log("staged action", $stagedAction);
-  });
+  }
 
+  function undo() {
+    historyStore.undo();
+  }
+
+  function clearAll() {
+    actionStore.update(data => {
+      data.children = [];
+      return data;
+    });
+    saveToHistory();
+  }
+
+  function deleteSelected() {
+    if ($selectedActionID) {
+      actionStore.update(data => {
+        if (data && data.children) {
+          const index = data.children.findIndex(action => action.uuid === $selectedActionID);
+          if (index > -1) {
+            data.children.splice(index, 1);
+          }
+        }
+        return data;
+      });
+    }
+    saveToHistory();
+  }
+
+  function downloadCanvas() {
+
+  }
+  
+  // save to undo queue whenever these stores change
+  // $: if ($myTools) { saveToHistory(); }
+  // $: if ($stagedAction) { saveToHistory(); }
+  
   // // if staged action changes, update the selected effect
   // watch out for circular dependencies! see selectedEffect.subscribe
   // stagedAction.subscribe(action => {
@@ -54,10 +99,19 @@
         activeCategory.set(data[0].category);
       }
     });
-    
 
+    // TODO: why two subscribes to toolStore?
+    toolStore.subscribe(data => {
+      allCategories = [...new Set(data.map(tool => tool.category))];
+    });
+
+    actionStore.subscribe(action => {
+      console.log("actionStore:", $actionStore);
+    });
+  
   });
 
+  // reorder action store to match DOM order
   function onReorder(event:any) {
     console.log("actionStore:", {$actionStore});
     const { oldIndex, newIndex } = event.detail;
@@ -73,30 +127,194 @@
 
   let count = 1;
 
+
+  // let mouseX = 0;
+  // let mouseY = 0;
+
+  // function handleMouseMove(event: MouseEvent) {
+  //   mouseX = event.clientX;
+  //   mouseY = event.clientY;
+  // }
+
+  // const offsetX = 10;
+  // const offsetY = 10;
+
 </script>
 
-
+<div id="notebook">
 <Notebook>
   <Page slot="left">
-    <!-- <button on:click={() => count++}>
-      Re-render Canvas
-    </button> -->
-    <EffectToolbar categories={allCategories} />
-    {#key count}
+    
+    <div class="drawing-grid-container">
+
+      <!-- First Row -->
+      <div class="drawing-area"><Canvas /></div> <!-- First column, first row -->
+      <div class="category-toolbar"><CategoryToolbar categories={allCategories} /></div> <!-- Second column, first row -->
+  
+      <!-- Second Row -->
+      <div class="drawing-effect-toolbar"><EffectToolbar /></div>
+      <button class="icon-button">😮</button>
+      
+
+      <!-- Third Row -->
+      <div class="staged-action-container">
+        {#if $stagedAction}
+          <div class="staged-action" in:fade={{ duration: 300 }} out:fade={{ duration: 300 }}><ActionItem action={$stagedAction} /></div>
+        {/if}
+      </div>
+      <div class="staged-action-buttons">
+        <button class="icon-button"><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M190.5 68.8L225.3 128H224 152c-22.1 0-40-17.9-40-40s17.9-40 40-40h2.2c14.9 0 28.8 7.9 36.3 20.8zM64 88c0 14.4 3.5 28 9.6 40H32c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32H480c17.7 0 32-14.3 32-32V160c0-17.7-14.3-32-32-32H438.4c6.1-12 9.6-25.6 9.6-40c0-48.6-39.4-88-88-88h-2.2c-31.9 0-61.5 16.9-77.7 44.4L256 85.5l-24.1-41C215.7 16.9 186.1 0 154.2 0H152C103.4 0 64 39.4 64 88zm336 0c0 22.1-17.9 40-40 40H288h-1.3l34.8-59.2C329.1 55.9 342.9 48 357.8 48H360c22.1 0 40 17.9 40 40zM32 288V464c0 26.5 21.5 48 48 48H224V288H32zM288 512H432c26.5 0 48-21.5 48-48V288H288V512z"/></svg></button>
+        <button class="icon-button"><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M341.6 29.2L240.1 130.8l-9.4-9.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-9.4-9.4L482.8 170.4c39-39 39-102.2 0-141.1s-102.2-39-141.1 0zM55.4 323.3c-15 15-23.4 35.4-23.4 56.6v42.4L5.4 462.2c-8.5 12.7-6.8 29.6 4 40.4s27.7 12.5 40.4 4L89.7 480h42.4c21.2 0 41.6-8.4 56.6-23.4L309.4 335.9l-45.3-45.3L143.4 411.3c-3 3-7.1 4.7-11.3 4.7H96V379.9c0-4.2 1.7-8.3 4.7-11.3L221.4 247.9l-45.3-45.3L55.4 323.3z"/></svg></button>
+        <button class="icon-button"><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 384 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M0 48C0 21.5 21.5 0 48 0l0 48V441.4l130.1-92.9c8.3-6 19.6-6 27.9 0L336 441.4V48H48V0H336c26.5 0 48 21.5 48 48V488c0 9-5 17.2-13 21.3s-17.6 3.4-24.9-1.8L192 397.5 37.9 507.5c-7.3 5.2-16.9 5.9-24.9 1.8S0 497 0 488V48z"/></svg></button>
+      </div> <!-- Second column, second row -->
+  
+      
+     
+
+      <!-- Fourth Row -->
+      <div class="code-toolbar"><CodeToolbar /></div>
+      
+      
+      <div class="download-button-container">
+        <button class="icon-button"><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32V274.7l-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7V32zM64 352c-35.3 0-64 28.7-64 64v32c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V416c0-35.3-28.7-64-64-64H346.5l-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352H64zm368 56a24 24 0 1 1 0 48 24 24 0 1 1 0-48z"/></svg></button>
+      </div> <!-- Second column, third row -->
+
+    </div>
+    
+    
+    <!-- <div class="drawing-area">
       <Canvas />
-    {/key}
-    {#if $stagedAction}
-      <ActionItem action={$stagedAction} />
-    {/if}
-    <button id="saveTool" on:click={() => saveMyTool($stagedAction) }>Save to My Tools</button>
+    </div>
+
+    <EffectToolbar categories={allCategories}>
+      {#if $stagedAction}
+        <div class="stagedAction" in:fade={{ duration: 300 }} out:fade={{ duration: 300 }}><ActionItem action={$stagedAction} /></div>
+      {/if}
+    </EffectToolbar>
+     -->
+    
+    
+    <!-- <div class="instabuttons">
+      <button id="saveToolButton" on:click={() => saveMyTool($stagedAction) }>Save to My Tools</button>
+      <button id="downloadButton" on:click={downloadCanvas}>Download</button>
+    </div> -->
+
   </Page>
   <Page slot="right">
+    <div class="instabuttons">
+      <button id="undoButton" on:click={undo}><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M48.5 224H40c-13.3 0-24-10.7-24-24V72c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2L98.6 96.6c87.6-86.5 228.7-86.2 315.8 1c87.5 87.5 87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3c-62.2-62.2-162.7-62.5-225.3-1L185 183c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8H48.5z"/></svg></button>
+      <button id="deleteButton" on:click={deleteSelected}>Delete</button>
+      <button id="clearAllButton" on:click={clearAll}>Clear All</button>
+    </div>
       <LinedPaper>
-        <ActionItem action={$actionStore} depth={0} on:reorder={onReorder} />
+        <ActionItem action={$actionStore} depth={0} on:reorder={onReorder}/>
+        <!-- {#if $stagedAction}
+          <div class="stagedAction"><ActionItem action={$stagedAction} /></div>
+        {/if} -->
       </LinedPaper>
-      <!-- <CodeToolbar /> -->
+      
+    <!-- debugging <History /> -->
+    
   </Page>
 </Notebook>
+
+<div>Canvas Size: {$p5CanvasSize.width} x {$p5CanvasSize.height}</div>
+
+</div>
+
+<!-- <Tooltip element='#canvasContainer' cursorFollow={true}>
+  <ActionItem action={$stagedAction} />
+</Tooltip> -->
+
+<!-- <Tooltip element='#notebook' cursorFollow={false}>
+  <ActionItem action={$stagedAction} />
+</Tooltip> -->
+
+<!-- <svelte:window on:mousemove={handleMouseMove} /> -->
+
+<!-- staged action that follows mouse cursor -->
+<!-- <div style="position: fixed; left: {mouseX + offsetX}px; top: {mouseY + offsetY}px; pointer-events: none;">
+  <div class="stagedActionHover"><ActionItem action={$stagedAction} /></div>
+</div> -->
+
+<style>
+
+  /* * {
+    border: 1px solid red;
+  } */
+
+  .icon-button {
+    border: none;
+    font-size: 1.5em;
+    background-color: transparent;
+    color: gray;
+  }
+
+  .drawing-grid-container {
+    display: grid;
+    grid-template-columns: 1fr 40px;
+    grid-template-rows: 3fr auto 1fr 40px;
+    margin: 20px;
+  }
+
+  .drawing-area {
+    overflow: hidden;
+  }
+
+  /* .code-area {
+    margin-top: 30px;
+  } */
+
+  .code-toolbar {
+    /* width: 100%; */
+    /* position: absolute; */
+    /* top: 20px;
+    left: 90px; */
+  }
+
+  .staged-action-container {
+    border: 1px solid black;
+  }
+
+  .staged-action-buttons {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+  }
+
+  .drawing-effect-toolbar {
+    border: 1px solid black;
+  }
+
+  .staged-action {
+    font-style: italic;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding: 20px;
+    border: none;
+    /* margin-left: 2em; */
+    /* width: calc(var(--canvas-width)*0.8); */
+    /* padding: 30px;
+    box-shadow: 1px 2px 3px 2px gray; */
+  }
+
+  .stagedActionHover {
+    background-color: white;
+  }
+
+  .instabuttons {
+    position: absolute;
+    /* top: 5px; */
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    /* margin-bottom: 100px; */
+  }
+
+
+</style>
 
 <!-- <style>
   .staged-action {

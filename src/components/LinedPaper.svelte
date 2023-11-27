@@ -5,7 +5,7 @@
 <!-- <div class="page"> -->
   <div class="container">
     <div class="lined-paper">
-      <ul class="top-level-list">
+      <ul class="top-level-list-container">
         <slot></slot>
       </ul>
     </div>
@@ -26,12 +26,14 @@
       display: flex;
       width: 100%;
       height: 100%;
+      margin-top: 3em;
+      /* margin-left: 4em; */
       /* flex: 1 0 auto; */
   }
 
   .lined-paper {
       width: 100%;
-      height: 100%;
+      height: 90%;
       overflow-y: auto;
         background-image: repeating-linear-gradient(
         to bottom, 
@@ -47,9 +49,12 @@
 
   .lined-paper ul {
       list-style: none;
-      margin: 30px 0 0 50px;
+      margin: 2.2em 0 0 5em;
       padding: 0;
       scroll-snap-align: start;
+      height: 65%;
+      overflow: auto;
+      padding-bottom: 3em;
   }
 
   .container::before {
@@ -63,8 +68,9 @@
     /* z-index: -1; */
   }
 
-  .top-level-list {
-    margin: 50px;
+  .top-level-list-container {
+    /* border: 1px solid red; */
+    /* margin: 5em; */
   }
 
 </style>

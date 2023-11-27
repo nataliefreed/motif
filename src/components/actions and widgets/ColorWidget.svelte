@@ -1,10 +1,14 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  // import Coloris from "@melloware/coloris";
   import tinycolor from 'tinycolor2';
+  import { selectedCodeEffect } from '../../stores/dataStore';
+  import { createEventDispatcher } from 'svelte';
 
   export let id = '';
   export let value = '#FFFFFF';
+
+  const dispatch = createEventDispatcher();
+
   let colorOptions = [
     '#FF0000ff', // Red
     '#FFA500ff', // Orange
@@ -23,54 +27,81 @@
     '#5E2109ff', // Brown
     '#D2B48Cff'  // Tan
   ];
-  let colorButton: any;
 
-  // Dispatch function setup if needed
+  let colorButton: HTMLElement;
+  let hiddenColorInput: HTMLInputElement;
 
   onMount(() => {
-    // Initialize Coloris here if necessary
-    colorButton.style.background = tinycolor(value).toRgbString();
+    updateColorButton(value);
   });
 
-  function openColorPicker() {
-    // Coloris({
-    //   el: colorButton,
-    //   swatches: colorOptions,
-    //   // ... other Coloris options
-    //   format: 'rgb',
-    //   alpha: true,
-    //   onChange: (color) => {
-    //     // Update the value and background color when the color changes
-    //     colorButton.style.background = color;
-    //     value = color;
-    //     // Dispatch the valueChange event
-    //   }
-    // });
+  function updateColorButton(hexColor: string) {
+    colorButton.style.background = tinycolor(hexColor).toHexString();
+    dispatch('valueChange', { id, value: hexColor });
   }
+
+  function randomize() {
+    var randomColor = tinycolor.random();
+    value = randomColor.toHexString();
+    updateColorButton(value);
+  }
+
+  function handleClick(event: Event) {
+    if($selectedCodeEffect === "shuffle") {
+      randomize();
+    }
+    else {
+      openColorPicker();
+    }
+  }
+
+  function openColorPicker() {
+    hiddenColorInput.click();
+  }
+
+  function handleColorChange(event: Event) {
+    const input = event.target as HTMLInputElement;
+    value = input.value;
+    updateColorButton(value);
+  }
+
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<span
+  class="color-palette-widget"
+  bind:this={colorButton}
+  on:click={handleClick}
+  style="background-color: {value};"
+  id={id}
+></span>
+
+<input
+  type="color"
+  bind:this={hiddenColorInput}
+  class="hidden-color-picker"
+  on:input={handleColorChange}
+/>
+
+
 <style>
-  /* Add your CSS styles here, e.g., */
   .color-palette-widget {
     border-radius: 50%;
     width: 1.5em;
     height: 1.5em;
     padding: 0;
+    border: none;
     border: 2px solid rgba(0,0,0,0.1);
     cursor: pointer;
     display: inline-block;
     line-height: 1.5em;
+    vertical-align: top;
+  }
+
+  .hidden-color-picker {
+    display: none;
   }
 </style>
-
-<input
-  type="color"
-  bind:this={colorButton}
-  class="color-palette-widget clr-field"
-  on:click={openColorPicker}
-  style="background-color: {value};"
-  id={id}
-/>
 
 
   <!-- <script lang="ts">

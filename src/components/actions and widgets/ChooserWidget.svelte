@@ -10,6 +10,7 @@
   function handleChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     dispatch('valueChange', { id, value: target.value });
+    console.log("dispatching valueChange event ", target.value); 
   }
 </script>
 
@@ -18,3 +19,13 @@
     <option value={option}>{option}</option>
   {/each}
 </select>
+
+<style>
+  select {
+    /* font-size: 1.2rem;
+    padding: 0.2rem; */
+    border-radius: 0.2rem;
+    border: 2px solid #ccc;
+    font-family: 'FuturaHandwritten';
+  }
+</style>

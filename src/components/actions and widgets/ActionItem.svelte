@@ -8,11 +8,19 @@
   import Brush from './effects/Brush.svelte';
   import { actionStore } from '../../stores/dataStore';
   import Shape from './effects/Shape.svelte';
+  import { selectedActionID } from '../../stores/dataStore';
+  import PathWidget from './PathWidget.svelte';
+  import { onMount } from 'svelte';
 
   export let action: Action | null;
   export let depth = 0;
-  export let selectedLine: number | null = null;
-  let isOpen = true;
+  let isOpen = false;
+
+onMount(() => {
+    if(action && action.category === 'top-level-list') {
+        isOpen = true;
+    }
+  });
 
   function toggle() {
       isOpen = !isOpen;
@@ -27,18 +35,30 @@
     });
   }
 
+  function getActionThumbnail() {
+    return "";
+  }
+
 //   $: console.log('Action in ActionItem:', action);
-
-
 </script>
 
-{#if selectedLine}
-    <span class="line-number">{selectedLine}</span>
-{/if}
-
-<div>
-    {#if action}
-        {#if action.category === 'backgrounds'}
+{#if action}
+    <!-- <div class:selected={$selectedActionID === action.uuid}> -->
+        {#if action.type === 'list' && Array.isArray(action.children) && action.children.length > 0}
+            {action.name}
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <span class="toggle-arrow" on:click={toggle}> {isOpen ? '▼' : '▶'}</span>
+            {#if isOpen}
+                <ActionList children={action.children} depth={depth} on:reorder />
+            {/if}
+        {:else if action.type === 'list' && action.params && Array.isArray(action.params.children) && action.params.children.length > 0}
+            {action.dropdownName} along <PathWidget points={action.params.path} on:valueChange={handleUpdate}/>
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <span class="toggle-arrow" on:click={toggle}> {isOpen ? '▼' : '▶'}</span>
+            {#if isOpen}
+                <ActionList children={action.params.children} depth={depth} on:reorder />
+            {/if}
+        {:else if action.category === 'backgrounds'}
             <Background name={action.effect} params={action.params} onUpdate={handleUpdate}/>
         {:else if action.category === 'shapes'}
             <Shape name={action.effect} params={action.params} onUpdate={handleUpdate}/>
@@ -50,32 +70,30 @@
             <Stencil name={action.effect} params={action.params} onUpdate={handleUpdate} />
         {:else if action.category === 'brushes'}
             <Brush name={action.effect} params={action.params} onUpdate={handleUpdate} />
-
-        {:else if action.type === 'list' && Array.isArray(action.children) && action.children.length > 0}
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <span on:click={toggle}>{action.name} {isOpen ? '▼' : '▶'}</span>
-            {#if isOpen}
-                <ActionList children={action.children} depth={depth} on:reorder />
-            {/if}
-            
-        <!-- {:else}
-            <span>Unknown type: {action.type} of length: {action.children}</span> -->
         {/if}
-    {/if}
-</div>
+    <!-- </div> -->
+{/if}
 
 <style>
     .selected {
-    background-color: yellow;
-  }
+        border: 2px solid gold;
+        background-color: lightyellow;
+        border-radius: 5px;
+        padding-left: 5px;
+        /* transform: scale(1.2);
+        transform-origin: left center; */
+        /* z-index: 1; */
+        /* transition: transform 1s ease; */
+   }
 
-  .line-number {
-      position: absolute;
-      left: -25px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 0.8em;
-      color: #555;
-  }
+    .toggle-arrow {
+        font-size: 0.8em;
+    }
+
+  /* .action-single-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  } */
 </style>
 

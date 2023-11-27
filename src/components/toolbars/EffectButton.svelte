@@ -24,24 +24,23 @@
 
 <style>
   .effect-button {
-    width: var(--category-button-size);
-    height: var(--category-button-size);
     display: flex;
+    width: calc(var(--toolbar-height)*1.5);
+    height: calc(var(--toolbar-height)*1.5);
     justify-content: center;
     align-items: center;
-    /* background-color: #dedede; */
-    border: none;
-    border-radius: 5px;
-    /* color: rgb(77, 77, 77); */
-    margin: 5px;
+    border: 1px solid black;
+    /* border-radius: 5px; */
     cursor: pointer;
-    /* background-image: url('https://placekitten.com/200/300'); */
     background-size: cover; /* Ensure the image covers the button */
     background-position: center; /* Center the background image */
+    margin: 0 5px;
+    font-size: 0.5em;
   }
 
   .selected {
-    border: 2px solid #f5a623;
+    box-shadow:inset 0px 0px 0px 2px #f5a623;
+    /* border: 1px solid #f5a623; */
   }
 </style>
 

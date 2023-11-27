@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import type { Action, Effect } from '../types/types'
+import type { Action, Effect } from '../types/types';
 import { effectList } from '../stores/effectList.js';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -10,6 +10,10 @@ export const myTools = writable<Effect[]>([]);
 export const activeCategory = writable('');
 export const selectedEffect = writable<Effect | null>(null);
 export const stagedAction = writable<Action | null>(null);
+
+export const selectedCodeEffect = writable('');
+
+export const selectedActionID = writable('');
 
 export function initStores(projectID: string | null) {
   actionStore.set(getDrawingActionData());
@@ -22,21 +26,21 @@ function getToolData() : Effect[] {
 
 function getDrawingActionData() {
   return {
-    name: "Top Level",
+    name: "My Design",
     type: "list" as const,
     category: 'top-level-list',
     uuid: uuidv4(),
     children: [
-      {
-        name: "solid fill",
-        type: 'effect' as const,
-        category: 'backgrounds',
-        effect: 'solid fill',
-        params: {
-          color: '#ffaa00'
-        },
-        uuid: uuidv4(),
-      },
+      // {
+      //   name: "solid fill",
+      //   type: 'effect' as const,
+      //   category: 'backgrounds',
+      //   effect: 'solid fill',
+      //   params: {
+      //     color: '#ffaa00'
+      //   },
+      //   uuid: uuidv4(),
+      // },
       {
         name: "Draw Circle",
         type: 'effect' as const,
@@ -50,93 +54,22 @@ function getDrawingActionData() {
         uuid: uuidv4(),
       },
       {
-        name: "Display Text",
+        name: "draw star",
         type: 'effect' as const,
-        category: 'other',
-        effect: 'text',
+        category: 'shapes',
+        effect: 'star',
         params: {
-          text: 'Hello World!',
-          position: { x: 200, y: 250 }
+          color: '#bbaaff',
+          r1: 50,
+          r2: 25,
+          npoints: 5,
+          position: { x: 300, y: 350 }
         },
         uuid: uuidv4(),
       },
     ]
   };
 }
-
-function getActionData(projectID: string | null) {
-  // if (projectID) {
-  //   if (projectID === 'test1') {
-      return {
-        name: "Top Level",
-        type: "list" as const,
-        uuid: "1234",
-        children: [
-            {
-                name: "Number",
-                type: 'number' as const,
-                value: 42,
-                uuid: uuidv4(),
-            },
-            {
-                name: "Color",
-                type: 'color' as const,
-                value: "red",
-                uuid: uuidv4(),
-            },
-            {
-                name: "String",
-                type: 'string' as const,
-                value: "Hello"
-            },
-            {
-                name: "Nested List",
-                type: 'list' as const,
-                children: [
-                    {
-                        name: "Nested Number",
-                        type: "number" as const,
-                        value: 7
-                    },
-                    {
-                        name: "String",
-                        type: 'string' as const,
-                        value: "Hi there"
-                    },
-                    {
-                        name: "Nested Number 2",
-                        type: "number" as const,
-                        value: 365
-                    },
-                    {
-                        name: "Deeper Nested List",
-                        type: 'list' as const,
-                        children: [
-                            {
-                                name: "Nested Number",
-                                type: "number" as const,
-                                value: 7
-                            },
-                            {
-                                name: "String",
-                                type: 'string' as const,
-                                value: "Hi there"
-                            },
-                            {
-                                name: "Nested Number 2",
-                                type: "number" as const,
-                                value: 365
-                            },
-                        ]
-                    }
-                ]
-            }
-          ]
-        };
-      }
-  // }
-  // return {name:"default2", type:'list', children:[]};
-
 
   // function getDrawingActionData() {
   //   return [

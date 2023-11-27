@@ -1,18 +1,12 @@
-import p5 from './Canvas.svelte';
-
-function flipY(p, y) {
-  return p.height - y;
-}
-
 export const renderers = {
 
   //p is pgraphics object
 
-  'solid fill': (p, params) => {
+  'solid fill': (p, params, p5) => {
     p.background(params.color);
   },
 
-  'gradient': (p, params) => {
+  'gradient': (p, params, p5) => {
     let color1 = p.color(params.color1);
     let color2 = p.color(params.color2);
     let angle = -p.radians(params.angle);
@@ -34,7 +28,7 @@ export const renderers = {
     p.pop();
   },
 
-  'stripes': (p, params) => {
+  'stripes': (p, params, p5) => {
     let color1 = p.color(params.color1);
     let color2 = p.color(params.color2);
     let stripeWidth = params.stripeWidth;
@@ -58,9 +52,10 @@ export const renderers = {
 
   },
 
-  'circle': (p, params) => {
-    let x = params.position.x;
-    let y = flipY(p, params.position.y);
+  'circle': (p, params, p5) => {
+    // debugger;
+    let x = params.tempPosition? params.tempPosition.x : params.position.x;
+    let y = params.tempPosition?  params.tempPosition.y : params.position.y;
     p.push();
     p.noStroke();
     p.fill(params.color);
@@ -68,9 +63,9 @@ export const renderers = {
     p.pop();
   },
 
-  'square': (p, params) => {
+  'square': (p, params, p5) => {
     let x = params.position.x;
-    let y = flipY(p, params.position.y);
+    let y = params.position.y;
     let size = params.size;
     p.push();
     p.rectMode(p.CENTER);
@@ -80,9 +75,9 @@ export const renderers = {
     p.pop();
   },
 
-  'triangle': (p, params) => {
+  'triangle': (p, params, p5) => {
       let x = params.position.x;
-      let y = flipY(p, params.position.y);
+      let y = params.position.y;
       let w = params.width;
       let h = params.height;
       p.push();
@@ -96,9 +91,9 @@ export const renderers = {
       p.pop();
   },
 
-  'rectangle': (p, params) => {
+  'rectangle': (p, params, p5) => {
       let x = params.position.x;
-      let y = flipY(p, params.position.y);
+      let y = params.position.y;
       let width = params.width;
       let height = params.height;
       p.push();
@@ -109,9 +104,9 @@ export const renderers = {
       p.pop();
   },
 
-  'star': (p, params) => {
+  'star': (p, params, p5) => {
       let x = params.position.x;
-      let y = flipY(p, params.position.y);
+      let y = params.position.y;
       let r1 = params.r1;
       let r2 = params.r2;
       let angle = p.TWO_PI / params.npoints;
@@ -132,10 +127,10 @@ export const renderers = {
       p.pop();
   },
 
-  'polygon': (p, params) => {
+  'polygon': (p, params, p5) => {
       let nsides = Math.abs(params.nsides);
       let x = params.position.x;
-      let y = flipY(p, params.position.y);
+      let y = params.position.y;
       let angle = p.TWO_PI / nsides;
       p.push();
       p.noStroke();
@@ -150,9 +145,9 @@ export const renderers = {
       p.pop();
   },
 
-  'heart': (p, params) => {
+  'heart': (p, params, p5) => {
     let x = params.position.x;
-    let y = flipY(p, params.position.y);
+    let y = params.position.y;
     let size = params.size;
     p.push();
     p.translate(0, -size/2);
@@ -166,44 +161,50 @@ export const renderers = {
     p.pop();
   }, 
 
-  'straight grid': (p, params) => {
-    tile(p, {...params, tiling: 'straight grid'});
-  },
-  'brick': (p, params) => {
-    tile(p, {...params, tiling: 'brick'});
-  },
-  'half drop': (p, params) => {
-    tile(p, {...params, tiling: 'half drop'});
-  },
-  'checkerboard': (p, params) => {
-    tile(p, {...params, tiling: 'checkerboard'});
-  },
-  'radial': (p, params) => {
-    tile(p, {...params, tiling: 'radial'});
-  },
-  'grow': (p, params) => {
-    let w = params.width;
-    let h = params.height;
-    let scaleBy = params.scaleBy / 100; // Convert the percentage to a decimal
-    
-    let sx = params.x - w / 2;
-    let sy = flipY(params.y) - h / 2;
-
-    let snapshot = c.createGraphics(w, h);
-    snapshot.image(p, 0, 0, w, h, sx, sy, w, h);
-
-    let enlargedWidth = w * scaleBy;
-    let enlargedHeight = h * scaleBy;
-    
-    let dx = params.x - enlargedWidth / 2;
-    let dy = flipY(params.y) - enlargedHeight / 2;
-    
-    p.image(snapshot, dx, dy, enlargedWidth, enlargedHeight, 0, 0, w, h);
-    snapshot.remove();
-
+  // TODO: these probably shouldn't be mutating the params object
+  // but I think these aren't triggering as action list change, so it's not reupdating?
+  // which is why it's depending on this to pass the path to the positions...
+  // todo: add the pathSpacing
+  'along path': (p, params, p5) => {
+    if(params.children && params.path) {
+      params.path.forEach((point, i) => {
+        let child = params.children[i%params.children.length];
+        child.params.position = {x: point[0], y: point[1]};
+        child.params.tempPosition = {x: point[0], y: point[1]};
+        renderers[child.name](p, child.params, p5);
+      });
+    }
   },
 
-  'shift': (p, params) => {
+  'tile': (p, params, p5) => {
+    tile(p, params, p5);
+  },
+
+  'straight grid': (p, params, p5) => {
+    tile(p, {...params, tiling: 'straight grid'}, p5);
+  },
+  'brick': (p, params, p5) => {
+    tile(p, {...params, tiling: 'brick'}, p5);
+  },
+  'half drop': (p, params, p5) => {
+    tile(p, {...params, tiling: 'half drop'}, p5);
+  },
+  'checkerboard': (p, params, p5) => {
+    tile(p, {...params, tiling: 'checkerboard'}, p5);
+  },
+  'radial': (p, params, p5) => {
+    tile(p, {...params, tiling: 'radial'}, p5);
+  },
+
+  'grow': (p, params, p5) => {
+    scaleRect(p, params, p5);
+  },
+
+  'shrink': (p, params, p5) => {
+    scaleRect(p, params, p5);
+  },
+
+  'shift': (p, params, p5) => {
     let lineHeight = params.height;
     let offset = params.offset;
     if(params.orientation === "horizontal") {
@@ -223,7 +224,7 @@ export const renderers = {
     }
   },
 
-  'porcupine brush': (p, params) => {
+  'porcupine brush': (p, params, p5) => {
     if(!c) c = s; //if no canvas specified
     c.strokeWeight(params.lineWeight);
     c.strokeWeight(4);
@@ -236,7 +237,7 @@ export const renderers = {
     }
   },
 
-  'rainbow brush': (p, params) => {
+  'rainbow brush': (p, params, p5) => {
     s.push();
     s.noStroke();
     s.strokeWeight(params.minSize);
@@ -264,7 +265,7 @@ export const renderers = {
     s.pop();
   },
 
-  'lines brush': (p, params) => {
+  'lines brush': (p, params, p5) => {
     if(!p.setupFinished) return;
     if(!c) c = s; //if no canvas specified
     c.strokeWeight(params.lineWeight);
@@ -280,34 +281,40 @@ export const renderers = {
     }
   },
 
-  'add line': (p, params) => {
-    p.push();
-    p.strokeWeight(params.lineWeight);
-    p.noFill();
-    p.stroke(params.color);
-    p.line(params.x1, flipY(params.y1), params.x2, flipY(params.y2));
-    p.pop();
+  'straight line': (p, params, p5) => {
+    // debugger;
+    if(p !== p5.getHoverCanvas()) {
+      p.push();
+      p.strokeWeight(params.lineWeight);
+      p.noFill();
+      p.stroke(params.color);
+      p.line(params.start.x, params.start.y, params.end.x, params.end.y);
+      p.pop();
+    }
   },
 
-  'copy cutout': (p, params) => {
+  'copy cutout': (p, params, p5) => {
     p.push();
 
     let w = params.width;
     let h = params.height;
-    let x1 = params.x1;
-    let y1 = flipY(params.y1);
-    let x2 = params.x2;
-    let y2 = flipY(params.y2);
+    let x1 = params.position.x;
+    let y1 = params.position.y;
+    let x2 = params.end.x;
+    let y2 = params.end.y;
 
-    let snapshot = p.createGraphics(w, h); // for captured rectangle
+    let snapshot = p5.createGraphics(w, h); // for captured rectangle
     p.imageMode(p.CENTER);
 
-    if(p===p) snapshot.image(p, 0, 0, w, h, x1 - w/2, y1 - h/2, w, h); // w * h rectangle centered at x1, y1 from static canvas
-    else snapshot.image(s, 0, 0, w, h, x1 - w/2, y1 - h/2, w, h);
+    snapshot.image(p, 0, 0, w, h, x1 - w/2, y1 - h/2, w, h);
+
+    // if(p===p) snapshot.image(p, 0, 0, w, h, x1 - w/2, y1 - h/2, w, h); // w * h rectangle centered at x1, y1 from static canvas
+    // else snapshot.image(s, 0, 0, w, h, x1 - w/2, y1 - h/2, w, h);
     
     //TODO: if you use p, it will capture the cleared canvas when released, but if you use s, it will not add the cutouts in a cumulative way
 
-    if(p === t) { //if temp canvas, draw a border
+    //TODO: other way to check if temp canvas?
+    if(p === p5.getHoverCanvas) { //if temp canvas, draw a border
       snapshot.stroke(0);
       snapshot.noFill();
       snapshot.strokeWeight(2);
@@ -320,19 +327,7 @@ export const renderers = {
     p.pop();
   },
 
-  'apply filter': (p, params) => {
-
-  },
-
-  'foldable box stencil': (p, params) => {
-
-  },
-
-  'paperdoll': (p, params) => {
-
-  },
-
-  'smooth brush': (p, params) => {
+  'smooth brush': (p, params, p5) => {
     s.push();
     s.noFill();
     s.strokeWeight(params.lineWeight);
@@ -348,27 +343,36 @@ export const renderers = {
     s.pop();
   },
 
-  'rainbox brush': (p, params) => {
+  'rainbox brush': (p, params, p5) => {
 
   },
 
-  'lines brush': (p, params) => {
+  'lines brush': (p, params, p5) => {
 
   },
 
-  'line': (p, params) => {
+  'line': (p, params, p5) => {
 
   },
 
-  'copy cutout': (p, params) => {
+  'copy cutout': (p, params, p5) => {
 
   },
 
-  'apply filter': (p, params) => {
-    p.filter(p[params.filter.toUpperCase()]);
+  //TODO: figure out hover/drag behavior
+  'invert': (p, params, p5) => {
+    applyFilter(p, {...params, filter: 'INVERT'}, p5);
   },
 
-  'foldable box stencil': (p, params) => {
+  'grayscale': (p, params, p5) => {
+    applyFilter(p, {...params, filter: 'GRAY'}, p5);
+  },
+
+  'threshold': (p, params, p5) => {
+    applyFilter(p, {...params, filter: 'THRESHOLD'}, p5);
+  },
+
+  'foldable box stencil': (p, params, p5) => {
     this.push();
     const { length: l, width: w, height: h } = params;
 
@@ -457,7 +461,7 @@ export const renderers = {
     this.pop();
   },
 
-  'paperdoll': (p, params) => {
+  'paperdoll': (p, params, p5) => {
 
   }
 };
@@ -521,9 +525,9 @@ export const renderers = {
 //   }
 
 //   // Create a new graphics object to draw the paper doll and its outfit and hairstyle fills
-//   let dollCanvas = p.createGraphics(p.width, p.height);
-//   var outfitCanvas = p.createGraphics(p.width, p.height);
-//   var hairstyleCanvas = p.createGraphics(p.width, p.height);
+//   let dollCanvas = p5.createGraphics(p.width, p.height);
+//   var outfitCanvas = p5.createGraphics(p.width, p.height);
+//   var hairstyleCanvas = p5.createGraphics(p.width, p.height);
 
 //   //Tint and then draw the doll fill
 //   // dollCanvas.tint(skinTone);
@@ -588,50 +592,67 @@ export const renderers = {
 
 
 
-
+function applyFilter(p, params, p5) {
+  // 2nd param to filter false: don't use WebGL in P2D mode, Svelte P5 doesn't seem to support it
+  p.filter(p5[params.filter], false);
+}
 
 // Tile
-function tile(p, params) {  
+function tile(p, params, p5) {  
+  p.push();
+  let x = params.position.x;
+  let y = params.position.y;
   let w = params.width;
   let h = params.height;
   let tiling = params.tiling;
-  let x = params.x;
-  let y = flipY(p, params.y);
-  let numRings = params.numRings || p.map(params.x, 0, p.width, 1, 10);
+  let numRings = params.numRings || p.map(x, 0, p.width, 1, 5);
 
   let sx = x - w / 2;
   let sy = y - h / 2;
 
   p.noFill();
   p.stroke(100);
-  debugger;
-  let snapshot = p.createGraphics(w, h); // for captured rectangle
-  snapshot.image(p, 0, 0, w, h, sx, sy, w, h); // w * h rectangle centered at x, y 
 
-  p.stroke(0);
-  p.noFill();
 
-  switch (tiling) {
-    case 'straight grid':
-      straightGrid(p, snapshot, w, h);
-      break;
-    case 'brick':
-      brick(p, snapshot, w, h);
-      break;
-    case 'half drop':
-      halfDrop(p, snapshot, w, h);
-      break;
-    case 'checkerboard':
-      checkerboard(p, snapshot, w, h);
-      break;
-    case 'radial':
-      radial(p, snapshot, w, h, numRings);
-      break;
-    default:
-      break;
-  }
+  // else {
+    let snapshot = p5.createGraphics(w, h); // for captured rectangle
+    snapshot.image(p5.getStaticCanvas(), 0, 0, w, h, sx, sy, w, h); // w * h rectangle centered at x, y 
 
-  snapshot.remove();
+    if(p===p5.getHoverCanvas()) {
+      p.tint(255, 100);
+    }
+
+    switch (tiling) {
+      case 'straight grid':
+        straightGrid(p, snapshot, w, h);
+        break;
+      case 'brick':
+        brick(p, snapshot, w, h);
+        break;
+      case 'half drop':
+        halfDrop(p, snapshot, w, h);
+        break;
+      case 'checkerboard':
+        checkerboard(p, snapshot, w, h);
+        break;
+      case 'radial':
+        radial(p, snapshot, w, h, numRings);
+        break;
+      default:
+        break;
+    }
+
+    snapshot.remove();
+
+    if(p===p5.getHoverCanvas() || p===p5.getDragCanvas()) {
+      p.push();
+      p.rectMode(p.CENTER);
+      p.stroke(100);
+      p.noFill();
+      p.rect(x, y, w, h);
+      p.pop();
+    }
+    p.pop();
 }
 
 function straightGrid(p, snapshot, w, h) {
@@ -695,4 +716,48 @@ function radial(p, snapshot, w, h, numRings) {
       }
   }
 }
+
+function scaleRect(p, params, p5) {
+  let x = params.position.x;
+  let y = params.position.y;
+
+  let w = params.width;
+  let h = params.height;
+  let scaleFactor = params.scaleBy / 100;
+
+  let sx = x - w / 2;
+  let sy = y - h / 2;
+
+  p.noFill();
+  p.stroke(100);
+
+  let snapshot = p5.createGraphics(w, h);
+  snapshot.image(p5.getStaticCanvas(), 0, 0, w, h, sx, sy, w, h);
+
+  let scaledWidth = w * scaleFactor;
+  let scaledHeight = h * scaleFactor;
+
+  let dx = x - scaledWidth / 2;
+  let dy = y - scaledHeight / 2;
+
+  if(p === p5.getHoverCanvas()) {
+    p.tint(255, 100); // semi-transparent
+    p.image(snapshot, dx, dy, scaledWidth, scaledHeight, 0, 0, w, h);
+  } else {
+    p.image(snapshot, dx, dy, scaledWidth, scaledHeight, 0, 0, w, h);
+  }
+
+  snapshot.remove();
+
+  // Draw the outline if it's on the hover or drag canvas
+  if(p === p5.getHoverCanvas() || p === p5.getDragCanvas()) {
+    p.push();
+    p.stroke(100);
+    p.noFill();
+    p.rectMode(p.CENTER);
+    p.rect(x, y, w, h);
+    p.pop();
+  }
+}
+
 

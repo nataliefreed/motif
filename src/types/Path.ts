@@ -1,5 +1,7 @@
 import { Vector2 } from '@amandaghassaei/vector-math';
 
+const { Vector2 } = VECTOR_MATH;
+
 type Point = {
   x: number;
   y: number;

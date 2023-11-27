@@ -15,34 +15,26 @@
 
 
 <style>
-  :root {
-    --category-button-size: 40px;
-  }
-
   .category-button {
-    width: var(--category-button-size);
-    height: var(--category-button-size);
     display: flex;
+    /* width: calc(var(--toolbar-height)*3.5);
+    height: calc(var(--toolbar-height)*1.5); */
+    width: 100%;
+    /* height: 100%; */
     justify-content: center;
     align-items: center;
     background-color: #dedede;
-    border: none;
-    border-radius: 5px;
+    border: 1px solid black;
+    /* border-radius: 5px; */
     color: rgb(77, 77, 77);
-    margin: 5px;
+    /* margin: 5px; */
     cursor: pointer;
+    padding: 5px;
+    font-size: 0.8em;
   }
 
   .category-button.active {
     background-color: #f5a623;
-  }
-
-  .category-button.active::after {
-    content: '▲'; /* Simple arrow indicator */
-    position: absolute;
-    bottom: -10px; /* Adjust this to position the arrow correctly between the popover and the button */
-    left: 50%;
-    transform: translateX(-50%);
   }
 </style>
 

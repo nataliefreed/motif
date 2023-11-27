@@ -1,41 +1,42 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import NumberWidget from './NumberWidget.svelte';
+  import { p5CanvasSize } from '../../stores/canvasStore';
 
   const dispatch = createEventDispatcher();
 
-  export let id = ''; // id for the coordinate pair, e.g., 'position'
-  export let value: { x: number, y: number } = { x: 0, y: 0 }; 
+  let x = 0;
+  let displayY = 0; //display as traditional cartesian coordinate y, not graphics y
+  let maxY = $p5CanvasSize.height;
 
-  let x = value.x;
-  let y = value.y;
+  export let id = '';
+  export let value: { x: number, y: number } = { x: 0, y: 0 };
 
-  // $: value = { x: x, y: y };
-
-  $: x = value.x;
-  $: y = value.y;
+  $: if(value) {
+    x = value.x;
+    displayY = maxY - value.y; // Flip the y value for display
+  }
 
   function handleXChange(event: CustomEvent) {
     // console.log("dispatching x event ", event.detail.value);
     x = event.detail.value; // Update local x
-    dispatch('valueChange', { id, value: { x, y } });
+    dispatchValueChange();
   }
 
   function handleYChange(event: CustomEvent) {
     // console.log("dispatching y event ", event.detail);
-    y = event.detail.value; // Update local x
-    dispatch('valueChange', { id, value: { x, y } });
+    displayY = event.detail.value;
+    const actualY = maxY - displayY; // unflip for storage
+    dispatchValueChange(actualY);
   }
 
-  // function handleChange(event: CustomEvent) {
-  //   // console.log("data", event.detail);
-  //   // console.log('valueChange', { id, value: { x, y } });
-  //   dispatch('valueChange', { id, value: event.detail.value });
-  // }
-
+  function dispatchValueChange(actualY = maxY - displayY) {
+    dispatch('valueChange', { id, value: { x, y: actualY } });
+  }
+  
 </script>
 
 <span>
 (<NumberWidget id="x" min={0} max={600} value={x} on:valueChange={handleXChange}/>,
-<NumberWidget id="y" min={0} max={600} value={y} on:valueChange={handleYChange}/>)
+<NumberWidget id="y" min={0} max={600} value={displayY} on:valueChange={handleYChange}/>)
 </span>
