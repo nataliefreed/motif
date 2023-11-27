@@ -372,19 +372,19 @@ export const renderers = {
     applyFilter(p, {...params, filter: 'THRESHOLD'}, p5);
   },
 
-  'foldable box stencil': (p, params, p5) => {
-    this.push();
+  'box': (p, params, p5) => {
+    p.push();
     const { length: l, width: w, height: h } = params;
 
     // Calculate centering offsets
-    const offsetX = (this.width - (2 * l + h)) / 2; // symmetrical so no tab calculation
-    const offsetY = (this.height - (2 * l + 2 * w) + 0.2 * h) / 2;
+    const offsetX = (p.width - (2 * l + h)) / 2; // symmetrical so no tab calculation
+    const offsetY = (p.height - (2 * l + 2 * w) + 0.2 * h) / 2;
 
-    this.translate(offsetX, offsetY);
+    p.translate(offsetX, offsetY);
 
-    this.noFill();
-    this.stroke(50);
-    this.strokeWeight(2);
+    p.noFill();
+    p.stroke(50);
+    p.strokeWeight(2);
 
     const calculatePoints = (initial, dimensions) => {
       const points = [initial];
@@ -398,17 +398,17 @@ export const renderers = {
     const c = calculatePoints(0, [l, w, l, w]);
     
     const cut = (r0, c0, r1, c1) => {
-      this.stroke(50);
-      this.line(r[r0], c[c0], r[r1], c[c1]);
+      p.stroke(50);
+      p.line(r[r0], c[c0], r[r1], c[c1]);
     }
 
     const fold = (r0, c0, r1, c1) => {
-      this.stroke(120);
-      this.line(r[r0], c[c0], r[r1], c[c1]);
+      p.stroke(120);
+      p.line(r[r0], c[c0], r[r1], c[c1]);
     }
 
     const tab = (r0, c0, r1, c1) => {
-      this.stroke(50);
+      p.stroke(50);
       const u = [r[r1] - r[r0], c[c1] - c[c0]];
       const v = [-u[1], u[0]];
       let prev = [0, 0]; 
@@ -418,7 +418,7 @@ export const renderers = {
         [0.9, 0.2],
         [1.0, 0.0]
       ]) {
-        this.line(r[r0] + u[0] * prev[0] + v[0] * prev[1],
+        p.line(r[r0] + u[0] * prev[0] + v[0] * prev[1],
           c[c0] + u[1] * prev[0] + v[1] * prev[1],
           r[r0] + u[0] * du + v[0] * dv,
           c[c0] + u[1] * du + v[1] * dv
@@ -458,7 +458,7 @@ export const renderers = {
     fold(2, 1, 1, 1);  // Back face top fold (lid hinge)
     fold(1, 3, 2, 3);  // Front face to bottom face fold
 
-    this.pop();
+    p.pop();
   },
 
   'paperdoll': (p, params, p5) => {

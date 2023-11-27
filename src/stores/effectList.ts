@@ -623,25 +623,25 @@ export const effectList = [
     thumbnail: 'box.jpg',
     mouseActionType: 'drag',
     params: {
-      length: 120,
-      width: 120,
-      height: 120
+      length: 100,
+      width: 100,
+      height: 100
     }
   },
-  {
-    name: 'paper doll',
-    dropdownName: 'Doll',
-    category: 'stencils',
-    tag: 'stencils',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'doll.jpg',
-    mouseActionType: 'single-click',
-    params: {
-      skinTone: '#F3D7C2',
-      hairstyle: '1',
-      outfit: '2'
-    }
-  },
+  // {
+  //   name: 'paper doll',
+  //   dropdownName: 'Doll',
+  //   category: 'stencils',
+  //   tag: 'stencils',
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   thumbnail: 'doll.jpg',
+  //   mouseActionType: 'single-click',
+  //   params: {
+  //     skinTone: '#F3D7C2',
+  //     hairstyle: '1',
+  //     outfit: '2'
+  //   }
+  // },
   // {
   //   name: 'paper doll',
   //   dropdownName: 'Doll',
