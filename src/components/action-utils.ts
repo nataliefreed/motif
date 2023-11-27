@@ -1,6 +1,6 @@
 import type { Action, Effect } from '../types/types';
 import { v4 as uuidv4 } from 'uuid';
-import { actionStore, stagedAction, myTools, selectedActionID } from '../stores/dataStore'
+import { actionStore, stagedAction, myTools, selectedActionID, selectedEffect, activeCategory } from '../stores/dataStore'
 import { historyStore } from '../stores/history';
 import { get } from 'svelte/store';
 import { deepCopy } from '../utils/utils';
@@ -118,6 +118,8 @@ export function saveMyTool(action: Action | null) {
       if(!storeValue) storeValue = [];
       storeValue.push(newEffect);
       // console.log("new tool added to my tools", storeValue);
+      activeCategory.set('my tools');
+      selectedEffect.set(newEffect);
       return storeValue;
     });
   }

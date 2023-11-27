@@ -34,8 +34,9 @@
     cursor: pointer;
     background-size: cover; /* Ensure the image covers the button */
     background-position: center; /* Center the background image */
-    margin: 0 5px;
+    /* margin: 0 5px; */
     font-size: 0.5em;
+    font-family: 'FuturaHandwritten';
   }
 
   .selected {

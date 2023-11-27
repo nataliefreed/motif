@@ -20,6 +20,7 @@ export const effectList = [
     category: 'backgrounds',
     tag: 'motif',
     cursor: './assets/cursors/fill-drip-solid.svg',
+    thumbnail: 'gradient.jpeg',
     mouseActionType: 'drag',
     params: {
       color1: '#79C2D7',
@@ -150,7 +151,7 @@ export const effectList = [
     category: 'brushes',
     tag: 'motif',
     cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'straight_line.jpg',
+    thumbnail: 'straight_line.jpeg',
     mouseActionType: 'drag',
     params: {
       start: {x:100, y:100},
@@ -271,7 +272,7 @@ export const effectList = [
     category: 'effects',
     tag: 'motif',
     cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'shift.jpg',
+    thumbnail: 'shift.jpeg',
     mouseActionType: 'drag',
     params: {
       orientation: 'vertical',
@@ -350,7 +351,7 @@ export const effectList = [
     category: 'brushes',
     tag: 'motif',
     cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'brush.jpg',
+    thumbnail: 'dot_brush.jpeg',
     mouseActionType: 'drag-path',
     params: {
       path: [],
@@ -376,7 +377,7 @@ export const effectList = [
     category: 'brushes',
     tag: 'motif',
     cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'heart_brush.jpg',
+    thumbnail: 'heart_brush.jpeg',
     mouseActionType: 'drag-path',
     params: {
       path: [],
@@ -413,7 +414,7 @@ export const effectList = [
     category: 'brushes',
     tag: 'motif',
     cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'star_brush.jpg',
+    thumbnail: 'star_brush.jpeg',
     mouseActionType: 'drag-path',
     params: {
       path: [],

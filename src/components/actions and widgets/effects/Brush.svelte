@@ -32,6 +32,4 @@
     in color <ColorWidget id="color" value={params.color || '#f57f7e'} on:valueChange={handleValueChange}/>
     in width <NumberWidget id="lineWeight" value={params.lineWeight || 5} on:valueChange={handleValueChange}/>
   </div>
-{:else if name === 'heart brush'}
-"things"
 {/if}

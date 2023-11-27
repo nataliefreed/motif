@@ -6,12 +6,13 @@
   $: if ($activeCategory) {
     if($activeCategory === "my tools") {
      tools = $myTools;
+     selectedEffect.set(tools[tools.length-1]);
     }
     else {
       tools = $toolStore.filter(tool => tool.category === $activeCategory);
-    }
-    if (tools.length > 0) {
-      selectedEffect.set(tools[0]);  // set the first effect of this category when clicked
+      if (tools.length > 0) {
+        selectedEffect.set(tools[0]);  // set the first effect of this category when clicked
+      }
     }
   }
 

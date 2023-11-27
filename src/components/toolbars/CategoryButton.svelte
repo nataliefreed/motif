@@ -31,6 +31,7 @@
     cursor: pointer;
     padding: 5px;
     font-size: 0.8em;
+    font-family: 'FuturaHandwritten';
   }
 
   .category-button.active {
