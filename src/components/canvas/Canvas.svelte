@@ -197,15 +197,17 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
 
   function handleNewInstance(event) { //grab the p5 instance when it returns
 		p5 = event.detail;
-    staticCanvas = p5.getStaticCanvas();
-    dragCanvas = p5.getDragCanvas();
-    hoverCanvas = p5.getHoverCanvas();
-    thumbnailCanvas = p5.getThumbnailCanvas();
+    if(p5) {
+      staticCanvas = p5.getStaticCanvas();
+      dragCanvas = p5.getDragCanvas();
+      hoverCanvas = p5.getHoverCanvas();
+      thumbnailCanvas = p5.getThumbnailCanvas();
 
-    console.log("canvases:", staticCanvas, dragCanvas, hoverCanvas, thumbnailCanvas)
+      console.log("canvases:", p5, staticCanvas, dragCanvas, hoverCanvas, thumbnailCanvas)
 
-    renderAll($actionStore); // render on start
-    console.log("p5 instance created");
+      renderAll($actionStore); // render on start
+      console.log("p5 instance created");
+    }
 	}
 
   /*                                                               
