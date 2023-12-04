@@ -19,7 +19,7 @@ export type Effect = {
   name: string;
   dropdownName: string;
   category: string;
-  tag: string;
+  tags: string,
   init?: string;
   cursor?: string;
   mouseActionType?: string;

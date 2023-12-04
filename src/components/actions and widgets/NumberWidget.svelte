@@ -28,6 +28,8 @@
     reloadTippy();
   }
 
+  $: cursorStyle = ($selectedCodeEffect === null || $selectedCodeEffect === 'point') ? 'pointer' : '';
+
   function reloadTippy() {
     if(tippyInstance) tippyInstance.destroy();
     tippyInstance = tippy(numberWidget, {
@@ -37,7 +39,7 @@
       allowHTML: true,
       arrow: true,
       placement: 'bottom',
-      trigger: 'click',
+      trigger: 'manual',
       hideOnClick: true,
       appendTo: document.body,
       onMount(instance) {
@@ -66,9 +68,16 @@
   }
 
   function handleClick(event: Event) {
-    if($selectedCodeEffect === "shuffle") {
-      randomize();
-      dispatch('valueChange', { id, value: +value });
+    console.log($selectedCodeEffect);
+    if(tippyInstance && $selectedCodeEffect == 'point' || !$selectedCodeEffect) {
+      tippyInstance.show();
+    }
+    else switch($selectedCodeEffect) {
+      case "random":
+        randomize();
+        dispatch('valueChange', { id, value: +value });
+        break;
+      default: break;
     }
   }
 
@@ -92,7 +101,7 @@
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<span class="number-widget" bind:this={numberWidget} on:click={handleClick}>
+<span class="number-widget" bind:this={numberWidget} on:click={handleClick} style="cursor: {cursorStyle};">
   {value}
 </span>
 
@@ -132,7 +141,10 @@
       display: inline-block;
       text-decoration: underline lightgray 2px;
       text-underline-offset: 5px;
-      cursor: pointer;
+  }
+
+  .number-widget:hover {
+    color: #f5a623;
   }
 
   .slider-for-numberbox {

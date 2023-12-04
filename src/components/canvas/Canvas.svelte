@@ -1,5 +1,5 @@
 <script>
-  import { addActionToActionStore, merge, addEffectAsStagedAction } from '../action-utils';
+  import { addActionToActionStore, merge, addEffectAsStagedAction, setActionThumbnail } from '../action-utils';
 	import P5 from 'p5-svelte';
   import { actionStore, stagedAction, activeCategory, selectedEffect } from '../../stores/dataStore';
   import { renderers } from './Renderer.js';
@@ -44,9 +44,7 @@
     // if selectedEffect changed, update staged action accordingly
     // TODO: potentially pass in current settings as params, eg. global color or random
     selectedEffect.subscribe(effect => {
-      if(effect) {
-        addEffectAsStagedAction(effect, {});
-      }
+      addEffectAsStagedAction(effect, {}); //drawing effects have staged action
     });
 
     // render whenever actionStore changes
@@ -107,10 +105,10 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
           renderFunction(staticCanvas, action.params, p5); // Render to static canvas
         }
         thumbnailCanvas.image(staticCanvas, 0, 0, thumbnailCanvas.width, thumbnailCanvas.height);
-        thumbnails.push(thumbnailCanvas.canvas.toDataURL());
+        // thumbnails.push(thumbnailCanvas.canvas.toDataURL());
         // thumbnails.push(getThumbnail(thumbnailCanvas, action, 10, 10));
         //TODO: update specific action with thumbnail
-        // action.thumbnail = getThumbnail(p5, action, 20, 20);
+        // setActionThumbnail(action, thumbnailCanvas.canvas.toDataURL());
       });
 
       p5.clear();
@@ -265,35 +263,44 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     else {  
       dragCanvas.clear();
       const renderFunction = renderers[$stagedAction.effect]; // get the renderer for the staged effect
+      let params = $stagedAction.params;
       if (renderFunction) {
         // console.log("start X", startX, "startY", startY, "x", x, "y", y);
-        if($stagedAction.params.radius) {
+        if('radius' in params) {
           let radius = Math.round(Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2))) + 1;
           updateStagedAction({ radius: radius });
         }
-        if($stagedAction.params.r1) {
+        if('r1' in params) {
           let radius = Math.round(Math.abs(y - startY)) + 1;
           let r2 = Math.round(radius/2);
           updateStagedAction({ r1: radius, r2: r2 });
         }
-        if($stagedAction.params.npoints) {
+        if('npoints' in params) {
           let npoints = Math.round(Math.abs(x - startX)) + 1;
           updateStagedAction({ npoints: npoints });
         }
-        if($stagedAction.params.size) {
+        if('size' in params) {
           let radius = Math.round(Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2))) + 1;
           updateStagedAction({ size: radius*2 });
         }
-        if($stagedAction.params.width) {
+        if('width' in params) {
           let width = Math.abs(x - startX) + 15; //not zero on first click
           let height = Math.abs(y - startY) + 15;
           updateStagedAction({ width: width, height: height});
         }
-        if($stagedAction.params.end) {
+        if('stripeWidth' in params) {
+          let stripeWidth = Math.round(mapValue(x, 0, 500, 20, 100));
+          updateStagedAction({ stripeWidth: stripeWidth });
+        }
+        if('angle' in params) {
+          let angle = Math.round(mapValue(y, 0, 500, 0, 360));
+          updateStagedAction({ angle: angle });
+        }
+        if('end' in params) {
           updateStagedAction({ end: { x: x, y: y } });
         }
-        if($stagedAction.params.path) {
-          debouncedStagedActionUpdate({path: getAntPath(path, $stagedAction.params.pathSpacing || 10)});
+        if('path' in params) {
+          updateStagedAction({path: getAntPath(path, $stagedAction.params.pathSpacing || 10)});
         }
         renderFunction(dragCanvas, $stagedAction.params, p5);
       }
@@ -302,6 +309,9 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     } 
   }
 
+  function mapValue(value, start1, stop1, start2, stop2) {
+    return start2 + (stop2 - start2) * ((value - start1) / (stop1 - start1));
+  }
   /*
                                                _                           
     _ __     ___    _  _     ___     ___    __| |    ___   __ __ __ _ _    
@@ -334,7 +344,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       }
 
       // Listen for global mouseup to handle cases where mouse is released outside the canvas
-      // document.addEventListener('mouseup', globalMouseUp);
+      document.addEventListener('mouseup', globalMouseUp);
     }
   }
 
@@ -372,7 +382,7 @@ function handleMouseUp(event) {
     hoverCanvas.clear();
 
     // Once the mouse is released, remove global listener
-    // document.removeEventListener('mouseup', globalMouseUp);
+    document.removeEventListener('mouseup', globalMouseUp);
   }
 }
 
@@ -388,25 +398,27 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
 
 //TODO: check if need to handle release click off canvas
 function handleMouseLeave(event) {
-  clearTempCanvases();
-  if(isDragging) {
-    handleMouseUp(event);
+  if(!isDragging) {
+    clearTempCanvases();
   }
-  else {
-    path = []; // clear current path
-  }
-  isDragging = false;
+  // if(isDragging) {
+  //   // handleMouseUp(event);
+  // }
+  // else {
+  //   path = []; // clear current path
+  // }
+  // isDragging = false;
 }
 
-// function globalMouseUp(event) {
-//   console.log("global mouse up");
-//   p.image(0, 0, staticCanvas);
-//   hoverCanvas.clear();
-//   dragCanvas.clear();
-//   if (isDragging) {
-//     handleMouseUp(event);
-//   }
-// }
+function globalMouseUp(event) {
+  console.log("global mouse up");
+  // p.image(0, 0, staticCanvas);
+  // hoverCanvas.clear();
+  // dragCanvas.clear();
+  if (isDragging) {
+    handleMouseUp(event);
+  }
+}
 
 </script>
 
@@ -426,7 +438,7 @@ function handleMouseLeave(event) {
 
 <div id="thumbnailContainer">
   {#each thumbnails as thumbnail}
-    <!-- <img class="canvas-thumbnail" src={thumbnail} /> -->
+    <img class="canvas-thumbnail" src={thumbnail} />
   {/each}
 </div>
 

@@ -26,28 +26,30 @@ function effectToAction(effect: Effect, params: { [key: string]: any }) : Action
   
   let type: "list" | "effect" = "effect";
 
+  if(effect) {
   // merge parameters
-  let mergedParams = merge(deepCopy(effect.params), deepCopy(params));
+    let mergedParams = merge(deepCopy(effect.params), deepCopy(params));
 
-  if(mergedParams && mergedParams.children) {
-    type = "list";
-    mergedParams.children.forEach((child:Action) => {
-      child.uuid = uuidv4();
-    });
+    if(mergedParams && mergedParams.children) {
+      type = "list";
+      mergedParams.children.forEach((child:Action) => {
+        child.uuid = uuidv4();
+      });
+    }
+
+    // Create a new action based on the effect
+    const action: Action = {
+      name: effect.name,
+      type: type,
+      category: effect.category,
+      effect: effect.name,
+      dropdownName: effect.dropdownName,
+      params: mergedParams,
+      uuid: uuidv4(),
+    };
+
+    return action;
   }
-
-  // Create a new action based on the effect
-  const action: Action = {
-    name: effect.name,
-    type: type,
-    category: effect.category,
-    effect: effect.name,
-    dropdownName: effect.dropdownName,
-    params: mergedParams,
-    uuid: uuidv4(),
-  };
-
-  return action;
 }
 
 // take an effect, create an action, and add to action store
@@ -110,7 +112,7 @@ export function saveMyTool(action: Action | null) {
       name: action.effect + "",
       dropdownName: action.effect + " (my tool)",
       category: action.category,
-      tag: 'mytools',
+      tags: 'mytools',
       params: action.params
     }
 
@@ -147,4 +149,11 @@ export function copySelectedActionToStagedAction() {
   }
 }
 
-// on:effectclicked={e => addEffectToActionsStore(e.detail)
+export function setActionThumbnail(action:Action, thumbnail:string) {
+  actionStore.update(storeValue => {
+    // storeValue.children = storeValue.children || [];
+    // let index = storeValue.children.indexOf(action);
+    // storeValue.children[index].thumbnail = thumbnail;
+    return storeValue;
+  });
+}

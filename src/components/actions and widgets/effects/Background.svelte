@@ -16,21 +16,15 @@
 </script>
 
 {#if name === 'solid fill'}
-<div>
-  Fill with 
-  <ColorWidget id="color" value={params.color} on:valueChange={handleValueChange}/>
-</div>
+  Fill with <ColorWidget id="color" value={params.color} on:valueChange={handleValueChange}/>
 {:else if name === 'gradient'}
-<div>
   Gradient from 
   <ColorWidget id="color1" value={params.color1} on:valueChange={handleValueChange}/>
   to 
   <ColorWidget id="color2" value={params.color2} on:valueChange={handleValueChange}/>
   at angle 
   <NumberWidget id="angle" min={0} max={360} value={params.angle} on:valueChange={handleValueChange}/>°
-</div>
 {:else if name === 'stripes'}
-<div>
   Stripes of width 
   <NumberWidget id="stripeWidth" min={1} max={300} value={params.stripeWidth} on:valueChange={handleValueChange}/>
   from 
@@ -39,7 +33,6 @@
   <ColorWidget id="color2" value={params.color2} on:valueChange={handleValueChange}/>
   at angle 
   <NumberWidget id="angle" min={0} max={360} value={params.angle} on:valueChange={handleValueChange}/>°
-</div>
 {/if}
 
 

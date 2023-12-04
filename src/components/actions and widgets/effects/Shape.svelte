@@ -14,10 +14,9 @@
   }
 </script>
 
-<div>
 {#if name === 'circle'}
   Circle of radius 
-  <NumberWidget id="radius" min={1} max={600} value={params.radius} on:valueChange={handleValueChange}/>
+  <NumberWidget id="radius" min={1} max={600} value={params.radius} on:valueChange={handleValueChange} on:reorder/>
   in color 
   <ColorWidget id="color" value={params.color} on:valueChange={handleValueChange}/>
 {:else if name === 'square'}
@@ -69,10 +68,18 @@
   <CoordinateWidget id="start" value={params.start} on:valueChange={handleValueChange}/>
   to
   <CoordinateWidget id="end" value={params.end} on:valueChange={handleValueChange}/>
-{/if}
+{:else if name === 'spiro'}
+  Spiro with outer
+  <NumberWidget id="R" min={5} max={400} value={params.R} on:valueChange={handleValueChange}/>
+  inner
+  <NumberWidget id="r" min={5} max={200} value={params.r} on:valueChange={handleValueChange}/>
+  pen distance 
+  <NumberWidget id="d" min={0} max={100} value={params.d} on:valueChange={handleValueChange}/>
+  in color
+  <ColorWidget id="color" value={params.color} on:valueChange={handleValueChange}/>
+  {/if}
 
-{#if params.position && !params.tempPosition}
-at 
-  <CoordinateWidget id="position" value={params.position} on:valueChange={handleValueChange}/>
-{/if}
-</div>
+  {#if params.position && !params.tempPosition}
+  at 
+    <CoordinateWidget id="position" value={params.position} on:valueChange={handleValueChange}/>
+  {/if}

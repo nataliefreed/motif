@@ -29,8 +29,8 @@
   import type { SortableEvent } from 'sortablejs';
   import { createEventDispatcher } from 'svelte';
   import { scale, fade } from 'svelte/transition';
-  import { selectedActionID } from '../../stores/dataStore';
-
+  import { selectedActionID, selectedCodeEffect } from '../../stores/dataStore';
+    import type { E } from 'vitest/dist/types-198fd1d9';
 
   const dispatch = createEventDispatcher();
 
@@ -38,10 +38,25 @@
   export let depth = 0;
 
   function handleReorder(event: SortableEvent) {
+    // console.log("handling reorder in DOM", event);
     const oldIndex = event.oldIndex;
     const newIndex = event.newIndex;
+    // console.log("oldIndex:", oldIndex, "newIndex:", newIndex);
     if (oldIndex === newIndex) return;
-    dispatch('reorder', { oldIndex, newIndex });
+    dispatch('reorder', { oldIndex, newIndex }); // dispatch to main app to update actual action list
+  }
+
+  // todo: select on drag handle click as well as action item content
+  function handleItemClick(event: Event, actionId: string) {
+    const target = event.target as Element;
+    if($selectedCodeEffect == "point" || !$selectedCodeEffect) {
+        if(target && target.classList.contains('drag-handle') || target.classList.contains('action-item-content') || target === event.currentTarget) { //if not a widget, select the action
+        selectAction(actionId);
+      }
+    }
+    else {
+      dispatch('codeEffect', { actionId, codeEffect: $selectedCodeEffect });
+    }
   }
 
   function selectAction(actionID: string) {
@@ -55,11 +70,14 @@
 
 <ol class={listStyleClass}>
 <!-- <ol style={depth % 2 === 0 ? "list-style-type: decimal;" : "list-style-type: lower-alpha;"}> -->
-  <SortableList class="" onUpdate={handleReorder} handle='.drag-handle' animation={150}>
+  <!-- handle='.drag-handle' -->
+  <!-- group='nested-action-list' fallbackOnBody={true} swapThreshold={0.65} -->
+  <SortableList class="" onUpdate={handleReorder} animation={150} filter='.filtered'>
     {#each children as action (action.uuid)}
-      <li class:selected={$selectedActionID === action.uuid} class="scale-from-left" in:scale={{ duration: 400, start: 0.25, opacity: 1 }} id={`action-${action.uuid}`}>
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <span class="drag-handle" on:click={() => selectAction(action.uuid)}></span>  
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+      <li class:selected={$selectedActionID == action.uuid} class:filtered={$selectedCodeEffect != "point" && $selectedCodeEffect} class="scale-from-left" in:scale={{ duration: 400, start: 0.25, opacity: 1 }} id={`action-${action.uuid}`}>
+        <span class="drag-handle" on:click={e => handleItemClick(e, action.uuid)}></span>
         <ActionItem {action} depth = {depth+1} />
       </li>
     {/each}
@@ -122,12 +140,16 @@
     color: #979797;
     border: 1px solid #aeaeae;
     background-color: #efefef;
-    cursor: grab;
+    /* cursor: grab; */
     z-index: 0;
   }
 
   .drag-handle:active {
     cursor: grabbing;
+  }
+
+  li:not(.filtered) {
+    cursor: grab;
   }
 
   .selected {

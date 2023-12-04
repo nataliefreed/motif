@@ -2,7 +2,10 @@ import { Vector } from 'ts-matrix';
 import P5 from 'p5-svelte';
 
 export function deepCopy(obj: Object) {
-  return JSON.parse(JSON.stringify(obj));
+  let copy = {};
+  if(obj) {
+    return JSON.parse(JSON.stringify(obj));
+  }
 }
 
 /* old version that worked: https://editor.p5js.org/squishynotions/sketches/dhmmKeiuV */

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
-  import { actionStore, toolStore, selectedEffect, activeCategory, stagedAction, selectedActionID } from '../stores/dataStore';
+  import { actionStore, toolStore, selectedEffect, activeCategory, stagedAction, selectedActionID, selectedCodeEffect } from '../stores/dataStore';
   import LinedPaper from './LinedPaper.svelte';
   import ActionItem from './actions and widgets/ActionItem.svelte';
 	import type { Action } from '../types/types';
@@ -18,7 +18,7 @@
   import CategoryToolbar from './toolbars/CategoryToolbar.svelte';
   import { p5CanvasSize } from '../stores/canvasStore';
   import tinycolor from "tinycolor2";
-
+  import GridWidget from './actions and widgets/GridWidget.svelte';
 
   const [send, receive] = crossfade({}); // TODO
 
@@ -28,10 +28,12 @@
     scrollToSelectedAction($selectedActionID);
   }
 
+  $: codeCursorClass = `${$selectedCodeEffect}-cursor`;
+
   async function scrollToSelectedAction(id: string) {
     await tick(); // Wait for the DOM to update with the new item
     const element = document.getElementById(`action-${id}`);
-    console.log("scrolling to element:", element);
+    // console.log("scrolling to element:", element);
     if (element) {
       element.scrollIntoView({
         behavior: 'smooth',
@@ -138,10 +140,7 @@
         selectedEffect.set(data[0]); // set the first effect as default
         activeCategory.set(data[0].category);
       }
-    });
 
-    // TODO: why two subscribes to toolStore?
-    toolStore.subscribe(data => {
       allCategories = [...new Set(data.map(tool => tool.category))];
     });
 
@@ -153,6 +152,7 @@
 
   // reorder action store to match DOM order
   function onReorder(event:any) {
+    // console.log("got reorder event:", event);
     // console.log("actionStore:", {$actionStore});
     const { oldIndex, newIndex } = event.detail;
     if (oldIndex === newIndex) return;
@@ -163,14 +163,6 @@
       currentData.children.splice(newIndex, 0, movedItem);
       return currentData;
     });
-    // actionStore.update(currentData => { //new array
-    //   if (!currentData.children) return currentData;
-    //   const newArr = [...currentData.children];
-    //   const [movedItem] = newArr.splice(oldIndex, 1);
-    //   newArr.splice(newIndex, 0, movedItem);
-    //   console.log("action store updated");
-    //   return { ...currentData, children: newArr };
-    // });
   }
 
   let count = 1;
@@ -217,27 +209,7 @@
           <button class="icon-button" id="eyedropperButton" on:click={eyedropperSelectedAction}><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M341.6 29.2L240.1 130.8l-9.4-9.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-9.4-9.4L482.8 170.4c39-39 39-102.2 0-141.1s-102.2-39-141.1 0zM55.4 323.3c-15 15-23.4 35.4-23.4 56.6v42.4L5.4 462.2c-8.5 12.7-6.8 29.6 4 40.4s27.7 12.5 40.4 4L89.7 480h42.4c21.2 0 41.6-8.4 56.6-23.4L309.4 335.9l-45.3-45.3L143.4 411.3c-3 3-7.1 4.7-11.3 4.7H96V379.9c0-4.2 1.7-8.3 4.7-11.3L221.4 247.9l-45.3-45.3L55.4 323.3z"/></svg></button>
           <button class="icon-button" id="saveToMyTools" on:click={() => saveMyTool($stagedAction) }><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 384 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M0 48C0 21.5 21.5 0 48 0l0 48V441.4l130.1-92.9c8.3-6 19.6-6 27.9 0L336 441.4V48H48V0H336c26.5 0 48 21.5 48 48V488c0 9-5 17.2-13 21.3s-17.6 3.4-24.9-1.8L192 397.5 37.9 507.5c-7.3 5.2-16.9 5.9-24.9 1.8S0 497 0 488V48z"/></svg></button>
         </div>  
-    </div>
-
-    <!-- <CodeToolbar /> -->
-    
-    
-    <!-- <div class="drawing-area">
-      <Canvas />
-    </div>
-
-    <EffectToolbar categories={allCategories}>
-      {#if $stagedAction}
-        <div class="stagedAction" in:fade={{ duration: 300 }} out:fade={{ duration: 300 }}><ActionItem action={$stagedAction} /></div>
-      {/if}
-    </EffectToolbar>
-     -->
-    
-    
-    <!-- <div class="instabuttons">
-      <button id="saveToolButton" on:click={() => saveMyTool($stagedAction) }>Save to My Tools</button>
-      <button id="downloadButton" on:click={downloadCanvas}>Download</button>
-    </div> -->
+      </div>
 
   </Page>
   <Page slot="right">
@@ -248,19 +220,21 @@
       <button class="instabutton" id="downloadButton" on:click={handleDownload}><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32V274.7l-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7V32zM64 352c-35.3 0-64 28.7-64 64v32c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V416c0-35.3-28.7-64-64-64H346.5l-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352H64zm368 56a24 24 0 1 1 0 48 24 24 0 1 1 0-48z"/></svg></button>
     </div>
 
+    <div class={codeCursorClass}>
       <LinedPaper>
-        <ActionItem action={$actionStore} depth={0} on:reorder={onReorder}/>
+          <ActionItem action={$actionStore} depth={0} on:reorder={onReorder}/>
         <!-- {#if $stagedAction}
           <div class="stagedAction"><ActionItem action={$stagedAction} /></div>
         {/if} -->
       </LinedPaper>
 
-      
+      <div id="code-toolbar"><CodeToolbar /></div>
+
+    </div>
+      <GridWidget />
     <!-- debugging <History /> -->
-
-
-    
   </Page>
+
 </Notebook>
 
 <!-- <div>Canvas Size: {$p5CanvasSize.width} x {$p5CanvasSize.height}</div> -->
@@ -307,11 +281,9 @@
     margin-top: 30px;
   } */
 
-  .code-toolbar {
-    /* width: 100%; */
-    /* position: absolute; */
-    /* top: 20px;
-    left: 90px; */
+  #code-toolbar {
+    position: relative;
+    bottom: 50px;
   }
 
   .staged-action-container {
@@ -399,6 +371,34 @@
     /* margin-bottom: 100px; */
   }
 
+  /* Cursor styles */
+  .point-cursor {
+    cursor: auto;
+  }
+  .random-cursor {
+    cursor: url('/assets/cursors/random.svg') 9 9, pointer;
+  }
+  .rainbow-cursor {
+    cursor: url('/assets/cursors/rainbow-solid.svg') 9 9, pointer;
+  }
+  .shuffle-cursor {
+    cursor: url('/assets/cursors/shuffle-solid.svg') 9 9, pointer;
+  }
+  .repeat-cursor {
+    cursor: url('/assets/cursors/clone-regular.svg') 9 9, pointer;
+  }
+  .redo-cursor {
+    cursor: url('/assets/cursors/pen-to-square-solid.svg') 9 9, pointer;
+  }
+  .erase-cursor {
+    cursor: url('/assets/cursors/eraser-solid.svg') 9 9, pointer;
+  }
+  .sample-cursor {
+    cursor: url('/assets/cursors/vial-solid.svg') 9 9, pointer;
+  }
+  .connect-cursor {
+    cursor: url('/assets/cursors/diagram-project-solid.svg') 9 9, pointer;
+  }
 
 </style>
 

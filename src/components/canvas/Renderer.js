@@ -52,6 +52,33 @@ export const renderers = {
 
   },
 
+  'spiro': (p, params, p5) => {
+    let R = params.R || 200;
+    let r = params.r || 96;
+    let d = params.d || 60;
+    let spiroColor = p.color(params.color);
+    let x = params.position.x;
+    let y = params.position.y;
+  
+    let k = (R - r) / r;
+    let spacing = p.TWO_PI / 200;
+  
+    p.push();
+    p.translate(x, y);
+    p.stroke(spiroColor);
+    p.strokeWeight(2);
+  
+    for (let theta = 0; theta < 12 * p.TWO_PI; theta += spacing) {
+      let x1 = (R - r) * Math.cos(theta) + d * Math.cos(k * theta);
+      let y1 = (R - r) * Math.sin(theta) - d * Math.sin(k * theta);
+      let x2 = (R - r) * Math.cos(theta + spacing) + d * Math.cos(k * (theta + spacing));
+      let y2 = (R - r) * Math.sin(theta + spacing) - d * Math.sin(k * (theta + spacing));
+      p.line(x1, y1, x2, y2);
+    }
+  
+    p.pop();
+  },
+  
   'circle': (p, params, p5) => {
     // debugger;
     let x = params.tempPosition? params.tempPosition.x : params.position.x;

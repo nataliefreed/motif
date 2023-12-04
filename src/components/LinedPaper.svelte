@@ -5,9 +5,7 @@
 <!-- <div class="page"> -->
   <div class="container">
     <div class="lined-paper">
-      <ul class="top-level-list-container">
-        <slot></slot>
-      </ul>
+      <ul class="top-level-list-container"><slot></slot></ul>
     </div>
   </div>
 <!-- </div> -->

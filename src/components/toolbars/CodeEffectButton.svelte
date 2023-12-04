@@ -21,7 +21,19 @@
 
 <style>
   .code-effect-button {
-    /* background-color: green; */
+    display: flex;
+    width: calc(var(--toolbar-height)*1.5);
+    height: calc(var(--toolbar-height)*1.5);
+    justify-content: center;
+    align-items: center;
+    border: 1px solid black;
+    /* border-radius: 5px; */
+    cursor: pointer;
+    background-size: cover; /* Ensure the image covers the button */
+    background-position: center; /* Center the background image */
+    /* margin: 0 5px; */
+    font-size: 0.5em;
+    font-family: 'FuturaHandwritten';
   }
 
   .selected {

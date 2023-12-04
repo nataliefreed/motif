@@ -2,6 +2,7 @@
   import { createEventDispatcher } from 'svelte';
   import NumberWidget from './NumberWidget.svelte';
   import { p5CanvasSize } from '../../stores/canvasStore';
+  import GridWidget from './GridWidget.svelte';
 
   const dispatch = createEventDispatcher();
 
@@ -36,7 +37,16 @@
   
 </script>
 
-<span>
+<span class="coordinate">
+<!-- ({x}, {displayY}) -->
 (<NumberWidget id="x" min={0} max={600} value={x} on:valueChange={handleXChange}/>,
 <NumberWidget id="y" min={0} max={600} value={displayY} on:valueChange={handleYChange}/>)
 </span>
+
+<style>
+  /* .coordinate {
+    text-decoration: underline lightgray 2px;
+    text-underline-offset: 5px;
+    cursor: pointer;
+  } */
+</style>

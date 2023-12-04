@@ -1,5 +1,5 @@
 <script>
-  import { activeCategory, toolStore, selectedEffect, myTools } from '../../stores/dataStore';
+  import { activeCategory, toolStore, selectedEffect, myTools, codeTools } from '../../stores/dataStore';
   import EffectButton from './EffectButton.svelte';
   let tools = [];
 
@@ -7,6 +7,10 @@
     if($activeCategory === "my tools") {
      tools = $myTools;
      selectedEffect.set(tools[tools.length-1]);
+    }
+    else if($activeCategory === "recipe tools") {
+      tools = $codeTools;
+      selectedEffect.set(tools[tools.length-1]);
     }
     else {
       tools = $toolStore.filter(tool => tool.category === $activeCategory);

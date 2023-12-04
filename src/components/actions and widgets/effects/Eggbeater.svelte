@@ -15,7 +15,6 @@
 </script>
 
 {#if name === 'grow' || name === 'shrink'}
-<div>
   Scale by 
   <NumberWidget id="scaleBy" min={0} max={600} value={params.scaleBy || 300} on:valueChange={handleValueChange}/>%
   width 
@@ -24,19 +23,13 @@
   <NumberWidget id="height" min={1} max={600} value={params.height || 100} on:valueChange={handleValueChange}/>
   at 
   <CoordinateWidget id="position" value={params.position || []} on:valueChange={handleValueChange}/>
-</div>
 {:else if name === 'shift'}
-<div>
   <ChooserWidget id="orientation" options={['vertical','horizontal']} selected={params.orientation || 'vertical'} on:valueChange={handleValueChange}/>
   shift with height 
   <NumberWidget id="height" min={1} max={600} value={params.height || 50} on:valueChange={handleValueChange}/> 
   and offset 
   <NumberWidget id="offset" min={1} max={600} value={params.offset || 20} on:valueChange={handleValueChange}/>
-  
-</div>
 {:else if name === 'invert' || name === 'grayscale' || name === 'threshold'}
-<div>
   Color shift of type 
   <ChooserWidget id="filter" options={['invert','threshold', 'gray']} selected={params.filter || 'invert'} on:valueChange={handleValueChange}/>
-</div>
 {/if}

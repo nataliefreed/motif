@@ -25,11 +25,9 @@
 </script>
 
 {#if name === 'straight line'}
-  <div>
     Line
     from <CoordinateWidget id="start" value={params.start} on:valueChange={handleValueChange}/>
     to <CoordinateWidget id="end" value={params.end} on:valueChange={handleValueChange}/>
     in color <ColorWidget id="color" value={params.color || '#f57f7e'} on:valueChange={handleValueChange}/>
     in width <NumberWidget id="lineWeight" value={params.lineWeight || 5} on:valueChange={handleValueChange}/>
-  </div>
 {/if}

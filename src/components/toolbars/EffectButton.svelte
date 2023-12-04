@@ -12,7 +12,8 @@
 </script>
 
 <button 
-  class="effect-button" 
+  class="effect-button"
+  class:code-button={tool.tags === 'recipe'}
   on:click={handleClick} 
   transition:slide={{axis: 'x', duration: 800}} 
   class:selected={$selectedEffect === tool}
@@ -39,10 +40,16 @@
     font-family: 'FuturaHandwritten';
   }
 
+  .code-button {
+    background-color: pink;
+  }
+
   .selected {
     box-shadow:inset 0px 0px 0px 2px #f5a623;
     /* border: 1px solid #f5a623; */
   }
+
+
 </style>
 
 <!-- style:background-image={thumbnail ? `url(${thumbnail})` : ''} -->
