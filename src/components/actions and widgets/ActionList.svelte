@@ -76,7 +76,7 @@
     {#each children as action (action.uuid)}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-      <li class:selected={$selectedActionID == action.uuid} class:filtered={$selectedCodeEffect != "point" && $selectedCodeEffect} class="scale-from-left" in:scale={{ duration: 400, start: 0.25, opacity: 1 }} id={`action-${action.uuid}`}>
+      <li class:selected={$selectedActionID == action.uuid} class:obscured={action.obscured} class:filtered={$selectedCodeEffect != "point" && $selectedCodeEffect} class="scale-from-left" in:scale={{ duration: 400, start: 0.25, opacity: 1 }} id={`action-${action.uuid}`}>
         <span class="drag-handle" on:click={e => handleItemClick(e, action.uuid)}></span>
         <ActionItem {action} depth = {depth+1} />
       </li>
@@ -157,6 +157,10 @@
     background-color: lightyellow;
     border-radius: 5px;
     display: block; /* Ensure the border wraps the entire item */
+  }
+
+  .obscured {
+    opacity: 0.5;
   }
 
   .scale-from-left {

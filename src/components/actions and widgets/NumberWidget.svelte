@@ -64,11 +64,12 @@
 
   function updateValue(event: Event) {
     value = +sliderElement.value; //+ is string to number
-    debugger;
   }
 
   function handleClick(event: Event) {
-    console.log($selectedCodeEffect);
+    dispatch('valueChange', { id, value: savedValue });
+    previewEnd = true;
+
     if(tippyInstance && $selectedCodeEffect == 'point' || !$selectedCodeEffect) {
       tippyInstance.show();
     }
@@ -78,6 +79,23 @@
         dispatch('valueChange', { id, value: +value });
         break;
       default: break;
+    }
+  }
+
+    let previewEnd = false;
+    let savedValue = value;
+    // let oscillateID: number;
+    function handleMouseOver(event: Event) {
+    savedValue = value;
+    let newValue = value+10;
+    previewEnd = false;
+    dispatch('valueChange', { id, value: newValue });
+  }
+
+  function handleMouseOut(event: Event) {
+    if(!previewEnd) {
+      dispatch('valueChange', { id, value: savedValue });
+      previewEnd = true;
     }
   }
 
@@ -101,7 +119,12 @@
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<span class="number-widget" bind:this={numberWidget} on:click={handleClick} style="cursor: {cursorStyle};">
+<span class="number-widget"
+      bind:this={numberWidget}
+      on:click={handleClick}
+      on:mouseover={handleMouseOver}
+      on:mouseout={handleMouseOut}
+      style="cursor: {cursorStyle};">
   {value}
 </span>
 

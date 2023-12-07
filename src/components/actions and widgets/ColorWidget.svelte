@@ -6,6 +6,7 @@
 
   export let id = '';
   export let value = '#FFFFFF';
+  let savedValue = value;
 
   const dispatch = createEventDispatcher();
 
@@ -32,9 +33,10 @@
   let hiddenColorInput: HTMLInputElement;
 
   onMount(() => {
-    updateColorButton(value);
+    colorButton.style.background = tinycolor(value).toHexString();
   });
 
+  let previewEnd = false;
   function updateColorButton(hexColor: string) {
     colorButton.style.background = tinycolor(hexColor).toHexString();
     dispatch('valueChange', { id, value: hexColor });
@@ -44,13 +46,17 @@
     var randomColor = tinycolor.random();
     value = randomColor.toHexString();
     updateColorButton(value);
+    previewEnd = true;
   }
 
   function handleClick(event: Event) {
-    if($selectedCodeEffect === "shuffle") {
+    updateColorButton(savedValue);
+    previewEnd = true;
+    
+    if($selectedCodeEffect === "random") {
       randomize();
     }
-    else {
+    else if($selectedCodeEffect === "point") {
       openColorPicker();
     }
   }
@@ -65,6 +71,31 @@
     updateColorButton(value);
   }
 
+  // let oscillateID: number;
+  function handleMouseOver(event: Event) {
+    savedValue = value;
+    let newValue = tinycolor(value);
+    newValue.spin(10);
+    if(newValue.isDark()) newValue.brighten(20);
+    else newValue.darken(20);
+    previewEnd = false;
+    updateColorButton(newValue.toHexString());
+    // oscillate value
+    // oscillateID = window.setInterval(() => {
+    //   updateColorButton(tinycolor(value).spin(1).toHexString());
+    // }, 20);
+  }
+  function handleMouseOut(event: Event) {
+    //console.log("returning to saved value!");
+    // clearInterval(oscillateID);
+    if(!previewEnd) {
+      updateColorButton(savedValue);
+      previewEnd = true;
+    }
+  }
+
+  $: cursorStyle = ($selectedCodeEffect === null || $selectedCodeEffect === 'point') ? 'pointer' : '';
+
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -72,7 +103,9 @@
   class="color-palette-widget"
   bind:this={colorButton}
   on:click={handleClick}
-  style="background-color: {value};"
+  on:mouseover={handleMouseOver}
+  on:mouseout={handleMouseOut}
+  style="background-color: {value}; cursor: {cursorStyle};"
   id={id}
 ></span>
 
@@ -93,7 +126,7 @@
     padding: 0;
     border: none;
     border: 2px solid rgba(0,0,0,0.1);
-    cursor: pointer;
+    /* cursor: pointer; */
     display: inline-block;
     line-height: 1.5em;
     vertical-align: top;

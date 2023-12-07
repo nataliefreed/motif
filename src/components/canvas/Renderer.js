@@ -6,31 +6,61 @@ export const renderers = {
     p.background(params.color);
   },
 
-  'gradient': (p, params, p5) => {
-    let color1 = p.color(params.color1);
+  'gradient': function* (p, params, p5, allAtOnce=true) {
+    let color1 = p.color(params.color);
     let color2 = p.color(params.color2);
     let angle = -p.radians(params.angle);
+    let yieldEvery = params.yieldEvery || 10; // Number of lines to draw before yielding
   
     let len = Math.sqrt(p.width * p.width + p.height * p.height); // diagonal length
   
     p.push();
     p.translate(p.width / 2, p.height / 2); // Move the origin to the center
+    p.translate(100, 100); // placeholder: some time lost drawing off canvas esp when lines are straight
     p.rotate(angle); // Rotate around the new origin
     p.noFill();
     p.strokeWeight(1);
   
-    for (let i = -len / 2; i < len / 2; i++) {
+    for (let i = -len / 2, count = 0; i < len / 2; i++, count++) {
       let percentage = p.map(i, -len / 2, len / 2, 0, 1);
       p.stroke(p.lerpColor(color1, color2, percentage));
-      p.line(-len / 2, i, len / 2, i); // Draw from left to right, with i as the y-coordinate
-    }
+      p.line(-len / 2, i, len / 2, i);
   
+      if(allAtOnce) continue;
+      if (count >= yieldEvery) {
+        yield; // Yield every 'yieldEvery' iterations
+        count = 0; // Reset the counter after yielding
+      }
+    }
     p.pop();
+    p.reset();
   },
 
-  'stripes': (p, params, p5) => {
-    let color1 = p.color(params.color1);
-    let color2 = p.color(params.color2);
+  // 'gradient': (p, params, p5) => {
+  //   let color1 = p.color(params.color1);
+  //   let color2 = p.color(params.color2);
+  //   let angle = -p.radians(params.angle);
+  //   let progress = params.progress;
+  
+  //   let len = Math.sqrt(p.width * p.width + p.height * p.height); // diagonal length
+  
+  //   p.push();
+  //   p.translate(p.width / 2, p.height / 2); // Move the origin to the center
+  //   p.rotate(angle); // Rotate around the new origin
+  //   p.noFill();
+  //   p.strokeWeight(1);
+  
+  //   for (let i = -len / 2; i < len / 2; i++) {
+  //     let percentage = p.map(i, -len / 2, len / 2, 0, 1);
+  //     p.stroke(p.lerpColor(color1, color2, percentage));
+  //     p.line(-len / 2, i, len / 2, i); // Draw from left to right, with i as the y-coordinate
+  //   }
+  
+  //   p.pop();
+  // },
+
+  'stripes': (p, params, p5, progress) => {
+    let color = p.color(params.color);
     let stripeWidth = params.stripeWidth;
     let angle = p.radians(params.angle);
     let len = Math.sqrt(p.width * p.width + p.height * p.height); // diagonal length
@@ -41,27 +71,26 @@ export const renderers = {
 
     p.noFill();
     p.strokeWeight(stripeWidth);
+    p.stroke(color);
 
     for(let i = -len / 2; i < len / 2; i += stripeWidth * 2) { 
       // i += stripeWidth * 2 - accounting for both drawn stripe and gap in between
-      let stripeColor = p.lerpColor(color1, color2, (i + len / 2) / len); // Adjust the mapping for color interpolation
-      p.stroke(stripeColor);
       p.line(-len / 2, i, len / 2, i); // Line from negative to positive x-axis, with i as the y-coordinate
     }
     p.pop();
-
   },
 
   'spiro': (p, params, p5) => {
-    let R = params.R || 200;
-    let r = params.r || 96;
-    let d = params.d || 60;
+    let R = params.outer || 30;
+    let r = params.inner || 24;
+    let d = params.d || 50;
     let spiroColor = p.color(params.color);
     let x = params.position.x;
     let y = params.position.y;
+    if(p === p5.getDragCanvas) debugger;
   
     let k = (R - r) / r;
-    let spacing = p.TWO_PI / 200;
+    let spacing = p.TWO_PI / 30;
   
     p.push();
     p.translate(x, y);
@@ -320,6 +349,10 @@ export const renderers = {
     }
   },
 
+  'bounce': (p, params, p5) => {
+
+  },
+
   'copy cutout': (p, params, p5) => {
     p.push();
 
@@ -489,135 +522,115 @@ export const renderers = {
   },
 
   'paperdoll': (p, params, p5) => {
+    // Get the color value from params.
+    let skinTone = p.color(params.skinTone);
+    
+    // Parse the outfit and hairstyle numbers from params
+    let outfitNumber = parseInt(params.outfit);
+    let hairstyleNumber = parseInt(params.hairstyle);
 
+    // Find the corresponding outfit and hairstyle objects in paperdolls
+    let outfit = paperdolls.outfits.find(o => o.number === outfitNumber);
+    let hairstyle = paperdolls.hairstyles.find(h => h.number === hairstyleNumber);
+
+    if (!outfit || !hairstyle) {
+      console.error('Could not find outfit and/or hairstyle:', outfitNumber, hairstyleNumber);
+      return;
+    }
+
+    // Create a new graphics object to draw the paper doll and its outfit and hairstyle fills
+    let dollCanvas = p5.createGraphics(p.width, p.height);
+    var outfitCanvas = p5.createGraphics(p.width, p.height);
+    var hairstyleCanvas = p5.createGraphics(p.width, p.height);
+
+      //Tint and then draw the doll fill
+      // dollCanvas.tint(skinTone);
+      // dollCanvas.image(paperdolls.dollFill, 0, 0, p.width, p.height);
+      // dollCanvas.noTint();
+      // dollCanvas.image(paperdolls.underlayerFill, 0, 0, p.width, p.height);
+
+
+      // Use doll fill as a mask for the skin tone
+      dollCanvas.image(paperdolls.dollFill, 0, 0, p.width, p.height);
+      dollCanvas.drawingContext.globalCompositeOperation = 'source-in';
+      let skinToneCanvas = p.createGraphics(p.width, p.height);
+      skinToneCanvas.background(skinTone);
+      dollCanvas.image(skinToneCanvas, 0, 0);
+
+      // Prepare the outfit fill as a mask
+      outfitCanvas.image(outfit.fill, 0, 0, p.width, p.height);
+      outfitCanvas.image(paperdolls.underlayerFill, 0, 0, p.width, p.height); // underwear!
+      outfitCanvas.drawingContext.globalCompositeOperation = 'source-in';
+      outfitCanvas.image(this, 0, 0, p.width, p.height);
+
+      // Prepare the hairstyle fill as a mask
+      hairstyleCanvas.image(hairstyle.fill, 0, 0, p.width, p.height);
+      hairstyleCanvas.drawingContext.globalCompositeOperation = 'source-in';
+      hairstyleCanvas.image(this, 0, 0, p.width, p.height);
+
+      // Lighten the original painting
+      this.noStroke();
+      this.fill(255, 220);
+      this.rect(0, 0, p.width, p.height);
+
+      // Draw the doll fill
+      this.image(dollCanvas, 0, 0);
+
+      // Draw the outfit fill
+      this.image(outfitCanvas, 0, 0);
+
+      // Draw the outfit outline
+      if(outfit.outline){
+        this.image(outfit.outline, 0, 0, this.width, this.height);
+      }
+
+      // Draw the hair fill
+      this.image(hairstyleCanvas, 0, 0);
+
+      // Draw the hair outline
+      if(hairstyle.outline){
+        this.image(hairstyle.outline, 0, 0, this.width, this.height);
+      }
+
+      dollCanvas.remove();
+      outfitCanvas.remove();
+      hairstyleCanvas.remove();
+      skinToneCanvas.remove();
+    }
+  };
+
+function loadStencils() {
+  let paperdolls = { // paper doll stencils
+    outfits: [],
+    hairstyles: [],
   }
-};
 
+  let outfitNames = ['01', '02'];
+  let hairstyleNames = ['01', '02', '03'];
 
+  // Load doll fill
+  paperdolls.dollFill = p.loadImage(`src/assets/stencils/paper-dolls/outfits/doll-fill.png`);
+  paperdolls.underlayerFill = p.loadImage('src/assets/stencils/paper-dolls/outfits/underlayer-fill.png');
 
+  // Load all outfit and hairstyle files
+  for (let name of outfitNames) {
+    let outfit = {
+      number: parseInt(name),
+      outline: p.loadImage(`src/assets/stencils/paper-dolls/outfits/outlines/${name}.png`),
+      fill: p.loadImage(`src/assets/stencils/paper-dolls/outfits/fills/${name}.png`)
+    };
+    paperdolls.outfits.push(outfit);
+  }
 
-
-
-
-
-// let paperdolls = { // paper doll stencils
-//   outfits: [],
-//   hairstyles: [],
-// };
-
-// p.loadStencils = () => {
-//   let outfitNames = ['01', '02'];
-//   let hairstyleNames = ['01', '02', '03'];
-
-//   // Load doll fill
-//   paperdolls.dollFill = p.loadImage(`src/assets/stencils/paper-dolls/outfits/doll-fill.png`);
-//   paperdolls.underlayerFill = p.loadImage('src/assets/stencils/paper-dolls/outfits/underlayer-fill.png');
-
-//   // Load all outfit and hairstyle files
-//   for (let name of outfitNames) {
-//     let outfit = {
-//       number: parseInt(name),
-//       outline: p.loadImage(`src/assets/stencils/paper-dolls/outfits/outlines/${name}.png`),
-//       fill: p.loadImage(`src/assets/stencils/paper-dolls/outfits/fills/${name}.png`)
-//     };
-//     paperdolls.outfits.push(outfit);
-//   }
-
-//   for (let name of hairstyleNames) {
-//     let hairstyle = {
-//       number: parseInt(name),
-//       outline: p.loadImage(`src/assets/stencils/paper-dolls/hairstyles/outlines/${name}.png`),
-//       fill: p.loadImage(`src/assets/stencils/paper-dolls/hairstyles/fills/${name}.png`)
-//     };
-//     paperdolls.hairstyles.push(hairstyle);
-//   }
-// }
-
-// p5.prototype.paperdoll = function(params) {
-
-//   // Get the color value from params.
-//   let skinTone = p.color(params.skinTone);
-  
-//   // Parse the outfit and hairstyle numbers from params
-//   let outfitNumber = parseInt(params.outfit);
-//   let hairstyleNumber = parseInt(params.hairstyle);
-
-//   // Find the corresponding outfit and hairstyle objects in paperdolls
-//   let outfit = paperdolls.outfits.find(o => o.number === outfitNumber);
-//   let hairstyle = paperdolls.hairstyles.find(h => h.number === hairstyleNumber);
-
-//   if (!outfit || !hairstyle) {
-//     console.error('Could not find outfit and/or hairstyle:', outfitNumber, hairstyleNumber);
-//     return;
-//   }
-
-//   // Create a new graphics object to draw the paper doll and its outfit and hairstyle fills
-//   let dollCanvas = p5.createGraphics(p.width, p.height);
-//   var outfitCanvas = p5.createGraphics(p.width, p.height);
-//   var hairstyleCanvas = p5.createGraphics(p.width, p.height);
-
-//   //Tint and then draw the doll fill
-//   // dollCanvas.tint(skinTone);
-//   // dollCanvas.image(paperdolls.dollFill, 0, 0, p.width, p.height);
-//   // dollCanvas.noTint();
-//   // dollCanvas.image(paperdolls.underlayerFill, 0, 0, p.width, p.height);
-
-
-//   // Use doll fill as a mask for the skin tone
-//   dollCanvas.image(paperdolls.dollFill, 0, 0, p.width, p.height);
-//   dollCanvas.drawingContext.globalCompositeOperation = 'source-in';
-//   let skinToneCanvas = p.createGraphics(p.width, p.height);
-//   skinToneCanvas.background(skinTone);
-//   dollCanvas.image(skinToneCanvas, 0, 0);
-
-//   // Prepare the outfit fill as a mask
-//   outfitCanvas.image(outfit.fill, 0, 0, p.width, p.height);
-//   outfitCanvas.image(paperdolls.underlayerFill, 0, 0, p.width, p.height); // underwear!
-//   outfitCanvas.drawingContext.globalCompositeOperation = 'source-in';
-//   outfitCanvas.image(this, 0, 0, p.width, p.height);
-
-//   // Prepare the hairstyle fill as a mask
-//   hairstyleCanvas.image(hairstyle.fill, 0, 0, p.width, p.height);
-//   hairstyleCanvas.drawingContext.globalCompositeOperation = 'source-in';
-//   hairstyleCanvas.image(this, 0, 0, p.width, p.height);
-
-//   // Lighten the original painting
-//   this.noStroke();
-//   this.fill(255, 220);
-//   this.rect(0, 0, p.width, p.height);
-
-//   // Draw the doll fill
-//   this.image(dollCanvas, 0, 0);
-
-//   // Draw the outfit fill
-//   this.image(outfitCanvas, 0, 0);
-
-//   // Draw the outfit outline
-//   if(outfit.outline){
-//     this.image(outfit.outline, 0, 0, this.width, this.height);
-//   }
-
-//   // Draw the hair fill
-//   this.image(hairstyleCanvas, 0, 0);
-
-//   // Draw the hair outline
-//   if(hairstyle.outline){
-//     this.image(hairstyle.outline, 0, 0, this.width, this.height);
-//   }
-
-//   dollCanvas.remove();
-//   outfitCanvas.remove();
-//   hairstyleCanvas.remove();
-//   skinToneCanvas.remove();
-// }
-
-
-
-
-
-
-
-
+  for (let name of hairstyleNames) {
+    let hairstyle = {
+      number: parseInt(name),
+      outline: p.loadImage(`src/assets/stencils/paper-dolls/hairstyles/outlines/${name}.png`),
+      fill: p.loadImage(`src/assets/stencils/paper-dolls/hairstyles/fills/${name}.png`)
+    };
+    paperdolls.hairstyles.push(hairstyle);
+  }
+}
 
 function applyFilter(p, params, p5) {
   // 2nd param to filter false: don't use WebGL in P2D mode, Svelte P5 doesn't seem to support it
@@ -632,6 +645,7 @@ function tile(p, params, p5) {
   let w = params.width;
   let h = params.height;
   let tiling = params.tiling;
+  let numTiles = params.numTiles || p.map(x, 0, p.width, 1, 5);
   let numRings = params.numRings || p.map(x, 0, p.width, 1, 5);
 
   let sx = x - w / 2;
@@ -663,7 +677,7 @@ function tile(p, params, p5) {
         checkerboard(p, snapshot, w, h);
         break;
       case 'radial':
-        radial(p, snapshot, w, h, numRings);
+        radial(p, snapshot, w, h, numTiles, numRings);
         break;
       default:
         break;
@@ -725,13 +739,13 @@ function checkerboard(p, snapshot, w, h) {
   }
 }
 
-function radial(p, snapshot, w, h, numRings) {
+function radial(p, snapshot, w, h, numTiles, numRings) { //todo: take out numTiles param OR make it controllable
   let centerX = p.width / 2;
   let centerY = p.height / 2;
 
   for (let ring = 0; ring < numRings; ring++) {
       // Calculate circumference for the current ring
-      let radius = (ring + 1) * h;
+      let radius = (ring + 1) * 1.5 * h;
       let circumference = 2 * Math.PI * radius;
       let numTiles = Math.floor(circumference / w);
 

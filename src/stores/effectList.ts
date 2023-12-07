@@ -3,47 +3,6 @@
 
 export const effectList = [
   {
-    name: 'stripes',
-    dropdownName: 'Stripes',
-    category: 'backgrounds',
-    tags: 'drawing',
-    cursor: '/assets/cursors/fill-drip-solid.svg',
-    thumbnail: 'stripes.jpg',
-    mouseActionType: 'drag',
-    params: {
-      stripeWidth: 50,
-      color1: '#a8d863',
-      color2: '#d967a7',
-      angle: 0
-    }
-  },
-  {
-    name: 'gradient',
-    dropdownName: 'Gradient',
-    category: 'backgrounds',
-    tags: 'drawing',
-    cursor: '/assets/cursors/fill-drip-solid.svg',
-    thumbnail: 'gradient.jpeg',
-    mouseActionType: 'drag',
-    params: {
-      color1: '#79C2D7',
-      color2: '#E869A3',
-      angle: 0
-    }
-  },
-  {
-    name: 'solid fill', //TODO: rename name and dropdownName and also the effect name in actions. dropdown name is button name, name is type of effect (eg. tile which has subtypes in params)
-    dropdownName: 'Solid Fill',
-    category: 'backgrounds',
-    tags: 'drawing',
-    cursor: '/assets/cursors/fill-drip-solid.svg',
-    thumbnail: 'solid_fill.jpg',
-    mouseActionType: 'drag',
-    params: {
-      color: '#bbaa00'
-    }
-  },
-  {
     name: 'spiro',
     dropdownName: 'Spiro',
     category: 'shapes',
@@ -52,9 +11,9 @@ export const effectList = [
     thumbnail: 'spiro.jpg',
     mouseActionType: 'drag',
     params: {
-      R: 200,
-      r: 96,
-      d: 60,
+      outer: 50,
+      inner: 24,
+      d: 20,
       color: '#FF0000',
       position: {x: 100, y: 100}
     },
@@ -162,205 +121,58 @@ export const effectList = [
     }
   },
   {
-    name: 'straight line',
-    dropdownName: 'straight line',
-    category: 'brushes',
+    name: 'stripes',
+    dropdownName: 'Stripes',
+    category: 'backgrounds',
     tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'straight_line.jpeg',
+    cursor: '/assets/cursors/fill-drip-solid.svg',
+    thumbnail: 'stripes.jpg',
     mouseActionType: 'drag',
     params: {
-      start: {x:100, y:100},
-      end: {x:300, y:300},
-      color: '#f57f7e',
-      lineWeight: 5
+      stripeWidth: 20,
+      color: '#a8d863',
+      color2: '#d967a7',
+      angle: 0
     }
   },
   {
-    name: 'tile',
-    dropdownName: 'Straight Grid',
-    category: 'patterns',
+    name: 'gradient',
+    dropdownName: 'Gradient',
+    category: 'backgrounds',
     tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'straight_grid.jpg',
+    cursor: '/assets/cursors/fill-drip-solid.svg',
+    thumbnail: 'gradient.jpeg',
     mouseActionType: 'drag',
     params: {
-      tiling: 'straight grid',
-      width: 100,
-      height: 100,
-      position: {x: 150, y: 150}
+      color: '#79C2D7',
+      color2: '#E869A3',
+      angle: 0
     }
   },
   {
-    name: 'tile',
-    dropdownName: 'Brick',
-    category: 'patterns',
+    name: 'solid fill', //TODO: rename name and dropdownName and also the effect name in actions. dropdown name is button name, name is type of effect (eg. tile which has subtypes in params)
+    dropdownName: 'Solid Fill',
+    category: 'backgrounds',
     tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'brick.jpg',
-    mouseActionType: 'single-click',
-    params: {
-      tiling: 'brick',
-      width: 100,
-      height: 40,
-      position: {x: 150, y: 150}
-    }
-  },
-  {
-    name: 'tile',
-    dropdownName: 'Half Drop',
-    category: 'patterns',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'half_drop.jpg',
-    mouseActionType: 'single-click',
-    params: {
-      tiling: 'half drop',
-      width: 150,
-      height: 250,
-      position: {x: 150, y: 150}
-    }
-  },
-  {
-    name: 'tile',
-    dropdownName: 'Checkerboard',
-    category: 'patterns',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'checkerboard.jpg',
-    mouseActionType: 'single-click',
-    params: {
-      tiling: 'checkerboard',
-      width: 50,
-      height: 50,
-      position: {x: 150, y: 150}
-    }
-  },
-  {
-    name: 'tile',
-    dropdownName: 'Radial',
-    category: 'patterns',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'radial.jpg',
+    cursor: '/assets/cursors/fill-drip-solid.svg',
+    thumbnail: 'solid_fill.jpg',
     mouseActionType: 'drag',
     params: {
-      tiling: 'radial',
-      width: 50,
-      height: 50,
-      angle: 0,
-      position: {x: 150, y: 150}
+      color: '#bbaa00'
     }
   },
   {
-    name: 'grow',
-    dropdownName: 'Grow',
-    category: 'effects',
+    name: 'noise',
+    dropdownName: 'Noise',
+    category: 'backgrounds',
     tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'grow.jpg',
+    cursor: '/assets/cursors/fill-drip-solid.svg',
+    thumbnail: 'noise.jpg',
     mouseActionType: 'drag',
     params: {
-      scaleBy: 300,
-      width: 100,
-      height: 100,
-      position: {x: 150, y: 150}
+      color: '#bbaa00'
     }
   },
-  {
-    name: 'shrink',
-    dropdownName: 'Shrink',
-    category: 'effects',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'shrink.jpg',
-    mouseActionType: 'drag',
-    params: {
-      scaleBy: 50,
-      width: 100,
-      height: 100,
-      position: {x: 150, y: 150}
-    }
-  },
-  {
-    name: 'shift',
-    dropdownName: 'Shift',
-    category: 'effects',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'shift.jpeg',
-    mouseActionType: 'drag',
-    params: {
-      orientation: 'vertical',
-      height: 50,
-      offset: 20
-    }
-  },
-  {
-    name: 'invert',
-    dropdownName: 'Invert',
-    category: 'effects',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'invert.jpg',
-    mouseActionType: 'single-click',
-    params: {
-      filter: 'invert'
-    }
-  },
-  {
-    name: 'grayscale',
-    dropdownName: 'Grayscale',
-    category: 'effects',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'grayscale.jpg',
-    mouseActionType: 'single-click',
-    params: {
-      filter: 'gray'
-    }
-  },
-  {
-    name: 'threshold',
-    dropdownName: 'Threshold',
-    category: 'effects',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'threshold.jpg',
-    mouseActionType: 'single-click',
-    params: {
-      filter: 'threshold'
-    }
-  },
-  // {
-  //   name: 'copy cutout',
-  //   dropdownName: 'Copy Shape',
-  //   category: 'shapes',
-  //   tags: 'drawing',
-  //   cursor: './assets/cursors/star-solid.svg',
-  //   thumbnail: 'copy.jpg',
-  //   mouseActionType: 'drag-with-hover-preview',
-  //   params: {
-  //     width: 50,
-  //     height: 100,
-  //     shape: 'rectangle',
-  //     start: {x:100, y:100},
-  //     end: {x:300, y:300},
-  //   }
-  // },
-  /*'circle', 'square', 'triangle', 'star', 'heart',*/
-  // {
-  //   name: 'snapshot',
-  //   dropdownName: 'Take Snapshot',
-  //   category: 'Effects',
-  //   tags: 'drawing',
-  //   init: `Snapshot {id:'snapshot', type:'image'}`,
-  //   cursor: './assets/cursors/star-solid.svg',
-  //   mouseActionType: 'single-click',
-  //   onact: (my) => {
-  //     my.target.snapshot(my.data.image);
-  //   }
-  // },
   {
     name: 'along path',
     dropdownName: 'Dot brush',
@@ -380,100 +192,25 @@ export const effectList = [
           effect: 'circle',
           params: {
             radius: 3,
-            color: '#f35b04',
+            color: '#80babd',
+            position: {x: 0, y: 0}
+          }
+        },
+        {
+          name: 'circle',
+          type: 'effect',
+          category: 'shapes',
+          effect: 'circle',
+          params: {
+            radius: 3,
+            color: '#19518a',
             position: {x: 0, y: 0}
           }
         }
       ]
     },
   },
-  {
-    name: 'along path',
-    dropdownName: 'Heart brush',
-    category: 'brushes',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'heart_brush.jpeg',
-    mouseActionType: 'drag-path',
-    params: {
-      path: [],
-      pathSpacing: 15,
-      children: [
-        {
-          name: 'heart',
-          type: 'effect',
-          category: 'shapes',
-          effect: 'heart',
-          params: {
-            size: 7,
-            color: '#f35b04',
-            position: {x: 0, y: 0}
-          }
-        },
-        {
-          name: 'heart',
-          type: 'effect',
-          category: 'shapes',
-          effect: 'heart',
-          params: {
-            size: 10,
-            color: '#f18701',
-            position: {x: 100, y: 100}
-          }
-        }
-      ]
-    },
-  },
-  {
-    name: 'along path',
-    dropdownName: 'Star Brush',
-    category: 'brushes',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'star_brush.png',
-    mouseActionType: 'drag-path',
-    params: {
-      path: [],
-      pathSpacing: 20,
-      children: [
-        {
-          name: 'star',
-          type: 'effect',
-          category: 'shapes',
-          effect: 'star',
-          params: {color: '#F72585', position: {x: 0, y: 0}, r1: 10, r2: 7, npoints: 5}
-        },
-        {
-          name: 'star',
-          type: 'effect',
-          category: 'shapes',
-          effect: 'star',
-          params: {color: '#7209B7', position: {x: 0, y: 0}, r1: 12, r2: 6, npoints: 7}
-        },
-        {
-          name: 'star',
-          type: 'effect',
-          category: 'shapes',
-          effect: 'star',
-          params: {color: '#3A0CA3', position: {x: 0, y: 0}, r1: 12, r2: 5, npoints: 15}
-        },
-        {
-          name: 'star',
-          type: 'effect',
-          category: 'shapes',
-          effect: 'star',
-          params: {color: '#4361EE', position: {x: 0, y: 0}, r1: 10, r2: 4, npoints: 4}
-        },
-        {
-          name: 'star',
-          type: 'effect',
-          category: 'shapes',
-          effect: 'star',
-          params: {color: '#4CC9F0', position: {x: 0, y: 0}, r1: 11, r2: 3, npoints: 15}
-        }
-      ]
-    }
-  },
+
   {
     name: 'along path',
     dropdownName: 'Mosaic Brush',
@@ -565,7 +302,315 @@ export const effectList = [
         }
       ]
     }
-  },  
+  }, 
+
+  {
+    name: 'along path',
+    dropdownName: 'Heart brush',
+    category: 'brushes',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'heart_brush.jpeg',
+    mouseActionType: 'drag-path',
+    params: {
+      path: [],
+      pathSpacing: 15,
+      children: [
+        {
+          name: 'heart',
+          type: 'effect',
+          category: 'shapes',
+          effect: 'heart',
+          params: {
+            size: 16,
+            color: '#f35b04',
+            position: {x: 0, y: 0}
+          }
+        },
+        {
+          name: 'heart',
+          type: 'effect',
+          category: 'shapes',
+          effect: 'heart',
+          params: {
+            size: 10,
+            color: '#f18701',
+            position: {x: 100, y: 100}
+          }
+        }
+      ]
+    },
+  },
+
+  {
+    name: 'along path',
+    dropdownName: 'Star Brush',
+    category: 'brushes',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'star_brush.png',
+    mouseActionType: 'drag-path',
+    params: {
+      path: [],
+      pathSpacing: 20,
+      children: [
+        {
+          name: 'star',
+          type: 'effect',
+          category: 'shapes',
+          effect: 'star',
+          params: {color: '#F72585', position: {x: 0, y: 0}, r1: 10, r2: 7, npoints: 5}
+        },
+        {
+          name: 'star',
+          type: 'effect',
+          category: 'shapes',
+          effect: 'star',
+          params: {color: '#7209B7', position: {x: 0, y: 0}, r1: 12, r2: 6, npoints: 7}
+        },
+        {
+          name: 'star',
+          type: 'effect',
+          category: 'shapes',
+          effect: 'star',
+          params: {color: '#3A0CA3', position: {x: 0, y: 0}, r1: 12, r2: 5, npoints: 15}
+        },
+        {
+          name: 'star',
+          type: 'effect',
+          category: 'shapes',
+          effect: 'star',
+          params: {color: '#4361EE', position: {x: 0, y: 0}, r1: 10, r2: 4, npoints: 4}
+        },
+        {
+          name: 'star',
+          type: 'effect',
+          category: 'shapes',
+          effect: 'star',
+          params: {color: '#4CC9F0', position: {x: 0, y: 0}, r1: 11, r2: 3, npoints: 15}
+        }
+      ]
+    }
+  },
+
+  {
+    name: 'bounce',
+    dropdownName: 'bounce',
+    category: 'brushes',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'straight_line.jpeg',
+    mouseActionType: 'drag',
+    params: {
+      position: {x:100, y:100},
+      duration: 1000,
+      angle: 0,
+      spacing: 1,
+      color: '#f57f7e'
+    }
+  },
+  {
+    name: 'straight line',
+    dropdownName: 'straight line',
+    category: 'brushes',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'straight_line.jpeg',
+    mouseActionType: 'drag',
+    params: {
+      start: {x:100, y:100},
+      end: {x:300, y:300},
+      color: '#f57f7e',
+      lineWeight: 5
+    }
+  },
+  {
+    name: 'tile',
+    dropdownName: 'Straight Grid',
+    category: 'patterns',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'straight_grid.jpg',
+    mouseActionType: 'drag',
+    params: {
+      tiling: 'straight grid',
+      width: 100,
+      height: 100,
+      position: {x: 150, y: 150}
+    }
+  },
+  {
+    name: 'tile',
+    dropdownName: 'Brick',
+    category: 'patterns',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'brick.jpg',
+    mouseActionType: 'single-click',
+    params: {
+      tiling: 'brick',
+      width: 100,
+      height: 40,
+      position: {x: 150, y: 150}
+    }
+  },
+  {
+    name: 'tile',
+    dropdownName: 'Half Drop',
+    category: 'patterns',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'half_drop.jpg',
+    mouseActionType: 'single-click',
+    params: {
+      tiling: 'half drop',
+      width: 150,
+      height: 250,
+      position: {x: 150, y: 150}
+    }
+  },
+  {
+    name: 'tile',
+    dropdownName: 'Checkerboard',
+    category: 'patterns',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'checkerboard.jpg',
+    mouseActionType: 'single-click',
+    params: {
+      tiling: 'checkerboard',
+      width: 50,
+      height: 50,
+      position: {x: 150, y: 150}
+    }
+  },
+  {
+    name: 'tile',
+    dropdownName: 'Radial',
+    category: 'patterns',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'radial.jpg',
+    mouseActionType: 'drag',
+    params: {
+      tiling: 'radial',
+      width: 50,
+      height: 50,
+      numTiles: 5,
+      numRings: 3,
+      position: {x: 150, y: 150}
+    }
+  },
+  {
+    name: 'invert',
+    dropdownName: 'Invert',
+    category: 'effects',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'invert.jpg',
+    mouseActionType: 'single-click',
+    params: {
+      filter: 'invert'
+    }
+  },
+  {
+    name: 'grayscale',
+    dropdownName: 'Grayscale',
+    category: 'effects',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'grayscale.jpg',
+    mouseActionType: 'single-click',
+    params: {
+      filter: 'gray'
+    }
+  },
+  {
+    name: 'threshold',
+    dropdownName: 'Threshold',
+    category: 'effects',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'threshold.jpg',
+    mouseActionType: 'single-click',
+    params: {
+      filter: 'threshold'
+    }
+  },
+  {
+    name: 'grow',
+    dropdownName: 'Grow',
+    category: 'effects',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'grow.jpg',
+    mouseActionType: 'drag',
+    params: {
+      scaleBy: 300,
+      width: 100,
+      height: 100,
+      position: {x: 150, y: 150}
+    }
+  },
+  {
+    name: 'shrink',
+    dropdownName: 'Shrink',
+    category: 'effects',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'shrink.jpg',
+    mouseActionType: 'drag',
+    params: {
+      scaleBy: 50,
+      width: 100,
+      height: 100,
+      position: {x: 150, y: 150}
+    }
+  },
+  {
+    name: 'shift',
+    dropdownName: 'Shift',
+    category: 'effects',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'shift.jpeg',
+    mouseActionType: 'drag',
+    params: {
+      orientation: 'vertical',
+      height: 50,
+      offset: 20
+    }
+  },
+  // {
+  //   name: 'copy cutout',
+  //   dropdownName: 'Copy Shape',
+  //   category: 'shapes',
+  //   tags: 'drawing',
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   thumbnail: 'copy.jpg',
+  //   mouseActionType: 'drag-with-hover-preview',
+  //   params: {
+  //     width: 50,
+  //     height: 100,
+  //     shape: 'rectangle',
+  //     start: {x:100, y:100},
+  //     end: {x:300, y:300},
+  //   }
+  // },
+  /*'circle', 'square', 'triangle', 'star', 'heart',*/
+  // {
+  //   name: 'snapshot',
+  //   dropdownName: 'Take Snapshot',
+  //   category: 'Effects',
+  //   tags: 'drawing',
+  //   init: `Snapshot {id:'snapshot', type:'image'}`,
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   mouseActionType: 'single-click',
+  //   onact: (my) => {
+  //     my.target.snapshot(my.data.image);
+  //   }
+  // },
+  
   // {
   //   name: 'mosaic brush',
   //   dropdownName: 'mosaic brush',
@@ -641,6 +686,19 @@ export const effectList = [
     params: {
       length: 100,
       width: 100,
+      height: 100
+    }
+  },
+  {
+    name: 'envelope',
+    dropdownName: 'Envelope',
+    category: 'stencils',
+    tags: 'stencils',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'envelope.jpg',
+    mouseActionType: 'drag',
+    params: {
+      width: 200,
       height: 100
     }
   },

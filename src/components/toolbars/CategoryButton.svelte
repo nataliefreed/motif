@@ -12,8 +12,6 @@
 
 <button on:click={handleCategoryClick} class="category-button {isActive ? 'active' : ''}">{category}</button>
 
-
-
 <style>
   .category-button {
     display: flex;

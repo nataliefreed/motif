@@ -4,17 +4,21 @@ import { effectList } from '../stores/effectList.js';
 import { v4 as uuidv4 } from 'uuid';
 
 export const actionStore = writable<Action>({name:"default", type:'list', category:'none', children:[], uuid:""});
+export const stagedAction = writable<Action | null>(null);
+export const changedActionID = writable('');
+
 export const toolStore = writable<Effect[]>([]);
 export const myTools = writable<Effect[]>([]);
 export const codeTools = writable<Effect[]>([]);
 
 export const activeCategory = writable('');
 export const selectedEffect = writable<Effect | null>(null);
-export const stagedAction = writable<Action | null>(null);
 
 export const selectedCodeEffect = writable('point');
 
 export const selectedActionID = writable('');
+
+export const currentColor = writable('#000000');
 
 export function initStores(projectID: string | null) {
   actionStore.set(getInitialActions());

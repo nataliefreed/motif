@@ -13,24 +13,26 @@
   import { crossfade } from 'svelte/transition';
   import CodeToolbar from './toolbars/CodeToolbar.svelte';
   import { historyStore } from '../stores/history';
-  import { fade } from 'svelte/transition';
+  import { fade, fly } from 'svelte/transition';
   import Tooltip from './Tooltip.svelte';
   import CategoryToolbar from './toolbars/CategoryToolbar.svelte';
   import { p5CanvasSize } from '../stores/canvasStore';
   import tinycolor from "tinycolor2";
   import GridWidget from './actions and widgets/GridWidget.svelte';
+  import { setupKeyboardEvents, removeKeyboardEvents } from './KeyboardEvents';
+  import EffectSettingsPanel from './toolbars/EffectSettingsPanel.svelte';
 
   const [send, receive] = crossfade({}); // TODO
 
   let allCategories:string[] = [];
 
   $: if ($selectedActionID) {
-    scrollToSelectedAction($selectedActionID);
+    scrollToAction($selectedActionID);
   }
 
   $: codeCursorClass = `${$selectedCodeEffect}-cursor`;
 
-  async function scrollToSelectedAction(id: string) {
+  async function scrollToAction(id: string) {
     await tick(); // Wait for the DOM to update with the new item
     const element = document.getElementById(`action-${id}`);
     // console.log("scrolling to element:", element);
@@ -73,7 +75,7 @@
         rotation: Math.round(Math.random() * 360),
         color: tinycolor.random().toHexString(),
       };
-      $stagedAction.params.children.forEach((child) => {
+      $stagedAction.params.children.forEach((child:Action) => {
         child.params = {
           ...child.params,
           radius: Math.round(Math.random() * 10 + 1),
@@ -92,12 +94,58 @@
   }
 
   function clearAll() {
+    if($actionStore.children) {
+      let lastItem = $actionStore.children[$actionStore.children.length - 1];
+      if(lastItem) {
+        scrollToAction(lastItem.uuid);
+      }
+      // let penultimateItem = $actionStore.children[$actionStore.children.length - 2];
+      // if(penultimateItem) {
+      //   selectedActionID.set(penultimateItem.uuid);
+      // }
+    }
+    const interval = setInterval(() => {
+        actionStore.update(data => {
+            if (data.children && data.children.length > 0) {
+                const penultimateItem = data.children[data.children.length - 2];
+                if(penultimateItem) {
+                  selectedActionID.set(penultimateItem.uuid);
+                }
+                // Remove the last element from the array
+                const removed = data.children.pop();
+            } else {
+                // If no more elements, clear the interval
+                clearInterval(interval);
+                selectedActionID.set("");
+                saveToHistory(); // Call saveToHistory after all elements are removed
+            }
+            return data;
+        });
+    }, 300); //rate at which to clear actions
+  }
+
+  let markHidden: Function; // in Canvas.svelte
+  function clearHidden() {
+    markHidden($actionStore);
     actionStore.update(data => {
-      data.children = [];
       return data;
     });
-    saveToHistory();
+    //   if (data && data.children) {
+    //     data.children = data.children.filter(action => !action.obscured);
+    //   }
+    //   return data;
+    // });
+    // saveToHistory();
   }
+
+  // function clearHidden() {
+  //   actionStore.update(data => {
+  //     data.children?.map(action => { action.obscured = true });
+  //     return data;
+  //   });
+  //   // render, mark items that don't change the canvas as hidden
+  //   // then clear all hidden items
+  // }
 
   function deleteSelected() {
     if ($selectedActionID) {
@@ -129,6 +177,13 @@
   //   }
   // });
 
+  // $: if ($actionStore) {
+  //     $actionStore.children.forEach((action, i) => {
+  //       console.log(i, action.effect, action.uuid);
+  //     });
+  //     console.log(" ");
+  // }
+
   export let initialActions:Action;
 
   onMount(() => {
@@ -144,6 +199,12 @@
       allCategories = [...new Set(data.map(tool => tool.category))];
     });
 
+    setupKeyboardEvents();
+
+    return () => {
+        removeKeyboardEvents();
+    };
+
     // actionStore.subscribe(action => {
     //   console.log("actionStore:", $actionStore);
     // });
@@ -152,21 +213,29 @@
 
   // reorder action store to match DOM order
   function onReorder(event:any) {
-    // console.log("got reorder event:", event);
-    // console.log("actionStore:", {$actionStore});
     const { oldIndex, newIndex } = event.detail;
-    if (oldIndex === newIndex) return;
 
+    if (oldIndex === newIndex) return;
+    console.log("reordering");
     actionStore.update(currentData => {
       if (!currentData.children) return currentData;
-      const [movedItem] = currentData.children.splice(oldIndex, 1);
-      currentData.children.splice(newIndex, 0, movedItem);
-      return currentData;
+      let newChildren = [...currentData.children]; //shallow copy
+      const [movedItem] = newChildren.splice(oldIndex, 1);
+      newChildren.splice(newIndex, 0, movedItem);
+      // Return new object
+      return {...currentData, children: newChildren};
     });
+
+    //todo: check if properly triggering cache update
+
+    //before returning, run a check to make sure dom order matches action store order
+    // list items in DOM look like:
+    // <li class="scale-from-left s-de4ivI8dEb2o" id="action-31f24737-5d9e-48ae-b09b-c8e3a357b57e" style="">
+    // each child in the action store has a uuid matching the id in the DOM (not including 'action-')
+    
   }
 
   let count = 1;
-
 
   // let mouseX = 0;
   // let mouseY = 0;
@@ -188,44 +257,41 @@
     <div class="drawing-grid-container">
 
       <!-- First Row -->
-      <div class="drawing-area"><Canvas bind:downloadCanvas /></div>
-      <div></div>
+      <div class="drawing-area"><Canvas bind:downloadCanvas bind:markHidden /></div>
   
       <div class="category-toolbar"><CategoryToolbar categories={allCategories} /></div>
-      <div></div>
       <div class="drawing-effect-toolbar"><EffectToolbar /></div>
-      <div></div>
       <!-- <button class="icon-button">😮</button> -->
       
-
       <!-- Third Row -->
       <div class="staged-action-container">
-        {#if $stagedAction}
+        <!-- {#if $stagedAction}
           <div class="staged-action" in:fade={{ duration: 300 }} out:fade={{ duration: 300 }}><ActionItem action={$stagedAction} isOpen={true} /></div>
-        {/if}
+        {/if} -->
+        <EffectSettingsPanel />
       </div>
-        <div class="staged-action-buttons">
-          <button class="icon-button" id="surpriseMeButton" on:click={randomizeAction}><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M190.5 68.8L225.3 128H224 152c-22.1 0-40-17.9-40-40s17.9-40 40-40h2.2c14.9 0 28.8 7.9 36.3 20.8zM64 88c0 14.4 3.5 28 9.6 40H32c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32H480c17.7 0 32-14.3 32-32V160c0-17.7-14.3-32-32-32H438.4c6.1-12 9.6-25.6 9.6-40c0-48.6-39.4-88-88-88h-2.2c-31.9 0-61.5 16.9-77.7 44.4L256 85.5l-24.1-41C215.7 16.9 186.1 0 154.2 0H152C103.4 0 64 39.4 64 88zm336 0c0 22.1-17.9 40-40 40H288h-1.3l34.8-59.2C329.1 55.9 342.9 48 357.8 48H360c22.1 0 40 17.9 40 40zM32 288V464c0 26.5 21.5 48 48 48H224V288H32zM288 512H432c26.5 0 48-21.5 48-48V288H288V512z"/></svg></button>
-          <button class="icon-button" id="eyedropperButton" on:click={eyedropperSelectedAction}><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M341.6 29.2L240.1 130.8l-9.4-9.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-9.4-9.4L482.8 170.4c39-39 39-102.2 0-141.1s-102.2-39-141.1 0zM55.4 323.3c-15 15-23.4 35.4-23.4 56.6v42.4L5.4 462.2c-8.5 12.7-6.8 29.6 4 40.4s27.7 12.5 40.4 4L89.7 480h42.4c21.2 0 41.6-8.4 56.6-23.4L309.4 335.9l-45.3-45.3L143.4 411.3c-3 3-7.1 4.7-11.3 4.7H96V379.9c0-4.2 1.7-8.3 4.7-11.3L221.4 247.9l-45.3-45.3L55.4 323.3z"/></svg></button>
-          <button class="icon-button" id="saveToMyTools" on:click={() => saveMyTool($stagedAction) }><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 384 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M0 48C0 21.5 21.5 0 48 0l0 48V441.4l130.1-92.9c8.3-6 19.6-6 27.9 0L336 441.4V48H48V0H336c26.5 0 48 21.5 48 48V488c0 9-5 17.2-13 21.3s-17.6 3.4-24.9-1.8L192 397.5 37.9 507.5c-7.3 5.2-16.9 5.9-24.9 1.8S0 497 0 488V48z"/></svg></button>
-        </div>  
-      </div>
+    </div>
 
   </Page>
   <Page slot="right">
     <div class="instabuttons">
-      <button class="instabutton" id="undoButton" on:click={undo}>Undo</button>
-      <button class="instabutton" id="deleteButton" on:click={deleteSelected}><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zm96 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16z"/></svg></button>
-      <button class="instabutton" id="clearAllButton" on:click={clearAll}>Clear All</button>
-      <button class="instabutton" id="downloadButton" on:click={handleDownload}><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32V274.7l-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7V32zM64 352c-35.3 0-64 28.7-64 64v32c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V416c0-35.3-28.7-64-64-64H346.5l-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352H64zm368 56a24 24 0 1 1 0 48 24 24 0 1 1 0-48z"/></svg></button>
+      <button class="instabutton left-aligned" id="undoButton" on:click={undo}>Undo</button>
+      <div class="middle-aligned">
+        <button class="instabutton" id="deleteButton" on:click={deleteSelected}><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zm96 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16z"/></svg></button>
+        <button class="instabutton" id="clearAllButton" on:click={clearAll}>Clear All</button>
+        <button class="instabutton" id="clearHiddenButton" on:click={clearHidden}>Mark Hidden</button>
+      </div>
+      <button class="instabutton right-aligned" id="downloadButton" on:click={handleDownload}><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32V274.7l-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7V32zM64 352c-35.3 0-64 28.7-64 64v32c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V416c0-35.3-28.7-64-64-64H346.5l-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352H64zm368 56a24 24 0 1 1 0 48 24 24 0 1 1 0-48z"/></svg></button>
     </div>
 
-    <div class={codeCursorClass}>
+    <div class={codeCursorClass} id="code-zone">
       <LinedPaper>
           <ActionItem action={$actionStore} depth={0} on:reorder={onReorder}/>
-        <!-- {#if $stagedAction}
-          <div class="stagedAction"><ActionItem action={$stagedAction} /></div>
-        {/if} -->
+        {#if $stagedAction}
+          {#key $stagedAction.uuid}
+            <div class="staged-action-in-list" in:fly={{ x: -1500, y: 1000, duration: 300 }} out:fade={{ duration: 300 }}>&#8680 &#8680 <ActionItem action={$stagedAction} /></div>
+          {/key}
+        {/if}
       </LinedPaper>
 
       <div id="code-toolbar"><CodeToolbar /></div>
@@ -265,16 +331,21 @@
   .drawing-grid-container {
     display: grid;
     /* grid-template-columns: 1fr 40px; */
-    grid-template-columns: 501px 30px;
+    grid-template-columns: 501px;
     /* grid-template-rows: 3fr auto 1fr 40px; */
     grid-template-rows: 501px auto 37px 1fr;
-    margin: 50px 20px auto 20px;
+    margin: auto;
     max-height: calc(var(--page-height)*0.9);
   }
 
   .drawing-area {
     overflow: hidden;
+    margin-bottom: 20px;
     /* border: 1px solid black; */
+  }
+
+  #code-zone {
+    height: calc(var(--page-height)*0.9);
   }
 
   /* .code-area {
@@ -290,7 +361,7 @@
     border: 1px solid black;
     display: grid;
     grid-template-columns: auto;
-    grid-template-rows: 150px;
+    grid-template-rows: auto;
     
   }
 
@@ -317,6 +388,12 @@
     /* width: calc(var(--canvas-width)*0.8); */
     /* padding: 30px;
     box-shadow: 1px 2px 3px 2px gray; */
+  }
+
+  .staged-action-in-list {
+    font-style: italic;
+    opacity: 70%;
+    margin: 1.7em 0 1.7em 1em;
   }
 
   .stagedActionHover {

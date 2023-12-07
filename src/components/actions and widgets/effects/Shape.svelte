@@ -69,12 +69,12 @@
   to
   <CoordinateWidget id="end" value={params.end} on:valueChange={handleValueChange}/>
 {:else if name === 'spiro'}
-  Spiro with outer
-  <NumberWidget id="R" min={5} max={400} value={params.R} on:valueChange={handleValueChange}/>
+  Spiro outer
+  <NumberWidget id="outer" min={5} max={300} value={params.outer} on:valueChange={handleValueChange}/>
   inner
-  <NumberWidget id="r" min={5} max={200} value={params.r} on:valueChange={handleValueChange}/>
-  pen distance 
-  <NumberWidget id="d" min={0} max={100} value={params.d} on:valueChange={handleValueChange}/>
+  <NumberWidget id="inner" min={5} max={params.outer-1} value={params.inner} on:valueChange={handleValueChange}/>
+  pen at 
+  <NumberWidget id="d" min={0} max={100} value={params.d} on:valueChange={handleValueChange}/>%
   in color
   <ColorWidget id="color" value={params.color} on:valueChange={handleValueChange}/>
   {/if}

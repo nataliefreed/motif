@@ -8,7 +8,7 @@
   import Brush from './effects/Brush.svelte';
   import { actionStore } from '../../stores/dataStore';
   import Shape from './effects/Shape.svelte';
-  import { selectedActionID, selectedCodeEffect } from '../../stores/dataStore';
+  import { selectedActionID, selectedCodeEffect, changedActionID } from '../../stores/dataStore';
   import PathWidget from './PathWidget.svelte';
   import { onMount, createEventDispatcher } from 'svelte';
   export let action: Action | null;
@@ -28,12 +28,20 @@
   }
 
   function handleUpdate(updatedParams: any) {
-    // console.log("updated params in handleUpdate:", updatedParams);
-    actionStore.update(store => {
-        if(action) { action.params = updatedParams; }
-        //   console.log("updated params after save to store:", updatedParams);
-        return store;
-    });
+    // console.log("parameter update");
+    if(action) {
+        action.params = updatedParams;
+        if($actionStore.children) {
+            const actionInStore = $actionStore.children.some(a => a.uuid === action.uuid);
+            if(actionInStore) {
+                changedActionID.set(action.uuid); // log which action was changed
+                actionStore.update(store => { return store }); //notify Svelte that store has changed
+            }
+            // else {
+            //     console.log("Action not found in store");
+            // }
+        }
+    }
   }
 
   function getActionThumbnail() {
@@ -64,6 +72,7 @@
 </script>
 
 {#if action}
+    <!-- {action.uuid} debugging -->
     {#if action.type === 'list' && Array.isArray(action.children) && action.children.length > 0}
         {action.name}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -73,11 +82,11 @@
         {/if}
     {:else if action.type === 'list' && action.params && Array.isArray(action.params.children) && action.params.children.length > 0}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div class="action-list-heading" on:click={e => handleItemClick(e, action.uuid)}>
+        <span class="action-list-heading" on:click={e => handleItemClick(e, action.uuid)}>
             {action.dropdownName} along<PathWidget points={action.params.path} on:valueChange={handleUpdate}/>
             <!-- svelte-ignore a11y-click-events-have-key-events -->
             <span class="toggle-arrow" on:click={toggle}> {isOpen ? '▼' : '▶'}</span>
-        </div>
+        </span>
             {#if isOpen}
                 <ActionList children={action.params.children} depth={depth} on:reorder/>
             {/if}

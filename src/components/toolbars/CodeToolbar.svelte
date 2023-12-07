@@ -74,8 +74,7 @@
   <CodeEffectButton label="surprise" /> -->
 </Toolbar>
 
-<button class="code-instabutton">save to my tools</button>
-<button class="code-instabutton">group & name</button>
+<button class="code-instabutton">new tool</button>
 
 </div>
 

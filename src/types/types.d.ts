@@ -13,6 +13,7 @@ export interface Action {
   value?: string | number | Action[];
   thumbnail?: string;
   children?: Action[];
+  obscured?: boolean;
 }
 
 export type Effect = {

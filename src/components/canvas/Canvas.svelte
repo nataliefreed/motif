@@ -1,7 +1,7 @@
 <script>
-  import { addActionToActionStore, merge, addEffectAsStagedAction, setActionThumbnail } from '../action-utils';
+  import { addActionToActionStore, merge, addEffectAsStagedAction } from '../action-utils';
 	import P5 from 'p5-svelte';
-  import { actionStore, stagedAction, activeCategory, selectedEffect } from '../../stores/dataStore';
+  import { actionStore, stagedAction, activeCategory, selectedEffect, currentColor, changedActionID } from '../../stores/dataStore';
   import { renderers } from './Renderer.js';
   import { onMount, onDestroy } from 'svelte';
   // import debounce from 'lodash';
@@ -13,21 +13,44 @@
       p5.save('my design.jpg');
     }
   }
+
+  export const markHiddenActions = (actions) => { //ie. hidden behind other graphics or don't change the canvas
+    p5.clear();
+    // render all actions
+    for(let i=0;i<actions.children.length-1;i++)
+    {
+      renderAction(actions.children[i], p5);
+    }
+    p5.getPixels(); //load pixels array
+    let prev = JSON.stringify(p5.pixels);
+    renderAction(actions.children[children.length-1], p5);
+    p5.getPixels(); //load new pixels array
+    let current = JSON.stringify(p5.pixels);
+
+    if(current == previous) {
+      actions.children[children.length-2].obscured = true;
+    }
+    else {
+      actions.children[children.length-2].obscured = false;
+    }
+  }
 	
   let x = 55;
 	let y = 55;
 
   let startX, startY;
-  let currentColor = tinycolor.random().toHexString();
+  // let currentColor = tinycolor.random().toHexString();
   let path = []; //current path points
 
   let p5; //p5 instance
-  let staticCanvas, dragCanvas, hoverCanvas, thumbnailCanvas;
+  let staticCanvas, dragCanvas, hoverCanvas, thumbnailCanvas, cachedCanvas;
   let canvasContainer;
 
   let scaleFactor = 1;
 
   let thumbnails = [];
+
+  let dragRenderFunction;
 
   // TODO: test this
   function setScaleFactor() {
@@ -36,31 +59,46 @@
     canvasContainer.style.transform = `scale(${scaleFactor})`;
   }
 
-
-
   onMount(() => {
     setScaleFactor();
 
     // if selectedEffect changed, update staged action accordingly
     // TODO: potentially pass in current settings as params, eg. global color or random
     selectedEffect.subscribe(effect => {
-      addEffectAsStagedAction(effect, {}); //drawing effects have staged action
+      let params = {};
+      // if(effect.tags != "my tools") {
+        params.color = $currentColor;
+      // }
+      addEffectAsStagedAction(effect, params); //drawing effects have staged action
     });
 
     // render whenever actionStore changes
     actionStore.subscribe(actions => {
-      debouncedRenderAll(actions);
+      if(p5) {
+        // check which action was changed and cache the static canvas for the actions preceding it
+        let changedIndex = 0;
+        changedIndex = actions.children.findIndex(action => action.uuid === $changedActionID);
+        changedActionID.set("");
+        renderAll(actions, changedIndex);
+      }
+    });
+
+    currentColor.subscribe(color => {
+      // console.log("current color changed", color);
+      updateStagedAction({ color: color });
     });
   })
 
   function updateStagedAction(params) {
-    stagedAction.update(action => {
-    let mergedParams = merge(action.params, params);
-    return {
-        ...action,
-        params: mergedParams
-      };
-    });
+    if($stagedAction) {
+      stagedAction.update(action => {
+      let mergedParams = merge(action.params, params);
+      return {
+          ...action,
+          params: mergedParams
+        };
+      });
+    }
     // console.log("new staged action params", $stagedAction.params);
   }
 
@@ -92,24 +130,88 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
   
   */
 
-  function renderAll(actions) {
+  function renderAction(action, canvas) {
+    if(p5) {
+      const renderFunction = renderers[action.effect];
+      if (renderFunction) {
+        if(action.effect == 'gradient') {
+          renderFunction(canvas, action.params, p5, true).next();
+        }
+        else {
+          renderFunction(canvas, action.params, p5);
+        }
+      }
+    }
+  }
+
+ let cachedIndex = 999999;
+  function renderAll(actions, changedIndex = -1) { //changedIndex = -1 means re-render all actions
+    if(changedIndex === -1) console.log("full re-render");
     thumbnails = [];
     if(p5) {
       staticCanvas.clear();
       staticCanvas.background(255);
       // hoverCanvas.clear();
       dragCanvas.clear();
-      actions.children.forEach(action => {
-        const renderFunction = renderers[action.effect];
-        if (renderFunction) {
-          renderFunction(staticCanvas, action.params, p5); // Render to static canvas
+
+      // Render and cache actions up to changedIndex if cache is outdated
+      // Either: cachedIndex is -1 (no cache), or cachedIndex is > changedIndex (cache is outdated)
+      if (cachedIndex >= changedIndex) { //redo cache from scratch
+        cachedCanvas.clear();
+        console.log("Clearing cache");
+        // cachedCanvas.background(100, 0, 100);
+        let endIndex = changedIndex === -1 ? actions.children.length : changedIndex;
+        for (let i = 0; i < endIndex; i++) {
+          renderAction(actions.children[i], cachedCanvas);
         }
-        thumbnailCanvas.image(staticCanvas, 0, 0, thumbnailCanvas.width, thumbnailCanvas.height);
-        // thumbnails.push(thumbnailCanvas.canvas.toDataURL());
-        // thumbnails.push(getThumbnail(thumbnailCanvas, action, 10, 10));
-        //TODO: update specific action with thumbnail
-        // setActionThumbnail(action, thumbnailCanvas.canvas.toDataURL());
-      });
+        cachedIndex = endIndex-1;
+        console.log("Canvas cached up to", cachedIndex);
+      }
+
+      // Cache remaining actions up to changedIndex
+      else if(cachedIndex < changedIndex) {
+        for (let i = cachedIndex+1; i < changedIndex; i++) {
+          console.log("adding to cache", i);
+          renderAction(actions.children[i], cachedCanvas);
+        }
+        cachedIndex = changedIndex - 1;
+      }
+
+      // Use cached canvas
+      console.log("Using cache up to", cachedIndex);
+      staticCanvas.image(cachedCanvas, 0, 0);
+
+      // Render remaining actions
+      for (let i = cachedIndex+1; i < actions.children.length; i++) {
+        console.log("rendering remaining action", i);
+        renderAction(actions.children[i], staticCanvas);
+      }
+
+      // const actionsToRender = actions;
+
+      // //if not cached but fromIndex is > -1 (marked), render until cached index, then cache, then resume rendering the rest
+      // // set cachedIndex to indicate cache has been stored
+      // // next time it's rendered, check for cached index, then draw cached to static canvas, then resume rendering the rest
+      // if(cachedIndex > -1) {
+      //   staticCanvas.image(cached, 0, 0);
+      //   const actionsToRender = actions.slice(cachedIndex + 1);
+      // }
+      //   actionsToRender.children.forEach(action => {
+      //     const renderFunction = renderers[action.effect];
+      //     if (renderFunction) {
+      //       if(action.effect == 'gradient') {
+      //         renderFunction(staticCanvas, action.params, p5, true).next();
+      //       }
+      //       else {
+      //         renderFunction(staticCanvas, action.params, p5); // Render to static canvas
+      //       }
+      //     }
+      //     // thumbnailCanvas.image(staticCanvas, 0, 0, thumbnailCanvas.width, thumbnailCanvas.height);
+      //     // thumbnails.push(thumbnailCanvas.canvas.toDataURL());
+      //     // thumbnails.push(getThumbnail(thumbnailCanvas, action, 10, 10));
+      //     //TODO: update specific action with thumbnail
+      //     // setActionThumbnail(action, thumbnailCanvas.canvas.toDataURL());
+      //   });
 
       p5.clear();
       p5.image(staticCanvas, 0, 0);
@@ -138,14 +240,14 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
 
    */
 
-// my best attempt at explaining these:   
 // sketch is the function that defines the behavior of this specific sketch, passed to the P5 component
 // c is the parameter to sketch, acting as the namespace to call p5 functions
 // p5  is the p5 instance, returned by the P5 component with the instance event - connection to running sketch
 
 	const sketch = (c) => {
-    let s, t, h, a; //s is static canvas, t is temp for dragging, h is temp for hovering, a is to show a single action thumbnail
+    let s, t, h, a, cached, test; //s is static canvas, t is temp for dragging, h is temp for hovering, a is to show a single action thumbnail, cached saves actions that haven't changed between renders
     let thumbnailSize = 10;
+    let renderFunction;
 		c.setup = () => {
 			c.createCanvas(500, 500);
       c.fill(100, 0, 100);
@@ -155,6 +257,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       t = c.createGraphics(c.width, c.height);
       h = c.createGraphics(c.width, c.height);
       a = c.createGraphics(thumbnailSize, thumbnailSize);
+      cached = c.createGraphics(c.width, c.height);
 		};
 
     c.getStaticCanvas = () => {
@@ -173,7 +276,16 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       return a;
     }
 
+    c.getCachedCanvas = () => {
+      return cached;
+    }
+
     c.draw = () => {
+      // if(renderFunction) {
+      //   renderFunction(t, $stagedAction.params, p5, c.millis());
+      // }
+      // c.image(s, 0, 0); //static canvas
+      // c.image(t, 0, 0); //drag canvas
 		};
 
     c.flipY = function(y) {
@@ -182,6 +294,11 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
 	}
 
   onDestroy(() => { //TODO: test this
+    // console.log("destroy");
+    cleanupP5();
+  });
+
+  function cleanupP5() {
     if (p5) {
       staticCanvas.remove();
       dragCanvas.remove();
@@ -191,17 +308,17 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       p5 = undefined;
       console.log("p5 instance removed");
     }
-  });
+  }
 
   function handleNewInstance(event) { //grab the p5 instance when it returns
+    cleanupP5();
 		p5 = event.detail;
     if(p5) {
       staticCanvas = p5.getStaticCanvas();
       dragCanvas = p5.getDragCanvas();
       hoverCanvas = p5.getHoverCanvas();
       thumbnailCanvas = p5.getThumbnailCanvas();
-
-      console.log("canvases:", p5, staticCanvas, dragCanvas, hoverCanvas, thumbnailCanvas)
+      cachedCanvas = p5.getCachedCanvas();
 
       renderAll($actionStore); // render on start
       console.log("p5 instance created");
@@ -260,7 +377,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
    |"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-' 
     */
 
-    else {  
+    else { // dragging
       dragCanvas.clear();
       const renderFunction = renderers[$stagedAction.effect]; // get the renderer for the staged effect
       let params = $stagedAction.params;
@@ -274,6 +391,11 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
           let radius = Math.round(Math.abs(y - startY)) + 1;
           let r2 = Math.round(radius/2);
           updateStagedAction({ r1: radius, r2: r2 });
+        }
+        if('outer' in params) { // spiro
+          let outer = Math.round(Math.abs(y - startY)) + 30;
+          let d = Math.round(mapValue(x, 0, 500, 0, 100));
+          updateStagedAction({ outer: outer, d: d });
         }
         if('npoints' in params) {
           let npoints = Math.round(Math.abs(x - startX)) + 1;
@@ -306,7 +428,16 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       }
       p5.image(staticCanvas, 0, 0);
       p5.image(dragCanvas, 0, 0);
-    } 
+    }
+  }
+
+  function renderStep(generator) {
+    if (!generator.next().done && isDragging) {
+      // If the generator is not done, render the next step
+      p5.image(staticCanvas, 0, 0);
+      p5.image(dragCanvas, 0, 0);
+      requestAnimationFrame(() => renderStep(generator));
+    }
   }
 
   function mapValue(value, start1, stop1, start2, stop2) {
@@ -322,6 +453,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
      */
 
   let isDragging = false;
+  let dragRenderComplete = true;
 
   function handleMouseDown(event) {
 
@@ -341,6 +473,13 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       }
       if($stagedAction.params.path) {
         debouncedStagedActionUpdate({path: path});
+      }
+
+      dragCanvas.clear();
+      dragRenderFunction = renderers[$stagedAction.effect](dragCanvas, $stagedAction.params, p5, false); // get the renderer for the staged effect
+      dragRenderComplete = false;
+      if($stagedAction.effect == 'gradient') {
+        renderStep(dragRenderFunction);
       }
 
       // Listen for global mouseup to handle cases where mouse is released outside the canvas
@@ -369,20 +508,26 @@ function handleMouseUp(event) {
     updateStagedAction({path: getAntPath(path, $stagedAction.params.pathSpacing || 10)}); 
 
     addActionToActionStore($stagedAction);
-    addEffectAsStagedAction($selectedEffect, {}); // reset staged action to default
+    addEffectAsStagedAction($selectedEffect, { color: $currentColor }); // reset staged action to default
 
     path = []; // clear current path
 
-    // don't randomize if it's one of the user saved tools
-    if($activeCategory !== "My Tools") {
-      currentColor = tinycolor.random().toHexString(); // or use with range
-      updateStagedAction({ color: currentColor });
-    }
-
     hoverCanvas.clear();
+    dragCanvas.reset();
+    hoverCanvas.reset();
 
     // Once the mouse is released, remove global listener
     document.removeEventListener('mouseup', globalMouseUp);
+  }
+}
+
+function globalMouseUp(event) {
+  console.log("global mouse up");
+  // p.image(0, 0, staticCanvas);
+  // hoverCanvas.clear();
+  // dragCanvas.clear();
+  if (isDragging) {
+    handleMouseUp(event);
   }
 }
 
@@ -410,16 +555,6 @@ function handleMouseLeave(event) {
   // isDragging = false;
 }
 
-function globalMouseUp(event) {
-  console.log("global mouse up");
-  // p.image(0, 0, staticCanvas);
-  // hoverCanvas.clear();
-  // dragCanvas.clear();
-  if (isDragging) {
-    handleMouseUp(event);
-  }
-}
-
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -444,7 +579,6 @@ function globalMouseUp(event) {
 
 
 <style>
-
   .canvasContainer  {
     /* position: absolute; */
     /* top: calc(var(--lined-paper-line-height)*2); */
@@ -452,7 +586,7 @@ function globalMouseUp(event) {
     /* width: calc(var(--adjusted-page-width)*0.85); */
     max-width: 501px;
     max-height: 501px;
-    border: 1px solid black;
+    /* border: 1px solid black; */
     /* box-shadow: 1px 1px 2px 2px gray; */
     cursor: url('/assets/cursors/paintbrush-solid.svg') 0 28, pointer;
   }

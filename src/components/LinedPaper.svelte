@@ -47,10 +47,10 @@
 
   .lined-paper ul {
       list-style: none;
-      margin: 2.2em 0 0 5em;
+      margin: 2.2em 0 0 0;
       padding: 0;
       scroll-snap-align: start;
-      height: 65%;
+      height: 80%;
       overflow: auto;
       padding-bottom: 3em;
   }
@@ -67,6 +67,7 @@
   }
 
   .top-level-list-container {
+    /* height: 100%; */
     /* border: 1px solid red; */
     /* margin: 5em; */
   }

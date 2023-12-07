@@ -1,6 +1,6 @@
 import type { Action, Effect } from '../types/types';
 import { v4 as uuidv4 } from 'uuid';
-import { actionStore, stagedAction, myTools, selectedActionID, selectedEffect, activeCategory } from '../stores/dataStore'
+import { actionStore, stagedAction, myTools, selectedActionID, selectedEffect, activeCategory, changedActionID } from '../stores/dataStore'
 import { historyStore } from '../stores/history';
 import { get } from 'svelte/store';
 import { deepCopy } from '../utils/utils';
@@ -59,6 +59,7 @@ export function addEffectToActionStore(effect: Effect, params: { [key: string]: 
 }
 
 export function addActionToActionStore(action: Action, params: { [key: string]: any }) {
+  console.log("adding action to action store");
   let newAction = {...action};
   newAction.uuid = uuidv4();
 
@@ -68,14 +69,34 @@ export function addActionToActionStore(action: Action, params: { [key: string]: 
   if(params && action.params) {
     mergedParams = merge(action.params, params);
   }
-
   newAction.params = mergedParams;
 
   actionStore.update(storeValue => {
-    // Assuming children property exists, else initialize it
+    
     storeValue.children = storeValue.children || [];
-    storeValue.children.push(newAction);
-    // console.log("storeValue", storeValue);
+
+    if (action.category === 'backgrounds') {
+      // Insert backgrounds before the first item in the list that is not a background
+      const firstNonBackgroundIndex = storeValue.children.findIndex(child => child.category !== 'backgrounds');
+      if (firstNonBackgroundIndex === -1) {
+        storeValue.children.push(newAction);
+      } else {
+        storeValue.children.splice(firstNonBackgroundIndex, 0, newAction);
+      }
+    } else if (action.category === 'stencils') {
+      // Insert stencils at the end of the list
+      storeValue.children.push(newAction);
+    } else {
+      // For other types, insert after the last item in the list that is not a background or stencil
+      const lastSpecialIndex = storeValue.children.reduce((lastIndex, child, index) => {
+        return (child.category !== 'backgrounds' && child.category !== 'stencils') ? index : lastIndex;
+      }, -1);
+      storeValue.children.splice(lastSpecialIndex + 1, 0, newAction);
+    }
+
+    // set this action as most recently changed
+    changedActionID.set(newAction.uuid);
+
     return storeValue;
   });
 
@@ -149,11 +170,11 @@ export function copySelectedActionToStagedAction() {
   }
 }
 
-export function setActionThumbnail(action:Action, thumbnail:string) {
-  actionStore.update(storeValue => {
-    // storeValue.children = storeValue.children || [];
-    // let index = storeValue.children.indexOf(action);
-    // storeValue.children[index].thumbnail = thumbnail;
-    return storeValue;
-  });
-}
+// export function setActionThumbnail(action:Action, thumbnail:string) {
+//   actionStore.update(storeValue => {
+//     // storeValue.children = storeValue.children || [];
+//     // let index = storeValue.children.indexOf(action);
+//     // storeValue.children[index].thumbnail = thumbnail;
+//     return storeValue;
+//   });
+// }

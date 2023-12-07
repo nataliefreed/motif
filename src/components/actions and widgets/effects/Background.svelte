@@ -19,7 +19,7 @@
   Fill with <ColorWidget id="color" value={params.color} on:valueChange={handleValueChange}/>
 {:else if name === 'gradient'}
   Gradient from 
-  <ColorWidget id="color1" value={params.color1} on:valueChange={handleValueChange}/>
+  <ColorWidget id="color" value={params.color} on:valueChange={handleValueChange}/>
   to 
   <ColorWidget id="color2" value={params.color2} on:valueChange={handleValueChange}/>
   at angle 
@@ -27,12 +27,10 @@
 {:else if name === 'stripes'}
   Stripes of width 
   <NumberWidget id="stripeWidth" min={1} max={300} value={params.stripeWidth} on:valueChange={handleValueChange}/>
-  from 
-  <ColorWidget id="color1" value={params.color1} on:valueChange={handleValueChange}/> 
-  to 
-  <ColorWidget id="color2" value={params.color2} on:valueChange={handleValueChange}/>
   at angle 
   <NumberWidget id="angle" min={0} max={360} value={params.angle} on:valueChange={handleValueChange}/>°
+  in color 
+  <ColorWidget id="color" value={params.color} on:valueChange={handleValueChange}/>
 {/if}
 
 

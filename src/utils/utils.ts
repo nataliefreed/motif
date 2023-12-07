@@ -56,7 +56,7 @@ export function getAntPath(frogPath: [number, number][], stepSize: number = 20):
       let scaledVector = vectorBetween.scale(remainingDistance);
       let newPointPos = previousPoint.add(scaledVector);
       if(newPointPos.values.length == 2) {
-        antPath.push(newPointPos.values);
+        antPath.push([newPointPos.values[0], newPointPos.values[1]]); //because Typescript
       }
 
       distanceBetween -= remainingDistance;
@@ -74,6 +74,24 @@ export function getAntPath(frogPath: [number, number][], stepSize: number = 20):
 function cloneVector(vector: Vector): Vector {
     // Assuming that the `values` method returns an array of vector components
     return new Vector(vector.values);
+}
+
+export function oscillateValue(initialValue:number, amplitudeFunc:Function, updateValueFunc:Function, duration:number, fps = 30) {
+  let _timer = 0;
+  const _ticker = setInterval(() => {
+      _timer += (2 * Math.PI / fps) / duration; // One full oscillation over the specified duration
+      let amplitude = amplitudeFunc();
+      if(amplitude == 0) amplitude = 1;
+      const newValue = updateValueFunc(initialValue, Math.sin(_timer) * amplitude);
+
+      // send preview data
+
+      if (_timer > 2 * Math.PI) clearInterval(_ticker); // One full oscillation done
+
+      return newValue;
+  }, 1000 / fps);
+
+  return _ticker;
 }
 
 
