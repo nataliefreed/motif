@@ -18,8 +18,11 @@
   let domElement: HTMLElement;
 
   $: if(value) {
+    if(typeof value.x !== 'number') value.x = 0;
+    if(typeof value.y !== 'number') value.y = 0;
     x = value.x;
     displayY = maxY - value.y; // Flip the y value for display
+
     points = [[x, value.y]];
   }
 
@@ -46,6 +49,18 @@
     displayY = maxY - event.detail.value[0][1];
     dispatchValueChange();
   }
+
+  function handleYChangeFromNumberbox(event: Event) {
+    if(event.target) {
+      const target = event.target as HTMLInputElement;
+      let y = parseInt(target.value);
+      if(y > maxY) y = maxY;
+      if(y < 0) y = 0;
+      displayY = y;
+      const actualY = maxY - displayY; // unflip for storage
+      dispatchValueChange(actualY);
+    }
+  }
   
 </script>
 
@@ -67,7 +82,8 @@
         </div>
         <div>
           y = <input type="number"
-            bind:value={displayY}
+            value={displayY}
+            on:input={handleYChangeFromNumberbox}
             min={0} 
             max={500}/>
         </div>
