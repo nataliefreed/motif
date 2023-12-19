@@ -3,8 +3,11 @@
   import NumberWidget from './NumberWidget.svelte';
   import { p5CanvasSize } from '../../stores/canvasStore';
   import GridWidget from './GridWidget.svelte';
+  import Tooltip from '../Tooltip.svelte';
 
   const dispatch = createEventDispatcher();
+
+  export let points: [number, number][] = [];
 
   let x = 0;
   let displayY = 0; //display as traditional cartesian coordinate y, not graphics y
@@ -12,10 +15,12 @@
 
   export let id = '';
   export let value: { x: number, y: number } = { x: 0, y: 0 };
+  let domElement: HTMLElement;
 
   $: if(value) {
     x = value.x;
     displayY = maxY - value.y; // Flip the y value for display
+    points = [[x, value.y]];
   }
 
   function handleXChange(event: CustomEvent) {
@@ -34,19 +39,69 @@
   function dispatchValueChange(actualY = maxY - displayY) {
     dispatch('valueChange', { id, value: { x, y: actualY } });
   }
+
+  function handlePointsChange(event: CustomEvent) {
+    points = event.detail.value;
+    x = event.detail.value[0][0];
+    displayY = maxY - event.detail.value[0][1];
+    dispatchValueChange();
+  }
   
 </script>
 
-<span class="coordinate">
-<!-- ({x}, {displayY}) -->
-(<NumberWidget id="x" min={0} max={600} value={x} on:valueChange={handleXChange}/>,
-<NumberWidget id="y" min={0} max={600} value={displayY} on:valueChange={handleYChange}/>)
+<span class="coordinate" bind:this={domElement}>
+({x}, {displayY})
+<!-- (<NumberWidget id="x" min={0} max={600} value={x} on:valueChange={handleXChange}/>,
+<NumberWidget id="y" min={0} max={600} value={displayY} on:valueChange={handleYChange}/>) -->
 </span>
+{#if domElement}
+  <Tooltip element={domElement}>
+    <div class="grid-with-numberBoxes">
+      <GridWidget {points} on:valueChange={handlePointsChange}/>
+      <div class="number-box-container">
+        <div>
+          x = <input type="number"
+          bind:value={value.x}
+          min={0} 
+          max={500}/>
+        </div>
+        <div>
+          y = <input type="number"
+            bind:value={displayY}
+            min={0} 
+            max={500}/>
+        </div>
+      </div>
+    </div>
+  </Tooltip>
+{/if}
+
+
 
 <style>
-  /* .coordinate {
+  .coordinate {
     text-decoration: underline lightgray 2px;
     text-underline-offset: 5px;
     cursor: pointer;
-  } */
+  }
+
+  .grid-with-numberBoxes {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .number-box-container {
+    display: flex;
+    gap: 1em;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  input[type=number] {
+    /* width: 4em; */
+    font-family: "FuturaHandwritten";
+  }
 </style>
