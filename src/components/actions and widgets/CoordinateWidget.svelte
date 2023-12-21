@@ -92,8 +92,6 @@
   </Tooltip>
 {/if}
 
-
-
 <style>
   .coordinate {
     text-decoration: underline lightgray 2px;

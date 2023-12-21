@@ -8,8 +8,14 @@
   export let cursorFollow = false;
   let contentElement;
   let tooltip;
+  // let isTooltipVisible = false;
+
+  $: if(element) {
+    reloadTippy(); //re-link to new content
+  }
 
   function reloadTippy() {
+    // console.log("reloading tippy");
     if(tooltip) tooltip.destroy();
     tooltip = tippy(element, {
       content: contentElement,
@@ -23,19 +29,25 @@
       hideOnClick: true,
       appendTo: document.body,
       onMount(instance) {
-        // sliderContainer.style.display = 'block';
+        contentElement.style.display = 'block';
+        // console.log("tooltip mounted");
     },
       onHide(instance) {
-        // sliderContainer.style.display = 'none';
+        contentElement.style.display = 'none';
+        // console.log("tooltip hidden");
       }
     });
   }
 
   onMount(() => {
+    contentElement.style.display = 'none';
     reloadTippy();
+    
   });
 
   onDestroy(() => {
+    // console.log("destroying tooltip");
+    contentElement.style.display = 'none';
     if (tooltip) {
       tooltip.destroy();
     }
@@ -45,5 +57,9 @@
 
 <!-- Hold the tooltip content -->
 <div bind:this={contentElement}>
-  <slot></slot>
+    <slot></slot>
 </div>
+
+
+<style>
+</style>
