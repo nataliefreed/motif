@@ -1,8 +1,11 @@
 import { addEffectToActionStore } from "./action-utils";
-import { toolStore } from "../stores/dataStore";
+import { toolStore, selectedActionID } from "../stores/dataStore";
 import { get } from "svelte/store";
 import type { Effect } from "../types/types";
 
+function deselectAction() {
+  selectedActionID.set('');
+}
 
 function keydownHandler(event: KeyboardEvent) {
   console.log(event);
@@ -21,6 +24,7 @@ function keydownHandler(event: KeyboardEvent) {
       }
       break;
     case 'Escape':
+      selectedActionID.set('');
       // deselect all lines of code
       // go back to pointer tool in code view
       // set isDragging to false?

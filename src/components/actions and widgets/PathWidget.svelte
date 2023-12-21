@@ -6,7 +6,7 @@
   const dispatch = createEventDispatcher();
 
   // Convert list of points to a string of SVG path commands
-  // Start with M for move to start position, then L for line to each point
+  // M for move to start position, L for line to each point
   function getPathData(points: [number, number][]) {
     return points.map((pt, index) => 
       `${index === 0 ? 'M' : 'L'} ${pt[0]},${pt[1]}`

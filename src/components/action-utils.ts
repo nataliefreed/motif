@@ -75,24 +75,25 @@ export function addActionToActionStore(action: Action, params: { [key: string]: 
     
     storeValue.children = storeValue.children || [];
 
-    if (action.category === 'backgrounds') {
-      // Insert backgrounds before the first item in the list that is not a background
-      const firstNonBackgroundIndex = storeValue.children.findIndex(child => child.category !== 'backgrounds');
-      if (firstNonBackgroundIndex === -1) {
-        storeValue.children.push(newAction);
-      } else {
-        storeValue.children.splice(firstNonBackgroundIndex, 0, newAction);
-      }
-    } else if (action.category === 'stencils') {
+    // if (action.category === 'backgrounds') {
+    //   // Insert backgrounds before the first item in the list that is not a background
+    //   const firstNonBackgroundIndex = storeValue.children.findIndex(child => child.category !== 'backgrounds');
+    //   if (firstNonBackgroundIndex === -1) {
+    //     storeValue.children.push(newAction);
+    //   } else {
+    //     storeValue.children.splice(firstNonBackgroundIndex, 0, newAction);
+    //   }
+    // } else if 
+    // if(action.category === 'stencils') {
       // Insert stencils at the end of the list
       storeValue.children.push(newAction);
-    } else {
+    // } else {
       // For other types, insert after the last item in the list that is not a background or stencil
-      const lastSpecialIndex = storeValue.children.reduce((lastIndex, child, index) => {
-        return (child.category !== 'backgrounds' && child.category !== 'stencils') ? index : lastIndex;
-      }, -1);
-      storeValue.children.splice(lastSpecialIndex + 1, 0, newAction);
-    }
+      // const lastSpecialIndex = storeValue.children.reduce((lastIndex, child, index) => {
+      //   return (child.category !== 'backgrounds' && child.category !== 'stencils') ? index : lastIndex;
+      // }, -1);
+      // storeValue.children.splice(lastSpecialIndex + 1, 0, newAction);
+    // }
 
     // set this action as most recently changed
     changedActionID.set(newAction.uuid);

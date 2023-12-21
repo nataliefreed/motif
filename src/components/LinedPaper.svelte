@@ -5,25 +5,20 @@
 <!-- <div class="page"> -->
   <div class="container">
     <div class="lined-paper">
-      <ul class="top-level-list-container"><slot></slot></ul>
+      <ul>
+        <slot></slot>
+      </ul>
     </div>
   </div>
 <!-- </div> -->
 
 
 <style>
-  .page {
-      border: 1px solid #333;
-      padding: 20px;
-      background-color: white;
-      box-shadow: 2px 2px 15px rgba(0, 0, 0, 0.1);
-      max-width: 700px;
-  }
 
   .container {
       display: flex;
       width: 100%;
-      height: 100%;
+      height: 85%;
       margin-top: 3em;
       /* margin-left: 4em; */
       /* flex: 1 0 auto; */
@@ -31,15 +26,15 @@
 
   .lined-paper {
       width: 100%;
-      height: 90%;
+      height: 100%;
       overflow-y: auto;
         background-image: repeating-linear-gradient(
         to bottom, 
         transparent, 
-        transparent 2em, 
-        #add8e6 2em, 
-        #add8e6 calc(2em + 1px));
-      line-height: calc(2em + 1px);
+        transparent calc(2em + 2px), 
+        #add8e6 calc(2em + 2px), 
+        #add8e6 calc(2em + 3px));
+      line-height: calc(2em - 0.3px);
       scroll-snap-type: y mandatory;
       position: relative;
       flex-shrink: 0;
@@ -47,14 +42,15 @@
 
   .lined-paper ul {
       list-style: none;
-      margin: 2.2em 0 0 0;
+      margin: 3px 0 0 5em;
       padding: 0;
       scroll-snap-align: start;
-      height: 80%;
+      height: 90%;
       overflow: auto;
       padding-bottom: 3em;
   }
 
+  /* red vertical margins */
   .container::before {
     content: "";
     position: absolute;
@@ -64,12 +60,6 @@
     width: 0.1em; /* Line weight */
     background-color: #ffbed1; /* Light red color */
     /* z-index: -1; */
-  }
-
-  .top-level-list-container {
-    /* height: 100%; */
-    /* border: 1px solid red; */
-    /* margin: 5em; */
   }
 
 </style>

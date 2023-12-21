@@ -36,23 +36,25 @@
 <div id="code-tools">
 
 <Toolbar orientation="horizontal">
-  <CodeEffectButton label="point"></CodeEffectButton>
+  <CodeEffectButton label="point"><Icon data={mousePointer}/></CodeEffectButton>
   <CodeEffectButton label="random"></CodeEffectButton>
-  <CodeEffectButton label="rainbow"></CodeEffectButton>
-  <CodeEffectButton label="shuffle"></CodeEffectButton>
+  <!-- <CodeEffectButton label="rainbow"></CodeEffectButton> -->
+  <!-- <CodeEffectButton label="shuffle"></CodeEffectButton> -->
   <CodeEffectButton label="repeat"></CodeEffectButton>
-  <CodeEffectButton label="redo"></CodeEffectButton>
-  <CodeEffectButton label="erase"></CodeEffectButton>
-  <CodeEffectButton label="sample"></CodeEffectButton>
-  <CodeEffectButton label="connect"></CodeEffectButton>
-  <!-- <CodeEffectButton label="point"><Icon data={mousePointer}/> </CodeEffectButton> -->
+  <!-- <CodeEffectButton label="repeat"><Icon data={repeat}/></CodeEffectButton> -->
+
+  <!-- <CodeEffectButton label="re-record"></CodeEffectButton> -->
+  <!-- <CodeEffectButton label="erase"></CodeEffectButton> -->
+  <!-- <CodeEffectButton label="sample"></CodeEffectButton> -->
+  <!-- <CodeEffectButton label="connect"></CodeEffectButton> -->
+  
   <!-- <CodeEffectButton> <Icon data={indent}/> </CodeEffectButton>
   <CodeEffectButton><Icon data={eyedropper}/> </CodeEffectButton> -->
   <!-- <CodeEffectButton label="paint"><Icon data={paintBrush}/></CodeEffectButton> -->
   <!-- <CodeEffectButton><Icon data={eye}/></CodeEffectButton>
   <CodeEffectButton><Icon data={eyeSlash}/></CodeEffectButton> -->
   <!-- <CodeEffectButton label="shuffle"><Icon data={random}/></CodeEffectButton> -->
-  <!-- <CodeEffectButton label="repeat"><Icon data={repeat}/></CodeEffectButton> -->
+  
   <!-- <CodeEffectButton><Icon data={save}/></CodeEffectButton> -->
   <!-- <CodeEffectButton label="surprise"><Icon data={gift}/></CodeEffectButton> -->
   <!-- <CodeEffectButton><Icon data={trash}/></CodeEffectButton> -->

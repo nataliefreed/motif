@@ -107,7 +107,7 @@
   on:mouseout={handleMouseOut}
   style="background-color: {value}; cursor: {cursorStyle};"
   id={id}
-></span>
+>
 
 <input
   type="color"
@@ -117,9 +117,14 @@
   value={value}
 />
 
+</span>
+
+
+
 
 <style>
   .color-palette-widget {
+    box-sizing: border-box;
     border-radius: 50%;
     width: 1.5em;
     height: 1.5em;
@@ -129,17 +134,18 @@
     /* cursor: pointer; */
     display: inline-block;
     line-height: 1.5em;
-    vertical-align: top;
+    vertical-align: middle;
   }
 
   .hidden-color-picker {
     width: 1px;
     height: 1px;
-    margin-left: -1em;
-    margin-right: 0.5em;
+    margin-left: 1em;
+    margin-right: 0em;
     border: none;
     color: transparent;
     background-color: transparent;
+    fill: transparent;
   }
 </style>
 

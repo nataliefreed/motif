@@ -56,10 +56,6 @@
 </script>
 
 <!-- Hold the tooltip content -->
-<div bind:this={contentElement}>
+<div bind:this={contentElement} class="not-deselect">
     <slot></slot>
 </div>
-
-
-<style>
-</style>

@@ -128,7 +128,7 @@
   {value}
 </span>
 
-<div bind:this={sliderContainer} class="slider-container" style="display: none;">
+<div bind:this={sliderContainer} class="slider-container not-deselect" style="display: none;">
 
   <input type="number"
   class="numberbox-for-slider" 
@@ -155,9 +155,9 @@
     border: 1px solid #ccc; */
   }
 
-  .slider-container:has([data-tippy-root]) {
+  /* .slider-container:has([data-tippy-root]) { //todo: check - no longer needed?
     display: block;
-  }
+  } */
 
   /* number that can be clicked to display a slider modal*/
   .number-widget {

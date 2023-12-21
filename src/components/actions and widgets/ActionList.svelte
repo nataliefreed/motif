@@ -46,7 +46,6 @@
     dispatch('reorder', { oldIndex, newIndex }); // dispatch to main app to update actual action list
   }
 
-  // todo: select on drag handle click as well as action item content
   function handleItemClick(event: Event, actionId: string) {
     const target = event.target as Element;
     if($selectedCodeEffect == "point" || !$selectedCodeEffect) {
@@ -72,6 +71,7 @@
 <!-- <ol style={depth % 2 === 0 ? "list-style-type: decimal;" : "list-style-type: lower-alpha;"}> -->
   <!-- handle='.drag-handle' -->
   <!-- group='nested-action-list' fallbackOnBody={true} swapThreshold={0.65} -->
+  <!-- multiDragClass="sortable-selected" -->
   <SortableList class="" onUpdate={handleReorder} animation={150} filter='.filtered'>
     {#each children as action (action.uuid)}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -86,11 +86,16 @@
 
 
 <style>
+
+  .sortable-selected {
+    text-decoration: green wavy underline;
+  }
+
   ol {
     counter-reset: list-counter; /* Initialize a counter */
     list-style-type: none; /* Remove default list style */
-    /* padding-left: 2em;
-    margin-left: 2em; */
+    padding-left: 0em;
+    /* margin-left: 1em; */
     overflow-y: auto;
     overflow-x: hidden;
     display: flex;
@@ -100,10 +105,19 @@
   }
 
   li {
+    border: 2px solid transparent; /* Invisible border */
     user-select: none; /* prevent text selection - makes it easier to grab */
     position: relative;
-    padding-left: 2.3em; /* Space for the index */
-    margin-left: -1em; /* times depth ideally */
+    padding-left: 2.2em; /* Space for the index - note: this seems to multiply for each list level so there is probably a better way*/
+    padding-right: 4px; /* makes selection box look nicer */
+  }
+
+  .selected {
+    box-sizing: border-box; /* Include padding and border in element's width and height */
+    border: 2px solid gold;
+    background-color: lightyellow;
+    border-radius: 5px;
+    /* display: block; */
   }
 
   li::before {
@@ -119,6 +133,7 @@
   .decimal-style li::before,
   .alpha-style li::before,
   .drag-handle {
+    color: #aeaeae;
     position: absolute;
     display: flex;
     align-items: center; /* Center vertically */
@@ -126,7 +141,7 @@
     width: 1.8em; /* Fixed width for the circle */
     height: 1.8em; /* Fixed height for the circle */
     left: 0; /* Align with the start of the list item */
-    top: 1.2em;
+    top: 1.1em;
     border-radius: 50%; /* Round border */
     transform: translateY(-50%);
     font-size: 0.8em; /* Adjust font size as needed */
@@ -137,9 +152,9 @@
   }
 
   .drag-handle {
-    color: #979797;
     border: 1px solid #aeaeae;
-    background-color: #efefef;
+    background-color: #ffffff;
+    /* background-color: transparent; */
     /* cursor: grab; */
     z-index: 0;
   }
@@ -150,13 +165,6 @@
 
   li:not(.filtered) {
     cursor: grab;
-  }
-
-  .selected {
-    border: 2px solid gold;
-    background-color: lightyellow;
-    border-radius: 5px;
-    display: block; /* Ensure the border wraps the entire item */
   }
 
   .obscured {

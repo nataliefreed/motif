@@ -10,7 +10,9 @@
 </script>
 
 
-<button on:click={handleCategoryClick} class="category-button {isActive ? 'active' : ''}">{category}</button>
+<button on:click={handleCategoryClick} class="category-button {isActive ? 'active' : ''}">{category}
+<slot></slot>
+</button>
 
 <style>
   .category-button {
@@ -27,7 +29,7 @@
     color: rgb(77, 77, 77);
     /* margin: 5px; */
     cursor: pointer;
-    padding: 5px;
+    padding: 5px 5px;
     font-size: 0.8em;
     font-family: 'FuturaHandwritten';
   }
