@@ -43,7 +43,7 @@ function getInitialActions() {
       //   uuid: uuidv4(),
       // },
       {
-        name: "Draw Circle",
+        name: "circle",
         type: 'effect' as const,
         category: 'shapes',
         effect: 'circle',
@@ -55,7 +55,7 @@ function getInitialActions() {
         uuid: uuidv4(),
       },
       {
-        name: "draw star",
+        name: "star",
         type: 'effect' as const,
         category: 'shapes',
         effect: 'star',

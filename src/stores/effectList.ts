@@ -173,6 +173,22 @@ export const effectList = [
       color: '#bbaa00'
     }
   },
+
+  {
+    name: 'along path',
+    dropdownName: 'Repeat',
+    category: 'brushes',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'dot_brush.jpeg',
+    mouseActionType: 'drag-path',
+    params: {
+      path: [],
+      pathSpacing: 10,
+      children: []
+    },
+  },
+
   {
     name: 'along path',
     dropdownName: 'Dot brush',

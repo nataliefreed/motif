@@ -68,6 +68,7 @@
       let params = {};
       // if(effect.tags != "my tools") {
         params.color = $currentColor;
+        // params.color2 = tinyColor($currentColor).rotate(180).toHexString();
       // }
       addEffectAsStagedAction(effect, params); //drawing effects have staged action
     });

@@ -3,10 +3,10 @@
   import { actionStore, toolStore, selectedEffect, activeCategory, stagedAction, selectedActionID, selectedCodeEffect } from '../stores/dataStore';
   import LinedPaper from './LinedPaper.svelte';
   import ActionItem from './actions and widgets/ActionItem.svelte';
-	import type { Action } from '../types/types';
+	import type { Action, Effect } from '../types/types';
   import Canvas from './canvas/Canvas.svelte';
   import StagedAction from './actions and widgets/StagedAction.svelte';
-  import { saveMyTool, saveToHistory, copySelectedActionToStagedAction } from './action-utils';
+  import { saveMyTool, saveToHistory, copySelectedActionToStagedAction, effectToAction } from './action-utils';
   import EffectToolbar from './toolbars/EffectToolbar.svelte';
   import Notebook from './Notebook.svelte';
   import Page from './Page.svelte';
@@ -18,9 +18,9 @@
   import CategoryToolbar from './toolbars/CategoryToolbar.svelte';
   import { p5CanvasSize } from '../stores/canvasStore';
   import tinycolor from "tinycolor2";
-  import GridWidget from './actions and widgets/GridWidget.svelte';
   import { setupKeyboardEvents, removeKeyboardEvents } from './KeyboardEvents';
   import EffectSettingsPanel from './toolbars/EffectSettingsPanel.svelte';
+  import { v4 as uuidv4 } from 'uuid';
 
   const [send, receive] = crossfade({}); // TODO
 
@@ -181,6 +181,10 @@
     //   });
     // }
   }
+
+  function getSelectedIndex() {
+  
+  }
   
   function duplicateSelected() {
     if ($selectedActionID) {
@@ -189,7 +193,7 @@
           const index = data.children.findIndex(action => action.uuid === $selectedActionID);
           if (index > -1) {
             const newAction = {...data.children[index]};
-            newAction.uuid = Math.random().toString(36).substring(7);
+            newAction.uuid = uuidv4();
             data.children.splice(index+1, 0, newAction);
             selectedActionID.set(newAction.uuid);
           }
@@ -201,10 +205,39 @@
   }
 
   function repeatSelected() {
-  
+    //set selected action as the child of a repeat along path, with the path set to the current point and a shifted point
+    if ($selectedActionID) {
+      actionStore.update(data => {
+        if (data && data.children) {
+          const index = data.children.findIndex(action => action.uuid === $selectedActionID); //get current index
+          if (index > -1) {
+            let selectedAction = data.children[index];
+            if(selectedAction.name === "along path") {
+              //add another point
+              if(selectedAction.params && selectedAction.params.path.length > 0) {
+                selectedAction.params.path.push([selectedAction.params.path[selectedAction.params.path.length-1][0]+10, selectedAction.params.path[selectedAction.params.path.length-1][1]+10]);
+              }
+            }
+            else {
+              const repeatEffect = $toolStore.find(tool => tool.name === "along path");
+              if(!repeatEffect) return;
+              const x = (selectedAction.params && selectedAction.params.position)? selectedAction.params.position.x : 0;
+              const y = (selectedAction.params && selectedAction.params.position)? selectedAction.params.position.y : 0;
+              const newAction = effectToAction(repeatEffect, {children: [selectedAction], path: [[x, y], [x+10, y+10]]});
+              //replace selected action with new repeat along path action
+              data.children.splice(index, 1, newAction);
+              // data.children.splice(index+1, 0, newAction);
+              selectedActionID.set(newAction.uuid);
+            }
+          }
+        }
+        return data;
+      });
+    }
+    saveToHistory();
   }
 
-  // delete action from list and add to staged action
+  // clear staged action. Treat selected action
   function redrawSelected() {
   
   }

@@ -22,7 +22,7 @@ export function merge<T extends object, U extends object>(object1: T, object2: U
   return { ...object1, ...object2 };
 }
 
-function effectToAction(effect: Effect, params: { [key: string]: any }) : Action {
+export function effectToAction(effect: Effect, params: { [key: string]: any }) : Action {
   
   let type: "list" | "effect" = "effect";
 

@@ -87,7 +87,7 @@ export const renderers = {
     let spiroColor = p.color(params.color);
     let x = params.position.x;
     let y = params.position.y;
-    if(p === p5.getDragCanvas) debugger;
+    // if(p === p5.getDragCanvas) debugger;
   
     let k = (R - r) / r;
     let spacing = p.TWO_PI / 30;
