@@ -16,7 +16,7 @@
   let path = []; //current path points
 
   let p5; //p5 instance
-  let staticCanvas, dragCanvas, hoverCanvas, thumbnailCanvas, cachedCanvas;
+  
   let canvasContainer;
 
   let scaleFactor = 1;
@@ -150,6 +150,11 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     if(changedIndex === -1) console.log("full re-render");
     thumbnails = [];
     if(p5) {
+      let staticCanvas = p5.getStaticCanvas();
+      let dragCanvas = p5.getDragCanvas();
+      let hoverCanvas = p5.getHoverCanvas();
+      let cachedCanvas = p5.getCachedCanvas();
+
       staticCanvas.clear();
       staticCanvas.background(255);
       // hoverCanvas.clear();
@@ -224,9 +229,9 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
   function clearTempCanvases() { //don't clear static canvas
     if(p5) {
       p5.background(255);
-      dragCanvas.clear();
-      hoverCanvas.clear();
-      p5.image(staticCanvas, 0, 0);
+      p5.getDragCanvas().clear();
+      p5.getHoverCanvas().clear();
+      p5.image(p5.getStaticCanvas(), 0, 0);
     }
   }
 
@@ -262,22 +267,37 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
 		};
 
     c.getStaticCanvas = () => {
+      if(!s) {
+        s = c.createGraphics(c.width, c.height);
+      }
       return s;
     };
 
     c.getDragCanvas = () => {
+      if(!t) {
+        t = c.createGraphics(c.width, c.height);
+      }
       return t;
     };
 
     c.getHoverCanvas = () => {
+      if(!h) {
+        h = c.createGraphics(c.width, c.height);
+      }
       return h;
     };
 
     c.getThumbnailCanvas = () => {
+      if(!a) {
+        a = c.createGraphics(thumbnailSize, thumbnailSize);
+      }
       return a;
     }
 
     c.getCachedCanvas = () => {
+      if(!cached) {
+        cached = c.createGraphics(c.width, c.height);
+      }
       return cached;
     }
 
@@ -292,19 +312,27 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     c.flipY = function(y) {
       return c.height - y;
     };
+
+    c.cleanup = () => {
+      s.clear();
+      t.clear();
+      h.clear();
+      a.clear();
+      cached.clear();
+    }
 	}
 
   onDestroy(() => { //TODO: test this
     // console.log("destroy");
     cleanupP5();
+    if(p5) {
+      p5.cleanupP5();
+    }
   });
 
   function cleanupP5() {
     if (p5) {
-      staticCanvas.remove();
-      dragCanvas.remove();
-      hoverCanvas.remove();
-      thumbnailCanvas.remove();
+      p5.cleanup();
       p5.remove();
       p5 = undefined;
       console.log("p5 instance removed");
@@ -314,14 +342,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
   function handleNewInstance(event) { //grab the p5 instance when it returns
     cleanupP5();
 		p5 = event.detail;
-    debugger;
     if(p5) {
-      staticCanvas = p5.getStaticCanvas();
-      dragCanvas = p5.getDragCanvas();
-      hoverCanvas = p5.getHoverCanvas();
-      thumbnailCanvas = p5.getThumbnailCanvas();
-      cachedCanvas = p5.getCachedCanvas();
-
       renderAll($actionStore); // render on start
       console.log("p5 instance created");
     }
@@ -352,7 +373,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     */
     
     if(!isDragging) {
-      hoverCanvas.clear();
+      p5.getHoverCanvas().clear();
       if($stagedAction.params.position) {
         debouncedStagedActionUpdate({ position: { x: x, y: y } });
       }
@@ -364,10 +385,10 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       }
       const renderFunction = renderers[$stagedAction.effect];
       if (renderFunction) {
-        renderFunction(hoverCanvas, merge($stagedAction.params, { position: { x: x, y: y } }), p5);
+        renderFunction(p5.getHoverCanvas(), merge($stagedAction.params, { position: { x: x, y: y } }), p5);
       }
-      p5.image(staticCanvas, 0, 0);
-      p5.image(hoverCanvas, 0, 0);
+      p5.image(p5.getStaticCanvas(), 0, 0);
+      p5.image(p5.getHoverCanvas(), 0, 0);
     }
 
     /*
@@ -380,7 +401,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     */
 
     else { // dragging
-      dragCanvas.clear();
+      p5.getDragCanvas().clear();
       const renderFunction = renderers[$stagedAction.effect]; // get the renderer for the staged effect
       let params = $stagedAction.params;
       if (renderFunction) {
@@ -426,18 +447,18 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
         if('path' in params) {
           updateStagedAction({path: getAntPath(path, $stagedAction.params.pathSpacing || 10)});
         }
-        renderFunction(dragCanvas, $stagedAction.params, p5);
+        renderFunction(p5.getDragCanvas(), $stagedAction.params, p5);
       }
-      p5.image(staticCanvas, 0, 0);
-      p5.image(dragCanvas, 0, 0);
+      p5.image(p5.getStaticCanvas(), 0, 0);
+      p5.image(p5.getDragCanvas(), 0, 0);
     }
   }
 
   function renderStep(generator) {
     if (!generator.next().done && isDragging) {
       // If the generator is not done, render the next step
-      p5.image(staticCanvas, 0, 0);
-      p5.image(dragCanvas, 0, 0);
+      p5.image(p5.getStaticCanvas(), 0, 0);
+      p5.image(p5.getDragCanvas(), 0, 0);
       requestAnimationFrame(() => renderStep(generator));
     }
   }
@@ -477,8 +498,8 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
         debouncedStagedActionUpdate({path: path});
       }
 
-      dragCanvas.clear();
-      dragRenderFunction = renderers[$stagedAction.effect](dragCanvas, $stagedAction.params, p5, false); // get the renderer for the staged effect
+      p5.getDragCanvas().clear();
+      dragRenderFunction = renderers[$stagedAction.effect](p5.getDragCanvas(), $stagedAction.params, p5, false); // get the renderer for the staged effect
       dragRenderComplete = false;
       if($stagedAction.effect == 'gradient') {
         renderStep(dragRenderFunction);
@@ -514,9 +535,9 @@ function handleMouseUp(event) {
 
     path = []; // clear current path
 
-    hoverCanvas.clear();
-    dragCanvas.reset();
-    hoverCanvas.reset();
+    p5.getHoverCanvas().clear();
+    p5.getDragCanvas().reset();
+    p5.getHoverCanvas().reset();
 
     // Once the mouse is released, remove global listener
     document.removeEventListener('mouseup', globalMouseUp);
