@@ -7,33 +7,6 @@
   // import debounce from 'lodash';
   import tinycolor from "tinycolor2";
   import { getAntPath } from '../../utils/utils.ts';
-
-  export const downloadCanvas = () =>{
-    if(p5) {
-      p5.save('my design.jpg');
-    }
-  }
-
-  export const markHiddenActions = (actions) => { //ie. hidden behind other graphics or don't change the canvas
-    p5.clear();
-    // render all actions
-    for(let i=0;i<actions.children.length-1;i++)
-    {
-      renderAction(actions.children[i], p5);
-    }
-    p5.getPixels(); //load pixels array
-    let prev = JSON.stringify(p5.pixels);
-    renderAction(actions.children[children.length-1], p5);
-    p5.getPixels(); //load new pixels array
-    let current = JSON.stringify(p5.pixels);
-
-    if(current == previous) {
-      actions.children[children.length-2].obscured = true;
-    }
-    else {
-      actions.children[children.length-2].obscured = false;
-    }
-  }
 	
   let x = 55;
 	let y = 55;
@@ -51,13 +24,6 @@
   let thumbnails = [];
 
   let dragRenderFunction;
-
-  // TODO: test this
-  function setScaleFactor() {
-    const adjustedPageWidth = parseFloat(getComputedStyle(canvasContainer).getPropertyValue('--adjusted-page-width'));
-    scaleFactor = adjustedPageWidth / 500;
-    canvasContainer.style.transform = `scale(${scaleFactor})`;
-  }
 
   onMount(() => {
     setScaleFactor();
@@ -103,6 +69,40 @@
     // console.log("new staged action params", $stagedAction.params);
   }
 
+  export const downloadCanvas = () =>{
+    if(p5) {
+      p5.save('my design.jpg');
+    }
+  }
+
+  export const markHiddenActions = (actions) => { //ie. hidden behind other graphics or don't change the canvas
+    p5.clear();
+    // render all actions
+    for(let i=0;i<actions.children.length-1;i++)
+    {
+      renderAction(actions.children[i], p5);
+    }
+    p5.getPixels(); //load pixels array
+    let prev = JSON.stringify(p5.pixels);
+    renderAction(actions.children[children.length-1], p5);
+    p5.getPixels(); //load new pixels array
+    let current = JSON.stringify(p5.pixels);
+
+    if(current == previous) {
+      actions.children[children.length-2].obscured = true;
+    }
+    else {
+      actions.children[children.length-2].obscured = false;
+    }
+  }
+
+    // TODO: test this
+    function setScaleFactor() {
+    const adjustedPageWidth = parseFloat(getComputedStyle(canvasContainer).getPropertyValue('--adjusted-page-width'));
+    scaleFactor = adjustedPageWidth / 500;
+    canvasContainer.style.transform = `scale(${scaleFactor})`;
+  }
+
   // debounce! don't update too often
   const debouncedStagedActionUpdate = debounce(updateStagedAction, 10);
 
@@ -145,7 +145,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     }
   }
 
- let cachedIndex = 999999;
+  let cachedIndex = 999999;
   function renderAll(actions, changedIndex = -1) { //changedIndex = -1 means re-render all actions
     if(changedIndex === -1) console.log("full re-render");
     thumbnails = [];
@@ -314,6 +314,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
   function handleNewInstance(event) { //grab the p5 instance when it returns
     cleanupP5();
 		p5 = event.detail;
+    debugger;
     if(p5) {
       staticCanvas = p5.getStaticCanvas();
       dragCanvas = p5.getDragCanvas();
