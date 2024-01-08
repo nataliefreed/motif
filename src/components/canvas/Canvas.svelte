@@ -16,7 +16,8 @@
   let path = []; //current path points
 
   let p5; //p5 instance
-  
+  let canvasesLoaded = false;
+
   let canvasContainer;
 
   let scaleFactor = 1;
@@ -264,6 +265,8 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       h = c.createGraphics(c.width, c.height);
       a = c.createGraphics(thumbnailSize, thumbnailSize);
       cached = c.createGraphics(c.width, c.height);
+
+      canvasesLoaded = true;
 		};
 
     c.getStaticCanvas = () => {
@@ -319,15 +322,14 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       h.clear();
       a.clear();
       cached.clear();
+
+      canvasesLoaded = false;
     }
 	}
 
   onDestroy(() => { //TODO: test this
     // console.log("destroy");
     cleanupP5();
-    if(p5) {
-      p5.cleanupP5();
-    }
   });
 
   function cleanupP5() {
@@ -343,10 +345,26 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     cleanupP5();
 		p5 = event.detail;
     if(p5) {
-      renderAll($actionStore); // render on start
-      console.log("p5 instance created");
+      waitForCanvases().then(() => {
+        renderAll($actionStore); // render initial actions
+        console.log("p5 instance created");
+      });
     }
-	}
+  }
+
+  // complete when P5 canvases initialized
+  function waitForCanvases() {
+    return new Promise(resolve => {
+        const checkSetup = () => {
+            if (canvasesLoaded) {
+                resolve();
+            } else {
+                requestAnimationFrame(checkSetup);
+            }
+        };
+        checkSetup();
+    });
+}
 
   /*                                                               
     _ __     ___    _  _     ___     ___    _ __     ___    __ __    ___   
