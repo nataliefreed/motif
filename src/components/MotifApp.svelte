@@ -1,12 +1,12 @@
 <script lang="ts">
   import { onMount, onDestroy, tick } from 'svelte';
-  import { actionStore, toolStore, selectedEffect, activeCategory, stagedAction, selectedActionID, selectedCodeEffect } from '../stores/dataStore';
+  import { actionStore, toolStore, selectedEffect, activeCategory, stagedAction, selectedActionID, selectedCodeEffect, currentColor, actionRoot, flatActionStore } from '../stores/dataStore';
   import LinedPaper from './LinedPaper.svelte';
   import ActionItem from './actions and widgets/ActionItem.svelte';
 	import type { Action, Effect } from '../types/types';
   import Canvas from './canvas/Canvas.svelte';
   import StagedAction from './actions and widgets/StagedAction.svelte';
-  import { saveMyTool, saveToHistory, copySelectedActionToStagedAction, effectToAction } from './action-utils';
+  import { saveActionAsNewTool, saveToHistory, copySelectedActionToStagedAction, effectToAction } from './action-utils';
   import EffectToolbar from './toolbars/EffectToolbar.svelte';
   import Notebook from './Notebook.svelte';
   import Page from './Page.svelte';
@@ -391,7 +391,7 @@
     
     const mainList = document.querySelector('#main-list');
     let target = event.target as Node;
-    console.log("target:", target, target.nodeName);
+    // console.log("target:", target, target.nodeName);
     if(mainList
       && !mainList.contains(target)
       && target.nodeName !== 'BUTTON'
@@ -455,6 +455,7 @@
 
   // reorder action store to match DOM order
   function onReorder(event:any) {
+    console.log("reordering");
     const { oldIndex, newIndex } = event.detail;
 
     if (oldIndex === newIndex) return;
@@ -474,7 +475,6 @@
     // list items in DOM look like:
     // <li class="scale-from-left s-de4ivI8dEb2o" id="action-31f24737-5d9e-48ae-b09b-c8e3a357b57e" style="">
     // each child in the action store has a uuid matching the id in the DOM (not including 'action-')
-    
   }
 
   let count = 1;
@@ -562,6 +562,8 @@
   </Page>
 
 </Notebook>
+
+
 
 <!-- <div>Canvas Size: {$p5CanvasSize.width} x {$p5CanvasSize.height}</div> -->
 

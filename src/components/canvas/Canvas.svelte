@@ -1,7 +1,7 @@
 <script>
   import { addActionToActionStore, merge, addEffectAsStagedAction } from '../action-utils';
 	import P5 from 'p5-svelte';
-  import { actionStore, stagedAction, activeCategory, selectedEffect, currentColor, changedActionID } from '../../stores/dataStore';
+  import { actionStore, stagedAction, activeCategory, selectedEffect, currentColor, changedActionID, flatActionStore, actionRoot } from '../../stores/dataStore';
   import { renderers } from './Renderer.js';
   import { onMount, onDestroy } from 'svelte';
   // import debounce from 'lodash';
@@ -30,14 +30,21 @@
     setScaleFactor();
 
     // if selectedEffect changed, update staged action accordingly
-    // TODO: potentially pass in current settings as params, eg. global color or random
     selectedEffect.subscribe(effect => {
       let params = {};
       // if(effect.tags != "my tools") {
+      if($activeCategory === "my tools") {
+        currentColor.set(effect.params.color);
+      } else {
         params.color = $currentColor;
+      }
         // params.color2 = tinyColor($currentColor).rotate(180).toHexString();
       // }
       addEffectAsStagedAction(effect, params); //drawing effects have staged action
+    });
+
+    flatActionStore.subscribe(actions => {
+      renderRoot();
     });
 
     // render whenever actionStore changes
@@ -47,7 +54,8 @@
         let changedIndex = 0;
         changedIndex = actions.children.findIndex(action => action.uuid === $changedActionID);
         changedActionID.set("");
-        renderAll(actions, changedIndex);
+        console.log("changed index is", changedIndex);
+        // renderAll(actions, changedIndex);
       }
     });
 
@@ -132,10 +140,31 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
   
   */
 
+  function renderRoot() {
+    if(p5) {
+      let staticCanvas = p5.getStaticCanvas();
+      let dragCanvas = p5.getDragCanvas();
+      let hoverCanvas = p5.getHoverCanvas();
+      let cachedCanvas = p5.getCachedCanvas();
+
+      staticCanvas.clear();
+      staticCanvas.background(255);
+      dragCanvas.clear();
+
+      renderAction($actionRoot, p5.getStaticCanvas());
+
+      p5.clear();
+      p5.image(staticCanvas, 0, 0);
+      p5.image(hoverCanvas, 0, 0);
+      p5.image(dragCanvas, 0, 0);
+    }
+  }
+
   function renderAction(action, canvas) {
     if(p5) {
       const renderFunction = renderers[action.effect];
       if (renderFunction) {
+        // console.log("rendering", action.effect)
         if(action.effect == 'gradient') {
           renderFunction(canvas, action.params, p5, true).next();
         }
@@ -167,26 +196,27 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
         cachedCanvas.clear();
         console.log("Clearing cache");
         // cachedCanvas.background(100, 0, 100);
-        let endIndex = changedIndex === -1 ? actions.children.length : changedIndex;
+        let endIndex = changedIndex === -1 ? actions.children.length : changedIndex; //cache to end, or cache to changedIndex
         for (let i = 0; i < endIndex; i++) {
           renderAction(actions.children[i], cachedCanvas);
         }
-        cachedIndex = endIndex-1;
+        cachedIndex = endIndex - 1;
         console.log("Canvas cached up to", cachedIndex);
       }
 
-      // Cache remaining actions up to changedIndex
+      // If cache still valid but needs more actions added, cache remaining actions up to changedIndex
       else if(cachedIndex < changedIndex) {
         for (let i = cachedIndex+1; i < changedIndex; i++) {
           console.log("adding to cache", i);
           renderAction(actions.children[i], cachedCanvas);
         }
         cachedIndex = changedIndex - 1;
+        console.log("Canvas cached up to", cachedIndex);
       }
 
       // Use cached canvas
       console.log("Using cache up to", cachedIndex);
-      staticCanvas.image(cachedCanvas, 0, 0);
+      if(cachedIndex > -1) staticCanvas.image(cachedCanvas, 0, 0);
 
       // Render remaining actions
       for (let i = cachedIndex+1; i < actions.children.length; i++) {
@@ -346,8 +376,10 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
 		p5 = event.detail;
     if(p5) {
       waitForCanvases().then(() => {
-        renderAll($actionStore); // render initial actions
+        // renderAll($actionStore); // render initial actions
         console.log("p5 instance created");
+        renderRoot();
+        console.log("initial render");
       });
     }
   }

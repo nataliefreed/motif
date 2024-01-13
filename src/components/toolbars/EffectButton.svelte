@@ -19,7 +19,7 @@
   class:selected={$selectedEffect === tool}
   style:background-image={thumbnail ? `url(/assets/effect-thumbnails/${thumbnail})` : ''}
   >
-  {tool.dropdownName}
+  {tool.textLabel}
 </button>
 
 

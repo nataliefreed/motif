@@ -1,4 +1,31 @@
+import { get } from 'svelte/store';
+import { flatActionStore } from '../../stores/dataStore.ts';
+
 export const renderers = {
+    // do each
+    'do each': (p, params, p5) => {
+      if(params.children) {
+        params.children.forEach(uuid => {
+          let child = get(flatActionStore)[uuid];
+          renderers[child.name](p, child.params, p5);
+        });
+      }
+    },
+  // TODO: these probably shouldn't be mutating the params object
+  // but I think these aren't triggering as action list change, so it's not reupdating?
+  // which is why it's depending on this to pass the path to the positions...
+  // todo: add the pathSpacing
+  'along path': (p, params, p5) => {
+    if(params.children && params.path) {
+      params.path.forEach((point, i) => {
+        let uuid = params.children[i%params.children.length];
+        let child = get(flatActionStore)[uuid];
+        child.params.position = {x: point[0], y: point[1]};
+        child.params.tempPosition = {x: point[0], y: point[1]};
+        renderers[child.name](p, child.params, p5);
+      });
+    }
+  },
 
   //p is pgraphics object
 
@@ -216,21 +243,6 @@ export const renderers = {
     p.endShape(p.CLOSE);
     p.pop();
   }, 
-
-  // TODO: these probably shouldn't be mutating the params object
-  // but I think these aren't triggering as action list change, so it's not reupdating?
-  // which is why it's depending on this to pass the path to the positions...
-  // todo: add the pathSpacing
-  'along path': (p, params, p5) => {
-    if(params.children && params.path) {
-      params.path.forEach((point, i) => {
-        let child = params.children[i%params.children.length];
-        child.params.position = {x: point[0], y: point[1]};
-        child.params.tempPosition = {x: point[0], y: point[1]};
-        renderers[child.name](p, child.params, p5);
-      });
-    }
-  },
 
   'tile': (p, params, p5) => {
     tile(p, params, p5);

@@ -6,19 +6,21 @@ export interface Action {
   type: 'number' | 'color' | 'string' | 'list' | 'effect';
   category: string;
   value?: string | number | Action[];
+  parent?: string;
   children?: Action[];
   effect?: string;
-  dropdownName?: string;
+  textLabel?: string;
   params?: { [key: string]: any };
   value?: string | number | Action[];
   thumbnail?: string;
   children?: Action[];
   obscured?: boolean;
+  pinned?: boolean;
 }
 
 export type Effect = {
   name: string;
-  dropdownName: string;
+  textLabel: string;
   category: string;
   tags: string,
   init?: string;
@@ -27,4 +29,5 @@ export type Effect = {
   params?: { [key: string]: any;};
   thumbnail?: string;
   render?: (p5Instance: p5, params?: { [key: string]: any }) => void;
+  pinnedByDefault?: boolean;
 };

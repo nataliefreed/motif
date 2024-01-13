@@ -43,9 +43,10 @@ export function effectToAction(effect: Effect, params: { [key: string]: any }) :
       type: type,
       category: effect.category,
       effect: effect.name,
-      dropdownName: effect.dropdownName,
+      textLabel: effect.textLabel,
       params: mergedParams,
       uuid: uuidv4(),
+      pinned: effect.pinnedByDefault
     };
 
     return action;
@@ -72,8 +73,13 @@ export function addActionToActionStore(action: Action, params: { [key: string]: 
   newAction.params = mergedParams;
 
   actionStore.update(storeValue => {
+    if(!storeValue.children) storeValue.children = [];
+    let newActions = [...storeValue.children]; //shallow copy
+    newActions.push(newAction);
+    // set this action as most recently changed
+    changedActionID.set(newAction.uuid);
     
-    storeValue.children = storeValue.children || [];
+    return {...storeValue, children: newActions};
 
     // if (action.category === 'backgrounds') {
     //   // Insert backgrounds before the first item in the list that is not a background
@@ -86,7 +92,6 @@ export function addActionToActionStore(action: Action, params: { [key: string]: 
     // } else if 
     // if(action.category === 'stencils') {
       // Insert stencils at the end of the list
-      storeValue.children.push(newAction);
     // } else {
       // For other types, insert after the last item in the list that is not a background or stencil
       // const lastSpecialIndex = storeValue.children.reduce((lastIndex, child, index) => {
@@ -94,14 +99,19 @@ export function addActionToActionStore(action: Action, params: { [key: string]: 
       // }, -1);
       // storeValue.children.splice(lastSpecialIndex + 1, 0, newAction);
     // }
-
-    // set this action as most recently changed
-    changedActionID.set(newAction.uuid);
-
-    return storeValue;
   });
 
   saveToHistory();
+}
+
+export function deleteSelectedAction() {
+  let actions = get(actionStore);
+  if(actions && actions.children) {
+    let action = actions.children.find(action => action.uuid === get(selectedActionID));
+    if(action) {
+      deleteActionFromActionStore(action);
+    }
+  }
 }
 
 export function deleteActionFromActionStore(actionToDelete: Action) {
@@ -128,11 +138,11 @@ export function saveToHistory() {
   });
 }
 
-export function saveMyTool(action: Action | null) {
+export function saveActionAsNewTool(action: Action | null) {
   if(action) {
     let newEffect:Effect = {
       name: action.effect + "",
-      dropdownName: action.effect + " (my tool)",
+      textLabel: action.params.title,
       category: action.category,
       tags: 'mytools',
       params: action.params
@@ -147,6 +157,19 @@ export function saveMyTool(action: Action | null) {
       return storeValue;
     });
   }
+}
+
+//for now, use selectedActionID
+export function makeNamedGroup() {
+  //get selected action
+  let actions = get(actionStore);
+  if(actions && actions.children) {
+    let action = actions.children.find(action => action.uuid === get(selectedActionID));
+  }
+
+  //make a new action that is a named group
+  //add selected action as child of new group (this should work the same as dragging an action into a group)
+  //select text of new group so user can type a name
 }
 
 // set staged action

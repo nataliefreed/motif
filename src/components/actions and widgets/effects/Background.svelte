@@ -6,11 +6,12 @@
   export let params: any = {};
   export let onUpdate: (params: any) => void; // callback to update the actionStore
 
-  // call closure onUpdate passed from Background
+  // call closure onUpdate
   function handleValueChange(event: CustomEvent) {
     const { id, value } = event.detail;
-    const updatedParams = { ...params, [id]: value }; //update only the changed value
+    const updatedParams = { ...params, [id]: value }; //update only the changed value}
     onUpdate(updatedParams);
+    // dispatchEvent('valueChange', updatedParams);
   }
 
 </script>

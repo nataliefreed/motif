@@ -6,11 +6,13 @@
   import Tiling from './effects/Tiling.svelte';
   import Stencil from './effects/Stencil.svelte';
   import Brush from './effects/Brush.svelte';
-  import { actionStore } from '../../stores/dataStore';
+  import ControlStructure from './effects/ControlStructure.svelte';
+  import NamedList from './effects/NamedList.svelte';
   import Shape from './effects/Shape.svelte';
-  import { selectedActionID, selectedCodeEffect, changedActionID } from '../../stores/dataStore';
+  import { selectedActionID, selectedCodeEffect, changedActionID, flatActionStore } from '../../stores/dataStore';
   import PathWidget from './PathWidget.svelte';
   import { onMount, createEventDispatcher } from 'svelte';
+
   export let action: Action | null;
   export let depth = 0;
   export let isOpen = false;
@@ -27,21 +29,42 @@
       isOpen = !isOpen;
   }
 
+
+  // handle all updates to action store
+  // receive UUID, param name, and new value
+  // find that UUID in the (nested) action store
+  // update the param value without mutating the store directly
+  // send update to the store
+
+
+  // send param changes to the action store
   function handleUpdate(updatedParams: any) {
-    // console.log("parameter update");
-    if(action) {
-        action.params = updatedParams;
-        if($actionStore.children) {
-            const actionInStore = $actionStore.children.some(a => a.uuid === action.uuid);
-            if(actionInStore) {
-                changedActionID.set(action.uuid); // log which action was changed
-                actionStore.update(store => { return store }); //notify Svelte that store has changed
-            }
-            // else {
-            //     console.log("Action not found in store");
-            // }
+    console.log("updating params", updatedParams);
+    flatActionStore.update(store => {
+      if(!action) return store;
+        const actionInStore = store[action.uuid];
+        if(actionInStore) {
+          return { ...store, [action.uuid]: { ...actionInStore, params: updatedParams } }; //update the action in the store
         }
-    }
+        else {
+            console.log("Action not found in store");
+            return store;
+        }
+    });
+    // console.log("parameter update");
+    // if(action) {
+    //     action.params = updatedParams;
+    //     if($actionStore.children) {
+    //         const actionInStore = $actionStore.children.some(a => a.uuid === action.uuid);
+    //         if(actionInStore) {
+    //             changedActionID.set(action.uuid); // log which action was changed
+    //             actionStore.update(store => { return store }); //notify Svelte that store has changed
+    //         }
+    //         else {
+    //             console.log("Action not found in store");
+    //         }
+    //     }
+    // }
   }
 
   function getActionThumbnail() {
@@ -71,25 +94,10 @@
 //   $: console.log('Action in ActionItem:', action);
 </script>
 
+
 {#if action}
-    <!-- {action.uuid} debugging -->
-    {#if action.type === 'list' && Array.isArray(action.children) && action.children.length > 0}
-        {action.name}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <span class="toggle-arrow" on:click={toggle}> {isOpen ? '▼' : '▶'}</span>
-        {#if isOpen}
-            <ActionList children={action.children} depth={depth} on:reorder />
-        {/if}
-    {:else if action.type === 'list' && action.params && Array.isArray(action.params.children) && action.params.children.length > 0}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <span class="action-list-heading" on:click={e => handleItemClick(e, action.uuid)}>
-            {action.dropdownName} along<PathWidget points={action.params.path} on:valueChange={handleUpdate}/>
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <span class="toggle-arrow" on:click={toggle}> {isOpen ? '▼' : '▶'}</span>
-        </span>
-            {#if isOpen}
-                <ActionList children={action.params.children} depth={depth} on:reorder/>
-            {/if}
+    {#if action.category === 'control'}
+        <ControlStructure name={action.name} params={action.params} onUpdate={handleUpdate} on:reorder/>
     {:else if action.type === 'effect'}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <span class="action-item-content" on:click={e => handleItemClick(e, action.uuid)}>
@@ -106,9 +114,6 @@
             {:else if action.category === 'brushes'}
                 <Brush name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
             {/if}
-            <!-- {#if action.thumbnail}
-                <img src={action.thumbnail} alt="thumbnail" width="50" height="50"/>
-            {/if} -->
         </span>
     {/if}
 {/if}

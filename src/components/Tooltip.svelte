@@ -20,7 +20,7 @@
     tooltip = tippy(element, {
       content: contentElement,
       theme: 'light-border',
-      flipOnUpdate: true,
+      // flipOnUpdate: true,
       interactive: true,
       allowHTML: true,
       arrow: true,

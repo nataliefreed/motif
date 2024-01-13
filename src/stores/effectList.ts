@@ -4,11 +4,11 @@
 export const effectList = [
   {
     name: 'spiro',
-    dropdownName: 'Spiro',
+    textLabel: 'Spiro',
     category: 'shapes',
     tags: 'drawing',
     cursor: './assets/cursors/spiro-cursor.svg',
-    thumbnail: 'spiro.jpg',
+    thumbnail: 'spiro.png',
     mouseActionType: 'drag',
     params: {
       outer: 50,
@@ -20,7 +20,7 @@ export const effectList = [
   },
   {
     name: 'circle',
-    dropdownName: 'Circle',
+    textLabel: 'Circle',
     category: 'shapes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -34,7 +34,7 @@ export const effectList = [
   },
   {
     name: 'square',
-    dropdownName: 'Square',
+    textLabel: 'Square',
     category: 'shapes',
     tags: 'drawing',
     thumbnail: 'square.jpg',
@@ -47,7 +47,7 @@ export const effectList = [
   },
   {
     name: 'polygon',
-    dropdownName: 'Polygon',
+    textLabel: 'Polygon',
     category: 'shapes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -62,7 +62,7 @@ export const effectList = [
   },
   {
     name: 'star',
-    dropdownName: 'Star',
+    textLabel: 'Star',
     category: 'shapes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -78,7 +78,7 @@ export const effectList = [
   },
   {
     name: 'heart',
-    dropdownName: 'Heart',
+    textLabel: 'Heart',
     category: 'shapes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -92,7 +92,7 @@ export const effectList = [
   },
   {
     name: 'rectangle',
-    dropdownName: 'Rectangle',
+    textLabel: 'Rectangle',
     category: 'shapes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -107,7 +107,7 @@ export const effectList = [
   },
   {
     name: 'triangle',
-    dropdownName: 'Triangle',
+    textLabel: 'Triangle',
     category: 'shapes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -122,7 +122,7 @@ export const effectList = [
   },
   {
     name: 'stripes',
-    dropdownName: 'Stripes',
+    textLabel: 'Stripes',
     category: 'backgrounds',
     tags: 'drawing',
     cursor: '/assets/cursors/fill-drip-solid.svg',
@@ -137,7 +137,7 @@ export const effectList = [
   },
   {
     name: 'gradient',
-    dropdownName: 'Gradient',
+    textLabel: 'Gradient',
     category: 'backgrounds',
     tags: 'drawing',
     cursor: '/assets/cursors/fill-drip-solid.svg',
@@ -150,8 +150,8 @@ export const effectList = [
     }
   },
   {
-    name: 'solid fill', //TODO: rename name and dropdownName and also the effect name in actions. dropdown name is button name, name is type of effect (eg. tile which has subtypes in params)
-    dropdownName: 'Solid Fill',
+    name: 'solid fill', //TODO: rename name and textLabel and also the effect name in actions. dropdown name is button name, name is type of effect (eg. tile which has subtypes in params)
+    textLabel: 'Solid Fill',
     category: 'backgrounds',
     tags: 'drawing',
     cursor: '/assets/cursors/fill-drip-solid.svg',
@@ -163,7 +163,7 @@ export const effectList = [
   },
   {
     name: 'noise',
-    dropdownName: 'Noise',
+    textLabel: 'Noise',
     category: 'backgrounds',
     tags: 'drawing',
     cursor: '/assets/cursors/fill-drip-solid.svg',
@@ -174,24 +174,24 @@ export const effectList = [
     }
   },
 
-  {
-    name: 'along path',
-    dropdownName: 'Repeat',
-    category: 'brushes',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'dot_brush.jpeg',
-    mouseActionType: 'drag-path',
-    params: {
-      path: [],
-      pathSpacing: 10,
-      children: []
-    },
-  },
+  // {
+  //   name: 'along path',
+  //   textLabel: 'Repeat',
+  //   category: 'brushes',
+  //   tags: 'drawing',
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   thumbnail: 'dot_brush.jpeg',
+  //   mouseActionType: 'drag-path',
+  //   params: {
+  //     path: [],
+  //     pathSpacing: 10,
+  //     children: []
+  //   },
+  // },
 
   {
     name: 'along path',
-    dropdownName: 'Dot brush',
+    textLabel: 'Dot brush',
     category: 'brushes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -229,7 +229,7 @@ export const effectList = [
 
   {
     name: 'along path',
-    dropdownName: 'Mosaic Brush',
+    textLabel: 'Mosaic Brush',
     category: 'brushes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -322,7 +322,7 @@ export const effectList = [
 
   {
     name: 'along path',
-    dropdownName: 'Heart brush',
+    textLabel: 'Heart brush',
     category: 'brushes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -360,7 +360,7 @@ export const effectList = [
 
   {
     name: 'along path',
-    dropdownName: 'Star Brush',
+    textLabel: 'Star Brush',
     category: 'brushes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -411,7 +411,7 @@ export const effectList = [
 
   {
     name: 'bounce',
-    dropdownName: 'bounce',
+    textLabel: 'bounce',
     category: 'brushes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -427,7 +427,7 @@ export const effectList = [
   },
   {
     name: 'straight line',
-    dropdownName: 'straight line',
+    textLabel: 'straight line',
     category: 'brushes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -442,7 +442,7 @@ export const effectList = [
   },
   {
     name: 'tile',
-    dropdownName: 'Straight Grid',
+    textLabel: 'Straight Grid',
     category: 'patterns',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -457,7 +457,7 @@ export const effectList = [
   },
   {
     name: 'tile',
-    dropdownName: 'Brick',
+    textLabel: 'Brick',
     category: 'patterns',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -472,7 +472,7 @@ export const effectList = [
   },
   {
     name: 'tile',
-    dropdownName: 'Half Drop',
+    textLabel: 'Half Drop',
     category: 'patterns',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -487,7 +487,7 @@ export const effectList = [
   },
   {
     name: 'tile',
-    dropdownName: 'Checkerboard',
+    textLabel: 'Checkerboard',
     category: 'patterns',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -502,7 +502,7 @@ export const effectList = [
   },
   {
     name: 'tile',
-    dropdownName: 'Radial',
+    textLabel: 'Radial',
     category: 'patterns',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -519,7 +519,7 @@ export const effectList = [
   },
   {
     name: 'invert',
-    dropdownName: 'Invert',
+    textLabel: 'Invert',
     category: 'effects',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -531,7 +531,7 @@ export const effectList = [
   },
   {
     name: 'grayscale',
-    dropdownName: 'Grayscale',
+    textLabel: 'Grayscale',
     category: 'effects',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -543,7 +543,7 @@ export const effectList = [
   },
   {
     name: 'threshold',
-    dropdownName: 'Threshold',
+    textLabel: 'Threshold',
     category: 'effects',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -555,7 +555,7 @@ export const effectList = [
   },
   {
     name: 'grow',
-    dropdownName: 'Grow',
+    textLabel: 'Grow',
     category: 'effects',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -570,7 +570,7 @@ export const effectList = [
   },
   {
     name: 'shrink',
-    dropdownName: 'Shrink',
+    textLabel: 'Shrink',
     category: 'effects',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -585,7 +585,7 @@ export const effectList = [
   },
   {
     name: 'shift',
-    dropdownName: 'Shift',
+    textLabel: 'Shift',
     category: 'effects',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -599,7 +599,7 @@ export const effectList = [
   },
   // {
   //   name: 'copy cutout',
-  //   dropdownName: 'Copy Shape',
+  //   textLabel: 'Copy Shape',
   //   category: 'shapes',
   //   tags: 'drawing',
   //   cursor: './assets/cursors/star-solid.svg',
@@ -616,7 +616,7 @@ export const effectList = [
   /*'circle', 'square', 'triangle', 'star', 'heart',*/
   // {
   //   name: 'snapshot',
-  //   dropdownName: 'Take Snapshot',
+  //   textLabel: 'Take Snapshot',
   //   category: 'Effects',
   //   tags: 'drawing',
   //   init: `Snapshot {id:'snapshot', type:'image'}`,
@@ -629,7 +629,7 @@ export const effectList = [
   
   // {
   //   name: 'mosaic brush',
-  //   dropdownName: 'mosaic brush',
+  //   textLabel: 'mosaic brush',
   //   category: 'Brushes',
   //   tags: 'drawing',
   //   init: function() {
@@ -693,12 +693,13 @@ export const effectList = [
   // },
   {
     name: 'box',
-    dropdownName: 'Box',
+    textLabel: 'Box',
     category: 'stencils',
     tags: 'stencils',
     cursor: './assets/cursors/star-solid.svg',
     thumbnail: 'box.jpg',
     mouseActionType: 'drag',
+    pinnedByDefault: true,
     params: {
       length: 100,
       width: 100,
@@ -707,12 +708,13 @@ export const effectList = [
   },
   {
     name: 'envelope',
-    dropdownName: 'Envelope',
+    textLabel: 'Envelope',
     category: 'stencils',
     tags: 'stencils',
     cursor: './assets/cursors/star-solid.svg',
     thumbnail: 'envelope.jpg',
     mouseActionType: 'drag',
+    pinnedByDefault: true,
     params: {
       width: 200,
       height: 100
@@ -720,7 +722,7 @@ export const effectList = [
   },
   // {
   //   name: 'paper doll',
-  //   dropdownName: 'Doll',
+  //   textLabel: 'Doll',
   //   category: 'stencils',
   //   tag: 'stencils',
   //   cursor: './assets/cursors/star-solid.svg',
@@ -734,7 +736,7 @@ export const effectList = [
   // },
   // {
   //   name: 'paper doll',
-  //   dropdownName: 'Doll',
+  //   textLabel: 'Doll',
   //   category: 'Stencils',
   //   tag: 'stencils',
   //   init: `Paper doll with skin tone 
