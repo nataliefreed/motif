@@ -1,5 +1,6 @@
-import { addEffectToActionStore } from "./action-utils";
+import { addEffectToActionStore, deleteSelectedAction } from "./action-utils";
 import { toolStore, selectedActionID } from "../stores/dataStore";
+import { historyStore } from "../stores/history";
 import { get } from "svelte/store";
 import type { Effect } from "../types/types";
 
@@ -8,9 +9,10 @@ function deselectAction() {
 }
 
 function keydownHandler(event: KeyboardEvent) {
-  console.log(event);
+  // console.log(event);
+  // console.log(document.activeElement);
   // Check the element in focus to avoid overriding default behavior
-  if (document.activeElement && document.activeElement.tagName === 'INPUT') {
+  if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.classList.contains('string-widget'))) {
     return;
   }
 
@@ -23,18 +25,24 @@ function keydownHandler(event: KeyboardEvent) {
         addEffectToActionStore(randomEffect, {});
       }
       break;
+    case 'u':
+      historyStore.undo();
+      break;
     case 'Escape':
       selectedActionID.set('');
       // deselect all lines of code
       // go back to pointer tool in code view
       // set isDragging to false?
       break;
+    case 'Backspace':
+      deleteSelectedAction();
+      break;
   }
 }
 
 function keyupHandler(event: KeyboardEvent) {
   // Check the element in focus to avoid overriding default behavior
-  if (document.activeElement && document.activeElement.tagName === 'INPUT') {
+  if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.classList.contains('string-widget'))) {
     return;
   }
 

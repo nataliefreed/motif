@@ -15,7 +15,6 @@
 		"test:unit": "vitest"
 	},
 	"devDependencies": {
-		"@jhubbardsf/svelte-sortablejs": "^1.1.0",
 		"@playwright/test": "^1.28.1",
 		"@sveltejs/adapter-auto": "^2.0.0",
 		"@sveltejs/kit": "^1.20.4",
@@ -43,8 +42,9 @@
 		"@melloware/coloris": "^0.22.0",
 		"immer": "^10.0.3",
 		"lodash": "^4.17.21",
+		"meta-png": "^1.0.6",
 		"p5-svelte": "^3.1.2",
-		"sortablejs": "^1.15.0",
+		"sortablejs": "^1.15.1",
 		"svelte-awesome": "^3.2.1",
 		"tinycolor2": "^1.6.0",
 		"tippy.js": "^6.3.7",
