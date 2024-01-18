@@ -5,8 +5,10 @@
   import { onMount, createEventDispatcher } from 'svelte';
   import { selectedActionID, selectedCodeEffect, flatActionStore, stagedActionID, currentColor } from '../../stores/dataStore';
   import ActionItem from './ActionItem.svelte';
-  import { scale } from 'svelte/transition';
+  import { scale, fade } from 'svelte/transition';
   import { deepCopy } from '../../utils/utils';
+  import { selectAction } from '../action-utils';
+  import tinycolor from 'tinycolor2';
 
   export let id = '';
   export let value: string[] = [];
@@ -20,9 +22,9 @@
   $: children = value.map(uuid => $flatActionStore[uuid]);
   // $: newValue = value;
 
-  $: if (stagedIcon) {
-    stagedIcon.style.fill = $currentColor;
-  }
+  // $: if (stagedIcon) {
+  //   stagedIcon.style.fill = $currentColor;
+  // }
 
   const dispatch = createEventDispatcher();
 
@@ -50,7 +52,7 @@
       if(newIndex === undefined) return;
       // update children
       let uuid = event.item.id;
-      console.log("adding", uuid);
+      // console.log("adding", uuid);
       let newArray = [...value];
       newArray.splice(newIndex, 0, uuid);
       dispatch('valueChange', { id, value: newArray });
@@ -59,7 +61,7 @@
     function onRemove(event: SortableEvent) {
       let newValue = value.filter(uuid => uuid !== event.item.id);
       // update children
-      console.log("removing", event.item.id);
+      // console.log("removing", event.item.id);
       dispatch('valueChange', { id, value: newValue });
     }
 
@@ -68,7 +70,7 @@
       const oldIndex = event.oldIndex;
       const newIndex = event.newIndex;
       if (oldIndex === newIndex) return;
-      console.log("reordering", oldIndex, newIndex);
+      // console.log("reordering", oldIndex, newIndex);
 
       let newValue = reorderItems(value, oldIndex, newIndex);
       dispatch('valueChange', { id, value: newValue });
@@ -106,20 +108,69 @@
     }
   }
 
-  function selectAction(actionID: string) {
-    selectedActionID.set(actionID);
+  function checkAction(action) {
+    if (!action) {
+      console.error("Action not found");
+      // Return a default action object to prevent the app from breaking
+      return { uuid: 'not-found', params: { /* default params */ } };
+    }
+    return action;
   }
+
+  // not yet working
+  function getInAnimation(id:string) {
+    if ($stagedActionID === id) {
+      return {
+          animation: fade,
+          params: { duration: 400, start: 0.25, opacity: 1 } // customize as needed
+      };
+    } else {
+      return {
+        animation: scale,
+          params: { duration: 400, start: 0.25, opacity: 1 } // customize as needed
+      };
+  }
+}
+
+function getDynamicStyle(id:string) {
+  if ($stagedActionID === id) {
+    if($flatActionStore[id]) {
+      if($flatActionStore[id].params && $flatActionStore[id].params.color) {
+        const foreground = tinycolor($flatActionStore[id].params.color);
+        const background = tinycolor(foreground);
+        if(foreground.getLuminance() > 0.5) {
+          foreground.darken(20);
+          // backgroundColor.darken(30).setAlpha(0.1).toRgbString();
+        }
+
+        let textColor = foreground.toRgbString();
+        let backgroundColor = background.setAlpha(0.1).toRgbString();
+        
+        return `color: ${textColor}; background-color: ${backgroundColor}; border-color: ${textColor};`;
+        // return `color: ${textColor}; border-color: ${textColor};`;
+      }
+    }
+    // }
+    // const color = tinycolor($currentColor);
+    // const backgroundColor = color.setAlpha(0.1).toRgbString();
+    // return `color: ${$currentColor}; background-color: ${backgroundColor}; border-color: ${$currentColor};`;
+  } else {
+    return '';
+  }
+}
 
 </script>
 
 <ol bind:this={listElement} class={listStyleClass}>
-  {#each children as action (action.uuid)}
+  {#each children.map(checkAction) as action (action.uuid)}
     <li
       class:selected={$selectedActionID === action.uuid}
       class:staged={$stagedActionID === action.uuid}
+      style={getDynamicStyle(action.uuid)}
       class:obscured={action.obscured}
       class:draggable={!action.pinned}
-      class="scale-from-left" 
+      class="scale-from-left"
+      in:scale={{ duration: 500, start: 0.25, opacity: 1 }}
       id={`${action.uuid}`}
     >
       {#if action.pinned}
@@ -127,14 +178,15 @@
       {/if}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <span class="drag-handle" on:click={e => handleItemClick(e, action.uuid)}>
-        {#if $stagedActionID === action.uuid}
-          <span class="paintbrush">
-            <svg bind:this={stagedIcon} xmlns="http://www.w3.org/2000/svg" height="16" width="18" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M339.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L568.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S517.7-4.4 499.1 9.6L262.4 187.2c-24 18-38.2 46.1-38.4 76.1L339.3 367.1zm-19.6 25.4l-116-104.4C143.9 290.3 96 339.6 96 400c0 3.9 .2 7.8 .6 11.6C98.4 429.1 86.4 448 68.8 448H64c-17.7 0-32 14.3-32 32s14.3 32 32 32H208c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg>
-          </span>
-        {/if}
       </span>
+      {#if $stagedActionID === action.uuid}
+        <span class="paintbrush">
+          <svg bind:this={stagedIcon} xmlns="http://www.w3.org/2000/svg" height="16" width="18" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M339.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L568.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S517.7-4.4 499.1 9.6L262.4 187.2c-24 18-38.2 46.1-38.4 76.1L339.3 367.1zm-19.6 25.4l-116-104.4C143.9 290.3 96 339.6 96 400c0 3.9 .2 7.8 .6 11.6C98.4 429.1 86.4 448 68.8 448H64c-17.7 0-32 14.3-32 32s14.3 32 32 32H208c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg>
+        </span>
+      {/if}
       <ActionItem {action} {depth} />
     </li>
+    
   {/each}
 </ol>
 
@@ -149,12 +201,12 @@
     padding-left: 0em;
     /* margin-left: 1em; */
     overflow-y: auto;
-    overflow-x: hidden;
+    /* overflow-x: hidden; */
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-start;
-    /* width: 95%; */
+    width: 100%;
   }
 
   li {
@@ -175,11 +227,12 @@
 
   .staged {
     box-sizing: border-box; /* Include padding and border in element's width and height */
-    border: 2px solid gray;
+    border: 2px solid #757575;
     background-color: white;
-    background-color: #e8e8e8;
+    background-color: #f6f6f6;
     border-radius: 0;
     border-style: dashed none dashed none;
+    color: #757575;
     width: 100%;
     /* display: block; */
   }
@@ -237,8 +290,8 @@
   }
 
   .paintbrush svg {
-    stroke: #000000;
-    stroke-width: 10px;
+    /* stroke: #000000;
+    stroke-width: 10px; */
   }
 
   .pin {

@@ -722,7 +722,7 @@ function tile(p, params, p5) {
     snapshot.image(p5.getStaticCanvas(), 0, 0, w, h, sx, sy, w, h); // w * h rectangle centered at x, y 
 
     if(p===p5.getHoverCanvas()) {
-      p.tint(255, 100);
+      p.tint(255, 190);
     }
 
     switch (tiling) {

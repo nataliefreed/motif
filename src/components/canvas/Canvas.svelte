@@ -1,5 +1,5 @@
 <script>
-  import { addActionToActionStore, merge, addEffectAsStagedAction, updateStagedAction, addStagedActionToActionStore } from '../action-utils';
+  import { addActionToActionStore, merge, addEffectAsStagedAction, updateStagedAction, copyStagedActionToActionStore, updateActionParams } from '../action-utils';
 	import P5 from 'p5-svelte';
   import { actionStore, stagedAction, stagedActionID, actionRootID, activeCategory, selectedEffect, currentColor, shouldRandomizeColor, changedActionID, flatActionStore, actionRoot } from '../../stores/dataStore';
   import { renderers } from './Renderer.js';
@@ -52,10 +52,9 @@
     });
 
     flatActionStore.subscribe(actions => {
-      if($changedActionID == '' || $changedActionID != $stagedActionID) {
-        rootCached = false;
+      if($changedActionID != $stagedActionID) {
+        renderRoot();
       }
-      renderRoot();
     });
 
     // render whenever actionStore changes
@@ -153,29 +152,18 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
   // how do we cache steps?
   // we need to know where it has changed
 
-  let rootCached = false;
   function renderRoot() {
     if(p5) {
       let staticCanvas = p5.getStaticCanvas();
       let dragCanvas = p5.getDragCanvas();
       let hoverCanvas = p5.getHoverCanvas();
-      let cachedCanvas = p5.getCachedCanvas();
 
       hoverCanvas.clear();
       staticCanvas.clear();
       staticCanvas.background(255);
       dragCanvas.clear();
 
-      // console.log("action root is ", $actionRoot);
-      // renderAction($actionRoot, p5.getStaticCanvas());
-      staticCanvas.image(cachedCanvas, 0, 0);
-      if(!rootCached) {
-        renderAction($flatActionStore[$actionRootID], cachedCanvas);
-        rootCached = true;
-        staticCanvas.image(cachedCanvas, 0, 0); //run this again, for anything depending on static canvas
-      }
-      
-      //todo: something is up with the tile patterns
+      renderAction($flatActionStore[$actionRootID], staticCanvas);
 
       p5.clear();
       p5.image(staticCanvas, 0, 0);
@@ -183,6 +171,37 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       p5.image(dragCanvas, 0, 0);
     }
   }
+
+  // let rootCached = false;
+  // function renderRoot() {
+  //   if(p5) {
+  //     let staticCanvas = p5.getStaticCanvas();
+  //     let dragCanvas = p5.getDragCanvas();
+  //     let hoverCanvas = p5.getHoverCanvas();
+  //     let cachedCanvas = p5.getCachedCanvas();
+
+  //     hoverCanvas.clear();
+  //     staticCanvas.clear();
+  //     staticCanvas.background(255);
+  //     dragCanvas.clear();
+
+  //     // console.log("action root is ", $actionRoot);
+  //     // renderAction($actionRoot, p5.getStaticCanvas());
+  //     staticCanvas.image(cachedCanvas, 0, 0);
+  //     if(!rootCached) {
+  //       renderAction($flatActionStore[$actionRootID], cachedCanvas);
+  //       rootCached = true;
+  //       staticCanvas.image(cachedCanvas, 0, 0); //run this again, for anything depending on static canvas
+  //     }
+      
+  //     //todo: something is up with the tile patterns
+
+  //     p5.clear();
+  //     p5.image(staticCanvas, 0, 0);
+  //     p5.image(hoverCanvas, 0, 0);
+  //     p5.image(dragCanvas, 0, 0);
+  //   }
+  // }
 
   function renderAction(action, canvas) {
     if(p5) {
@@ -604,14 +623,15 @@ function handleMouseUp(event) {
     x = Math.round(p5.mouseX);
     y = Math.round(p5.mouseY);
     path.push([x, y]); //add last point to path
+
     updateStagedAction({path: getAntPath(path, $stagedAction.params.pathSpacing || 10)}); 
 
-    addStagedActionToActionStore();
+    copyStagedActionToActionStore();
+    renderRoot();
 
     if($shouldRandomizeColor) randomizeCurrentColor();
-    addEffectAsStagedAction($selectedEffect, { color: $currentColor, position: { x: x, y: y } }); // reset staged action to default
-    rootCached = false;
-    renderRoot();
+    // addEffectAsStagedAction($selectedEffect, { color: $currentColor, position: { x: x, y: y } }); // reset staged action to default
+    // renderRoot();
 
     path = []; // clear current path
 

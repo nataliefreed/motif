@@ -98,7 +98,7 @@
     }
   }
 
-  function selectAction(actionID: string) {
+  export function selectAction(actionID: string) {
     selectedActionID.set(actionID);
   }
 

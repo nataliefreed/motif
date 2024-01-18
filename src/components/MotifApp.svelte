@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { actionStore, toolStore, selectedEffect, activeCategory, stagedAction, stagedActionID, selectedActionID, selectedCodeEffect, currentColor, actionRoot, flatActionStore } from '../stores/dataStore';
+  import { actionStore, toolStore, selectedEffect, activeCategory, stagedAction, stagedActionID, changedActionID, selectedActionID, selectedCodeEffect, currentColor, actionRoot, flatActionStore } from '../stores/dataStore';
   import LinedPaper from './LinedPaper.svelte';
   import ActionItem from './actions and widgets/ActionItem.svelte';
 	import type { Action, Effect } from '../types/types';
@@ -254,24 +254,6 @@
   function getSelectedIndex() {
   
   }
-  
-  function duplicateSelected() {
-    if ($selectedActionID) {
-      actionStore.update(data => {
-        if (data && data.children) {
-          const index = data.children.findIndex(action => action.uuid === $selectedActionID);
-          if (index > -1) {
-            const newAction = {...data.children[index]};
-            newAction.uuid = uuidv4();
-            data.children.splice(index+1, 0, newAction);
-            selectedActionID.set(newAction.uuid);
-          }
-        }
-        return data;
-      });
-    }
-    saveToHistory();
-  }
 
   // clear staged action. Treat selected action
   function redrawSelected() {
@@ -424,12 +406,9 @@
         {/if} -->
         <EffectSettingsPanel />
       </div>
-      <div id="staged-action-in-panel">
-        <svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M339.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L568.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S517.7-4.4 499.1 9.6L262.4 187.2c-24 18-38.2 46.1-38.4 76.1L339.3 367.1zm-19.6 25.4l-116-104.4C143.9 290.3 96 339.6 96 400c0 3.9 .2 7.8 .6 11.6C98.4 429.1 86.4 448 68.8 448H64c-17.7 0-32 14.3-32 32s14.3 32 32 32H208c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg>
-          &nbsp;
-          <!-- <PathWidget></PathWidget> -->
-          <ActionItem action={$stagedAction} />
-      </div>
+      <!-- <div id="staged-action-in-panel">
+        <ActionItem action={$stagedAction} />
+      </div> -->
     </div>
 
   </Page>
@@ -449,10 +428,10 @@
             <ActionItem action={$actionRoot} depth={0}/>
             <!-- <ActionItem action={$stagedAction} /> -->
           </div>
-          <!-- <br>
-          <ul>
+          <!-- <br> -->
+          <!-- <ul>
             {#each Object.values($flatActionStore) as action (action.uuid)}
-              <li style:color={action.uuid === $stagedActionID ? 'red' : 'black'}>
+              <li style:color={action.uuid === $changedActionID ? 'blue' : (action.uuid === $stagedActionID ? 'red' : 'black')}>
                 {action.uuid} : {JSON.stringify(action.params.children)}
               </li>
             {/each}
@@ -535,6 +514,9 @@
     width: 100%;
   }
 
+  #main-list {
+    /* margin-left: 4.8em; */
+  }
   /* .code-area {
     margin-top: 30px;
   } */

@@ -163,6 +163,7 @@
   .number-widget {
       display: inline-block;
       text-decoration: underline lightgray 2px;
+      /* text-decoration: underline inherit 2px; */
       text-underline-offset: 5px;
   }
 

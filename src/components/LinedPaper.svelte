@@ -43,11 +43,14 @@
   .lined-paper ul {
       list-style: none;
       margin: 3px 0 0 5em;
+      margin: 3px 0 0 0;
       padding: 0;
       scroll-snap-align: start;
       height: 90%;
       overflow: auto;
       padding-bottom: 3em;
+      position: relative;
+      left: calc(var(--adjusted-page-width)*0.1);
   }
 
   /* red vertical margins */
