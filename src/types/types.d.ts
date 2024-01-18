@@ -10,7 +10,7 @@ export interface Action {
   children?: Action[];
   effect?: string;
   textLabel?: string;
-  params?: { [key: string]: any };
+  params: { [key: string]: any };
   value?: string | number | Action[];
   thumbnail?: string;
   children?: Action[];
@@ -26,8 +26,19 @@ export type Effect = {
   init?: string;
   cursor?: string;
   mouseActionType?: string;
-  params?: { [key: string]: any;};
+  params: { [key: string]: any;};
   thumbnail?: string;
   render?: (p5Instance: p5, params?: { [key: string]: any }) => void;
   pinnedByDefault?: boolean;
+  nestedActions?: { [key: string]: any }[Action];
 };
+
+export type ActionEffect = {
+  uuid: string,
+  effectName: string,
+  buttonLabel: string,
+  category: string,
+
+  
+
+}

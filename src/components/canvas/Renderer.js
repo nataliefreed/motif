@@ -1,12 +1,18 @@
 import { get } from 'svelte/store';
-import { flatActionStore } from '../../stores/dataStore.ts';
+import { flatActionStore, renderStopIndex, stagedActionID } from '../../stores/dataStore.ts';
 
 export const renderers = {
     // do each
+    // render before stop index / only if active
     'do each': (p, params, p5) => {
       if(params.children) {
-        params.children.forEach(uuid => {
+        // console.log("do each", params.children);
+        // get active children??
+        let activeChildren = params.children.filter(uuid => uuid !== get(stagedActionID));
+        // uuid enabled?
+        activeChildren.forEach(uuid => {
           let child = get(flatActionStore)[uuid];
+          // console.log("trying to render", child.name);
           renderers[child.name](p, child.params, p5);
         });
       }
@@ -16,12 +22,15 @@ export const renderers = {
   // which is why it's depending on this to pass the path to the positions...
   // todo: add the pathSpacing
   'along path': (p, params, p5) => {
-    if(params.children && params.path) {
+    if(!params.path) return;
+
+    if(params.children && params.children.length > 0) { // child UUIDs
       params.path.forEach((point, i) => {
         let uuid = params.children[i%params.children.length];
         let child = get(flatActionStore)[uuid];
         child.params.position = {x: point[0], y: point[1]};
         child.params.tempPosition = {x: point[0], y: point[1]};
+        // console.log("trying to render", child.name);
         renderers[child.name](p, child.params, p5);
       });
     }

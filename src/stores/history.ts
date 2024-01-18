@@ -1,12 +1,12 @@
 import { writable, get } from 'svelte/store';
 import type { Action, Effect } from '../types/types';
-import { actionStore, myTools, stagedAction } from '../stores/dataStore';
+import { actionStore, myTools, stagedActionID } from '../stores/dataStore';
 import { deepCopy } from '../utils/utils';
 
 type Storable = {
   actionStore: Action;
   myTools: Effect[];
-  stagedAction: Action | null;
+  stagedActionID: string; // uuid
 };
 
 // Initialize the history store
@@ -73,7 +73,7 @@ function getCurrentState(): Storable {
   return deepCopy({
     actionStore: get(actionStore),
     myTools: get(myTools),
-    stagedAction: get(stagedAction),
+    stagedActionID: get(stagedActionID),
   });
 }
 
@@ -81,5 +81,5 @@ function getCurrentState(): Storable {
 function applyState(state: Storable) {
   actionStore.set(deepCopy(state.actionStore));
   myTools.set(deepCopy(state.myTools));
-  // stagedAction.set(state.stagedAction);
+  stagedActionID.set(state.stagedActionID);
 }

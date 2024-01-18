@@ -6,7 +6,8 @@ import { v4 as uuidv4 } from 'uuid';
 export const actionStore = writable<Action>({name:"default", type:'list', category:'none', children:[], uuid:""});
 // object storing actions by UUID
 export const flatActionStore = writable<{ [key: string]: Action }>({});
-export const stagedAction = writable<Action | null>(null);
+// export const stagedAction = writable<Action | null>(null);
+export const stagedActionID = writable('');
 export const changedActionID = writable('');
 
 export const toolStore = writable<Effect[]>([]);
@@ -21,21 +22,35 @@ export const selectedCodeEffect = writable('point');
 export const selectedActionID = writable('');
 
 export const currentColor = writable('#000000');
+export const shouldRandomizeColor = writable(true);
+
+export const renderStopIndex = writable('');
+
+export const stagedAction = derived(
+  [flatActionStore, stagedActionID], 
+  ([$flatActionStore, $stagedActionID]) => $flatActionStore[$stagedActionID]
+);
+
+// only the "active" actions in the action store
+export const activeActionStore = derived
 
 // Derived store to create a nested structure from the flat store
 // export const nestedActionStore = derived(flatActionStore, $flatActionStore => buildNestedStructure($flatActionStore));
 
 // find first action that is not a child of another action
-export const actionRoot = derived(flatActionStore, $flatActionStore => {
-  for (let uuid in $flatActionStore) {
-    let isChild = Object.values($flatActionStore).some(item => item.params.children?.includes(uuid));
-    if (!isChild) {
-      // Return the root action
-      return $flatActionStore[uuid];
-    }
-  }
-  return null; // Return null if no root action is found
-});
+// export const actionRoot = derived(flatActionStore, $flatActionStore => {
+//   for (let uuid in $flatActionStore) {
+//     let isChild = Object.values($flatActionStore).some(item => item.params.children?.includes(uuid));
+//     if (!isChild) {
+//       // Return the root action
+//       return $flatActionStore[uuid];
+//     }
+//   }
+//   return null; // Return null if no root action is found
+// });
+
+export const actionRootID = writable('uuid_1');
+export const actionRoot = derived([flatActionStore, actionRootID],([$flatActionStore, $actionRootID]) => $flatActionStore[$actionRootID]);
 
 function buildNestedStructure(flatStore) {
   const buildTree = (uuid, store) => ({

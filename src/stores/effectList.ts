@@ -235,90 +235,110 @@ export const effectList = [
     cursor: './assets/cursors/star-solid.svg',
     thumbnail: 'mosaic_brush.jpg',
     mouseActionType: 'drag-path',
-    params: {
-      path: [],
-      pathSpacing: 15,
-      children: [
-        {
-          name: 'circle',
-          type: 'effect',
-          category: 'shapes',
-          effect: 'circle',
-          params: {color: 'rgb(255, 0, 0)', position: {x: 0, y: 0}, radius: 5} // Red
-        },
-        {
-          name: 'triangle',
-          type: 'effect',
-          category: 'shapes',
-          effect: 'triangle',
-          params: {color: 'rgb(255, 165, 0)', position: {x: 0, y: 0}, width: 20, height: 20} // Orange
-        },
-        {
-          name: 'rectangle',
-          type: 'effect',
-          category: 'shapes',
-          effect: 'rectangle',
-          params: {color: 'rgb(255, 215, 0)', position: {x: 0, y: 0}, width: 15, height: 22.5} // Gold
-        },
-        {
-          name: 'circle',
-          type: 'effect',
-          category: 'shapes',
-          effect: 'circle',
-          params: {color: 'rgb(128, 128, 0)', position: {x: 0, y: 0}, radius: 10} // Olive
-        },
-        {
-          name: 'triangle',
-          type: 'effect',
-          category: 'shapes',
-          effect: 'triangle',
-          params: {color: 'rgb(0, 128, 0)', position: {x: 0, y: 0}, width: 15, height: 15} // Green
-        },
-        {
-          name: 'rectangle',
-          type: 'effect',
-          category: 'shapes',
-          effect: 'rectangle',
-          params: {color: 'rgb(38, 162, 224)', position: {x: 0, y: 0}, width: 8, height: 12} // Light blue
-        },
-        {
-          name: 'circle',
-          type: 'effect',
-          category: 'shapes',
-          effect: 'circle',
-          params: {color: 'rgb(0, 0, 255)', position: {x: 0, y: 0}, radius: 8} // Blue
-        },
-        {
-          name: 'triangle',
-          type: 'effect',
-          category: 'shapes',
-          effect: 'triangle',
-          params: {color: 'rgb(75, 0, 130)', position: {x: 0, y: 0}, width: 10, height: 10} // Indigo
-        },
-        {
-          name: 'rectangle',
-          type: 'effect',
-          category: 'shapes',
-          effect: 'rectangle',
-          params: {color: 'rgb(128, 0, 128)', position: {x: 0, y: 0}, width: 20, height: 30} // Purple
-        },
-        {
-          name: 'circle',
-          type: 'effect',
-          category: 'shapes',
-          effect: 'circle',
-          params: {color: 'rgb(238, 130, 238)', position: {x: 0, y: 0}, radius: 10} // Violet
-        },
-        {
-          name: 'triangle',
-          type: 'effect',
-          category: 'shapes',
-          effect: 'triangle',
-          params: {color: 'rgb(255, 192, 203)', position: {x: 0, y: 0}, width: 12, height: 12} // Pink
+    nestedActions: {
+      'uuid_parent': {
+        uuid: 'uuid_parent',
+        name: 'along path',
+        type: 'list' as const,
+        category: 'control',
+        effect: 'along path',
+        params: {
+          title: "mosaic",
+          children: ['red_circle', 'orange_triangle', 'gold_rectangle', 'olive_circle', 'green_triangle', 'light_blue_rectangle', 'blue_circle', 'indigo_triangle', 'purple_rectangle', 'violet_circle', 'pink_triangle'],
+          path: [],
+          pathSpacing: 15
         }
-      ]
+      },
+      'red_circle': {
+        uuid: 'red_circle',
+        name: 'circle',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'circle',
+        params: {color: 'rgb(255, 0, 0)', position: {x: 0, y: 0}, radius: 5}
+      },
+      'orange_triangle': {
+        uuid: 'orange_triangle',
+        name: 'triangle',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'triangle',
+        params: {color: 'rgb(255, 165, 0)', position: {x: 0, y: 0}, width: 20, height: 20}
+      },
+      'gold_rectangle': {
+        uuid: 'gold_rectangle',
+        name: 'rectangle',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'rectangle',
+        params: {color: 'rgb(255, 215, 0)', position: {x: 0, y: 0}, width: 15, height: 22.5}
+      },
+      'olive_circle': {
+        uuid: 'olive_circle',
+        name: 'circle',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'circle',
+        params: {color: 'rgb(128, 128, 0)', position: {x: 0, y: 0}, radius: 10}
+      },
+      'green_triangle': {
+        uuid: 'green_triangle',
+        name: 'triangle',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'triangle',
+        params: {color: 'rgb(0, 128, 0)', position: {x: 0, y: 0}, width: 15, height: 15}
+      },
+      'light_blue_rectangle': {
+        uuid: 'light_blue_rectangle',
+        name: 'rectangle',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'rectangle',
+        params: {color: 'rgb(38, 162, 224)', position: {x: 0, y: 0}, width: 8, height: 12}
+      },
+      'blue_circle': {
+        uuid: 'blue_circle',
+        name: 'circle',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'circle',
+        params: {color: 'rgb(0, 0, 255)', position: {x: 0, y: 0}, radius: 8}
+      },
+      'indigo_triangle': {
+        uuid: 'indigo_triangle',
+        name: 'triangle',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'triangle',
+        params: {color: 'rgb(75, 0, 130)', position: {x: 0, y: 0}, width: 10, height: 10}
+      },
+      'purple_rectangle': {
+        uuid: 'purple_rectangle',
+        name: 'rectangle',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'rectangle',
+        params: {color: 'rgb(128, 0, 128)', position: {x: 0, y: 0}, width: 20, height: 30}
+      },
+      'violet_circle': {
+        uuid: 'violet_circle',
+        name: 'circle',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'circle',
+        params: {color: 'rgb(238, 130, 238)', position: {x: 0, y: 0}, radius: 10}
+      },
+      'pink_triangle': {
+        uuid: 'pink_triangle',
+        name: 'triangle',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'triangle',
+        params: {color: 'rgb(255, 192, 203)', position: {x: 0, y: 0}, width: 12, height: 12}
+      }
     }
-  }, 
+  },
 
   {
     name: 'along path',
@@ -328,34 +348,45 @@ export const effectList = [
     cursor: './assets/cursors/star-solid.svg',
     thumbnail: 'heart_brush.jpeg',
     mouseActionType: 'drag-path',
-    params: {
-      path: [],
-      pathSpacing: 15,
-      children: [
-        {
-          name: 'heart',
-          type: 'effect',
-          category: 'shapes',
-          effect: 'heart',
-          params: {
-            size: 16,
-            color: '#f35b04',
-            position: {x: 0, y: 0}
-          }
-        },
-        {
-          name: 'heart',
-          type: 'effect',
-          category: 'shapes',
-          effect: 'heart',
-          params: {
-            size: 10,
-            color: '#f18701',
-            position: {x: 100, y: 100}
-          }
+    nestedActions: {
+      'uuid_parent': {
+        uuid: 'uuid_parent',
+        name: 'along path',
+        type: 'list',
+        category: 'control',
+        effect: 'along path',
+        params: {
+          title: "hearts",
+          children: ['small_heart', 'large_heart'],
+          path: [],
+          pathSpacing: 15
         }
-      ]
-    },
+      },
+      'small_heart': {
+        uuid: 'small_heart',
+        name: 'heart',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'heart',
+        params: {
+          size: 10,
+          color: '#f18701',
+          position: {x: 0, y: 0}
+        }
+      },
+      'large_heart': {
+        uuid: 'large_heart',
+        name: 'heart',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'heart',
+        params: {
+          size: 16,
+          color: '#f35b04',
+          position: {x: 0, y: 0}
+        }
+      }
+    }
   },
 
   {
@@ -366,48 +397,63 @@ export const effectList = [
     cursor: './assets/cursors/star-solid.svg',
     thumbnail: 'star_brush.png',
     mouseActionType: 'drag-path',
-    params: {
-      path: [],
-      pathSpacing: 20,
-      children: [
-        {
-          name: 'star',
-          type: 'effect',
-          category: 'shapes',
-          effect: 'star',
-          params: {color: '#F72585', position: {x: 0, y: 0}, r1: 10, r2: 7, npoints: 5}
-        },
-        {
-          name: 'star',
-          type: 'effect',
-          category: 'shapes',
-          effect: 'star',
-          params: {color: '#7209B7', position: {x: 0, y: 0}, r1: 12, r2: 6, npoints: 7}
-        },
-        {
-          name: 'star',
-          type: 'effect',
-          category: 'shapes',
-          effect: 'star',
-          params: {color: '#3A0CA3', position: {x: 0, y: 0}, r1: 12, r2: 5, npoints: 15}
-        },
-        {
-          name: 'star',
-          type: 'effect',
-          category: 'shapes',
-          effect: 'star',
-          params: {color: '#4361EE', position: {x: 0, y: 0}, r1: 10, r2: 4, npoints: 4}
-        },
-        {
-          name: 'star',
-          type: 'effect',
-          category: 'shapes',
-          effect: 'star',
-          params: {color: '#4CC9F0', position: {x: 0, y: 0}, r1: 11, r2: 3, npoints: 15}
+    nestedActions: {
+      'uuid_parent': {
+        uuid: 'uuid_parent',
+        name: 'along path',
+        type: 'list',
+        category: 'control',
+        effect: 'along path',
+        params: {
+          title: "stars",
+          children: ['pink_star', 'purple_star', 'dark_blue_star', 'blue_star', 'light_blue_star'],
+          path: [],
+          pathSpacing: 20
         }
-      ]
+      },
+      'pink_star': {
+        uuid: 'pink_star',
+        name: 'star',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'star',
+        params: {color: '#F72585', position: {x: 0, y: 0}, r1: 10, r2: 7, npoints: 5}
+      },
+      'purple_star': {
+        uuid: 'purple_star',
+        name: 'star',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'star',
+        params: {color: '#7209B7', position: {x: 0, y: 0}, r1: 12, r2: 6, npoints: 7}
+      },
+      'dark_blue_star': {
+        uuid: 'dark_blue_star',
+        name: 'star',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'star',
+        params: {color: '#3A0CA3', position: {x: 0, y: 0}, r1: 12, r2: 5, npoints: 15}
+      },
+      'blue_star': {
+        uuid: 'blue_star',
+        name: 'star',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'star',
+        params: {color: '#4361EE', position: {x: 0, y: 0}, r1: 10, r2: 4, npoints: 4}
+      },
+      'light_blue_star': {
+        uuid: 'light_blue_star',
+        name: 'star',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'star',
+        params: {color: '#4CC9F0', position: {x: 0, y: 0}, r1: 11, r2: 3, npoints: 15}
+      }
     }
   },
+  
 
   {
     name: 'bounce',
@@ -418,11 +464,9 @@ export const effectList = [
     thumbnail: 'straight_line.jpeg',
     mouseActionType: 'drag',
     params: {
-      position: {x:100, y:100},
-      duration: 1000,
-      angle: 0,
-      spacing: 1,
-      color: '#f57f7e'
+      start: { x: 20, y: 150 },
+      end: { x: 200, y: 150 },
+      duration: 500
     }
   },
   {

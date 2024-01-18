@@ -1,12 +1,13 @@
 <script>
-  import { addActionToActionStore, merge, addEffectAsStagedAction } from '../action-utils';
+  import { addActionToActionStore, merge, addEffectAsStagedAction, updateStagedAction, addStagedActionToActionStore } from '../action-utils';
 	import P5 from 'p5-svelte';
-  import { actionStore, stagedAction, activeCategory, selectedEffect, currentColor, changedActionID, flatActionStore, actionRoot } from '../../stores/dataStore';
+  import { actionStore, stagedAction, stagedActionID, actionRootID, activeCategory, selectedEffect, currentColor, shouldRandomizeColor, changedActionID, flatActionStore, actionRoot } from '../../stores/dataStore';
   import { renderers } from './Renderer.js';
   import { onMount, onDestroy } from 'svelte';
   // import debounce from 'lodash';
   import tinycolor from "tinycolor2";
   import { getAntPath } from '../../utils/utils.ts';
+    import { page } from '$app/stores';
 	
   let x = 55;
 	let y = 55;
@@ -65,18 +66,16 @@
     });
   })
 
-  function updateStagedAction(params) {
-    if($stagedAction) {
-      stagedAction.update(action => {
-      let mergedParams = merge(action.params, params);
-      return {
-          ...action,
-          params: mergedParams
-        };
-      });
-    }
+      //
+    //   stagedAction.update(action => {
+    //   let mergedParams = merge(action.params, params);
+    //   return {
+    //       ...action,
+    //       params: mergedParams
+    //     };
+    //   });
+    // }
     // console.log("new staged action params", $stagedAction.params);
-  }
 
   export const downloadCanvas = () =>{
     if(p5) {
@@ -139,7 +138,12 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
 "`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-' 
   
   */
+ 
+  // renderRoot uses renderer doEach
+  // how do we cache steps?
+  // we need to know where it has changed
 
+  let rootCached = false;
   function renderRoot() {
     if(p5) {
       let staticCanvas = p5.getStaticCanvas();
@@ -147,11 +151,21 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       let hoverCanvas = p5.getHoverCanvas();
       let cachedCanvas = p5.getCachedCanvas();
 
+      hoverCanvas.clear();
       staticCanvas.clear();
       staticCanvas.background(255);
       dragCanvas.clear();
 
-      renderAction($actionRoot, p5.getStaticCanvas());
+      // console.log("action root is ", $actionRoot);
+      // renderAction($actionRoot, p5.getStaticCanvas());
+      staticCanvas.image(cachedCanvas, 0, 0);
+      if(!rootCached) {
+        renderAction($flatActionStore[$actionRootID], cachedCanvas);
+        rootCached = true;
+        staticCanvas.image(cachedCanvas, 0, 0); //run this again, for anything depending on static canvas
+      }
+      
+      //todo: something is up with the tile patterns
 
       p5.clear();
       p5.image(staticCanvas, 0, 0);
@@ -431,11 +445,14 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
         debouncedStagedActionUpdate({ start: { x: x, y: y } });
       }
       if($stagedAction.params.path) {
-          debouncedStagedActionUpdate({path: path.slice(-5)});
+          debouncedStagedActionUpdate({path: path.slice(-5)}); // show small tail of path when hovering
       }
+      // console.log($stagedAction.effect);
       const renderFunction = renderers[$stagedAction.effect];
       if (renderFunction) {
-        renderFunction(p5.getHoverCanvas(), merge($stagedAction.params, { position: { x: x, y: y } }), p5);
+
+        // renderFunction(p5.getHoverCanvas(), merge($stagedAction.params, { position: { x: x, y: y } }), p5);
+        renderFunction(p5.getHoverCanvas(), $stagedAction.params, p5);
       }
       p5.image(p5.getStaticCanvas(), 0, 0);
       p5.image(p5.getHoverCanvas(), 0, 0);
@@ -495,7 +512,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
           updateStagedAction({ end: { x: x, y: y } });
         }
         if('path' in params) {
-          updateStagedAction({path: getAntPath(path, $stagedAction.params.pathSpacing || 10)});
+          updateStagedAction({path: getAntPath(path, $stagedAction.params.pathSpacing || 10)}); // calc path spacing
         }
         renderFunction(p5.getDragCanvas(), $stagedAction.params, p5);
       }
@@ -545,7 +562,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
         debouncedStagedActionUpdate({ start: { x: startX, y: startY }, end: { x: startX, y: startY }}); // add first point as last point when mouse first pressed so it doesn't jump to previous last point
       }
       if($stagedAction.params.path) {
-        debouncedStagedActionUpdate({path: path});
+        debouncedStagedActionUpdate({path: path}); // why not ant path here?
       }
 
       p5.getDragCanvas().clear();
@@ -595,7 +612,7 @@ function handleMouseUp(event) {
 }
 
 function globalMouseUp(event) {
-  console.log("global mouse up");
+  // console.log("global mouse up");
   // p.image(0, 0, staticCanvas);
   // hoverCanvas.clear();
   // dragCanvas.clear();
