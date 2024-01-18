@@ -5,6 +5,7 @@ import { historyStore } from '../stores/history';
 import { get } from 'svelte/store';
 import { deepCopy } from '../utils/utils';
 import tinycolor from "tinycolor2";
+import { tick } from 'svelte';
 
 // export function merge(object1:{ [key: string]: any }, object2:{ [key: string]: any }): object {
 //   let merged:{ [key: string]: any } = {};
@@ -18,6 +19,59 @@ import tinycolor from "tinycolor2";
 //   }
 //   return merged;
 // }
+
+export async function scrollToAction(id: string) {
+  await tick(); // Wait for the DOM to update with the new item
+  const element = document.getElementById(`${id}`);
+  // console.log("scrolling to element:", element);
+  if (element) {
+    element.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center', // align the bottom of the new item with the center of the viewport
+      inline: 'nearest' // keep the horizontal alignment as it is
+    });
+  }
+}
+
+function getActionsInRunOrder() {
+  let root = get(actionRoot);
+  if(!root) return;
+  let actionsInRunOrder = getDescendantIDs(root.uuid);
+  // console.log("actions in run order", actionsInRunOrder);
+  return actionsInRunOrder;
+}
+
+export function clearAllActions() {
+  let actions = getActionsInRunOrder(); //IDs
+  if(!actions || actions == undefined || actions.length < 1) return;
+
+  console.log("actions to clear", actions);
+
+  let lastItem = actions[actions.length - 1];
+  if(lastItem) {
+    scrollToAction(lastItem);
+  }
+
+  const interval = setInterval(() => {
+    flatActionStore.update(store => {
+      const penultimateItem = actions[actions.length - 2];
+      if(penultimateItem) {
+        console.log("second to last item", penultimateItem);
+        selectedActionID.set(penultimateItem);
+      // Remove the last element from the array
+      const toRemove = actions.pop();
+      deleteAction(toRemove);
+      changedActionID.set(penultimateItem);
+      } else {
+          // If no more elements except first, clear the interval
+          clearInterval(interval);
+          selectedActionID.set('');
+          saveToHistory(); // Call saveToHistory after all elements are removed
+      }
+      return store;
+    });
+  }, 300); //rate at which to clear actions
+}
 
 
 export function isChildActive(parentEffect, parentParams, childID) {
@@ -533,29 +587,63 @@ export function deleteAction(id:string) {
     }
   }
 
-  // includes root
-  function getDescendants(id:string) {
-    const currentAction = get(flatActionStore)[id];
-    let descendants = { [id]: currentAction };
+//includes root
+function getDescendantActions(id:string) {
+  const currentAction = get(flatActionStore)[id];
+  let descendants = [currentAction];
 
-    if (currentAction && currentAction.type === 'list' && currentAction.params.children) {
-      currentAction.params.children.forEach(childId => {
-        const childDescendants = getDescendants(childId);
-        descendants = { ...descendants, ...childDescendants };
-      });
-    }
-
-    return descendants;
+  if (currentAction && currentAction.type === 'list' && currentAction.params.children) {
+    currentAction.params.children.forEach(childId => {
+      const childDescendants = getDescendantActions(childId);
+      console.log("descendants", childDescendants);
+      descendants = descendants.concat(childDescendants);
+    });
   }
+  return descendants;
+}
+
+//includes root
+function getDescendantIDs(id:string) {
+  const currentAction = get(flatActionStore)[id];
+  if (!currentAction) return [];
+
+  let descendants = [currentAction.uuid];
+
+  if (currentAction.type === 'list' && currentAction.params.children) {
+    currentAction.params.children.forEach(childId => {
+      const childDescendants = getDescendantIDs(childId);
+      descendants = descendants.concat(childDescendants); // Concatenates the UUIDs
+    });
+  }
+
+  return descendants;
+}
 
   // make a copy with new uuids
   function copyAction(id:string) {
     if (!id || !get(flatActionStore)[id]) return;
 
-    let newActions = deepCopy(getDescendants(id));
+    let descendants = arrayToKeyedObj(getDescendantActions(id), 'uuid');
+    let newActions = deepCopy(descendants);
+
     newActions = updateUUIDsPreservingHierarchy(newActions);
     return newActions;
   }
+
+  // move to utils
+  function arrayToKeyedObj<T extends Record<K, any>, K extends keyof any>(array: T[], key: K): Record<T[K], T> {
+    return array.reduce((obj: Record<T[K], T>, item: T) => {
+        obj[item[key]] = item;
+        return obj;
+    }, {} as Record<T[K], T>);
+  }
+
+  // function arrayToKeyedObj(actionsArray) {
+  //   return actionsArray.reduce((obj, action) => {
+  //       obj[action.uuid] = action;
+  //       return obj;
+  //   }, {});
+  // }
 
   // make a copy with new uuid and add immediately after original
   export function duplicateAction(id:string) {

@@ -378,7 +378,7 @@ export const renderers = {
     let spacing = direction.mag(); // distance between start and position2
     direction.normalize(); // normalize to unit vector
 
-    console.log('bounce', startPos, endPos, numSteps, direction, spacing);
+    // console.log('bounce', startPos, endPos, numSteps, direction, spacing);
 
     p.push();
     p.colorMode(p5.HSB, 100);
