@@ -79,7 +79,7 @@
   <ColorWidget id="color" value={params.color} on:valueChange={handleValueChange}/>
   {/if}
 
-  {#if params.position && !params.tempPosition}
+  {#if params.position && !params.tempPosition && params.position.x && params.position.y}
   at 
     <CoordinateWidget id="position" value={params.position} on:valueChange={handleValueChange}/>
   {/if}

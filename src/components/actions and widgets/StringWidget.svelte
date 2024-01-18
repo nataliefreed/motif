@@ -2,7 +2,7 @@
   import { createEventDispatcher } from 'svelte';
 
   export let id = '';
-  export let value: string;
+  export let value: string = '';
   let stringWidget: HTMLElement;
 
   const dispatch = createEventDispatcher();

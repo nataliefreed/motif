@@ -197,34 +197,44 @@ export const effectList = [
     cursor: './assets/cursors/star-solid.svg',
     thumbnail: 'dot_brush.jpeg',
     mouseActionType: 'drag-path',
-    params: {
-      path: [],
-      pathSpacing: 10,
-      children: [
-        {
-          name: 'circle',
-          type: 'effect',
-          category: 'shapes',
-          effect: 'circle',
-          params: {
-            radius: 3,
-            color: '#80babd',
-            position: {x: 0, y: 0}
-          }
-        },
-        {
-          name: 'circle',
-          type: 'effect',
-          category: 'shapes',
-          effect: 'circle',
-          params: {
-            radius: 3,
-            color: '#19518a',
-            position: {x: 0, y: 0}
-          }
+    nestedActions: {
+      'uuid_parent': {
+        uuid: 'uuid_parent',
+        name: 'along path',
+        type: 'list' as const,
+        category: 'control',
+        effect: 'along path',
+        params: {
+          title: "dots",
+          children: ['light_blue_dot', 'dark_blue_dot'],
+          path: []
         }
-      ]
-    },
+      },
+      'light_blue_dot': {
+        uuid: 'light_blue_dot',
+        name: 'circle',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'circle',
+        params: {
+          radius: 3,
+          color: '#80babd',
+          position: {x: 0, y: 0}
+        }
+      },
+      'dark_blue_dot': {
+        uuid: 'dark_blue_dot',
+        name: 'circle',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'circle',
+        params: {
+          radius: 3,
+          color: '#19518a',
+          position: {x: 0, y: 0}
+        }
+      }
+    }
   },
 
   {

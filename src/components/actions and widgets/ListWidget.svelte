@@ -3,23 +3,30 @@
   import type { SortableEvent } from 'sortablejs';
   import Sortable from 'sortablejs';
   import { onMount, createEventDispatcher } from 'svelte';
-  import { selectedActionID, selectedCodeEffect, flatActionStore } from '../../stores/dataStore';
+  import { selectedActionID, selectedCodeEffect, flatActionStore, stagedActionID, currentColor } from '../../stores/dataStore';
   import ActionItem from './ActionItem.svelte';
+  import { scale } from 'svelte/transition';
+  import { deepCopy } from '../../utils/utils';
 
   export let id = '';
   export let value: string[] = [];
-  let newValue = value;
   let children: any[] = [];
   let listElement: HTMLElement;
   export let depth = 0;
+  
+  let stagedIcon: SVGElement;
 
   // get the child actions from their uuids
   $: children = value.map(uuid => $flatActionStore[uuid]);
   // $: newValue = value;
 
+  $: if (stagedIcon) {
+    stagedIcon.style.fill = $currentColor;
+  }
+
   const dispatch = createEventDispatcher();
 
-  $: listStyleClass = depth % 2 === 0 ? 'decimal-style' : 'alpha-style'; //why reactive?
+  $: listStyleClass = depth % 2 === 0 ? 'alpha-style' : 'decimal-style';
 
   onMount(() => {
     const sortable = new Sortable(listElement, {
@@ -27,20 +34,33 @@
       onUpdate: onReorder,
       onAdd: onAdd,
       onRemove: onRemove,
-      onEnd: onDropEnd,
+      // onEnd: onDropEnd,
       animation: 150,
       filter: '.filtered',
       draggable: '.draggable'
     });
+  
+    console.log("depth", depth);
+    console.log("list style class", listStyleClass);
 
     function onAdd(event: SortableEvent) {
+      const newIndex = event.newIndex;
+
+      console.log("adding at index", newIndex);
+      if(newIndex === undefined) return;
       // update children
       let uuid = event.item.id;
-      // find the one that was added in the action store? or just its id? this seems like a store update already...
+      console.log("adding", uuid);
+      let newArray = [...value];
+      newArray.splice(newIndex, 0, uuid);
+      dispatch('valueChange', { id, value: newArray });
     }
 
     function onRemove(event: SortableEvent) {
+      let newValue = value.filter(uuid => uuid !== event.item.id);
       // update children
+      console.log("removing", event.item.id);
+      dispatch('valueChange', { id, value: newValue });
     }
 
     function onReorder(event: SortableEvent) {
@@ -48,28 +68,23 @@
       const oldIndex = event.oldIndex;
       const newIndex = event.newIndex;
       if (oldIndex === newIndex) return;
+      console.log("reordering", oldIndex, newIndex);
 
-      console.log("reorder", oldIndex, newIndex);
-
-      newValue = reorderItems(value, oldIndex, newIndex);
-      // console.log("new value", newValue);
+      let newValue = reorderItems(value, oldIndex, newIndex);
+      dispatch('valueChange', { id, value: newValue });
     }
 
     function reorderItems(array:string[], oldIndex:number, newIndex:number) {
-      // console.log("array", array);
-      const newArray = [...array]; // Create a shallow copy of the array
-      // console.log("new array", newArray);
+      const newArray = deepCopy(array);
       const [movedItem] = newArray.splice(oldIndex, 1); // Remove the item from old position
-      // console.log("moved item", movedItem);
       newArray.splice(newIndex, 0, movedItem); // Insert the item at new position
-      // console.log("new array", newArray);
       return newArray;
     }
 
-    function onDropEnd(event: SortableEvent) {
-      console.log("old value", value, "new value", newValue);
-      dispatch('valueChange', { id, value: newValue });
-    }
+    // function onDropEnd(event: SortableEvent) {
+    //   console.log("old value", value, "new value", newValue);
+    //   dispatch('valueChange', { id, value: newValue });
+    // }
 
     function reorderArrayItem(array: [any], oldIndex: number, newIndex: number) {
       const newArray = [...array]; // Create a shallow copy of the array
@@ -99,21 +114,34 @@
 
 <ol bind:this={listElement} class={listStyleClass}>
   {#each children as action (action.uuid)}
-    <li class:selected={$selectedActionID == action.uuid} class:obscured={action.obscured} class:draggable={!action.pinned} class="scale-from-left" in:scale={{ duration: 400, start: 0.25, opacity: 1 }} id={`${action.uuid}`}>
+    <li
+      class:selected={$selectedActionID === action.uuid}
+      class:staged={$stagedActionID === action.uuid}
+      class:obscured={action.obscured}
+      class:draggable={!action.pinned}
+      class="scale-from-left" 
+      id={`${action.uuid}`}
+    >
       {#if action.pinned}
         <span class="pin"><svg xmlns="http://www.w3.org/2000/svg" height="16" width="10" viewBox="0 0 320 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M16 144a144 144 0 1 1 288 0A144 144 0 1 1 16 144zM160 80c8.8 0 16-7.2 16-16s-7.2-16-16-16c-53 0-96 43-96 96c0 8.8 7.2 16 16 16s16-7.2 16-16c0-35.3 28.7-64 64-64zM128 480V317.1c10.4 1.9 21.1 2.9 32 2.9s21.6-1 32-2.9V480c0 17.7-14.3 32-32 32s-32-14.3-32-32z"/></svg></span>
       {/if}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <span class="drag-handle" on:click={e => handleItemClick(e, action.uuid)}></span>
-      <ActionItem {action} depth = {depth+1} />
+      <span class="drag-handle" on:click={e => handleItemClick(e, action.uuid)}>
+        {#if $stagedActionID === action.uuid}
+          <span class="paintbrush">
+            <svg bind:this={stagedIcon} xmlns="http://www.w3.org/2000/svg" height="16" width="18" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M339.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L568.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S517.7-4.4 499.1 9.6L262.4 187.2c-24 18-38.2 46.1-38.4 76.1L339.3 367.1zm-19.6 25.4l-116-104.4C143.9 290.3 96 339.6 96 400c0 3.9 .2 7.8 .6 11.6C98.4 429.1 86.4 448 68.8 448H64c-17.7 0-32 14.3-32 32s14.3 32 32 32H208c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg>
+          </span>
+        {/if}
+      </span>
+      <ActionItem {action} {depth} />
     </li>
   {/each}
 </ol>
 
 <style>
-  .sortable-selected {
+  /* .sortable-selected {
     text-decoration: green wavy underline;
-  }
+  } */
 
   ol {
     counter-reset: list-counter; /* Initialize a counter */
@@ -126,6 +154,7 @@
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-start;
+    /* width: 95%; */
   }
 
   li {
@@ -144,47 +173,72 @@
     /* display: block; */
   }
 
+  .staged {
+    box-sizing: border-box; /* Include padding and border in element's width and height */
+    border: 2px solid gray;
+    background-color: white;
+    background-color: #e8e8e8;
+    border-radius: 0;
+    border-style: dashed none dashed none;
+    width: 100%;
+    /* display: block; */
+  }
+
   li::before {
     pointer-events: none; /* prevent click events on the index */
     counter-increment: list-counter;
     content: counter(list-counter);
-  }
-
-  .alpha-style li::before {
-    content: counter(list-counter, lower-alpha); /* Alpha numbering */
-  }
-
-  .decimal-style li::before,
-  .alpha-style li::before,
-  .drag-handle {
     color: #aeaeae;
+  }
+
+  .alpha-style li::before,
+  .decimal-style li::before {
+    border: 1px solid #aeaeae;
+    background-color: #ffffff;
+    border-radius: 50%; /* Round border */
+    width: 1.8em; /* Fixed width for the circle */
+    height: 1.8em; /* Fixed height for the circle */
+  }
+  
+  .alpha-style li::before,
+  .decimal-style li::before,
+  .drag-handle,
+  .paintbrush {
     position: absolute;
     display: flex;
     align-items: center; /* Center vertically */
     justify-content: center; /* Center horizontally */
-    width: 1.8em; /* Fixed width for the circle */
-    height: 1.8em; /* Fixed height for the circle */
     left: 0; /* Align with the start of the list item */
     top: 1.1em;
-    border-radius: 50%; /* Round border */
+    width: 1.8em; /* Fixed width for the circle */
+    height: 1.8em; /* Fixed height for the circle */
     transform: translateY(-50%);
-    font-size: 0.8em; /* Adjust font size as needed */
+    font-size: 0.8em;
     font-weight: bold;
     z-index: 1;
     align-self: flex-start;
     margin-left: 4px;
   }
 
-  .drag-handle {
-    border: 1px solid #aeaeae;
-    background-color: #ffffff;
-    /* background-color: transparent; */
-    /* cursor: grab; */
-    z-index: 0;
+  .alpha-style li::before {
+    content: counter(list-counter, lower-alpha); /* Alpha numbering */
   }
 
-  .drag-handle:active {
-    cursor: grabbing;
+  li.staged::before {
+    border: none;
+    border-radius: 0;
+    counter-increment: none;
+    content: '';
+    background-color: transparent;
+    /* background-image: url('/assets/cursors/paintbrush-solid.svg');
+    background-size: contain; /* Scale the image to fit within the element */
+    /* background-repeat: no-repeat;
+    display: inline-block; */
+  }
+
+  .paintbrush svg {
+    stroke: #000000;
+    stroke-width: 10px;
   }
 
   .pin {
