@@ -31,3 +31,9 @@
     in color <ColorWidget id="color" value={params.color || '#f57f7e'} on:valueChange={handleValueChange}/>
     in width <NumberWidget id="lineWeight" value={params.lineWeight || 5} on:valueChange={handleValueChange}/>
 {/if}
+
+{#if name === 'bounce'}
+  Bounce from <CoordinateWidget id="start" value={params.start} on:valueChange={handleValueChange}/>
+  to <CoordinateWidget id="end" value={params.end} on:valueChange={handleValueChange}/>
+  <NumberWidget id="duration" value={params.duration || 1000} on:valueChange={handleValueChange}/> times
+{/if}

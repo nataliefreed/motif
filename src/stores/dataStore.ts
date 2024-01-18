@@ -104,7 +104,7 @@ function getFlatActionStore() {
       category: 'control',
       params: {
         title: 'My Design',
-        children: ['uuid_2', 'uuid_3', 'uuid_5', 'uuid_8']
+        children: ['uuid_2', 'uuid_3', 'uuid_5', 'uuid_8', 'uuid_10']
       }
     },
     'uuid_2': {
@@ -206,6 +206,18 @@ function getFlatActionStore() {
         color: '#2C5abb',
         radius: 10,
         position: { x: 20, y: 150 }
+      }
+    },
+    'uuid_10': {
+      uuid: 'uuid_10',
+      name: 'bounce',
+      type: 'effect' as const,
+      category: 'brushes',
+      effect: 'bounce',
+      params: {
+        start: { x: 10, y: 10 },
+        end: { x: 40, y: 20 },
+        duration: 500
       }
     },
   };

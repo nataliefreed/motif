@@ -371,8 +371,50 @@ export const renderers = {
   },
 
   'bounce': (p, params, p5) => {
+    let startPos = p.createVector(params.start.x, params.start.y);
+    let endPos = p.createVector(params.end.x, params.end.y);
+    let numSteps = params.duration;
+    let direction = p5.Vector.sub(endPos, startPos);
+    let spacing = direction.mag(); // distance between start and position2
+    direction.normalize(); // normalize to unit vector
 
+    console.log('bounce', startPos, endPos, numSteps, direction, spacing);
+
+    p.push();
+    p.colorMode(p5.HSB, 100);
+    let hue = 0;
+    p.noStroke();
+    let radius = 10;
+
+    let currentPos = startPos.copy();
+    for (let i = 0; i < numSteps; i++) {
+        p.fill(hue, 80, 80);
+        hue = (hue + 1) % 100;
+
+        p.circle(currentPos.x, currentPos.y, radius*2);
+        // console.log('currentPos', currentPos.x, currentPos.y);
+
+        // Move to next position
+        let move = p5.Vector.mult(direction, spacing);
+        currentPos.add(move);
+
+        // Check for canvas boundary collisions and bounce if necessary
+        if (currentPos.x <= 0 || currentPos.x >= p.width) {
+            direction.x *= -1;
+            currentPos.x = p.constrain(currentPos.x, 0+radius, p.width-radius);
+        }
+        if (currentPos.y <= 0 || currentPos.y >= p.height) {
+            direction.y *= -1;
+            currentPos.y = p.constrain(currentPos.y, 0+radius, p.height-radius);
+        }
+    }
+    p.colorMode(p5.RGB);
+    p.fill(255);
+    p.circle(startPos.x, startPos.y, 5);
+    p.circle(endPos.x, endPos.y, 5);
+    p.pop();
   },
+
 
   'copy cutout': (p, params, p5) => {
     p.push();
@@ -674,7 +716,6 @@ function tile(p, params, p5) {
 
   p.noFill();
   p.stroke(100);
-
 
   // else {
     let snapshot = p5.createGraphics(w, h); // for captured rectangle
