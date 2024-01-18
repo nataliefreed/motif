@@ -2,6 +2,7 @@
 
   import { createEventDispatcher } from "svelte";
   import { onMount } from 'svelte';
+    import { shouldRandomizeColor } from "../../stores/dataStore";
 
   let colors = [
     '#FEFEFE','#D7D7D7','#B7B7B7','#636363','#363636','#070707','#EE1B25','#F5661F','#FCF500','#7CC475','#428DCC','#2C3094','#1C1463','#652B92','#300049','#790046',
@@ -17,6 +18,12 @@
     updateColor(colors[Math.floor(Math.random() * colors.length)]);
   });
 
+  function handleClick(color:string) {
+    if(color == activeColor) return;
+    shouldRandomizeColor.set(false); // if the user changes the color, turn off randomization
+    updateColor(color);
+  }
+
   function updateColor(color:string) {
     activeColor = color;
     dispatch('colorChange', activeColor);
@@ -31,7 +38,7 @@
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <span class:selected={color===activeColor}
             class="color-item" 
-            on:click={updateColor.bind(null, color)}
+            on:click={handleClick.bind(null, color)}
             style="background-color: {color}"></span>
     {/each}
   </div>

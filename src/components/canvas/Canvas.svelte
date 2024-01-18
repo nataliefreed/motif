@@ -27,11 +27,17 @@
 
   let dragRenderFunction;
 
+  function randomizeCurrentColor() {
+    // console.log("randomizing color");
+    currentColor.set(tinycolor.random().toHexString());
+  }
+
   onMount(() => {
     setScaleFactor();
 
     // if selectedEffect changed, update staged action accordingly
     selectedEffect.subscribe(effect => {
+      if(!effect) return;
       let params = {};
       // if(effect.tags != "my tools") {
       if($activeCategory === "my tools") {
@@ -41,10 +47,14 @@
       }
         // params.color2 = tinyColor($currentColor).rotate(180).toHexString();
       // }
+      if($shouldRandomizeColor) randomizeCurrentColor();
       addEffectAsStagedAction(effect, params); //drawing effects have staged action
     });
 
     flatActionStore.subscribe(actions => {
+      if($changedActionID == '' || $changedActionID != $stagedActionID) {
+        rootCached = false;
+      }
       renderRoot();
     });
 
@@ -55,7 +65,7 @@
         let changedIndex = 0;
         changedIndex = actions.children.findIndex(action => action.uuid === $changedActionID);
         changedActionID.set("");
-        console.log("changed index is", changedIndex);
+        // console.log("changed index is", changedIndex);
         // renderAll(actions, changedIndex);
       }
     });
@@ -594,11 +604,14 @@ function handleMouseUp(event) {
     x = Math.round(p5.mouseX);
     y = Math.round(p5.mouseY);
     path.push([x, y]); //add last point to path
-    // let params = { position: { x: x, y: y } };
     updateStagedAction({path: getAntPath(path, $stagedAction.params.pathSpacing || 10)}); 
 
-    addActionToActionStore($stagedAction);
-    addEffectAsStagedAction($selectedEffect, { color: $currentColor }); // reset staged action to default
+    addStagedActionToActionStore();
+
+    if($shouldRandomizeColor) randomizeCurrentColor();
+    addEffectAsStagedAction($selectedEffect, { color: $currentColor, position: { x: x, y: y } }); // reset staged action to default
+    rootCached = false;
+    renderRoot();
 
     path = []; // clear current path
 
