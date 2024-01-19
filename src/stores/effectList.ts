@@ -3,22 +3,6 @@
 
 export const effectList = [
   {
-    name: 'spiro',
-    textLabel: 'Spiro',
-    category: 'shapes',
-    tags: 'drawing',
-    cursor: './assets/cursors/spiro-cursor.svg',
-    thumbnail: 'spiro.png',
-    mouseActionType: 'drag',
-    params: {
-      outer: 50,
-      inner: 24,
-      d: 20,
-      color: '#FF0000',
-      position: {x: 100, y: 100}
-    },
-  },
-  {
     name: 'circle',
     textLabel: 'Circle',
     category: 'shapes',
@@ -75,6 +59,22 @@ export const effectList = [
       color: '#a2d16b',
       position: {x: 100, y: 100}
     }
+  },
+  {
+    name: 'spiro',
+    textLabel: 'Spiro',
+    category: 'shapes',
+    tags: 'drawing',
+    cursor: './assets/cursors/spiro-cursor.svg',
+    thumbnail: 'spiro.png',
+    mouseActionType: 'drag',
+    params: {
+      outer: 50,
+      inner: 24,
+      d: 20,
+      color: '#FF0000',
+      position: {x: 100, y: 100}
+    },
   },
   {
     name: 'heart',

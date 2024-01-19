@@ -43,6 +43,7 @@
       let params = {};
       // if(effect.tags != "my tools") {
       if($activeCategory === "my tools") {
+        shouldRandomizeColor.set(false);
         currentColor.set(effect.params.color);
       } else {
         params.color = $currentColor;
@@ -634,11 +635,16 @@ function handleMouseUp(event) {
     // addEffectAsStagedAction($selectedEffect, { color: $currentColor, position: { x: x, y: y } }); // reset staged action to default
     // renderRoot();
 
+    if($activeCategory === "my tools") {
+      addEffectAsStagedAction($selectedEffect, { position: { x: x, y: y } }); // reset staged action to default
+    }
+
     path = []; // clear current path
 
     p5.getHoverCanvas().clear();
     p5.getDragCanvas().reset();
     p5.getHoverCanvas().reset();
+    p5.image(p5.getStaticCanvas(), 0, 0);
 
     // Once the mouse is released, remove global listener
     document.removeEventListener('mouseup', globalMouseUp);
@@ -668,7 +674,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
 //TODO: check if need to handle release click off canvas
 function handleMouseLeave(event) {
   if(!isDragging) {
-    // clearTempCanvases();
+    clearTempCanvases(); //clear when leaving canvas, but will draw again if staged action params changed
   }
   // if(isDragging) {
   //   // handleMouseUp(event);

@@ -1,6 +1,6 @@
 import type { Action, Effect, ActionStore } from '../types/types';
 import { v4 as uuidv4 } from 'uuid';
-import { actionRootID, actionStore, myTools, selectedActionID, selectedEffect, activeCategory, changedActionID, flatActionStore, actionRoot, stagedAction, stagedActionID, currentColor } from '../stores/dataStore'
+import { actionRootID, actionStore, myTools, selectedActionID, selectedEffect, activeCategory, changedActionID, flatActionStore, actionRoot, stagedAction, stagedActionID, currentColor, shouldRandomizeColor } from '../stores/dataStore'
 import { historyStore } from '../stores/history';
 import { get } from 'svelte/store';
 import { deepCopy } from '../utils/utils';
@@ -140,6 +140,65 @@ export function effectToActions(effect: Effect, params: { [key: string]: any } =
     actions[action.uuid] = action;
   }
   return actions;
+}
+
+// if action has children, put them into nestedActions form
+// todo: it would be better to just have actions and effects be the same type!
+function actionToEffect(actions: ActionStore) {
+  if (!actions || Object.keys(actions).length === 0) return;
+
+  const parentUuids = Object.keys(actions).filter(uuid => {
+    const action = actions[uuid];
+    return action.type === 'list' && action.params && Array.isArray(action.params.children);
+  });
+
+  if (parentUuids.length === 0) return;
+
+  const parentAction = actions[parentUuids[0]];
+  let nestedActions = {} as ActionStore;
+
+  parentAction.params.children.forEach(childUuid => {
+    nestedActions[childUuid] = actions[childUuid];
+  });
+
+  return {
+    name: parentAction.name,
+    textLabel: parentAction.params.title,
+    category: parentAction.category,
+    nestedActions: nestedActions,
+    tags: 'mytools'
+  };
+}
+
+export function saveActionAsNewTool(action: Action) {
+  if(!action) return;
+
+  let newEffect: Effect;
+
+  if (action.type === 'list' && action.params && Array.isArray(action.params.children)) {
+    const actions = copyAction(action.uuid);
+    newEffect = actionToEffect(actions) as Effect;
+  } else {
+    // Handle non-nested actions
+    newEffect = {
+      name: action.effect + "",
+      textLabel: action.effect + "",
+      category: action.category,
+      tags: 'mytools',
+      params: deepCopy(action.params)
+    };
+  }
+
+  if(!newEffect) return;
+
+  myTools.update(storeValue => {
+    if(!storeValue) storeValue = [];
+    storeValue.push(newEffect);
+    console.log("new tool added to my tools", storeValue);
+    activeCategory.set('my tools');
+    selectedEffect.set(newEffect);
+    return storeValue;
+  });
 }
 
 export function copyStagedActionToActionStore() {
@@ -623,27 +682,6 @@ let changeOptions = {
     // deleteAction(prevStaged);
 
     saveToHistory();
-  }
-
-  export function saveActionAsNewTool(action: Action | null) {
-    if(action) {
-      let newEffect:Effect = {
-        name: action.effect + "",
-        textLabel: action.params.title,
-        category: action.category,
-        tags: 'mytools',
-        params: deepCopy(action.params)
-      }
-  
-      myTools.update(storeValue => {
-        if(!storeValue) storeValue = [];
-        storeValue.push(newEffect);
-        // console.log("new tool added to my tools", storeValue);
-        activeCategory.set('my tools');
-        selectedEffect.set(newEffect);
-        return storeValue;
-      });
-    }
   }
 
 //includes root
