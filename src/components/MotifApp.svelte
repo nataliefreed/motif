@@ -1,11 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { actionStore, toolStore, selectedEffect, activeCategory, stagedAction, stagedActionID, changedActionID, selectedActionID, selectedCodeEffect, currentColor, actionRoot, flatActionStore } from '../stores/dataStore';
+  import { exportCodeWithImage, importCodeFromImage } from './export-utils';
   import LinedPaper from './LinedPaper.svelte';
   import ActionItem from './actions and widgets/ActionItem.svelte';
 	import type { Action, Effect } from '../types/types';
   import Canvas from './canvas/Canvas.svelte';
-  import StagedAction from './actions and widgets/StagedAction.svelte';
   import { scrollToAction, saveActionAsNewTool, saveToHistory, deleteAction, loopActionAlongPath, remixAction, duplicateAction, redrawAction, clearAllActions } from './action-utils';
   import EffectToolbar from './toolbars/EffectToolbar.svelte';
   import Notebook from './Notebook.svelte';
@@ -19,8 +19,6 @@
   import tinycolor from "tinycolor2";
   import { setupKeyboardEvents, removeKeyboardEvents } from './KeyboardEvents';
   import EffectSettingsPanel from './toolbars/EffectSettingsPanel.svelte';
-  import { v4 as uuidv4 } from 'uuid';
-  import { addMetadataFromBase64DataURI, getMetadata } from 'meta-png';
 
   const [send, receive] = crossfade({}); // TODO
 
@@ -37,133 +35,6 @@
   let downloadCanvas: Function;
   function handleDownload() {
     downloadCanvas();
-  }
-
-  // TODO: save new effects ("my tools") also
-  function exportCodeWithImage() {
-    const canvas = document.getElementById('defaultCanvas0') as HTMLCanvasElement;
-
-    // Convert the data to a JSON string
-    const jsonString = JSON.stringify($actionStore);
-
-    // Convert canvas to Data URI
-    if(canvas) {
-        const dataURI = canvas.toDataURL('image/png');
-
-      try {
-        const modifiedDataURI = addMetadataFromBase64DataURI(dataURI, 'actionStore', jsonString);
-
-        // Create a temporary anchor element to trigger download
-        const a = document.createElement('a');
-        a.href = modifiedDataURI;
-        a.download = 'my design.png';
-        document.body.appendChild(a);
-        a.click();
-
-        document.body.removeChild(a);
-      } catch (error) {
-        console.error('Error adding metadata:', error);
-      }
-    }
-  }
-
-  function importCodeFromImage() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/png';
-
-    input.onchange = async (e) => {
-      let target = e.target as HTMLInputElement;
-      if (!target.files) return;
-      
-      const file = target.files[0];
-
-      if (file) {
-        const reader = new FileReader();
-
-        reader.onload = async (e) => {
-          let target = e.target as FileReader;
-          const result = target.result;
-
-          try {
-            const pngUint8Array = new Uint8Array(await file.arrayBuffer());
-            const jsonData = getMetadata(pngUint8Array, 'actionStore');
-            
-            if (jsonData) {
-              const data = JSON.parse(jsonData);
-              actionStore.set(data);
-            }
-          } catch (error) {
-            console.error('Error extracting metadata:', error);
-          }
-        };
-
-        // Read the file as ArrayBuffer
-        reader.readAsArrayBuffer(file);
-        }
-      };
-
-    input.click();
-  }
-
-  function exportCode() {
-    //save action store to file
-
-    // Convert the data to a JSON string
-    const jsonString = JSON.stringify($actionStore);
-
-    // Create a blob from the JSON string
-    const blob = new Blob([jsonString], { type: 'application/json' });
-
-    // Create a URL for the blob
-    const url = URL.createObjectURL(blob);
-
-    // Create a temporary anchor element to trigger download
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'actionStore.json'; // Name of the file to be downloaded
-    document.body.appendChild(a);
-    a.click();
-
-    // Clean up
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }
-
-  function importCode() {
-    //load action store as file (replace existing)
-
-    // Create a file input element
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json'; // Accept only JSON files
-
-    input.onchange = (e) => {
-      let target = e.target as HTMLInputElement;
-      if(!target.files) return;
-      const file = target.files[0];
-      if (file) {
-        const reader = new FileReader();
-
-        reader.onload = (e) => { //runs when file reading complete
-          let target = e.target as FileReader;
-          const result = target.result;
-          try {
-            // Parse the file content and update the store
-            const data = JSON.parse(result);
-            actionStore.set(data);
-          } catch (error) {
-            console.error('Error parsing JSON:', error);
-          }
-        };
-        
-        // Read the file as text
-        reader.readAsText(file);
-      }
-    };
-
-    // Trigger the file input
-    input.click();
   }
 
   function undo() {
@@ -416,7 +287,7 @@
     <div class="instabuttons-top">
       <button class="instabutton" id="undoButton" on:click={undo}>Undo</button>
       <button class="instabutton" id="clearAllButton" on:click={clearAllActions}>Clear All</button>
-      <button class="instabutton right-aligned" id="downloadButton" on:click={handleDownload}><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32V274.7l-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7V32zM64 352c-35.3 0-64 28.7-64 64v32c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V416c0-35.3-28.7-64-64-64H346.5l-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352H64zm368 56a24 24 0 1 1 0 48 24 24 0 1 1 0-48z"/></svg> Download</button>
+      <!-- <button class="instabutton right-aligned" id="downloadButton" on:click={handleDownload}><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512">! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc.<path d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32V274.7l-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7V32zM64 352c-35.3 0-64 28.7-64 64v32c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V416c0-35.3-28.7-64-64-64H346.5l-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352H64zm368 56a24 24 0 1 1 0 48 24 24 0 1 1 0-48z"/></svg> Download</button> -->
       <button class="instabutton right-aligned" id="exportButton" on:click={exportCodeWithImage}><svg xmlns="http://www.w3.org/2000/svg" height="16" width="12" viewBox="0 0 384 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M64 0C28.7 0 0 28.7 0 64V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V160H256c-17.7 0-32-14.3-32-32V0H64zM256 0V128H384L256 0zM216 232V334.1l31-31c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-72 72c-9.4 9.4-24.6 9.4-33.9 0l-72-72c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l31 31V232c0-13.3 10.7-24 24-24s24 10.7 24 24z"/></svg></button>
       <button class="instabutton right-aligned" id="importButton" on:click={importCodeFromImage}><svg xmlns="http://www.w3.org/2000/svg" height="16" width="12" viewBox="0 0 384 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M64 0C28.7 0 0 28.7 0 64V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V160H256c-17.7 0-32-14.3-32-32V0H64zM256 0V128H384L256 0zM216 408c0 13.3-10.7 24-24 24s-24-10.7-24-24V305.9l-31 31c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l72-72c9.4-9.4 24.6-9.4 33.9 0l72 72c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0l-31-31V408z"/></svg></button>
     </div>

@@ -32,6 +32,8 @@
     currentColor.set(tinycolor.random().toHexString());
   }
 
+  $: if($shouldRandomizeColor) randomizeCurrentColor();
+
   onMount(() => {
     setScaleFactor();
 
@@ -54,20 +56,19 @@
     flatActionStore.subscribe(actions => {
       if($changedActionID != $stagedActionID) {
         renderRoot();
+      } else if($stagedActionID.length > 0 && !isDragging) { // render staged action in its current state
+        if(p5) {
+          const renderFunction = renderers[$stagedAction.effect];
+          if (renderFunction) {
+            p5.getHoverCanvas().clear();
+            renderFunction(p5.getHoverCanvas(), $stagedAction.params, p5);
+            p5.image(p5.getStaticCanvas(), 0, 0);
+            p5.image(p5.getHoverCanvas(), 0, 0);
+          }
+        }
       }
     });
 
-    // render whenever actionStore changes
-    actionStore.subscribe(actions => {
-      if(p5) {
-        // check which action was changed and cache the static canvas for the actions preceding it
-        let changedIndex = 0;
-        changedIndex = actions.children.findIndex(action => action.uuid === $changedActionID);
-        changedActionID.set("");
-        // console.log("changed index is", changedIndex);
-        // renderAll(actions, changedIndex);
-      }
-    });
 
     currentColor.subscribe(color => {
       // console.log("current color changed", color);
@@ -477,14 +478,14 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
           debouncedStagedActionUpdate({path: path.slice(-5)}); // show small tail of path when hovering
       }
       // console.log($stagedAction.effect);
-      const renderFunction = renderers[$stagedAction.effect];
-      if (renderFunction) {
+      // const renderFunction = renderers[$stagedAction.effect];
+      // if (renderFunction) {
 
-        // renderFunction(p5.getHoverCanvas(), merge($stagedAction.params, { position: { x: x, y: y } }), p5);
-        renderFunction(p5.getHoverCanvas(), $stagedAction.params, p5);
-      }
-      p5.image(p5.getStaticCanvas(), 0, 0);
-      p5.image(p5.getHoverCanvas(), 0, 0);
+      //   // renderFunction(p5.getHoverCanvas(), merge($stagedAction.params, { position: { x: x, y: y } }), p5);
+      //   renderFunction(p5.getHoverCanvas(), $stagedAction.params, p5);
+      // }
+      // p5.image(p5.getStaticCanvas(), 0, 0);
+      // p5.image(p5.getHoverCanvas(), 0, 0);
     }
 
     /*
@@ -667,7 +668,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
 //TODO: check if need to handle release click off canvas
 function handleMouseLeave(event) {
   if(!isDragging) {
-    clearTempCanvases();
+    // clearTempCanvases();
   }
   // if(isDragging) {
   //   // handleMouseUp(event);

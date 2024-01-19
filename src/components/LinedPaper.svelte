@@ -27,7 +27,9 @@
   .lined-paper {
       width: 100%;
       height: 100%;
+      margin-top: 5px;
       overflow-y: auto;
+      overflow-x: hidden;
         background-image: repeating-linear-gradient(
         to bottom, 
         transparent, 
@@ -43,7 +45,7 @@
   .lined-paper ul {
       list-style: none;
       margin: 3px 0 0 5em;
-      margin: 3px 0 0 0;
+      margin: 0;
       padding: 0;
       scroll-snap-align: start;
       height: 90%;
@@ -51,6 +53,7 @@
       padding-bottom: 3em;
       position: relative;
       left: calc(var(--adjusted-page-width)*0.1);
+      top: 4px;
   }
 
   /* red vertical margins */

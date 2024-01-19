@@ -9,6 +9,7 @@
   import { deepCopy } from '../../utils/utils';
   import { selectAction } from '../action-utils';
   import tinycolor from 'tinycolor2';
+  import { v4 as uuidv4 } from 'uuid';
 
   export let id = '';
   export let value: string[] = [];
@@ -110,9 +111,9 @@
 
   function checkAction(action) {
     if (!action) {
-      console.error("Action not found");
+      // console.error("Action not found");
       // Return a default action object to prevent the app from breaking
-      return { uuid: 'not-found', params: { /* default params */ } };
+      return { uuid: 'not-found' + uuidv4(), params: { /* default params */ } };
     }
     return action;
   }
@@ -132,32 +133,73 @@
   }
 }
 
+// function getDynamicStyle(id:string) {
+//   if ($stagedActionID === id) {
+//     if($flatActionStore[id]) {
+//       if($flatActionStore[id].params && $flatActionStore[id].params.color) {
+//         const foreground = tinycolor($flatActionStore[id].params.color);
+//         const background = tinycolor(foreground);
+//         if(foreground.getLuminance() > 0.5) {
+//           foreground.darken(20);
+//         }
+
+//         let textColor = foreground.toRgbString();
+//         let backgroundColor = background.setAlpha(0.1).toRgbString();
+        
+//         return `color: ${textColor}; background-color: ${backgroundColor}; border-color: ${textColor};`;
+//         // return `color: ${textColor}; border-color: ${textColor};`;
+//       }
+//     }
+//   } else {
+//     return '';
+//   }
+// }
+
+function getPaintbrushColor(id:string) {
+  if ($flatActionStore[id].params && $flatActionStore[id].params.color) {
+    let color = tinycolor($flatActionStore[id].params.color).toRgbString();
+    let outline = tinycolor(color).darken(10).toRgbString();
+    return `fill: ${color}; stroke: ${outline};`;
+  }
+}
+
 function getDynamicStyle(id:string) {
   if ($stagedActionID === id) {
-    if($flatActionStore[id]) {
-      if($flatActionStore[id].params && $flatActionStore[id].params.color) {
-        const foreground = tinycolor($flatActionStore[id].params.color);
-        const background = tinycolor(foreground);
-        if(foreground.getLuminance() > 0.5) {
+    if ($flatActionStore[id]) {
+      if ($flatActionStore[id].params && $flatActionStore[id].params.color) {
+        const originalColor = tinycolor($flatActionStore[id].params.color);
+
+        // Create new instances for manipulation
+        const foreground = tinycolor(originalColor.toString()); 
+        const background = tinycolor(originalColor.toString());
+
+        if (foreground.getLuminance() > 0.3) {
           foreground.darken(20);
-          // backgroundColor.darken(30).setAlpha(0.1).toRgbString();
         }
 
         let textColor = foreground.toRgbString();
-        let backgroundColor = background.setAlpha(0.1).toRgbString();
-        
-        return `color: ${textColor}; background-color: ${backgroundColor}; border-color: ${textColor};`;
-        // return `color: ${textColor}; border-color: ${textColor};`;
+        // let baseColor = tinycolor(background.toString()).setAlpha(0.1).toRgbString();
+        // let stripeColor = tinycolor(background.toString()).darken(10).setAlpha(0.2).toRgbString();
+
+        let baseColor = tinycolor('#555555').setAlpha(0.1).toRgbString();
+        let stripeColor = tinycolor(baseColor.toString()).darken(10).setAlpha(0.2).toRgbString();
+
+        let stripedBackground = `repeating-linear-gradient(
+          -45deg,
+          ${baseColor},
+          ${baseColor} 10px,
+          ${stripeColor} 10px,
+          ${stripeColor} 20px
+        )`;
+
+        return `color: ${textColor}; background: ${stripedBackground}; border-color: ${textColor};`;
       }
     }
-    // }
-    // const color = tinycolor($currentColor);
-    // const backgroundColor = color.setAlpha(0.1).toRgbString();
-    // return `color: ${$currentColor}; background-color: ${backgroundColor}; border-color: ${$currentColor};`;
   } else {
     return '';
   }
 }
+
 
 </script>
 
@@ -170,23 +212,23 @@ function getDynamicStyle(id:string) {
       class:obscured={action.obscured}
       class:draggable={!action.pinned}
       class="scale-from-left"
-      in:scale={{ duration: 500, start: 0.25, opacity: 1 }}
+      in:scale={{ duration: $stagedActionID === action.uuid? 1000 : 500, start: 0.25, opacity: 1 }}
       id={`${action.uuid}`}
     >
       {#if action.pinned}
         <span class="pin"><svg xmlns="http://www.w3.org/2000/svg" height="16" width="10" viewBox="0 0 320 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M16 144a144 144 0 1 1 288 0A144 144 0 1 1 16 144zM160 80c8.8 0 16-7.2 16-16s-7.2-16-16-16c-53 0-96 43-96 96c0 8.8 7.2 16 16 16s16-7.2 16-16c0-35.3 28.7-64 64-64zM128 480V317.1c10.4 1.9 21.1 2.9 32 2.9s21.6-1 32-2.9V480c0 17.7-14.3 32-32 32s-32-14.3-32-32z"/></svg></span>
       {/if}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <span class="drag-handle" on:click={e => handleItemClick(e, action.uuid)}>
-      </span>
       {#if $stagedActionID === action.uuid}
-        <span class="paintbrush">
+        <span class="paintbrush" style={getPaintbrushColor(action.uuid)}>
           <svg bind:this={stagedIcon} xmlns="http://www.w3.org/2000/svg" height="16" width="18" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M339.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L568.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S517.7-4.4 499.1 9.6L262.4 187.2c-24 18-38.2 46.1-38.4 76.1L339.3 367.1zm-19.6 25.4l-116-104.4C143.9 290.3 96 339.6 96 400c0 3.9 .2 7.8 .6 11.6C98.4 429.1 86.4 448 68.8 448H64c-17.7 0-32 14.3-32 32s14.3 32 32 32H208c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg>
+        </span>
+      {:else}
+        <span class="drag-handle" on:click={e => handleItemClick(e, action.uuid)}>
         </span>
       {/if}
       <ActionItem {action} {depth} />
     </li>
-    
   {/each}
 </ol>
 
@@ -231,10 +273,17 @@ function getDynamicStyle(id:string) {
     background-color: white;
     background-color: #f6f6f6;
     border-radius: 0;
-    border-style: dashed none dashed none;
+    /* border-style: dashed none dashed none; */
+    border: none;
     color: #757575;
-    width: 100%;
-    /* display: block; */
+    /* width: calc(var(--adjusted-page-width)*0.95); */
+    background: repeating-linear-gradient(
+          -45deg,
+          #bbbbbb,
+          #bbbbbb 10px,
+          #222222 10px,
+          #222222 20px
+        );
   }
 
   li::before {
@@ -255,8 +304,7 @@ function getDynamicStyle(id:string) {
   
   .alpha-style li::before,
   .decimal-style li::before,
-  .drag-handle,
-  .paintbrush {
+  .drag-handle, .paintbrush {
     position: absolute;
     display: flex;
     align-items: center; /* Center vertically */
@@ -290,6 +338,11 @@ function getDynamicStyle(id:string) {
   }
 
   .paintbrush svg {
+  
+    /* margin-left: -40px; */
+    /* transform: translateX(-60%); */
+    /* z-index: 0;
+    overflow: visible; */
     /* stroke: #000000;
     stroke-width: 10px; */
   }

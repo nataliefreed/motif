@@ -1,6 +1,6 @@
-import type { Action, Effect } from '../types/types';
+import type { Action, Effect, ActionStore } from '../types/types';
 import { v4 as uuidv4 } from 'uuid';
-import { actionRootID, actionStore, myTools, selectedActionID, selectedEffect, activeCategory, changedActionID, flatActionStore, actionRoot, stagedAction, stagedActionID } from '../stores/dataStore'
+import { actionRootID, actionStore, myTools, selectedActionID, selectedEffect, activeCategory, changedActionID, flatActionStore, actionRoot, stagedAction, stagedActionID, currentColor } from '../stores/dataStore'
 import { historyStore } from '../stores/history';
 import { get } from 'svelte/store';
 import { deepCopy } from '../utils/utils';
@@ -36,7 +36,7 @@ export async function scrollToAction(id: string) {
 function getActionsInRunOrder() {
   let root = get(actionRoot);
   if(!root) return;
-  let actionsInRunOrder = getDescendantIDs(root.uuid);
+  let actionsInRunOrder = getDescendantIDs(get(flatActionStore), root.uuid);
   // console.log("actions in run order", actionsInRunOrder);
   return actionsInRunOrder;
 }
@@ -292,33 +292,13 @@ export function addEffectAsStagedAction(effect: Effect, params: { [key: string]:
   if(prevStaged.length > 0) deleteAction(prevStaged);
   let uuid = addEffectToActionStoreAsChildOf(effect, params, get(actionRoot).uuid);
   if(uuid) stagedActionID.set(uuid);
-
-
-  // flatActionStore.update(store => {
-  //   // add staged action to root's children
-  //   get(actionRoot).params.children.push(get(stagedActionID));
-  //   let newStore = { ...store, [get(stagedActionID)]: get(stagedAction) };
-  //   return newStore;
-  // });
-
-
-
-
-  // console.log("staged action id", get(stagedActionID));
-  // console.log("new action list", get(flatActionStore));
 }
 
-  // change stagedAction parameters
-// export function updateStagedAction(params) {
-//   const staged = get(stagedAction);
-//   if(staged) {
-//     flatActionStore.update(store => {
-//       let updatedStagedAction = { ...staged, params: merge(staged.params, params) };
-//       return { ...store, [get(stagedActionID)]: stagedAction };
-//     });
-//   }
-// }
-
+export function addCurrentEffectAsStagedAction() {
+  let effect = get(selectedEffect);
+  let params = { color: get(currentColor) };
+  addEffectAsStagedAction(effect, params);
+}
 
     // if (action.category === 'backgrounds') {
     //   // Insert backgrounds before the first item in the list that is not a background
@@ -477,7 +457,7 @@ export function deleteAction(id:string) {
     if(!store[id]) return store;
     
     // Collect all IDs to delete (the action itself and its descendants)
-    let idsToDelete = getDescendantIDs(id);
+    let idsToDelete = getDescendantIDs(get(flatActionStore), id);
     let newStore = deepCopy(store);
 
     // Remove all references to these IDs in other actions' children arrays
@@ -682,15 +662,15 @@ function getDescendantActions(id:string) {
 }
 
 //includes root
-function getDescendantIDs(id:string) {
-  const currentAction = get(flatActionStore)[id];
+export function getDescendantIDs(store:ActionStore, id:string) {
+  const currentAction = store[id];
   if (!currentAction) return [];
 
   let descendants = [currentAction.uuid];
 
   if (currentAction.type === 'list' && currentAction.params.children) {
     currentAction.params.children.forEach(childId => {
-      const childDescendants = getDescendantIDs(childId);
+      const childDescendants = getDescendantIDs(store, childId);
       descendants = descendants.concat(childDescendants); // Concatenates the UUIDs
     });
   }
@@ -734,9 +714,9 @@ function getDescendantIDs(id:string) {
     if(root) {
       appendToActionStore(newActions);
       insertIdAfter(root, id);
+      selectedActionID.set(root);
+      saveToHistory();
     }
-
-    saveToHistory();
   }
 
   function insertIdAfter(newId:string, targetId:string) {
@@ -812,3 +792,8 @@ function getDescendantIDs(id:string) {
     });
     return root_uuid;
   }
+
+
+
+
+  

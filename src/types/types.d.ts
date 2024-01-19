@@ -33,12 +33,17 @@ export type Effect = {
   nestedActions?: { [key: string]: any }[Action];
 };
 
+interface ActionStore
+ {
+  [key: string]: Action;
+}
+
 export type ActionEffect = {
   uuid: string,
   effectName: string,
   buttonLabel: string,
   category: string,
 
-  
+
 
 }
