@@ -146,7 +146,8 @@ export const effectList = [
     params: {
       color: '#79C2D7',
       color2: '#E869A3',
-      angle: 0
+      angle: 0,
+      progress: 20
     }
   },
   {

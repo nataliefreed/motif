@@ -25,6 +25,8 @@
   <ColorWidget id="color2" value={params.color2} on:valueChange={handleValueChange}/>
   at angle 
   <NumberWidget id="angle" min={0} max={360} value={params.angle} on:valueChange={handleValueChange}/>°
+  for time
+  <NumberWidget id="progress" min={0} max={100} value={params.progress} on:valueChange={handleValueChange}/>
 {:else if name === 'stripes'}
   Stripes of width 
   <NumberWidget id="stripeWidth" min={1} max={300} value={params.stripeWidth} on:valueChange={handleValueChange}/>

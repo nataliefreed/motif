@@ -42,35 +42,61 @@ export const renderers = {
     p.background(params.color);
   },
 
-  'gradient': function* (p, params, p5, allAtOnce=true) {
+  'gradient': (p, params, p5) => {
     let color1 = p.color(params.color);
     let color2 = p.color(params.color2);
     let angle = -p.radians(params.angle);
-    let yieldEvery = params.yieldEvery || 10; // Number of lines to draw before yielding
+    let progress = params.progress;
   
     let len = Math.sqrt(p.width * p.width + p.height * p.height); // diagonal length
   
     p.push();
     p.translate(p.width / 2, p.height / 2); // Move the origin to the center
-    p.translate(100, 100); // placeholder: some time lost drawing off canvas esp when lines are straight
     p.rotate(angle); // Rotate around the new origin
     p.noFill();
     p.strokeWeight(1);
-  
-    for (let i = -len / 2, count = 0; i < len / 2; i++, count++) {
+
+    // Calculate the end position based on progress
+    let endPos = p.map(progress, 0, 100, -len / 2, len / 2);
+
+    for (let i = -len / 2; i < endPos; i++) {
       let percentage = p.map(i, -len / 2, len / 2, 0, 1);
       p.stroke(p.lerpColor(color1, color2, percentage));
       p.line(-len / 2, i, len / 2, i);
-  
-      if(allAtOnce) continue;
-      if (count >= yieldEvery) {
-        yield; // Yield every 'yieldEvery' iterations
-        count = 0; // Reset the counter after yielding
-      }
     }
+  
     p.pop();
-    p.reset();
   },
+
+  // 'gradient': function* (p, params, p5, allAtOnce=true) {
+  //   let color1 = p.color(params.color);
+  //   let color2 = p.color(params.color2);
+  //   let angle = -p.radians(params.angle);
+  //   let yieldEvery = params.yieldEvery || 10; // Number of lines to draw before yielding
+  
+  //   let len = Math.sqrt(p.width * p.width + p.height * p.height); // diagonal length
+  
+  //   p.push();
+  //   p.translate(p.width / 2, p.height / 2); // Move the origin to the center
+  //   p.translate(100, 100); // placeholder: some time lost drawing off canvas esp when lines are straight
+  //   p.rotate(angle); // Rotate around the new origin
+  //   p.noFill();
+  //   p.strokeWeight(1);
+  
+  //   for (let i = -len / 2, count = 0; i < len / 2; i++, count++) {
+  //     let percentage = p.map(i, -len / 2, len / 2, 0, 1);
+  //     p.stroke(p.lerpColor(color1, color2, percentage));
+  //     p.line(-len / 2, i, len / 2, i);
+  
+  //     if(allAtOnce) continue;
+  //     if (count >= yieldEvery) {
+  //       yield; // Yield every 'yieldEvery' iterations
+  //       count = 0; // Reset the counter after yielding
+  //     }
+  //   }
+  //   p.pop();
+  //   p.reset();
+  // },
 
   // 'gradient': (p, params, p5) => {
   //   let color1 = p.color(params.color1);
