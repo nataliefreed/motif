@@ -578,7 +578,6 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
   let isDragging = false;
   let dragRenderComplete = true;
   let mousePressedTime = 0;
-  let progress = 0;
   let animationFrameId = null;
 
   function handleMouseDown(event) {

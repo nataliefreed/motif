@@ -46,13 +46,13 @@ export const renderers = {
     let color1 = p.color(params.color);
     let color2 = p.color(params.color2);
     let angle = -p.radians(params.angle);
-    let progress = params.progress;
+    let progress = params.progress + 10;
   
     let len = Math.sqrt(p.width * p.width + p.height * p.height); // diagonal length
   
     p.push();
     p.translate(p.width / 2, p.height / 2); // Move the origin to the center
-    p.rotate(angle); // Rotate around the new origin
+    p.rotate(-angle); // Rotate around the new origin
     p.noFill();
     p.strokeWeight(1);
 
@@ -65,6 +65,31 @@ export const renderers = {
       p.line(-len / 2, i, len / 2, i);
     }
   
+    p.pop();
+  },
+
+  'speckles': (p, params, p5) => {
+    let c = params.color;
+    let progress = params.progress;
+    let n = params.position.x * params.position.y;
+    let r = params.radius;
+
+    p.push();
+    //put more and more speckles on the screen
+    //progress does 2 things: density of speckles (more over time) and where in the Perlin noise function you are
+    //(so the speckles change every refresh, it's not just adding more over time to the existing ones)
+    p.noStroke();
+    p.fill(c);
+
+    p.translate(-p.width/2, -p.height/2);
+
+    for (let i = 0; i < progress*100; i++) {
+      // Use Perlin noise to determine whether to draw a speckle at this position
+      let x = p.noise(n + i * 0.01)*p.width*2;
+      let y = p.noise(2*n + i * 0.01)*p.height*2;
+      p.ellipse(x, y, 2, 2); // Draw a small ellipse at this position
+    }
+
     p.pop();
   },
 

@@ -1,6 +1,8 @@
 <script lang="ts">
 	import ColorWidget from "../ColorWidget.svelte";
   import NumberWidget from "../NumberWidget.svelte";
+  import CoordinateWidget from "../CoordinateWidget.svelte";
+    import { p5CanvasSize } from "../../../stores/canvasStore";
 
   export let name = '';
   export let params: any = {};
@@ -34,6 +36,11 @@
   <NumberWidget id="angle" min={0} max={360} value={params.angle} on:valueChange={handleValueChange}/>°
   in color 
   <ColorWidget id="color" value={params.color} on:valueChange={handleValueChange}/>
+{:else if name === 'speckles'}
+  Speckles for time
+  <NumberWidget id="progress" min={0} max={100} value={params.progress} on:valueChange={handleValueChange}/>
+  at
+  <CoordinateWidget id="position" value={params.position} on:valueChange={handleValueChange}/>
+  in
+  <ColorWidget id="color" value={params.color} on:valueChange={handleValueChange}/>
 {/if}
-
-

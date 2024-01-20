@@ -147,7 +147,7 @@ export const effectList = [
       color: '#79C2D7',
       color2: '#E869A3',
       angle: 0,
-      progress: 20
+      progress: -10
     }
   },
   {
@@ -163,15 +163,17 @@ export const effectList = [
     }
   },
   {
-    name: 'noise',
-    textLabel: 'Noise',
+    name: 'speckles',
+    textLabel: 'Speckles',
     category: 'backgrounds',
     tags: 'drawing',
     cursor: '/assets/cursors/fill-drip-solid.svg',
-    thumbnail: 'noise.jpg',
+    thumbnail: 'speckles.png',
     mouseActionType: 'drag',
     params: {
-      color: '#bbaa00'
+      color: '#bbaa00',
+      progress: 5,
+      position: [0, 0]
     }
   },
 
