@@ -101,6 +101,7 @@
     const target = event.target as Element;
     if($selectedCodeEffect == "point" || !$selectedCodeEffect) {
         if(target && target.classList.contains('drag-handle') || target.classList.contains('action-item-content') || target === event.currentTarget) { //if not a widget, select the action
+          console.log("selecting");
         selectAction(actionId);
       }
     }

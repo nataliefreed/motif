@@ -1,11 +1,10 @@
 import { writable, get } from 'svelte/store';
-import type { Action, Effect } from '../types/types';
-import { actionStore, myTools, stagedActionID } from '../stores/dataStore';
+import type { Action, ActionStore } from '../types/types';
+import { flatActionStore, stagedActionID } from '../stores/dataStore';
 import { deepCopy } from '../utils/utils';
 
 type Storable = {
-  actionStore: Action;
-  myTools: Effect[];
+  actionStore: ActionStore;
   stagedActionID: string; // uuid
 };
 
@@ -14,13 +13,10 @@ export const historyStore = createHistoryStore();
 let current:Storable;
 let initialState:Storable;
 
-initHistoryStore();
-
 // Call after stores are populated with initial data
 export function initHistoryStore() {
-  initialState = getCurrentState();
-  current = deepCopy(initialState);
-  console.log('initial state is', current.actionStore.children);
+  initialState = copyCurrentState();
+  current = copyCurrentState();
 }
 
 function createHistoryStore() {
@@ -30,56 +26,52 @@ function createHistoryStore() {
     subscribe,
     // add a new state to the history
     addState: (newState: Storable) => {
-      update(states => {
-        // debugger;
-        // console.log('start of adding a new state, children in actions is', states[states.length-1].actionStore.children);
-        const newStates = [...states, current];
-        // const newStates = [...states, current].slice(-10); // keep only the last 10 states
-        current = deepCopy(newState);
-        return newStates;
+      update(store => {
+        const newStore = [...store, current]; //add current
+        current = deepCopy(newState); //update current
+        return newStore;
       });
     },
     // undo to the previous state
     undo: () => {
-      update(states => {
-        if (states.length === 0) {
+      update(store => {
+        if (store.length === 0) {
           // nothing to undo
-          return states;
+          return store;
         }
-        else if (states.length === 1) {
+        else if (store.length === 1) {
           // undo to the initial state
           applyState(initialState);
           current = deepCopy(initialState);
-          console.log(initialState);
           return [];
         }
-        // debugger;
-        const prevState = states[states.length - 1];
+        const prevState = store[store.length - 1];
         applyState(prevState); // apply previous state to stores
         current = prevState;
-        let newStates = states.slice(0, -1); // keep all but last element
-        return newStates;
+        let newStore = store.slice(0, -1); // remove last element
+        return newStore;
       });
     },
-    // method to reset the undo history
+    // reset the undo history
     reset: () => {
       set([]);
     }
   };
 }
 
-// Helper function to get the initial state of the stores
-function getCurrentState(): Storable {
+export function saveToHistory() {
+  // console.log("saving to history", get(flatActionStore));
+  historyStore.addState(copyCurrentState());
+}
+
+function copyCurrentState(): Storable {
   return deepCopy({
-    actionStore: get(actionStore),
-    myTools: get(myTools),
+    actionStore: get(flatActionStore),
     stagedActionID: get(stagedActionID),
   });
 }
 
-// Helper function to apply a state to the stores
 function applyState(state: Storable) {
-  actionStore.set(deepCopy(state.actionStore));
-  myTools.set(deepCopy(state.myTools));
+  flatActionStore.set(state.actionStore);
   stagedActionID.set(state.stagedActionID);
 }

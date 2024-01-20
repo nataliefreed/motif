@@ -8,6 +8,21 @@ export function deepCopy(obj: Object) {
   }
 }
 
+export function merge<T extends object, U extends object>(object1: T, object2: U): T & U {
+  return { ...object1 || {}, ...object2 || {} };
+}
+
+export function arrayToKeyedObj<T extends Record<K, any>, K extends keyof any>(array: T[], key: K): Record<T[K], T> {
+  return array.reduce((obj: Record<T[K], T>, item: T) => {
+      obj[item[key]] = item;
+      return obj;
+  }, {} as Record<T[K], T>);
+}
+
+export function randomWithinRange(value, min, max, randomFactor) {
+  return Math.round(Math.max(min, Math.min(max, value + (Math.random() - 0.5) * randomFactor)));
+}
+
 /* old version that worked: https://editor.p5js.org/squishynotions/sketches/dhmmKeiuV */
 
 /*

@@ -1,5 +1,5 @@
 <script>
-  import { addActionToActionStore, merge, addEffectAsStagedAction, updateStagedAction, copyStagedActionToActionStore, updateActionParams } from '../action-utils';
+  import { addEffectAsStagedAction, updateStagedAction, copyStagedActionToActionStore, addCurrentEffectAsStagedAction } from '../action-utils';
 	import P5 from 'p5-svelte';
   import { actionStore, stagedAction, stagedActionID, actionRootID, activeCategory, selectedEffect, currentColor, shouldRandomizeColor, changedActionID, flatActionStore, actionRoot } from '../../stores/dataStore';
   import { renderers } from './Renderer.js';
@@ -52,21 +52,22 @@
       // }
       if($shouldRandomizeColor) randomizeCurrentColor();
       addEffectAsStagedAction(effect, params); //drawing effects have staged action
+      if(p5) p5.getHoverCanvas().clear();
     });
 
     flatActionStore.subscribe(actions => {
       if($changedActionID != $stagedActionID) {
         renderRoot();
       } else if($stagedActionID.length > 0 && !isDragging) { // render staged action in its current state
-        if(p5) {
-          const renderFunction = renderers[$stagedAction.effect];
-          if (renderFunction) {
-            p5.getHoverCanvas().clear();
-            renderFunction(p5.getHoverCanvas(), $stagedAction.params, p5);
-            p5.image(p5.getStaticCanvas(), 0, 0);
-            p5.image(p5.getHoverCanvas(), 0, 0);
-          }
-        }
+        // if(p5) {
+        //   const renderFunction = renderers[$stagedAction.effect];
+        //   if (renderFunction) {
+        //     p5.getHoverCanvas().clear();
+        //     renderFunction(p5.getHoverCanvas(), $stagedAction.params, p5);
+        //     p5.image(p5.getStaticCanvas(), 0, 0);
+        //     p5.image(p5.getHoverCanvas(), 0, 0);
+        //   }
+        // }
       }
     });
 
@@ -87,6 +88,12 @@
     //   });
     // }
     // console.log("new staged action params", $stagedAction.params);
+
+    //if staged action empty or not found in action store, add a new staged action based on current effect
+  $: if($stagedActionID === '' || $stagedActionID === undefined || !flatActionStore[$stagedActionID]) {
+    // console.log("adding new staged action");
+    addCurrentEffectAsStagedAction();
+  }
 
   export const downloadCanvas = () =>{
     if(p5) {
@@ -210,12 +217,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       const renderFunction = renderers[action.effect];
       if (renderFunction) {
         // console.log("rendering", action.effect)
-        if(action.effect == 'gradient') {
-          renderFunction(canvas, action.params, p5, true).next();
-        }
-        else {
-          renderFunction(canvas, action.params, p5);
-        }
+        renderFunction(canvas, action.params, p5);
       }
     }
   }
@@ -479,14 +481,14 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
           debouncedStagedActionUpdate({path: path.slice(-5)}); // show small tail of path when hovering
       }
       // console.log($stagedAction.effect);
-      // const renderFunction = renderers[$stagedAction.effect];
-      // if (renderFunction) {
+      const renderFunction = renderers[$stagedAction.effect];
+      if (renderFunction) {
 
-      //   // renderFunction(p5.getHoverCanvas(), merge($stagedAction.params, { position: { x: x, y: y } }), p5);
-      //   renderFunction(p5.getHoverCanvas(), $stagedAction.params, p5);
-      // }
-      // p5.image(p5.getStaticCanvas(), 0, 0);
-      // p5.image(p5.getHoverCanvas(), 0, 0);
+        // renderFunction(p5.getHoverCanvas(), merge($stagedAction.params, { position: { x: x, y: y } }), p5);
+        renderFunction(p5.getHoverCanvas(), $stagedAction.params, p5);
+      }
+      p5.image(p5.getStaticCanvas(), 0, 0);
+      p5.image(p5.getHoverCanvas(), 0, 0);
     }
 
     /*
@@ -575,11 +577,19 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
 
   let isDragging = false;
   let dragRenderComplete = true;
+  let mousePressedTime = 0;
+  let progress = 0;
+  let animationFrameId = null;
 
   function handleMouseDown(event) {
 
     if (p5) {
       isDragging = true;
+
+      if('progress' in $stagedAction.params) {
+        mousePressedTime = Date.now();
+        animationFrameId = requestAnimationFrame(updateMouseHoldTime);
+      }
 
       startX = Math.round(p5.mouseX);
       startY = Math.round(p5.mouseY);
@@ -599,13 +609,34 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       p5.getDragCanvas().clear();
       dragRenderFunction = renderers[$stagedAction.effect](p5.getDragCanvas(), $stagedAction.params, p5, false); // get the renderer for the staged effect
       dragRenderComplete = false;
-      if($stagedAction.effect == 'gradient') {
-        renderStep(dragRenderFunction);
-      }
+      // if($stagedAction.effect == 'gradient') {
+      //   renderStep(dragRenderFunction);
+      // }
 
       // Listen for global mouseup to handle cases where mouse is released outside the canvas
       document.addEventListener('mouseup', globalMouseUp);
     }
+  }
+
+  function updateMouseHoldTime() {
+    
+    updateStagedAction({ progress: getProgress() });
+
+    p5.getDragCanvas().clear();
+    const renderFunction = renderers[$stagedAction.effect];
+    if (renderFunction) {
+      renderFunction(p5.getDragCanvas(), $stagedAction.params, p5);
+    }
+
+    p5.image(p5.getStaticCanvas(), 0, 0);
+    p5.image(p5.getDragCanvas(), 0, 0);
+
+    // continue animation loop
+    animationFrameId = requestAnimationFrame(updateMouseHoldTime);
+  }
+
+  function getProgress() {
+    return (Date.now() - mousePressedTime) / 100;
   }
 
 /*
@@ -626,7 +657,8 @@ function handleMouseUp(event) {
     y = Math.round(p5.mouseY);
     path.push([x, y]); //add last point to path
 
-    updateStagedAction({path: getAntPath(path, $stagedAction.params.pathSpacing || 10)}); 
+    cancelAnimationFrame(animationFrameId);
+    updateStagedAction({path: getAntPath(path, $stagedAction.params.pathSpacing || 10), progress: Math.round(getProgress())}); 
 
     copyStagedActionToActionStore();
     renderRoot();
@@ -634,10 +666,6 @@ function handleMouseUp(event) {
     if($shouldRandomizeColor) randomizeCurrentColor();
     // addEffectAsStagedAction($selectedEffect, { color: $currentColor, position: { x: x, y: y } }); // reset staged action to default
     // renderRoot();
-
-    if($activeCategory === "my tools") {
-      addEffectAsStagedAction($selectedEffect, { position: { x: x, y: y } }); // reset staged action to default
-    }
 
     path = []; // clear current path
 

@@ -1,4 +1,4 @@
-import { addEffectToActionStore, deleteAction } from "./action-utils";
+import { addEffectToActionStore, removeAction } from "./action-utils";
 import { toolStore, selectedActionID } from "../stores/dataStore";
 import { historyStore } from "../stores/history";
 import { get } from "svelte/store";
@@ -35,7 +35,7 @@ function keydownHandler(event: KeyboardEvent) {
       // set isDragging to false?
       break;
     case 'Backspace':
-      deleteAction(get(selectedActionID));
+      removeAction(get(selectedActionID));
       break;
   }
 }

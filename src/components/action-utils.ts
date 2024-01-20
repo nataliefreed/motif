@@ -1,24 +1,16 @@
 import type { Action, Effect, ActionStore } from '../types/types';
 import { v4 as uuidv4 } from 'uuid';
 import { actionRootID, actionStore, myTools, selectedActionID, selectedEffect, activeCategory, changedActionID, flatActionStore, actionRoot, stagedAction, stagedActionID, currentColor, shouldRandomizeColor } from '../stores/dataStore'
-import { historyStore } from '../stores/history';
+import { saveToHistory } from '../stores/history';
 import { get } from 'svelte/store';
-import { deepCopy } from '../utils/utils';
+import { deepCopy, merge, randomWithinRange, arrayToKeyedObj } from '../utils/utils';
 import tinycolor from "tinycolor2";
 import { tick } from 'svelte';
 
-// export function merge(object1:{ [key: string]: any }, object2:{ [key: string]: any }): object {
-//   let merged:{ [key: string]: any } = {};
-//   if(object1 && object2) {
-//     merged = { ...object1 };
-//     for (let key in object2) {
-//       if (object1.hasOwnProperty(key)) {
-//           merged[key] = object2[key];
-//       }
-//     }
-//   }
-//   return merged;
-// }
+
+/* THESE FUNCTIONS ARE CALLED BY THE UI */
+/* note on saving to history: currently thinking about it as saving before doing something
+user-initiated that the user expects to be able to undo. Don't save if it doesn't do anything */
 
 export async function scrollToAction(id: string) {
   await tick(); // Wait for the DOM to update with the new item
@@ -33,27 +25,27 @@ export async function scrollToAction(id: string) {
   }
 }
 
-function getActionsInRunOrder() {
-  let root = get(actionRoot);
-  if(!root) return;
-  let actionsInRunOrder = getDescendantIDs(get(flatActionStore), root.uuid);
-  // console.log("actions in run order", actionsInRunOrder);
-  return actionsInRunOrder;
+export function selectAction(id:string) {
+  if(id && id !== get(stagedActionID) && id !== get(actionRootID)) {
+    selectedActionID.set(id);
+  }
 }
 
-export function reloadAction(id:string) { //replace action with a new copy of itself in same location
-  let newActions = copyAction(id);
-  let newActionRoot = getRoot(newActions);
-  if(newActionRoot) {
-    appendToActionStore(newActions);
-    replaceIdWith(id, newActionRoot);
-    stagedActionID.set(newActionRoot);
-  }
+// remove action initiated from UI
+// maybe this should be removeSelectedAction?
+export function removeAction(id:string) {
+  if(!id || !get(flatActionStore)[id] || id == get(stagedActionID)) return;
+
+  saveToHistory();
+
+  deleteAction(id);
 }
 
 export function clearAllActions() {
   let actions = getActionsInRunOrder(); //IDs
   if(!actions || actions == undefined || actions.length < 1) return;
+
+  saveToHistory();
 
   console.log("actions to clear", actions);
 
@@ -80,7 +72,6 @@ export function clearAllActions() {
         // If no more elements except first, clear the interval
         clearInterval(interval);
         selectedActionID.set('');
-        saveToHistory(); // Call saveToHistory after all elements are removed
         if(newStagedActionRoot) {
           stagedActionID.set(newStagedActionRoot);
           appendToActionStoreAsChildOf(newStagedAction, get(actionRoot).uuid);
@@ -90,27 +81,195 @@ export function clearAllActions() {
   }, 300); //rate at which to clear actions
 }
 
-
-export function isChildActive(parentEffect, parentParams, childID) {
-  //do each and along path might be different, eg. stop after certain iterations along path
+// set staged action
+export function addEffectAsStagedAction(effect: Effect, params: { [key: string]: any }) {
+  // let uuid = addEffectToActionStore(effect, params);
+  let prevStaged = get(stagedActionID);
+  if(prevStaged.length > 0) deleteAction(prevStaged);
+  let uuid = addEffectToActionStoreAsChildOf(effect, params, get(actionRoot).uuid);
+  if(uuid) stagedActionID.set(uuid);
 }
 
-export function merge<T extends object, U extends object>(object1: T, object2: U): T & U {
-  return { ...object1 || {}, ...object2 || {} };
+export function addCurrentEffectAsStagedAction() {
+  let effect = get(selectedEffect);
+  let params = { color: get(currentColor) };
+  if(!effect) return;
+  addEffectAsStagedAction(effect, params);
 }
 
 // take an effect, create an action, and add to action store
+// used by keyboard events
 export function addEffectToActionStore(effect: Effect, params: { [key: string]: any } = {}) {
   let actions = effectToActions(effect, params);
   if(actions) return appendToActionStore(actions);
 }
 
-export function addEffectToActionStoreAsChildOf(effect: Effect, params: { [key: string]: any } = {}, uuid: string) {
+
+export function saveActionAsNewTool(action: Action) {
+  if(!action) return;
+
+  let newEffect: Effect;
+
+  if (action.type === 'list' && action.params && Array.isArray(action.params.children)) {
+    const actions = copyAction(action.uuid);
+    newEffect = actionToEffect(actions) as Effect;
+  } else {
+    // Handle non-nested actions
+    newEffect = {
+      name: action.effect + "",
+      textLabel: action.effect + "",
+      category: action.category,
+      tags: 'mytools',
+      params: deepCopy(action.params)
+    };
+  }
+
+  if(!newEffect) return;
+
+  myTools.update(storeValue => {
+    if(!storeValue) storeValue = [];
+    storeValue.push(newEffect);
+    console.log("new tool added to my tools", storeValue);
+    activeCategory.set('my tools');
+    selectedEffect.set(newEffect);
+    return storeValue;
+  });
+}
+
+export function copyStagedActionToActionStore() {
+  let stagedID = get(stagedActionID);
+  let newActions = copyAction(stagedID);
+  let newActionRoot = getRoot(newActions);
+  // console.log("root of new actions", newActionRoot);
+  if(!stagedID || !newActions || !newActionRoot) {
+    return;
+  }
+    saveToHistory();
+    appendToActionStore(newActions);
+    insertIdBefore(newActionRoot, stagedID);
+    selectAction(newActionRoot);
+    changedActionID.set(newActionRoot);
+}
+
+export function updateStagedAction(params) {
+  updateActionParams(get(stagedActionID), params);
+}
+
+
+export function loopActionAlongPath(id:string) {
+  //set selected action as the child of a repeat along path, with the path set to the current point and a shifted point
+  let action = get(flatActionStore)[id];
+  if (action) {
+    let newAction = { ...action };
+    // if already along path, add another point
+    if(action.effect === "along path") {
+      if(action.params && action.params.path.length > 0) {
+        newAction.params.path.push([action.params.path[action.params.path.length-1][0]+10, action.params.path[action.params.path.length-1][1]+10]);
+      }
+    }
+    // if doEach, turn into along path with same name
+    // if not along path, add as child of along path with current point and a shifted point with "give me a name" as title 
+
+
+    // const alongPath = $toolStore.find(tool => tool.name === "along path");
+    // if(!alongPath) return;
+    // const x = (action.params && action.params.position)? action.params.position.x : 0;
+    // const y = (action.params && action.params.position)? action.params.position.y : 0;
+    // const newActions = effectToActions(alongPath, {children: [action], path: [[x, y], [x+10, y+10]]});
+    //replace selected action with new repeat along path action
+    // actionStore.update(data => {
+    //   if (data && data.children) {
+    //     const index = data.children.findIndex(action => action.uuid === id); //get current index
+    //     if (index > -1) {
+    //       data.children.splice(index, 1, newActions);
+    //       selectedActionID.set(newActions.uuid);
+    //     }
+    //   }
+    //   return data;
+    // });
+
+    flatActionStore.update(store => {
+      store[id] = newAction;
+      return store;
+    });
+  }
+  //   actionStore.update(data => {
+  //     if (data && data.children) {
+  //       const index = data.children.findIndex(action => action.uuid === $selectedActionID); //get current index
+  //       if (index > -1) {
+  //         let selectedAction = data.children[index];
+  //         if(selectedAction.name === "along path") {
+  //           //add another point
+  //           if(selectedAction.params && selectedAction.params.path.length > 0) {
+  //             selectedAction.params.path.push([selectedAction.params.path[selectedAction.params.path.length-1][0]+10, selectedAction.params.path[selectedAction.params.path.length-1][1]+10]);
+  //           }
+  //         }
+  //         else {
+  //           const repeatEffect = $toolStore.find(tool => tool.name === "along path");
+  //           if(!repeatEffect) return;
+  //           const x = (selectedAction.params && selectedAction.params.position)? selectedAction.params.position.x : 0;
+  //           const y = (selectedAction.params && selectedAction.params.position)? selectedAction.params.position.y : 0;
+  //           const newActions = effectToActions(repeatEffect, {children: [selectedAction], path: [[x, y], [x+10, y+10]]});
+  //           //replace selected action with new repeat along path action
+  //           data.children.splice(index, 1, newActions);
+  //           // data.children.splice(index+1, 0, newAction);
+  //           selectedActionID.set(newActions.uuid);
+  //         }
+  //       }
+  //     }
+  //     return data;
+  //   });
+  // }
+}
+
+
+// todo: have changes go through here so we can deal with temp actions, what to save to history etc.
+function updateActionParams(uuid: string, params: { [key: string]: any }) {
+  if(!uuid) return;
+  flatActionStore.update(store => {
+    const action = store[uuid];
+    if(action) {
+      changedActionID.set(uuid);
+      return { ...store, [uuid]: { ...action, params: merge(action.params, params) } }; //update the action in the store
+    }
+    else {
+        console.log("Action not found in store");
+        return store;
+    }
+  });
+}
+
+
+/* THESE FUNCTIONS ARE ONLY CALLED INTERNALLY */
+
+function getActionsInRunOrder() {
+  let root = get(actionRoot);
+  if(!root) return;
+  let actionsInRunOrder = getDescendantIDs(get(flatActionStore), root.uuid);
+  // console.log("actions in run order", actionsInRunOrder);
+  return actionsInRunOrder;
+}
+
+function reloadAction(id:string) { //replace action with a new copy of itself in same location
+  let newActions = copyAction(id);
+  let newActionRoot = getRoot(newActions);
+  if(newActionRoot) {
+    appendToActionStore(newActions);
+    replaceIdWith(id, newActionRoot);
+    stagedActionID.set(newActionRoot);
+  }
+}
+
+function isChildActive(parentEffect, parentParams, childID) {
+  //do each and along path might be different, eg. stop after certain iterations along path
+}
+
+function addEffectToActionStoreAsChildOf(effect: Effect, params: { [key: string]: any } = {}, uuid: string) {
   let actions = effectToActions(effect, params);
   if(actions) return appendToActionStoreAsChildOf(actions, uuid);
 }
 
-export function effectToActions(effect: Effect, params: { [key: string]: any } = {}) {
+function effectToActions(effect: Effect, params: { [key: string]: any } = {}) {
   let actions: { [uuid: string]: Action } = {};
 
   if(!effect) return;
@@ -170,77 +329,6 @@ function actionToEffect(actions: ActionStore) {
   };
 }
 
-export function saveActionAsNewTool(action: Action) {
-  if(!action) return;
-
-  let newEffect: Effect;
-
-  if (action.type === 'list' && action.params && Array.isArray(action.params.children)) {
-    const actions = copyAction(action.uuid);
-    newEffect = actionToEffect(actions) as Effect;
-  } else {
-    // Handle non-nested actions
-    newEffect = {
-      name: action.effect + "",
-      textLabel: action.effect + "",
-      category: action.category,
-      tags: 'mytools',
-      params: deepCopy(action.params)
-    };
-  }
-
-  if(!newEffect) return;
-
-  myTools.update(storeValue => {
-    if(!storeValue) storeValue = [];
-    storeValue.push(newEffect);
-    console.log("new tool added to my tools", storeValue);
-    activeCategory.set('my tools');
-    selectedEffect.set(newEffect);
-    return storeValue;
-  });
-}
-
-export function copyStagedActionToActionStore() {
-  let stagedID = get(stagedActionID);
-  let newActions = copyAction(stagedID);
-  let newActionRoot = getRoot(newActions);
-  console.log("root of new actions", newActionRoot);
-  if(newActionRoot) {
-    appendToActionStore(newActions);
-    insertIdBefore(newActionRoot, stagedID);
-    selectAction(newActionRoot);
-    changedActionID.set(newActionRoot);
-  }
-}
-
-export function updateStagedAction(params) {
-  updateActionParams(get(stagedActionID), params);
-}
-
-export function updateActionParams(uuid: string, params: { [key: string]: any }) {
-  if(!uuid) return;
-  flatActionStore.update(store => {
-    const action = store[uuid];
-    if(action) {
-      changedActionID.set(uuid);
-      return { ...store, [uuid]: { ...action, params: merge(action.params, params) } }; //update the action in the store
-    }
-    else {
-        console.log("Action not found in store");
-        return store;
-    }
-  });
-}
-
-export function animateAction(id) {
-  if(!id || !get(flatActionStore)[id]) return;
-
-  // animate action item
-
-
-}
-
 //take a flat list of actions, change all uuids to new ones but preserve hierarchy
 function updateUUIDsPreservingHierarchy(actions: { [uuid: string]: Action }): { [uuid: string]: Action } {
     // A mapping of old UUIDs to new UUIDs
@@ -276,7 +364,7 @@ function updateUUIDsPreservingHierarchy(actions: { [uuid: string]: Action }): { 
 }
 
 // append but don't assign to any parent
-export function appendToActionStore(actions: { [uuid: string]: Action }) {
+function appendToActionStore(actions: { [uuid: string]: Action }) {
   if(!actions) return;
   let root_uuid = getRoot(actions);
   flatActionStore.update(storeValue => {
@@ -291,7 +379,7 @@ export function appendToActionStore(actions: { [uuid: string]: Action }) {
 }
 
 // append to action store as child of specified parent
-export function appendToActionStoreAsChildOf(actions: { [uuid: string]: Action }, uuid:string) {
+function appendToActionStoreAsChildOf(actions: { [uuid: string]: Action }, uuid:string) {
   if(!actions) return;
   let root_uuid = getRoot(actions);
   flatActionStore.update(storeValue => {
@@ -308,7 +396,7 @@ export function appendToActionStoreAsChildOf(actions: { [uuid: string]: Action }
   return root_uuid;
 }
 
-export function addActionToActionStore(action: Action, params: { [key: string]: any } = {}) {
+function addActionToActionStore(action: Action, params: { [key: string]: any } = {}) {
   // console.log("adding action to action store");
   let newAction = {...action};
   newAction.uuid = uuidv4();
@@ -329,8 +417,6 @@ export function addActionToActionStore(action: Action, params: { [key: string]: 
     return newActions;
   });
 
-  saveToHistory();
-
   return newAction.uuid;
 }
 
@@ -342,21 +428,6 @@ function getRoot(actions: { [uuid: string]: Action }) : string | null {
     }
   }
   return null; // Return null if no root action is found
-}
-
-// set staged action
-export function addEffectAsStagedAction(effect: Effect, params: { [key: string]: any }) {
-  // let uuid = addEffectToActionStore(effect, params);
-  let prevStaged = get(stagedActionID);
-  if(prevStaged.length > 0) deleteAction(prevStaged);
-  let uuid = addEffectToActionStoreAsChildOf(effect, params, get(actionRoot).uuid);
-  if(uuid) stagedActionID.set(uuid);
-}
-
-export function addCurrentEffectAsStagedAction() {
-  let effect = get(selectedEffect);
-  let params = { color: get(currentColor) };
-  addEffectAsStagedAction(effect, params);
 }
 
     // if (action.category === 'backgrounds') {
@@ -405,25 +476,10 @@ export function addCurrentEffectAsStagedAction() {
 //   saveToHistory();
 // }
 
-export function saveToHistory() {
 
-}
-
-//TODO: SAVE TO HISTORY
-// export function saveToHistory() {
-//   // console.log("saving to history", get(actionStore).children);
-//   let actions = get(flatActionStore);
-//   let tools = get(myTools);
-//   let staged = get(flatActionStore)[get(stagedActionID)];
-//   historyStore.addState({
-//     actionStore: actions,
-//     myTools: tools,
-//     stagedAction: staged
-//   });
-// }
 
 //for now, use selectedActionID
-export function makeNamedGroup() {
+function makeNamedGroup() {
   //get selected action
   let actions = get(actionStore);
   if(actions && actions.children) {
@@ -503,8 +559,7 @@ function getNextSelection(id:string) {
   }
 }
 
-export function deleteAction(id:string) {
-  console.log("deleting", id);
+function deleteAction(id:string) {
 
   let selected = get(selectedActionID); 
   if((selected === id)) { //which it often will be for deleting
@@ -535,86 +590,6 @@ export function deleteAction(id:string) {
   });
 
   selectAction(selected);
-
-  saveToHistory();
-}
-
-export function selectAction(id:string) {
-  if(id && id !== get(stagedActionID) && id !== get(actionRootID)) {
-    selectedActionID.set(id);
-  }
-}
-
-export function loopActionAlongPath(id:string) {
-  //set selected action as the child of a repeat along path, with the path set to the current point and a shifted point
-  let action = get(flatActionStore)[id];
-  if (action) {
-    let newAction = { ...action };
-    // if already along path, add another point
-    if(action.effect === "along path") {
-      if(action.params && action.params.path.length > 0) {
-        newAction.params.path.push([action.params.path[action.params.path.length-1][0]+10, action.params.path[action.params.path.length-1][1]+10]);
-      }
-    }
-    // if doEach, turn into along path with same name
-    // if not along path, add as child of along path with current point and a shifted point with "give me a name" as title 
-
-
-    // const alongPath = $toolStore.find(tool => tool.name === "along path");
-    // if(!alongPath) return;
-    // const x = (action.params && action.params.position)? action.params.position.x : 0;
-    // const y = (action.params && action.params.position)? action.params.position.y : 0;
-    // const newActions = effectToActions(alongPath, {children: [action], path: [[x, y], [x+10, y+10]]});
-    //replace selected action with new repeat along path action
-    // actionStore.update(data => {
-    //   if (data && data.children) {
-    //     const index = data.children.findIndex(action => action.uuid === id); //get current index
-    //     if (index > -1) {
-    //       data.children.splice(index, 1, newActions);
-    //       selectedActionID.set(newActions.uuid);
-    //     }
-    //   }
-    //   return data;
-    // });
-
-    flatActionStore.update(store => {
-      store[id] = newAction;
-      return store;
-    });
-  }
-  //   actionStore.update(data => {
-  //     if (data && data.children) {
-  //       const index = data.children.findIndex(action => action.uuid === $selectedActionID); //get current index
-  //       if (index > -1) {
-  //         let selectedAction = data.children[index];
-  //         if(selectedAction.name === "along path") {
-  //           //add another point
-  //           if(selectedAction.params && selectedAction.params.path.length > 0) {
-  //             selectedAction.params.path.push([selectedAction.params.path[selectedAction.params.path.length-1][0]+10, selectedAction.params.path[selectedAction.params.path.length-1][1]+10]);
-  //           }
-  //         }
-  //         else {
-  //           const repeatEffect = $toolStore.find(tool => tool.name === "along path");
-  //           if(!repeatEffect) return;
-  //           const x = (selectedAction.params && selectedAction.params.position)? selectedAction.params.position.x : 0;
-  //           const y = (selectedAction.params && selectedAction.params.position)? selectedAction.params.position.y : 0;
-  //           const newActions = effectToActions(repeatEffect, {children: [selectedAction], path: [[x, y], [x+10, y+10]]});
-  //           //replace selected action with new repeat along path action
-  //           data.children.splice(index, 1, newActions);
-  //           // data.children.splice(index+1, 0, newAction);
-  //           selectedActionID.set(newActions.uuid);
-  //         }
-  //       }
-  //     }
-  //     return data;
-  //   });
-  // }
-
-  saveToHistory();
-}
-
-function randomWithinRange(value, min, max, randomFactor) {
-  return Math.round(Math.max(min, Math.min(max, value + (Math.random() - 0.5) * randomFactor)));
 }
 
 let changeOptions = {
@@ -669,8 +644,6 @@ let changeOptions = {
       newStore[id].params = newParams;
       return newStore;
     });
-
-    saveToHistory();
   }
 
   export function redrawAction(id:string) {
@@ -679,9 +652,6 @@ let changeOptions = {
 
     let prevStaged = get(stagedActionID);
     stagedActionID.set(id);
-    // deleteAction(prevStaged);
-
-    saveToHistory();
   }
 
 //includes root
@@ -726,21 +696,6 @@ export function getDescendantIDs(store:ActionStore, id:string) {
     newActions = updateUUIDsPreservingHierarchy(newActions);
     return newActions;
   }
-
-  // move to utils
-  function arrayToKeyedObj<T extends Record<K, any>, K extends keyof any>(array: T[], key: K): Record<T[K], T> {
-    return array.reduce((obj: Record<T[K], T>, item: T) => {
-        obj[item[key]] = item;
-        return obj;
-    }, {} as Record<T[K], T>);
-  }
-
-  // function arrayToKeyedObj(actionsArray) {
-  //   return actionsArray.reduce((obj, action) => {
-  //       obj[action.uuid] = action;
-  //       return obj;
-  //   }, {});
-  // }
 
   // make a copy with new uuid and add immediately after original
   export function duplicateAction(id:string) {

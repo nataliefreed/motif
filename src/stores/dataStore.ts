@@ -2,6 +2,7 @@ import { writable, get, derived } from 'svelte/store';
 import type { Action, Effect } from '../types/types';
 import { effectList } from '../stores/effectList.js';
 import { v4 as uuidv4 } from 'uuid';
+import { initHistoryStore } from './history';
 
 export const actionStore = writable<Action>({name:"default", type:'list', category:'none', children:[], uuid:""});
 // object storing actions by UUID
@@ -69,7 +70,6 @@ function buildNestedStructure(flatStore) {
 }
 
 export function initStores(projectID: string | null) {
-  actionStore.set(getInitialActions());
   toolStore.set(effectList);
   flatActionStore.set(getFlatActionStore());
   printNestedListAndCheckIssues(get(flatActionStore));
