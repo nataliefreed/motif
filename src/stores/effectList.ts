@@ -756,7 +756,7 @@ export const effectList = [
     cursor: './assets/cursors/star-solid.svg',
     thumbnail: 'box.jpg',
     mouseActionType: 'drag',
-    pinnedByDefault: true,
+    pinnedByDefault: false,
     params: {
       length: 100,
       width: 100,
@@ -764,19 +764,34 @@ export const effectList = [
     }
   },
   {
-    name: 'envelope',
-    textLabel: 'Envelope',
+    name: 'paper doll',
+    textLabel: 'Paper Doll',
     category: 'stencils',
     tags: 'stencils',
     cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'envelope.jpg',
+    thumbnail: 'paper doll.jpg',
     mouseActionType: 'drag',
-    pinnedByDefault: true,
     params: {
-      width: 200,
-      height: 100
-    }
+      radius: 20,
+      skintone: '#552E1F',
+      hairstyle: '1',
+      outfit: '2'
+    },
   },
+  // {
+  //   name: 'envelope',
+  //   textLabel: 'Envelope',
+  //   category: 'stencils',
+  //   tags: 'stencils',
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   thumbnail: 'envelope.jpg',
+  //   mouseActionType: 'drag',
+  //   pinnedByDefault: true,
+  //   params: {
+  //     width: 200,
+  //     height: 100
+  //   }
+  // },
   // {
   //   name: 'paper doll',
   //   textLabel: 'Doll',
