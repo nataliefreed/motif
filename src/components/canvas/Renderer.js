@@ -17,21 +17,23 @@ export const renderers = {
         });
       }
     },
-  // TODO: these probably shouldn't be mutating the params object
-  // but I think these aren't triggering as action list change, so it's not reupdating?
-  // which is why it's depending on this to pass the path to the positions...
+
   // todo: add the pathSpacing
   'along path': (p, params, p5) => {
     if(!params.path) return;
 
-    if(params.children && params.children.length > 0) { // child UUIDs
+    if(params.children && params.children.length > 0) { // list has children
       params.path.forEach((point, i) => {
         let uuid = params.children[i%params.children.length];
+
         let child = get(flatActionStore)[uuid];
-        child.params.position = {x: point[0], y: point[1]};
-        child.params.tempPosition = {x: point[0], y: point[1]};
+
+        // child.params.position = {x: point[0], y: point[1]};
+        // child.params.tempPosition = {x: point[0], y: point[1]};
+
+
         // console.log("trying to render", child.name);
-        renderers[child.name](p, child.params, p5);
+        renderers[child.name](p, { ...child.params, position: { x: point[0], y: point[1] } }, p5);
       });
     }
   },
@@ -45,14 +47,14 @@ export const renderers = {
   'gradient': (p, params, p5) => {
     let color1 = p.color(params.color);
     let color2 = p.color(params.color2);
-    let angle = -p.radians(params.angle);
+    let angle = p.radians(params.angle);
     let progress = params.progress + 10;
   
     let len = Math.sqrt(p.width * p.width + p.height * p.height); // diagonal length
   
     p.push();
     p.translate(p.width / 2, p.height / 2); // Move the origin to the center
-    p.rotate(-angle); // Rotate around the new origin
+    p.rotate(angle); // Rotate around the new origin
     p.noFill();
     p.strokeWeight(1);
 
