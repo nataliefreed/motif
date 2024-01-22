@@ -116,7 +116,7 @@ function getFlatActionStore() {
       category: 'backgrounds',
       effect: 'solid fill',
       params: {
-        color: tinycolor.random().toHexString()
+        color: tinycolor.fromRatio({ h: Math.random(), s: 0.3, l: 0.6 }).toHexString()
       }
     },
   //   'uuid_3': {
