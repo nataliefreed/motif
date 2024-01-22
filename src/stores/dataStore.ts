@@ -3,6 +3,7 @@ import type { Action, Effect } from '../types/types';
 import { effectList } from '../stores/effectList.js';
 import { v4 as uuidv4 } from 'uuid';
 import { initHistoryStore } from './history';
+import tinycolor from 'tinycolor2';
 
 export const actionStore = writable<Action>({name:"default", type:'list', category:'none', children:[], uuid:""});
 // object storing actions by UUID
@@ -104,7 +105,8 @@ function getFlatActionStore() {
       category: 'control',
       params: {
         title: 'My Design',
-        children: ['uuid_2', 'uuid_3', 'uuid_5', 'uuid_8', 'uuid_10']
+        // children: ['uuid_2', 'uuid_3', 'uuid_5', 'uuid_8', 'uuid_10']
+        children: ['uuid_2']
       }
     },
     'uuid_2': {
@@ -114,112 +116,112 @@ function getFlatActionStore() {
       category: 'backgrounds',
       effect: 'solid fill',
       params: {
-        color: '#f5a8e3'
+        color: tinycolor.random().toHexString()
       }
     },
-    'uuid_3': {
-      uuid: 'uuid_3',
-      name: 'circle',
-      type: 'effect' as const,
-      category: 'shapes',
-      effect: 'circle',
-      params: {
-        color: '#2C1976',
-        radius: 50,
-        position: { x: 150, y: 150 }
-      }
-    },
-    'uuid_5': {
-      uuid: 'uuid_5',
-      name: 'do each',
-      effect: 'do each',
-      type: 'list' as const,
-      category: 'control',
-      params: {
-        title: "circle and star",
-        children: ['uuid_6', 'uuid_7']
-      }
-    },
-    'uuid_6': {
-      uuid: 'uuid_6',
-      name: 'circle',
-      type: 'effect' as const,
-      category: 'shapes',
-      effect: 'circle',
-      params: {
-        color: '#2C5076',
-        radius: 40,
-        position: { x: 50, y: 150 }
-      }
-    },
-    'uuid_7': {
-      uuid: 'uuid_7',
-      name: 'star',
-      type: 'effect' as const,
-      category: 'shapes',
-      effect: 'star',
-      params: {
-        color: '#112233',
-        r1: 40,
-        r2: 15,
-        npoints: 5,
-        position: { x: 100, y: 350 }
-      }
-    },
-    'uuid_8': {
-      uuid: 'uuid_8',
-      name: 'along path',
-      type: 'list' as const,
-      category: 'control',
-      effect: 'along path',
-      params: {
-        title: "circle brush",
-        children: ['uuid_9'],
-        path: [
-          [0, 1], [20, 22], [100, 200], [15, 74], [49, 82], [16, 21], [78, 284],
-          [184, 203], [200, 119], [294, 226], [265, 116], [221, 144], [185, 245],
-          [263, 152], [216, 57], [25, 34], [247, 56], [199, 210], [232, 225],
-          [178, 249], [224, 57], [156, 210], [9, 128], [34, 202], [44, 288],
-          [259, 137], [230, 122], [193, 299], [94, 191], [205, 113], [175, 234],
-          [153, 288], [99, 127], [156, 47], [154, 66], [97, 266], [113, 54],
-          [175, 235], [63, 215], [35, 90], [11, 227], [271, 224], [112, 102],
-          [141, 76], [212, 135], [91, 117], [94, 180], [77, 91], [199, 130],
-          [173, 285], [149, 117], [51, 300], [254, 267], [87, 65], [94, 110],
-          [92, 167], [89, 29], [252, 203], [173, 154], [103, 276], [94, 2],
-          [50, 215], [114, 300], [213, 208], [71, 101], [24, 287], [98, 34],
-          [62, 270], [182, 116], [117, 161], [258, 46], [177, 149], [150, 184],
-          [171, 201], [57, 103], [37, 254], [297, 112], [266, 75], [65, 168],
-          [25, 140], [196, 130], [292, 264], [52, 88], [263, 218], [119, 268],
-          [278, 185], [188, 216], [1, 82], [220, 100], [159, 154], [110, 176],
-          [213, 291], [144, 46], [80, 217], [18, 268], [244, 47], [185, 105],
-          [10, 60], [91, 249], [236, 67], [131, 205], [10, 285], [19, 156]
-        ]
-      }
-    },
-    'uuid_9': {
-      uuid: 'uuid_9',
-      name: 'circle',
-      type: 'effect' as const,
-      category: 'shapes',
-      effect: 'circle',
-      params: {
-        color: '#2C5abb',
-        radius: 10,
-        position: { x: 20, y: 150 }
-      }
-    },
-    'uuid_10': {
-      uuid: 'uuid_10',
-      name: 'bounce',
-      type: 'effect' as const,
-      category: 'brushes',
-      effect: 'bounce',
-      params: {
-        start: { x: 10, y: 10 },
-        end: { x: 40, y: 20 },
-        duration: 500
-      }
-    },
+  //   'uuid_3': {
+  //     uuid: 'uuid_3',
+  //     name: 'circle',
+  //     type: 'effect' as const,
+  //     category: 'shapes',
+  //     effect: 'circle',
+  //     params: {
+  //       color: '#2C1976',
+  //       radius: 50,
+  //       position: { x: 150, y: 150 }
+  //     }
+  //   },
+  //   'uuid_5': {
+  //     uuid: 'uuid_5',
+  //     name: 'do each',
+  //     effect: 'do each',
+  //     type: 'list' as const,
+  //     category: 'control',
+  //     params: {
+  //       title: "circle and star",
+  //       children: ['uuid_6', 'uuid_7']
+  //     }
+  //   },
+  //   'uuid_6': {
+  //     uuid: 'uuid_6',
+  //     name: 'circle',
+  //     type: 'effect' as const,
+  //     category: 'shapes',
+  //     effect: 'circle',
+  //     params: {
+  //       color: '#2C5076',
+  //       radius: 40,
+  //       position: { x: 50, y: 150 }
+  //     }
+  //   },
+  //   'uuid_7': {
+  //     uuid: 'uuid_7',
+  //     name: 'star',
+  //     type: 'effect' as const,
+  //     category: 'shapes',
+  //     effect: 'star',
+  //     params: {
+  //       color: '#112233',
+  //       r1: 40,
+  //       r2: 15,
+  //       npoints: 5,
+  //       position: { x: 100, y: 350 }
+  //     }
+  //   },
+  //   'uuid_8': {
+  //     uuid: 'uuid_8',
+  //     name: 'along path',
+  //     type: 'list' as const,
+  //     category: 'control',
+  //     effect: 'along path',
+  //     params: {
+  //       title: "circle brush",
+  //       children: ['uuid_9'],
+  //       path: [
+  //         [0, 1], [20, 22], [100, 200], [15, 74], [49, 82], [16, 21], [78, 284],
+  //         [184, 203], [200, 119], [294, 226], [265, 116], [221, 144], [185, 245],
+  //         [263, 152], [216, 57], [25, 34], [247, 56], [199, 210], [232, 225],
+  //         [178, 249], [224, 57], [156, 210], [9, 128], [34, 202], [44, 288],
+  //         [259, 137], [230, 122], [193, 299], [94, 191], [205, 113], [175, 234],
+  //         [153, 288], [99, 127], [156, 47], [154, 66], [97, 266], [113, 54],
+  //         [175, 235], [63, 215], [35, 90], [11, 227], [271, 224], [112, 102],
+  //         [141, 76], [212, 135], [91, 117], [94, 180], [77, 91], [199, 130],
+  //         [173, 285], [149, 117], [51, 300], [254, 267], [87, 65], [94, 110],
+  //         [92, 167], [89, 29], [252, 203], [173, 154], [103, 276], [94, 2],
+  //         [50, 215], [114, 300], [213, 208], [71, 101], [24, 287], [98, 34],
+  //         [62, 270], [182, 116], [117, 161], [258, 46], [177, 149], [150, 184],
+  //         [171, 201], [57, 103], [37, 254], [297, 112], [266, 75], [65, 168],
+  //         [25, 140], [196, 130], [292, 264], [52, 88], [263, 218], [119, 268],
+  //         [278, 185], [188, 216], [1, 82], [220, 100], [159, 154], [110, 176],
+  //         [213, 291], [144, 46], [80, 217], [18, 268], [244, 47], [185, 105],
+  //         [10, 60], [91, 249], [236, 67], [131, 205], [10, 285], [19, 156]
+  //       ]
+  //     }
+  //   },
+  //   'uuid_9': {
+  //     uuid: 'uuid_9',
+  //     name: 'circle',
+  //     type: 'effect' as const,
+  //     category: 'shapes',
+  //     effect: 'circle',
+  //     params: {
+  //       color: '#2C5abb',
+  //       radius: 10,
+  //       position: { x: 20, y: 150 }
+  //     }
+  //   },
+  //   'uuid_10': {
+  //     uuid: 'uuid_10',
+  //     name: 'bounce',
+  //     type: 'effect' as const,
+  //     category: 'brushes',
+  //     effect: 'bounce',
+  //     params: {
+  //       start: { x: 10, y: 10 },
+  //       end: { x: 40, y: 20 },
+  //       duration: 500
+  //     }
+  //   },
   };
 }
 
