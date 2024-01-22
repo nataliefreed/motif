@@ -6,7 +6,7 @@
   import ActionItem from './actions and widgets/ActionItem.svelte';
 	import type { Action, Effect } from '../types/types';
   import Canvas from './canvas/Canvas.svelte';
-  import { scrollToAction, saveActionAsNewTool, removeAction, loopActionAlongPath, remixAction, duplicateAction, redrawAction, clearAllActions } from './action-utils';
+  import { scrollToAction, saveActionAsNewTool, removeAction, loopActionAlongPath, remixAction, duplicateAction, redrawAction, clearAllActions, refresh } from './action-utils';
   import EffectToolbar from './toolbars/EffectToolbar.svelte';
   import Notebook from './Notebook.svelte';
   import Page from './Page.svelte';
@@ -237,10 +237,11 @@
   <Page slot="right">
     <div class="instabuttons-top">
       <button class="instabutton" id="undoButton" on:click={undo}>Undo</button>
+      <button class="instabutton" id="refreshButton" on:click={refresh}><svg xmlns="http://www.w3.org/2000/svg"  height="16" width="16" viewBox="0 0 512 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M386.3 160H336c-17.7 0-32 14.3-32 32s14.3 32 32 32H464c17.7 0 32-14.3 32-32V64c0-17.7-14.3-32-32-32s-32 14.3-32 32v51.2L414.4 97.6c-87.5-87.5-229.3-87.5-316.8 0s-87.5 229.3 0 316.8s229.3 87.5 316.8 0c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0c-62.5 62.5-163.8 62.5-226.3 0s-62.5-163.8 0-226.3s163.8-62.5 226.3 0L386.3 160z"/></svg></button>
       <button class="instabutton" id="clearAllButton" on:click={clearAllActions}>Clear All</button>
-      <!-- <button class="instabutton right-aligned" id="downloadButton" on:click={handleDownload}><svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512">! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc.<path d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32V274.7l-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7V32zM64 352c-35.3 0-64 28.7-64 64v32c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V416c0-35.3-28.7-64-64-64H346.5l-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352H64zm368 56a24 24 0 1 1 0 48 24 24 0 1 1 0-48z"/></svg> Download</button> -->
-      <button class="instabutton right-aligned" id="exportButton" on:click={exportCodeWithImage}><svg xmlns="http://www.w3.org/2000/svg" height="16" width="12" viewBox="0 0 384 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M64 0C28.7 0 0 28.7 0 64V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V160H256c-17.7 0-32-14.3-32-32V0H64zM256 0V128H384L256 0zM216 232V334.1l31-31c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-72 72c-9.4 9.4-24.6 9.4-33.9 0l-72-72c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l31 31V232c0-13.3 10.7-24 24-24s24 10.7 24 24z"/></svg></button>
-      <button class="instabutton right-aligned" id="importButton" on:click={importCodeFromImage}><svg xmlns="http://www.w3.org/2000/svg" height="16" width="12" viewBox="0 0 384 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M64 0C28.7 0 0 28.7 0 64V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V160H256c-17.7 0-32-14.3-32-32V0H64zM256 0V128H384L256 0zM216 408c0 13.3-10.7 24-24 24s-24-10.7-24-24V305.9l-31 31c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l72-72c9.4-9.4 24.6-9.4 33.9 0l72 72c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0l-31-31V408z"/></svg></button>
+      <div class="spacer"></div>
+      <button class="instabutton" id="exportButton" on:click={exportCodeWithImage}><svg xmlns="http://www.w3.org/2000/svg" height="16" width="12" viewBox="0 0 384 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M64 0C28.7 0 0 28.7 0 64V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V160H256c-17.7 0-32-14.3-32-32V0H64zM256 0V128H384L256 0zM216 232V334.1l31-31c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-72 72c-9.4 9.4-24.6 9.4-33.9 0l-72-72c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l31 31V232c0-13.3 10.7-24 24-24s24 10.7 24 24z"/></svg></button>
+      <button class="instabutton" id="importButton" on:click={importCodeFromImage}><svg xmlns="http://www.w3.org/2000/svg" height="16" width="12" viewBox="0 0 384 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M64 0C28.7 0 0 28.7 0 64V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V160H256c-17.7 0-32-14.3-32-32V0H64zM256 0V128H384L256 0zM216 408c0 13.3-10.7 24-24 24s-24-10.7-24-24V305.9l-31 31c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l72-72c9.4-9.4 24.6-9.4 33.9 0l72 72c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0l-31-31V408z"/></svg></button>
     </div>
 
     <div class={codeCursorClass} id="code-zone">
@@ -250,11 +251,12 @@
             <ActionItem action={$actionRoot} depth={0}/>
             <!-- <ActionItem action={$stagedAction} /> -->
           </div>
+          
+          <!-- debugging -->
           <!-- <br>
           <ul>
-            {#each Object.values($flatActionStore) as action (action.uuid)} -->
-              <!-- <li style:color={action.uuid === $changedActionID ? 'blue' : (action.uuid === $stagedActionID ? 'red' : 'black')}> -->
-              <!-- <li style:color={action.uuid === $stagedActionID ? 'red' : 'black'}>
+            {#each Object.values($flatActionStore) as action (action.uuid)}
+              <li style:color={action.uuid === $stagedActionID ? 'red' : 'black'}>
                 {action.uuid} : {#if action.params.children && action.params.children.length > 0} {JSON.stringify(action.params.children)} {/if}
               </li>
             {/each}
@@ -426,7 +428,8 @@
     border-radius: 5px;
     /* background-color: transparent; */
     /* font-weight: bold; */
-    color: #313131;
+    /* background-color:  */
+    color: black;
   }
 
   .instabutton:hover {
@@ -468,17 +471,32 @@
 
   .instabuttons-top {
     position: absolute;
-    top: 20px;
+    left: --calc(var(--canvas-width)*0.1);
+    /* left: 10px; */
+    width: 60%;
     right: 20px;
+    top: 20px;
     display: flex;
     flex-direction: row;
     gap: 10px;
-    /* margin-bottom: 100px; */
+    justify-content: center;
+  }
+
+  .spacer {
+    flex-grow: 1;
+  }
+
+  #undoButton, #refreshButton, #clearAllButton {
+
+  }
+
+  #exportButton, #importButton {
+
   }
 
   .instabuttons-bottom {
-    /* position: relative;
-    bottom: 30px; */
+    position: absolute;
+    bottom: 30px;
     display: flex;
     flex-direction: row;
     gap: 10px;
