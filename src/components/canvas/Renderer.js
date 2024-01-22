@@ -1,5 +1,6 @@
 import { get } from 'svelte/store';
 import { flatActionStore, renderStopIndex, stagedActionID } from '../../stores/dataStore.ts';
+let paperdolls = null;
 
 export const renderers = {
     // do each
@@ -9,11 +10,12 @@ export const renderers = {
         // console.log("do each", params.children);
         // get active children??
         let activeChildren = params.children.filter(uuid => uuid !== get(stagedActionID));
+        // console.log(get(stagedActionID), activeChildren);
         // uuid enabled?
         activeChildren.forEach(uuid => {
           let child = get(flatActionStore)[uuid];
           // console.log("trying to render", child.name);
-          renderers[child.name](p, child.params, p5);
+          if(renderers[child.name]) renderers[child.name](p, child.params, p5);
         });
       }
     },
@@ -637,9 +639,10 @@ export const renderers = {
     p.pop();
   },
 
-  'paperdoll': (p, params, p5) => {
+  'paper doll': (p, params, p5) => {
     // Get the color value from params.
-    let skinTone = p.color(params.skinTone);
+    let skinTone = p.color(params.skintone);
+    // console.log("skin tone", skinTone);
     
     // Parse the outfit and hairstyle numbers from params
     let outfitNumber = parseInt(params.outfit);
@@ -656,8 +659,8 @@ export const renderers = {
 
     // Create a new graphics object to draw the paper doll and its outfit and hairstyle fills
     let dollCanvas = p5.createGraphics(p.width, p.height);
-    var outfitCanvas = p5.createGraphics(p.width, p.height);
-    var hairstyleCanvas = p5.createGraphics(p.width, p.height);
+    let outfitCanvas = p5.createGraphics(p.width, p.height);
+    let hairstyleCanvas = p5.createGraphics(p.width, p.height);
 
       //Tint and then draw the doll fill
       // dollCanvas.tint(skinTone);
@@ -665,11 +668,14 @@ export const renderers = {
       // dollCanvas.noTint();
       // dollCanvas.image(paperdolls.underlayerFill, 0, 0, p.width, p.height);
 
+      if(p===p5.getHoverCanvas()) {
+        p.tint(255, 190);
+      }
 
       // Use doll fill as a mask for the skin tone
       dollCanvas.image(paperdolls.dollFill, 0, 0, p.width, p.height);
       dollCanvas.drawingContext.globalCompositeOperation = 'source-in';
-      let skinToneCanvas = p.createGraphics(p.width, p.height);
+      let skinToneCanvas = p5.createGraphics(p.width, p.height);
       skinToneCanvas.background(skinTone);
       dollCanvas.image(skinToneCanvas, 0, 0);
 
@@ -677,35 +683,35 @@ export const renderers = {
       outfitCanvas.image(outfit.fill, 0, 0, p.width, p.height);
       outfitCanvas.image(paperdolls.underlayerFill, 0, 0, p.width, p.height); // underwear!
       outfitCanvas.drawingContext.globalCompositeOperation = 'source-in';
-      outfitCanvas.image(this, 0, 0, p.width, p.height);
+      outfitCanvas.image(p5.getStaticCanvas(), 0, 0, p.width, p.height);
 
       // Prepare the hairstyle fill as a mask
       hairstyleCanvas.image(hairstyle.fill, 0, 0, p.width, p.height);
       hairstyleCanvas.drawingContext.globalCompositeOperation = 'source-in';
-      hairstyleCanvas.image(this, 0, 0, p.width, p.height);
+      hairstyleCanvas.image(p5.getStaticCanvas(), 0, 0, p.width, p.height);
 
       // Lighten the original painting
-      this.noStroke();
-      this.fill(255, 220);
-      this.rect(0, 0, p.width, p.height);
+      p.noStroke();
+      p.fill(255, 220);
+      p.rect(0, 0, p.width, p.height);
 
       // Draw the doll fill
-      this.image(dollCanvas, 0, 0);
+      p.image(dollCanvas, 0, 0);
 
       // Draw the outfit fill
-      this.image(outfitCanvas, 0, 0);
+      p.image(outfitCanvas, 0, 0);
 
       // Draw the outfit outline
       if(outfit.outline){
-        this.image(outfit.outline, 0, 0, this.width, this.height);
+        p.image(outfit.outline, 0, 0, p.width, p.height);
       }
 
       // Draw the hair fill
-      this.image(hairstyleCanvas, 0, 0);
+      p.image(hairstyleCanvas, 0, 0);
 
       // Draw the hair outline
       if(hairstyle.outline){
-        this.image(hairstyle.outline, 0, 0, this.width, this.height);
+        p.image(hairstyle.outline, 0, 0, p.width, p.height);
       }
 
       dollCanvas.remove();
@@ -715,8 +721,8 @@ export const renderers = {
     }
   };
 
-function loadStencils() {
-  let paperdolls = { // paper doll stencils
+export function loadStencils(p) {
+  paperdolls = { // paper doll stencils
     outfits: [],
     hairstyles: [],
   }
@@ -725,15 +731,15 @@ function loadStencils() {
   let hairstyleNames = ['01', '02', '03'];
 
   // Load doll fill
-  paperdolls.dollFill = p.loadImage(`src/assets/stencils/paper-dolls/outfits/doll-fill.png`);
-  paperdolls.underlayerFill = p.loadImage('src/assets/stencils/paper-dolls/outfits/underlayer-fill.png');
+  paperdolls.dollFill = p.loadImage(`/assets/stencils/paper-dolls/outfits/doll-fill.png`);
+  paperdolls.underlayerFill = p.loadImage(`/assets/stencils/paper-dolls/outfits/underlayer-fill.png`);
 
   // Load all outfit and hairstyle files
   for (let name of outfitNames) {
     let outfit = {
       number: parseInt(name),
-      outline: p.loadImage(`src/assets/stencils/paper-dolls/outfits/outlines/${name}.png`),
-      fill: p.loadImage(`src/assets/stencils/paper-dolls/outfits/fills/${name}.png`)
+      outline: p.loadImage(`/assets/stencils/paper-dolls/outfits/outlines/${name}.png`),
+      fill: p.loadImage(`/assets/stencils/paper-dolls/outfits/fills/${name}.png`)
     };
     paperdolls.outfits.push(outfit);
   }
@@ -741,8 +747,8 @@ function loadStencils() {
   for (let name of hairstyleNames) {
     let hairstyle = {
       number: parseInt(name),
-      outline: p.loadImage(`src/assets/stencils/paper-dolls/hairstyles/outlines/${name}.png`),
-      fill: p.loadImage(`src/assets/stencils/paper-dolls/hairstyles/fills/${name}.png`)
+      outline: p.loadImage(`/assets/stencils/paper-dolls/hairstyles/outlines/${name}.png`),
+      fill: p.loadImage(`/assets/stencils/paper-dolls/hairstyles/fills/${name}.png`)
     };
     paperdolls.hairstyles.push(hairstyle);
   }

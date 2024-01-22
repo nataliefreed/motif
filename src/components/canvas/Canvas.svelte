@@ -2,12 +2,11 @@
   import { addEffectAsStagedAction, updateStagedAction, copyStagedActionToActionStore, addCurrentEffectAsStagedAction } from '../action-utils';
 	import P5 from 'p5-svelte';
   import { actionStore, stagedAction, stagedActionID, actionRootID, activeCategory, selectedEffect, currentColor, shouldRandomizeColor, changedActionID, flatActionStore, actionRoot } from '../../stores/dataStore';
-  import { renderers } from './Renderer.js';
+  import { renderers, loadStencils } from './Renderer.js';
   import { onMount, onDestroy } from 'svelte';
   // import debounce from 'lodash';
   import tinycolor from "tinycolor2";
   import { getAntPath } from '../../utils/utils.ts';
-    import { page } from '$app/stores';
 	
   let x = 55;
 	let y = 55;
@@ -161,7 +160,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
   // how do we cache steps?
   // we need to know where it has changed
 
-  function renderRoot() {
+  export function renderRoot() {
     if(p5) {
       let staticCanvas = p5.getStaticCanvas();
       let dragCanvas = p5.getDragCanvas();
@@ -171,7 +170,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       staticCanvas.clear();
       staticCanvas.background(255);
       dragCanvas.clear();
-
+      
       renderAction($flatActionStore[$actionRootID], staticCanvas);
 
       p5.clear();
@@ -424,6 +423,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     if(p5) {
       waitForCanvases().then(() => {
         // renderAll($actionStore); // render initial actions
+        loadStencils(p5);
         console.log("p5 instance created");
         renderRoot();
         console.log("initial render");

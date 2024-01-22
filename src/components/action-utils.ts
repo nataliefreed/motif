@@ -12,6 +12,16 @@ import { tick } from 'svelte';
 /* note on saving to history: currently thinking about it as saving before doing something
 user-initiated that the user expects to be able to undo. Don't save if it doesn't do anything */
 
+export function refresh() {
+  // console.log("refreshing");
+  addCurrentEffectAsStagedAction();
+  changedActionID.set('new');
+
+  setTimeout(() => { //this is a terrible placeholder hack. the issue is that addCurrentEffectAsStagedAction doesn't update the new staged action ID until the next update cycle
+    flatActionStore.update(store => { return deepCopy(store); });
+  }, 50);
+}
+
 export async function scrollToAction(id: string) {
   await tick(); // Wait for the DOM to update with the new item
   const element = document.getElementById(`${id}`);

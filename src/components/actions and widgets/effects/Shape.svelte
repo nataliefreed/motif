@@ -16,12 +16,12 @@
 
 {#if name === 'circle'}
   Circle of radius 
-  <NumberWidget id="radius" min={5} max={600} value={params.radius} on:valueChange={handleValueChange} on:reorder/>
+  <NumberWidget id="radius" min={3} max={600} value={params.radius} on:valueChange={handleValueChange} on:reorder/>
   in color 
   <ColorWidget id="color" value={params.color} on:valueChange={handleValueChange}/>
 {:else if name === 'square'}
   Square of size 
-  <NumberWidget id="size" min={5} max={600} value={params.size} on:valueChange={handleValueChange}/>
+  <NumberWidget id="size" min={3} max={600} value={params.size} on:valueChange={handleValueChange}/>
   in color 
   <ColorWidget id="color" value={params.color} on:valueChange={handleValueChange}/>
 {:else if name === 'polygon'}
@@ -35,44 +35,44 @@
   Star with 
   <NumberWidget id="npoints" min={3} max={200} value={params.npoints} on:valueChange={handleValueChange}/> points,
   outer 
-  <NumberWidget id="r1" min={5} max={600} value={params.r1} on:valueChange={handleValueChange}/>,
+  <NumberWidget id="r1" min={3} max={600} value={params.r1} on:valueChange={handleValueChange}/>,
   inner 
-  <NumberWidget id="r2" min={5} max={600} value={params.r2} on:valueChange={handleValueChange}/> 
+  <NumberWidget id="r2" min={3} max={600} value={params.r2} on:valueChange={handleValueChange}/> 
   in color 
   <ColorWidget id="color" value={params.color} on:valueChange={handleValueChange}/>
 {:else if name === 'heart'}
   Heart of size 
-  <NumberWidget id="size" min={5} max={600} value={params.size} on:valueChange={handleValueChange}/> 
+  <NumberWidget id="size" min={3} max={600} value={params.size} on:valueChange={handleValueChange}/> 
   in color 
   <ColorWidget id="color" value={params.color} on:valueChange={handleValueChange}/>
 {:else if name === 'rectangle'}
   Rectangle of width 
-  <NumberWidget id="width" min={5} max={600} value={params.width} on:valueChange={handleValueChange}/>
+  <NumberWidget id="width" min={3} max={600} value={params.width} on:valueChange={handleValueChange}/>
   and height 
-  <NumberWidget id="height" min={5} max={600} value={params.height} on:valueChange={handleValueChange}/> 
+  <NumberWidget id="height" min={3} max={600} value={params.height} on:valueChange={handleValueChange}/> 
   in color 
   <ColorWidget id="color" value={params.color} on:valueChange={handleValueChange}/>
 {:else if name === 'triangle'}
   Triangle of width 
-  <NumberWidget id="width" min={5} max={600} value={params.width} on:valueChange={handleValueChange}/> 
+  <NumberWidget id="width" min={3} max={600} value={params.width} on:valueChange={handleValueChange}/> 
   and height 
-  <NumberWidget id="height" min={5} max={600} value={params.height} on:valueChange={handleValueChange}/> 
+  <NumberWidget id="height" min={3} max={600} value={params.height} on:valueChange={handleValueChange}/> 
   in color 
   <ColorWidget id="color" value={params.color} on:valueChange={handleValueChange}/>
 {:else if name === 'copy cutout'}
   Copy rect of width
-  <NumberWidget id="width" min={5} max={600} value={params.width} on:valueChange={handleValueChange}/> 
+  <NumberWidget id="width" min={3} max={600} value={params.width} on:valueChange={handleValueChange}/> 
   and height 
-  <NumberWidget id="height" min={5} max={600} value={params.height} on:valueChange={handleValueChange}/> 
+  <NumberWidget id="height" min={3} max={600} value={params.height} on:valueChange={handleValueChange}/> 
   from
   <CoordinateWidget id="start" value={params.start} on:valueChange={handleValueChange}/>
   to
   <CoordinateWidget id="end" value={params.end} on:valueChange={handleValueChange}/>
 {:else if name === 'spiro'}
   Spiro outer
-  <NumberWidget id="outer" min={5} max={300} value={params.outer} on:valueChange={handleValueChange}/>
+  <NumberWidget id="outer" min={3} max={300} value={params.outer} on:valueChange={handleValueChange}/>
   inner
-  <NumberWidget id="inner" min={5} max={params.outer-1} value={params.inner} on:valueChange={handleValueChange}/>
+  <NumberWidget id="inner" min={3} max={params.outer-1} value={params.inner} on:valueChange={handleValueChange}/>
   pen at 
   <NumberWidget id="d" min={0} max={100} value={params.d} on:valueChange={handleValueChange}/>%
   in color
