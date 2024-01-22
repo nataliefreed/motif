@@ -193,7 +193,8 @@ function getDynamicStyle(id:string) {
           ${stripeColor} 20px
         )`;
 
-        return `color: ${textColor}; background: ${stripedBackground}; border-color: ${textColor};`;
+        // return `color: ${textColor}; background: ${stripedBackground}; border-color: ${textColor};`;
+        return `background: ${stripedBackground}; border-color: ${textColor};`;
       }
     }
   } else {
