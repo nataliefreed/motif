@@ -428,7 +428,7 @@ export const renderers = {
   'bounce': (p, params, p5) => {
     let startPos = p.createVector(params.start.x, params.start.y);
     let endPos = p.createVector(params.end.x, params.end.y);
-    let numSteps = params.duration;
+    let numSteps = params.progress * 3 + 1;
     let direction = p5.Vector.sub(endPos, startPos);
     let spacing = direction.mag(); // distance between start and position2
     direction.normalize(); // normalize to unit vector
@@ -463,10 +463,12 @@ export const renderers = {
             currentPos.y = p.constrain(currentPos.y, 0+radius, p.height-radius);
         }
     }
-    p.colorMode(p5.RGB);
-    p.fill(255);
-    p.circle(startPos.x, startPos.y, 5);
-    p.circle(endPos.x, endPos.y, 5);
+    if(p === p5.getDragCanvas()) {
+      p.colorMode(p5.RGB);
+      p.fill(255);
+      p.circle(startPos.x, startPos.y, 5);
+      p.circle(endPos.x, endPos.y, 5);
+    }
     p.pop();
   },
 

@@ -547,6 +547,9 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
         if('path' in params) {
           updateStagedAction({path: getAntPath(path, $stagedAction.params.pathSpacing || 10)}); // calc path spacing
         }
+        if($stagedAction.name === 'bounce' && 'progress' in params) {
+          mousePressedTime = Date.now(); //reset whenever moved
+        }
         renderFunction(p5.getDragCanvas(), $stagedAction.params, p5);
       }
       p5.image(p5.getStaticCanvas(), 0, 0);

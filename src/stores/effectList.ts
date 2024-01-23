@@ -479,9 +479,10 @@ export const effectList = [
     params: {
       start: { x: 20, y: 150 },
       end: { x: 200, y: 150 },
-      duration: 500
+      progress: 0
     }
   },
+
   {
     name: 'straight line',
     textLabel: 'straight line',
