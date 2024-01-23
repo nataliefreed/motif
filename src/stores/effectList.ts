@@ -73,7 +73,8 @@ export const effectList = [
       inner: 24,
       d: 20,
       color: '#FF0000',
-      position: {x: 100, y: 100}
+      position: {x: 100, y: 100},
+      progress: 100
     },
   },
   {

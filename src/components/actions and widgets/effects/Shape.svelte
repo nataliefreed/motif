@@ -69,13 +69,15 @@
   to
   <CoordinateWidget id="end" value={params.end} on:valueChange={handleValueChange}/>
 {:else if name === 'spiro'}
-  Spiro outer
+  Spiro outer:
   <NumberWidget id="outer" min={3} max={300} value={params.outer} on:valueChange={handleValueChange}/>
-  inner
+  inner:
   <NumberWidget id="inner" min={3} max={params.outer-1} value={params.inner} on:valueChange={handleValueChange}/>
-  pen at 
+  pen:
   <NumberWidget id="d" min={0} max={100} value={params.d} on:valueChange={handleValueChange}/>%
-  in color
+  steps:
+  <NumberWidget id="progress" value={params.progress} min={0} max={100} on:valueChange={handleValueChange}/>
+  in
   <ColorWidget id="color" value={params.color} on:valueChange={handleValueChange}/>
   {/if}
 

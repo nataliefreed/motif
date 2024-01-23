@@ -174,26 +174,42 @@ export const renderers = {
   'spiro': (p, params, p5) => {
     let R = params.outer || 30;
     let r = params.inner || 24;
-    let d = params.d || 50;
+    let d = params.d;
     let spiroColor = p.color(params.color);
     let x = params.position.x;
     let y = params.position.y;
+    let steps = p.map(params.progress, 0, 100, 0, 360);
     // if(p === p5.getDragCanvas) debugger;
   
     let k = (R - r) / r;
-    let spacing = p.TWO_PI / 30;
+    let spacing = p.TWO_PI / 30.0;
   
     p.push();
     p.translate(x, y);
+
+
+    // if(p === p5.getHoverCanvas() || p === p5.getDragCanvas()) {
+    //   //show the gears (start with circles)
+    //   p.noFill();
+    //   p.stroke(100);
+    //   //outer gear - R is numTeeth (circumference but in some unit?), how do I get radius?
+    //   p.circle(0, 0, R*2);
+    //   //inner gear - place where it is currently drawing
+    //   //pen point - draw as small circle
+    // }
+
     p.stroke(spiroColor);
     p.strokeWeight(2);
   
-    for (let theta = 0; theta < 12 * p.TWO_PI; theta += spacing) {
+    // for (let theta = 0; theta < 12 * p.TWO_PI; theta += spacing) {
+    let theta = 0;
+    for (let i = 0; i < steps; i++) {
       let x1 = (R - r) * Math.cos(theta) + d * Math.cos(k * theta);
       let y1 = (R - r) * Math.sin(theta) - d * Math.sin(k * theta);
       let x2 = (R - r) * Math.cos(theta + spacing) + d * Math.cos(k * (theta + spacing));
       let y2 = (R - r) * Math.sin(theta + spacing) - d * Math.sin(k * (theta + spacing));
       p.line(x1, y1, x2, y2);
+      theta += spacing;
     }
   
     p.pop();
