@@ -475,7 +475,7 @@ export const effectList = [
     category: 'brushes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'straight_line.jpeg',
+    thumbnail: 'bounce.png',
     mouseActionType: 'drag',
     params: {
       start: { x: 20, y: 150 },
