@@ -7,7 +7,7 @@
   import Brush from './effects/Brush.svelte';
   import ControlStructure from './effects/ControlStructure.svelte';
   import Shape from './effects/Shape.svelte';
-  import { selectedActionID, selectedCodeEffect, changedActionID, flatActionStore } from '../../stores/dataStore';
+  import { selectedActionID, selectedCodeEffect, changedActionID, flatActionStore, stagedActionID } from '../../stores/dataStore';
   import { onMount, createEventDispatcher } from 'svelte';
   import { deepCopy } from '../../utils/utils';
 
@@ -80,8 +80,8 @@
   }
 
 </script>
-
   {#if action}
+  <span class:staged={$stagedActionID === action.uuid}>
       {#if action.category === 'control'}
           <ControlStructure name={action.name} params={action.params} onUpdate={handleUpdate} depth={depth+1} on:reorder/>
       {:else if action.type === 'effect'}
@@ -102,6 +102,7 @@
               {/if}
           </span>
       {/if}
+    </span>
   {/if}
 
 
@@ -111,5 +112,9 @@
     align-items: center;
     justify-content: center;
   } */
+
+  .staged {
+    padding: 0 10px;
+  }
 </style>
 

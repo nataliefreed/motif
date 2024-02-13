@@ -200,6 +200,8 @@ function getDynamicStyle(id:string) {
   } else {
     return '';
   }
+
+  /* to use, add this to li: style={getDynamicStyle(action.uuid)} */
 }
 
 
@@ -210,7 +212,6 @@ function getDynamicStyle(id:string) {
     <li
       class:selected={$selectedActionID === action.uuid}
       class:staged={$stagedActionID === action.uuid}
-      style={getDynamicStyle(action.uuid)}
       class:obscured={action.obscured}
       class:draggable={!action.pinned}
       class="scale-from-left"
@@ -274,18 +275,50 @@ function getDynamicStyle(id:string) {
     border: 2px solid #757575;
     background-color: white;
     background-color: #f6f6f6;
-    border-radius: 0;
+    border-radius: 2px;
     /* border-style: dashed none dashed none; */
     border: none;
     color: #757575;
+    background: white;
     /* width: calc(var(--adjusted-page-width)*0.95); */
-    background: repeating-linear-gradient(
+    /* background: repeating-linear-gradient(
           -45deg,
           #bbbbbb,
           #bbbbbb 10px,
           #222222 10px,
           #222222 20px
-        );
+        ); */
+    /* background: 
+      linear-gradient(to right, #ffffff 0%, #ffffff 2em, transparent 2em),
+      repeating-linear-gradient(
+        -45deg,
+        rgba(85, 85, 85, 0.1),
+        rgba(85, 85, 85, 0.1) 10px,
+        rgba(59, 59, 59, 0.2) 10px,
+        rgba(59, 59, 59, 0.2) 20px
+      );     */
+    z-index: 0;
+    margin: 0.7em 2px;
+  }
+
+  .staged::after {
+    content: "";
+    position: absolute;
+    left: 2em; /* blank area at start for paintbrush */
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background:
+      repeating-linear-gradient(
+          -45deg,
+          rgba(85, 85, 85, 0.1),
+          rgba(85, 85, 85, 0.1) 10px,
+          rgba(59, 59, 59, 0.2) 10px,
+          rgba(59, 59, 59, 0.2) 20px
+        );    
+    border-radius: 4px;
+    z-index: -1;
+    /* width: 100%; */
   }
 
   li::before {
@@ -337,16 +370,6 @@ function getDynamicStyle(id:string) {
     background-size: contain; /* Scale the image to fit within the element */
     /* background-repeat: no-repeat;
     display: inline-block; */
-  }
-
-  .paintbrush svg {
-  
-    /* margin-left: -40px; */
-    /* transform: translateX(-60%); */
-    /* z-index: 0;
-    overflow: visible; */
-    /* stroke: #000000;
-    stroke-width: 10px; */
   }
 
   .pin {
