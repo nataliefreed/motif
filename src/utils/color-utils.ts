@@ -1,6 +1,6 @@
 import tinycolor from 'tinycolor2';
 
-export function randomHexColor(alpha=1) {
+export function curatedRandomHexColor(alpha=0.5) {
 	const h = Math.random() * 360;
 	const s = randomBetween(80, 100);
 	const l = 60;

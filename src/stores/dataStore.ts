@@ -4,6 +4,7 @@ import { effectList } from '../stores/effectList.js';
 import { v4 as uuidv4 } from 'uuid';
 import { initHistoryStore } from './history';
 import tinycolor from 'tinycolor2';
+import { curatedRandomHexColor } from '../utils/color-utils';
 
 export const actionStore = writable<Action>({name:"default", type:'list', category:'none', children:[], uuid:""});
 // object storing actions by UUID
@@ -107,7 +108,8 @@ function getFlatActionStore() {
         title: 'My Design',
         // children: ['uuid_2', 'uuid_3', 'uuid_5', 'uuid_8', 'uuid_10']
         children: ['uuid_2']
-      }
+      },
+      hidden: false
     },
     'uuid_2': {
       uuid: 'uuid_2',
@@ -116,8 +118,9 @@ function getFlatActionStore() {
       category: 'backgrounds',
       effect: 'solid fill',
       params: {
-        color: tinycolor.fromRatio({ h: Math.random(), s: 0.3, l: 0.6 }).toHexString()
-      }
+        color: curatedRandomHexColor()
+      },
+      hidden: false
     },
   //   'uuid_3': {
   //     uuid: 'uuid_3',

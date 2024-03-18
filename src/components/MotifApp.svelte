@@ -16,10 +16,11 @@
   import Tooltip from './Tooltip.svelte';
   import CategoryToolbar from './toolbars/CategoryToolbar.svelte';
   import { p5CanvasSize } from '../stores/canvasStore';
-  import tinycolor from "tinycolor2";
   import { setupKeyboardEvents, removeKeyboardEvents } from './KeyboardEvents';
   import EffectSettingsPanel from './toolbars/EffectSettingsPanel.svelte';
   import { initHistoryStore } from '../stores/history';
+  import PlayButton from './PlayButton.svelte';
+  import { curatedRandomHexColor } from '../utils/color-utils';
 
   const [send, receive] = crossfade({}); // TODO
 
@@ -61,7 +62,7 @@
         size: Math.round(Math.random() * 500 + 5),
         offset: Math.round(Math.random() * 100 + 5),
         rotation: Math.round(Math.random() * 360),
-        color: tinycolor.random().toHexString(),
+        color: curatedRandomHexColor(),
       };
       $stagedAction.params.children.forEach((child:Action) => {
         child.params = {
@@ -75,7 +76,7 @@
           height: Math.round(Math.random() * 20 + 1),
           scaleBy: Math.round(Math.random() * 400 + 1),
           size: Math.round(Math.random() * 20 + 5),
-          color: tinycolor.random().toHexString(),
+          color: curatedRandomHexColor(),
         };
       });
     }

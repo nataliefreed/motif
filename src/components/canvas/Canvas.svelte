@@ -1,18 +1,18 @@
 <script>
-  import { addEffectAsStagedAction, updateStagedAction, copyStagedActionToActionStore, addCurrentEffectAsStagedAction } from '../action-utils';
+  import { addEffectAsStagedAction, updateStagedAction, copyStagedActionToActionStore, addCurrentEffectAsStagedAction, compileActions, hideAction, showAction } from '../action-utils';
 	import P5 from 'p5-svelte';
-  import { actionStore, stagedAction, stagedActionID, actionRootID, activeCategory, selectedEffect, currentColor, shouldRandomizeColor, changedActionID, flatActionStore, actionRoot } from '../../stores/dataStore';
+  import { stagedAction, stagedActionID, actionRootID, activeCategory, selectedEffect, currentColor, shouldRandomizeColor, changedActionID, flatActionStore, actionRoot } from '../../stores/dataStore';
   import { renderers, loadStencils } from './Renderer.js';
   import { onMount, onDestroy } from 'svelte';
-  // import debounce from 'lodash';
   import tinycolor from "tinycolor2";
-  import { getAntPath } from '../../utils/utils.ts';
+  import { getAntPath, mapValue } from '../../utils/utils.ts';
+  import { curatedRandomHexColor } from '../../utils/color-utils.ts';
 	
   let x = 55;
 	let y = 55;
 
   let startX, startY;
-  // let currentColor = tinycolor.random().toHexString();
+
   let path = []; //current path points
 
   let p5; //p5 instance
@@ -20,21 +20,22 @@
 
   let canvasContainer;
 
-  let scaleFactor = 1;
-
   let thumbnails = [];
 
-  let dragRenderFunction;
-
   function randomizeCurrentColor() {
-    // console.log("randomizing color");
-    currentColor.set(tinycolor.random().toHexString());
+    // currentColor.set(tinycolor.random().toHexString());
+    currentColor.set(curatedRandomHexColor());
   }
 
   $: if($shouldRandomizeColor) randomizeCurrentColor();
 
+  // $: if($changedActionID != '') {
+  //   if($changedActionID != $stagedActionID) {
+  //     renderRoot();
+  //   }
+  // }
+
   onMount(() => {
-    setScaleFactor();
 
     // if selectedEffect changed, update staged action accordingly
     selectedEffect.subscribe(effect => {
