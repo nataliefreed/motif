@@ -28,6 +28,7 @@ function createHistoryStore() {
     addState: (newState: Storable) => {
       update(store => {
         const newStore = [...store, current]; //add current
+        // TODO: compare to last state and only add if different
         current = deepCopy(newState); //update current
         return newStore;
       });

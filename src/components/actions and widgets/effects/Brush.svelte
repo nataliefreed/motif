@@ -9,8 +9,7 @@
 
   function handleValueChange(event: CustomEvent) {
     const { id, value } = event.detail;
-    const updatedParams = { ...params, [id]: value };
-    onUpdate(updatedParams);
+    onUpdate({[id]: value });
   }
 
   // {:else if name === 'heart brush'}

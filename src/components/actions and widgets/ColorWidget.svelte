@@ -31,15 +31,18 @@
 
   let colorButton: HTMLElement;
   let hiddenColorInput: HTMLInputElement;
+  let firstUpdate = false; // to save initial state to undo queue
 
   onMount(() => {
     colorButton.style.background = tinycolor(value).toHexString();
   });
 
   let previewEnd = false;
+
   function updateColorButton(hexColor: string) {
     colorButton.style.background = tinycolor(hexColor).toHexString();
-    dispatch('valueChange', { id, value: hexColor });
+    dispatch('valueChange', { id, value: hexColor, save: firstUpdate });
+    firstUpdate = false;
   }
 
   function randomize() {
@@ -62,7 +65,9 @@
   }
 
   function openColorPicker() {
+    firstUpdate = true;
     hiddenColorInput.click();
+    firstUpdate = false;
   }
 
   function handleColorChange(event: Event) {

@@ -480,7 +480,7 @@ export const effectList = [
     params: {
       start: { x: 20, y: 150 },
       end: { x: 200, y: 150 },
-      progress: 0
+      progress: 1
     }
   },
 
@@ -577,7 +577,7 @@ export const effectList = [
     }
   },
   {
-    name: 'invert',
+    name: 'filter',
     textLabel: 'Invert',
     category: 'effects',
     tags: 'drawing',
@@ -589,7 +589,7 @@ export const effectList = [
     }
   },
   {
-    name: 'grayscale',
+    name: 'filter',
     textLabel: 'Grayscale',
     category: 'effects',
     tags: 'drawing',
@@ -601,7 +601,7 @@ export const effectList = [
     }
   },
   {
-    name: 'threshold',
+    name: 'filter',
     textLabel: 'Threshold',
     category: 'effects',
     tags: 'drawing',
@@ -654,6 +654,22 @@ export const effectList = [
       orientation: 'vertical',
       height: 50,
       offset: 20
+    }
+  },
+  {
+    name: 'move cutout',
+    textLabel: 'Move',
+    category: 'effects',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'move.jpg',
+    mouseActionType: 'drag',
+    params: {
+      start: {x:100, y:100},
+      end: {x:300, y:300},
+      width: 100,
+      height: 100,
+      mode: 'move'
     }
   },
   // {

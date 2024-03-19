@@ -1,16 +1,17 @@
 import type { Action, Effect, ActionStore } from '../types/types';
 import { v4 as uuidv4 } from 'uuid';
-import { actionRootID, actionStore, myTools, selectedActionID, selectedEffect, activeCategory, changedActionID, flatActionStore, actionRoot, stagedAction, stagedActionID, currentColor, shouldRandomizeColor } from '../stores/dataStore'
+import { actionRootID, actionStore, myTools, toolStore, selectedActionID, selectedEffect, activeCategory, changedActionID, flatActionStore, actionRoot, stagedAction, stagedActionID, currentColor, shouldRandomizeColor, playheadID } from '../stores/dataStore'
 import { saveToHistory } from '../stores/history';
 import { get } from 'svelte/store';
 import { deepCopy, merge, randomWithinRange, arrayToKeyedObj } from '../utils/utils';
 import tinycolor from "tinycolor2";
 import { tick } from 'svelte';
+import { curatedRandomHexColor } from '../utils/color-utils';
 
 
 /* THESE FUNCTIONS ARE CALLED BY THE UI */
-/* note on saving to history: currently thinking about it as saving before doing something
-user-initiated that the user expects to be able to undo. Don't save if it doesn't do anything */
+/* note on saving to history: currently thinking about it as saving before doing something user-initiated 
+   that the user expects to be able to undo. Don't save if it doesn't do anything, otherwise duplicate is saved */
 
 export function refresh() {
   // console.log("refreshing");
@@ -42,14 +43,20 @@ export function selectAction(id:string) {
 }
 
 // remove action initiated from UI
-// maybe this should be removeSelectedAction?
-export function removeAction(id:string) {
+export function removeSelectedAction() {
+  let id = get(selectedActionID);
+  removeAction(id);
+}
+
+function removeAction(id:string) {
   if(!id || !get(flatActionStore)[id] || id == get(stagedActionID)) return;
-
   saveToHistory();
-
   deleteAction(id);
 }
+
+// export function playActions() {
+//   let actions = getActionsInRunOrder();
+// }
 
 export function clearAllActions() {
   let actions = getActionsInRunOrder(); //IDs
@@ -57,7 +64,7 @@ export function clearAllActions() {
 
   saveToHistory();
 
-  console.log("actions to clear", actions);
+  // console.log("actions to clear", actions);
 
   // save copy of staged action
   let newStagedAction = copyAction(get(stagedActionID));
@@ -71,11 +78,11 @@ export function clearAllActions() {
   const interval = setInterval(() => {
     const penultimateItem = actions[actions.length - 2];
     if(penultimateItem) {
-      console.log("second to last item", penultimateItem);
+      // console.log("second to last item", penultimateItem);
       selectAction(penultimateItem);
     // Remove the last element from the array
     const toRemove = actions.pop();
-    console.log("removing", toRemove);
+    // console.log("removing", toRemove);
     deleteAction(toRemove);
     changedActionID.set(penultimateItem);
     } else {
@@ -114,7 +121,6 @@ export function addEffectToActionStore(effect: Effect, params: { [key: string]: 
   if(actions) return appendToActionStore(actions);
 }
 
-
 export function saveActionAsNewTool(action: Action) {
   if(!action) return;
 
@@ -149,6 +155,7 @@ export function saveActionAsNewTool(action: Action) {
 export function copyStagedActionToActionStore() {
   let stagedID = get(stagedActionID);
   let newActions = copyAction(stagedID);
+  // newActions.hidden = false;
   let newActionRoot = getRoot(newActions);
   // console.log("root of new actions", newActionRoot);
   if(!stagedID || !newActions || !newActionRoot) {
@@ -158,6 +165,9 @@ export function copyStagedActionToActionStore() {
     appendToActionStore(newActions);
     insertIdBefore(newActionRoot, stagedID);
     selectAction(newActionRoot);
+
+    playheadID.set(newActionRoot);
+
     changedActionID.set(newActionRoot);
 }
 
@@ -165,6 +175,11 @@ export function updateStagedAction(params) {
   updateActionParams(get(stagedActionID), params);
 }
 
+export function setCurrentEffect(name: string) {
+  let effect = get(toolStore).find(tool => tool.name === name);
+  if(!effect) return;
+  selectedEffect.set(effect);
+}
 
 export function loopActionAlongPath(id:string) {
   //set selected action as the child of a repeat along path, with the path set to the current point and a shifted point
@@ -199,10 +214,12 @@ export function loopActionAlongPath(id:string) {
     // });
 
     flatActionStore.update(store => {
-      store[id] = newAction;
-      return store;
+      const newStore = { ...store };
+      newStore[id] = newAction;
+      return newStore;
     });
   }
+
   //   actionStore.update(data => {
   //     if (data && data.children) {
   //       const index = data.children.findIndex(action => action.uuid === $selectedActionID); //get current index
@@ -233,24 +250,104 @@ export function loopActionAlongPath(id:string) {
 }
 
 
-// todo: have changes go through here so we can deal with temp actions, what to save to history etc.
-function updateActionParams(uuid: string, params: { [key: string]: any }) {
-  if(!uuid) return;
-  flatActionStore.update(store => {
+
+//called from UI
+export function updateActionParams(uuid:string, params:any, save = false) {
+  if (!uuid) return;
+
+  if (save) {
+    saveToHistory(); // Add to undo queue
+    console.log("saving to history");
+  }
+
+  _modifyActionStore(uuid, (store, uuid) => {
     const action = store[uuid];
-    if(action) {
-      changedActionID.set(uuid);
-      return { ...store, [uuid]: { ...action, params: merge(action.params, params) } }; //update the action in the store
+    if (action) {
+      const updatedAction = { ...action, params: { ...action.params, ...params } };
     }
-    else {
-        console.log("Action not found in store");
-        return store;
+  })
+
+  _updateActionStore(store => {
+    const action = store[uuid];
+    if (action) {
+      const updatedAction = { ...action, params: { ...action.params, ...params } };
+      
+      changedActionID.set(uuid); // log which action was changed
+      return { ...store, [uuid]: updatedAction };
+
+    } else {
+      console.log("Action not found in store");
+      return store;
     }
   });
 }
 
+let changeOptions = {
+  'color': (value:string) => { return curatedRandomHexColor() },
+  'radius': (value:number) => { return randomWithinRange(value, 5, 300, 20) },
+  'r1': (value:number) => randomWithinRange(value, 5, 300, 20),
+  'r2': (value:number) => randomWithinRange(value, 5, 200, 20),
+  'npoints': (value:number) => randomWithinRange(value, 3, 50, 5),
+  'nsides': (value:number) => randomWithinRange(value, 3, 50, 5),
+  'width': (value:number) => randomWithinRange(value, 5, 600, 20),
+  'height': (value:number) => randomWithinRange(value, 5, 600, 20),
+  'angle': (value:number) => randomWithinRange(value, 0, 360, 20),
+  'outer': (value:number) => randomWithinRange(value, 5, 300, 20),
+  'inner': (value:number) => randomWithinRange(value, 5, 200, 20),
+  'path': (value:[[number, number]]) => value.map(point => [point[0] + (Math.random() - 0.5) * 10, point[1] + (Math.random() - 0.5) * 10]),
+}
 
-/* THESE FUNCTIONS ARE ONLY CALLED INTERNALLY */
+// pick a parameter at random and change it
+export function remixAction(id:string) {
+  if(!id || ! get(flatActionStore)[id]) return;
+
+  let action = get(flatActionStore)[id];
+  let params = action.params;
+  let newParams = { ...params };
+  let paramNames = Object.keys(params);
+  if(action.effect === 'along path') {
+    //remix the path by wiggling each point a bit
+    let newPath = changeOptions.path(params.path);
+    newParams.path = newPath;
+  }
+  else if(action.effect === 'do each') {
+    // pick a random child and remix it
+    let child = params.children[Math.floor(Math.random() * params.children.length)];
+    remixAction(child); // how do we get this update to actionStore?
+  }
+  else {
+    // always change color if it exists
+    if ('color' in params) {
+      newParams.color = changeOptions.color(params.color);
+    }
+    // then change whichever of these exist: radius, r1, r2, npoints, nsides, path, width, height, angle, outer, inner
+    Object.keys(changeOptions).forEach(key => {
+      if (key in params) {
+        newParams[key] = changeOptions[key](params[key]);
+      }
+    });
+  }
+  
+  //update store
+  _updateActionStore(store => {
+    const updatedStore = { ...store };
+    updatedStore[id].params = newParams;
+    return updatedStore;
+  });
+}
+
+// TODO: finish this. I think stagedAction is being overwritten by the current effect
+export function redrawAction(id:string) {
+  // go "back in time" to before that action, move that action to stagedAction so user can re-record it
+  // when mouse released, fast forward to current time
+
+  let prevStaged = get(stagedActionID);
+  hideAction(prevStaged);
+  selectedActionID.set('');
+  stagedActionID.set(id);
+}
+
+/* THESE ONLY RETURN VALUES */
 
 function getActionsInRunOrder() {
   let root = get(actionRoot);
@@ -260,10 +357,156 @@ function getActionsInRunOrder() {
   return actionsInRunOrder;
 }
 
+type CompiledAction = {
+  actionID: string;
+  parentID?: string; // parent control structure id eg. do each or repeat
+  effect: string;
+  params: { [key: string]: any };
+};
+
+//recursive function to get info about all actions to render
+export function compileActions(action: Action, parentID?: string): CompiledAction[] {
+  let actions: CompiledAction[] = [];
+
+  if(action.hidden == undefined) console.log("no hidden property", action);
+  if (action.hidden && action.uuid != get(stagedActionID)) { // Skip hidden actions, except staged action
+    return [];
+  }
+
+  switch (action.effect) {
+    case 'do each':
+      action.params.children.forEach((childID: string) => {
+        const childAction = get(flatActionStore)[childID];
+        actions.push(...compileActions(childAction, action.uuid));
+      });
+      break;
+    case 'along path':
+      if (action.params.path) {
+        action.params.path.forEach((point: [number, number], index: number) => {
+          // Use modulo operator to cycle through children for each point
+          const childID = action.params.children[index % action.params.children.length];
+          const childAction = get(flatActionStore)[childID];
+    
+          const modifiedParams = {
+            ...childAction.params,
+            position: { x: point[0], y: point[1] } // Use the current point for position
+          };
+    
+          actions.push({
+            actionID: childAction.uuid + `_${index}`, // Unique ID for each compiled action along the path
+            parentID: action.uuid, // Set parentID to current action's UUID
+            effect: childAction.effect,
+            params: modifiedParams
+          });
+        });
+      }
+      break;
+    case 'repeat':
+      const repeatCount = action.params.count || 1;
+      for (let i = 0; i < repeatCount; i++) {
+        action.params.children.forEach((childID: string) => {
+          const childAction = get(flatActionStore)[childID];
+          actions.push(...compileActions(childAction, action.uuid));
+        });
+      }
+      break;
+    default:
+      actions.push({
+        actionID: action.uuid,
+        parentID: parentID, // Include parentID if this action is nested
+        effect: action.effect,
+        params: action.params
+      });
+  }
+
+ 
+ 
+  return actions;
+}
+
+/* THESE FUNCTIONS ARE ONLY CALLED INTERNALLY */
+
+
+class ActionManager {
+
+  #store = flatActionStore;
+
+  add(action: Action) {
+    // add action to store
+  }
+
+  updateParams(id: string) {
+    // update action in store
+  }
+
+  delete(id: string) {
+    // delete action from store
+  }
+
+  hide(id: string) {
+  if (!id) return;
+  if (!get(this.#store)[id]) return;
+  this.#updateActionStore(store => {
+    const updatedStore = { ...store };
+    updatedStore[id].hidden = true;
+    return updatedStore;
+  });
+}
+
+  show(id: string) {
+    if (!id) return;
+    if (!get(this.#store)[id]) return;
+    this.#updateActionStore(store => {
+      const updatedStore = { ...store };
+      updatedStore[id].hidden = false;
+      return updatedStore;
+    });
+  }
+
+  showAll() {
+  this.#updateActionStore(store => {
+    const updatedStore = { ...store };
+    for (let uuid in updatedStore) {
+      updatedStore[uuid].hidden = false;
+    }
+    return updatedStore;
+  });
+}
+
+  // pass in function to change the store
+  #modifyActionStore(uuid: string, modify: (store: { [key: string]: Action }, uuid?: string) => void) {
+    this.#updateActionStore(store => {
+      const updatedStore = { ...store };
+      modify(updatedStore, uuid);
+      return updatedStore;
+    });
+  }
+
+    //IMPORTANT! Only this should mutate the store
+    #updateActionStore(updateFunction: (store: { [key: string]: Action }) => { [key: string]: Action }) {
+      this.#store.update(store => {
+        const newStore = updateFunction(deepCopy(store)); //deep copy of store
+        
+        // validate new store, make sure it is valid format
+        
+        // add update to history (undo queue) if relevant
+        
+        return newStore;
+      });
+    }
+}
+
+
+
+
+
+
+
 function reloadAction(id:string) { //replace action with a new copy of itself in same location
   let newActions = copyAction(id);
   let newActionRoot = getRoot(newActions);
   if(newActionRoot) {
+    // showAction(newActionRoot);
     appendToActionStore(newActions);
     replaceIdWith(id, newActionRoot);
     stagedActionID.set(newActionRoot);
@@ -304,7 +547,8 @@ function effectToActions(effect: Effect, params: { [key: string]: any } = {}) {
       textLabel: effect.textLabel,
       params: mergedParams,
       uuid: uuidv4(),
-      pinned: effect.pinnedByDefault
+      pinned: effect.pinnedByDefault,
+      hidden: false
     };
     actions[action.uuid] = action;
   }
@@ -377,6 +621,9 @@ function updateUUIDsPreservingHierarchy(actions: { [uuid: string]: Action }): { 
 function appendToActionStore(actions: { [uuid: string]: Action }) {
   if(!actions) return;
   let root_uuid = getRoot(actions);
+
+
+
   flatActionStore.update(storeValue => {
     let newActions = {...storeValue};
     for(let uuid in actions) {
@@ -386,12 +633,18 @@ function appendToActionStore(actions: { [uuid: string]: Action }) {
     return newActions;
   });
   return root_uuid;
+
+
+
 }
 
 // append to action store as child of specified parent
 function appendToActionStoreAsChildOf(actions: { [uuid: string]: Action }, uuid:string) {
   if(!actions) return;
   let root_uuid = getRoot(actions);
+
+
+
   flatActionStore.update(storeValue => {
     let newActions = {...storeValue};
     for(let uuid in actions) {
@@ -404,6 +657,10 @@ function appendToActionStoreAsChildOf(actions: { [uuid: string]: Action }, uuid:
     return newActions;
   });
   return root_uuid;
+
+
+
+
 }
 
 function addActionToActionStore(action: Action, params: { [key: string]: any } = {}) {
@@ -419,6 +676,10 @@ function addActionToActionStore(action: Action, params: { [key: string]: any } =
   }
   newAction.params = mergedParams;
 
+
+
+
+
   flatActionStore.update(storeValue => {
     let newActions = {...storeValue};
     newActions[newAction.uuid] = newAction;
@@ -426,6 +687,10 @@ function addActionToActionStore(action: Action, params: { [key: string]: any } =
     // console.log("adding action to flat action store", newActions);
     return newActions;
   });
+
+
+
+
 
   return newAction.uuid;
 }
@@ -575,7 +840,7 @@ function deleteAction(id:string) {
   if((selected === id)) { //which it often will be for deleting
     selected = getNextSelection(id);
   }
-  console.log("deleting", id, "selected is now", selected, get(flatActionStore)[selected]);
+  // console.log("deleting", id, "selected is now", selected, get(flatActionStore)[selected]);
 
   flatActionStore.update(store => {
     if(!store[id]) return store;
@@ -602,67 +867,7 @@ function deleteAction(id:string) {
   selectAction(selected);
 }
 
-let changeOptions = {
-  'color': (value:string) => { return tinycolor.random().toHexString()},
-  'radius': (value:number) => { return randomWithinRange(value, 5, 300, 20) },
-  'r1': (value:number) => randomWithinRange(value, 5, 300, 20),
-  'r2': (value:number) => randomWithinRange(value, 5, 200, 20),
-  'npoints': (value:number) => randomWithinRange(value, 3, 50, 5),
-  'nsides': (value:number) => randomWithinRange(value, 3, 50, 5),
-  'width': (value:number) => randomWithinRange(value, 5, 600, 20),
-  'height': (value:number) => randomWithinRange(value, 5, 600, 20),
-  'angle': (value:number) => randomWithinRange(value, 0, 360, 20),
-  'outer': (value:number) => randomWithinRange(value, 5, 300, 20),
-  'inner': (value:number) => randomWithinRange(value, 5, 200, 20),
-  'path': (value:[[number, number]]) => value.map(point => [point[0] + (Math.random() - 0.5) * 10, point[1] + (Math.random() - 0.5) * 10]),
-}
 
-  // pick a parameter at random and change it
-  export function remixAction(id:string) {
-    if(!id || ! get(flatActionStore)[id]) return;
-
-    let action = get(flatActionStore)[id];
-    let params = action.params;
-    let newParams = { ...params };
-    let paramNames = Object.keys(params);
-    if(action.effect === 'along path') {
-      //remix the path by wiggling each point a bit
-      let newPath = changeOptions.path(params.path);
-      newParams.path = newPath;
-    }
-    else if(action.effect === 'do each') {
-      // pick a random child and remix it
-      let child = params.children[Math.floor(Math.random() * params.children.length)];
-      remixAction(child); // how do we get this update to actionStore?
-    }
-    else {
-      // always change color if it exists
-      if ('color' in params) {
-        newParams.color = changeOptions.color(params.color);
-      }
-      // then change whichever of these exist: radius, r1, r2, npoints, nsides, path, width, height, angle, outer, inner
-      Object.keys(changeOptions).forEach(key => {
-        if (key in params) {
-          newParams[key] = changeOptions[key](params[key]);
-        }
-      });
-    }
-    
-    //update store
-    flatActionStore.update(store => {
-      let newStore = { ...store };
-      newStore[id].params = newParams;
-      return newStore;
-    });
-  }
-
-  export function redrawAction(id:string) {
-    // go "back in time" to before that action, move that action to stagedAction so user can re-record it
-    // when mouse released, fast forward to current time
-
-    let prevStaged = get(stagedActionID);
-    stagedActionID.set(id);
-  }
 
 //includes root
 function getDescendantActions(id:string) {

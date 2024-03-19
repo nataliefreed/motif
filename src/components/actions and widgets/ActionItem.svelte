@@ -10,6 +10,7 @@
   import { selectedActionID, selectedCodeEffect, changedActionID, flatActionStore, stagedActionID } from '../../stores/dataStore';
   import { onMount, createEventDispatcher } from 'svelte';
   import { deepCopy } from '../../utils/utils';
+  import { updateActionParams } from '../action-utils';
 
   export let action: Action | null;
   export let depth = 0;
@@ -32,27 +33,13 @@
   // on added, params are { children: [...] }
   // on removed, params are { children: [...] }
 
-  // send param changes to the action store
-  function handleUpdate(updatedParams: any) {
-    // console.log("updating params", updatedParams);
-    flatActionStore.update(store => {
-      if(!action) return store;
-        const actionInStore = store[action.uuid];
-        if(actionInStore) {
-          let updatedAction = { ...deepCopy(actionInStore), params: updatedParams };
-          changedActionID.set(action.uuid); // log which action was changed
-          // console.log("updated action in store", actionInStore);
-
-          // console.log("updated params", updatedParams);
-          // if more issues with order of add and remove, can add a condition here
-
-          return { ...store, [action.uuid]: updatedAction }; //update the action in the store
-        }
-        else {
-            console.log("Action not found in store");
-            return store;
-        }
-    });
+  // parameter updates bubble up to here
+  // sends param changes to the action store
+  function handleUpdate(updatedParams: any, save: boolean = false) {
+    if(action) {
+      updateActionParams(action.uuid, updatedParams, save);
+      // console.log("updating params", updatedParams);
+    }
   }
 
   function getActionThumbnail() {
@@ -81,7 +68,9 @@
 
 </script>
   {#if action}
-  <span class:staged={$stagedActionID === action.uuid}>
+  <span
+  class:staged={$stagedActionID === action.uuid}
+  >
       {#if action.category === 'control'}
           <ControlStructure name={action.name} params={action.params} onUpdate={handleUpdate} depth={depth+1} on:reorder/>
       {:else if action.type === 'effect'}

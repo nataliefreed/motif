@@ -3,7 +3,7 @@
   import type { SortableEvent } from 'sortablejs';
   import Sortable from 'sortablejs';
   import { onMount, createEventDispatcher } from 'svelte';
-  import { selectedActionID, selectedCodeEffect, flatActionStore, stagedActionID, currentColor } from '../../stores/dataStore';
+  import { selectedActionID, selectedCodeEffect, flatActionStore, stagedActionID, playheadID, currentColor } from '../../stores/dataStore';
   import ActionItem from './ActionItem.svelte';
   import { scale, fade } from 'svelte/transition';
   import { deepCopy } from '../../utils/utils';
@@ -214,6 +214,7 @@ function getDynamicStyle(id:string) {
       class:staged={$stagedActionID === action.uuid}
       class:obscured={action.obscured}
       class:draggable={!action.pinned}
+      class:playhead={$playheadID === action.uuid}
       class="scale-from-left"
       in:scale={{ duration: $stagedActionID === action.uuid? 1000 : 500, start: 0.25, opacity: 1 }}
       id={`${action.uuid}`}
@@ -358,6 +359,11 @@ function getDynamicStyle(id:string) {
 
   .alpha-style li::before {
     content: counter(list-counter, lower-alpha); /* Alpha numbering */
+  }
+
+  .playhead::after {
+    float: left;
+    content: '👉';
   }
 
   li.staged::before {

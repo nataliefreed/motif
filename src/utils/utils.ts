@@ -54,6 +54,10 @@ function makeAntPath(frogPath, stepSize) {
 }
 */
 
+export function mapValue(value:number, start1:number, stop1:number, start2:number, stop2:number) {
+  return start2 + (stop2 - start2) * ((value - start1) / (stop1 - start1));
+}
+
 export function getAntPath(frogPath: [number, number][], stepSize: number = 20): [number, number][] {
   let antPath: [number, number][] = [];
   antPath.push([...frogPath[0]]);

@@ -1,5 +1,5 @@
-import { addEffectToActionStore, removeAction } from "./action-utils";
-import { toolStore, selectedActionID } from "../stores/dataStore";
+import { addEffectToActionStore, removeSelectedAction, setCurrentEffect } from "./action-utils";
+import { toolStore, selectedActionID, selectedEffect } from "../stores/dataStore";
 import { historyStore } from "../stores/history";
 import { get } from "svelte/store";
 import type { Effect } from "../types/types";
@@ -29,13 +29,12 @@ function keydownHandler(event: KeyboardEvent) {
       historyStore.undo();
       break;
     case 'Escape':
-      selectedActionID.set('');
-      // deselect all lines of code
-      // go back to pointer tool in code view
+      selectedActionID.set(''); // deselect all lines of code
+      setCurrentEffect('move cutout');
       // set isDragging to false?
       break;
     case 'Backspace':
-      removeAction(get(selectedActionID));
+      removeSelectedAction();
       break;
   }
 }

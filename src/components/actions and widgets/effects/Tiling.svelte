@@ -9,9 +9,9 @@
 
   function handleValueChange(event: CustomEvent) {
     const { id, value } = event.detail;
-    const updatedParams = { ...params, [id]: value };
-    onUpdate(updatedParams);
+    onUpdate({[id]: value });
   }
+  
 </script>
 
 <ChooserWidget id="tiling" options={['straight grid', 'brick', 'half drop', 'checkerboard', 'radial']} selected={params.tiling || name} on:valueChange={handleValueChange}/>

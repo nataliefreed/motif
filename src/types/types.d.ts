@@ -8,7 +8,7 @@ export interface Action {
   value?: string | number | Action[];
   parent?: string;
   children?: Action[];
-  effect?: string;
+  effect: string;
   textLabel?: string;
   params: { [key: string]: any };
   value?: string | number | Action[];
@@ -16,6 +16,7 @@ export interface Action {
   children?: Action[];
   obscured?: boolean;
   pinned?: boolean;
+  hidden: boolean;
 }
 
 export type Effect = {

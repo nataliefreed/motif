@@ -52,42 +52,28 @@
       // }
       if($shouldRandomizeColor) randomizeCurrentColor();
       addEffectAsStagedAction(effect, params); //drawing effects have staged action
-      if(p5) p5.getHoverCanvas().clear();
+      if(p5) {
+        p5.getHoverCanvas().clear();
+      } 
     });
 
     flatActionStore.subscribe(actions => {
       if($changedActionID != $stagedActionID) {
         renderRoot();
-      } else if($stagedActionID.length > 0 && !isDragging) { // render staged action in its current state
-        // if(p5) {
-        //   const renderFunction = renderers[$stagedAction.effect];
-        //   if (renderFunction) {
-        //     p5.getHoverCanvas().clear();
-        //     renderFunction(p5.getHoverCanvas(), $stagedAction.params, p5);
-        //     p5.image(p5.getStaticCanvas(), 0, 0);
-        //     p5.image(p5.getHoverCanvas(), 0, 0);
-        //   }
-        // }
       }
     });
 
+    stagedActionID.subscribe(id => {
+      if(stagedActionID !== '') {
+        // hideAction(id); //hide when first added
+      }
+    });
 
     currentColor.subscribe(color => {
       // console.log("current color changed", color);
       updateStagedAction({ color: color });
     });
   })
-
-      //
-    //   stagedAction.update(action => {
-    //   let mergedParams = merge(action.params, params);
-    //   return {
-    //       ...action,
-    //       params: mergedParams
-    //     };
-    //   });
-    // }
-    // console.log("new staged action params", $stagedAction.params);
 
     //if staged action empty or not found in action store, add a new staged action based on current effect
   $: if($stagedActionID === '' || $stagedActionID === undefined || !flatActionStore[$stagedActionID]) {
@@ -101,38 +87,8 @@
     }
   }
 
-  export const markHiddenActions = (actions) => { //ie. hidden behind other graphics or don't change the canvas
-    p5.clear();
-    // render all actions
-    for(let i=0;i<actions.children.length-1;i++)
-    {
-      renderAction(actions.children[i], p5);
-    }
-    p5.getPixels(); //load pixels array
-    let prev = JSON.stringify(p5.pixels);
-    renderAction(actions.children[children.length-1], p5);
-    p5.getPixels(); //load new pixels array
-    let current = JSON.stringify(p5.pixels);
-
-    if(current == previous) {
-      actions.children[children.length-2].obscured = true;
-    }
-    else {
-      actions.children[children.length-2].obscured = false;
-    }
-  }
-
-    // TODO: test this
-    function setScaleFactor() {
-    const adjustedPageWidth = parseFloat(getComputedStyle(canvasContainer).getPropertyValue('--adjusted-page-width'));
-    scaleFactor = adjustedPageWidth / 500;
-    canvasContainer.style.transform = `scale(${scaleFactor})`;
-  }
-
   // debounce! don't update too often
   const debouncedStagedActionUpdate = debounce(updateStagedAction, 10);
-
-  const debouncedRenderAll = debounce(renderAll, 10);
 
   function debounce(f) {
     return f;
@@ -156,62 +112,70 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
 "`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-' 
   
   */
- 
-  // renderRoot uses renderer doEach
-  // how do we cache steps?
-  // we need to know where it has changed
 
+  // let cachedActions = [];
+  // let prevStagedActions = {};
   export function renderRoot() {
     if(p5) {
+
+      // console.log("rendering all");
+
+      // let cachedCanvas = p5.getCachedCanvas();
       let staticCanvas = p5.getStaticCanvas();
-      let dragCanvas = p5.getDragCanvas();
       let hoverCanvas = p5.getHoverCanvas();
-
-      hoverCanvas.clear();
-      staticCanvas.clear();
-      staticCanvas.background(255);
-      dragCanvas.clear();
       
-      renderAction($flatActionStore[$actionRootID], staticCanvas);
+      let actions = compileActions($flatActionStore[$actionRootID]);
 
-      p5.clear();
-      p5.image(staticCanvas, 0, 0);
-      p5.image(hoverCanvas, 0, 0);
-      p5.image(dragCanvas, 0, 0);
+      const stagedActions = actions.filter(action => 
+        action.actionID === $stagedActionID || action.parentID === $stagedActionID
+      );
+
+      const startIndex = actions.indexOf(stagedActions[0]);
+      if(startIndex === -1) { //if staged action isn't visible, render all to static canvas
+        actions.forEach(action => {
+          renderAction(action, staticCanvas);
+        });
+      }
+      else {
+        const endIndex = actions.indexOf(stagedActions[stagedActions.length - 1]);
+
+        const beforeActions = actions.slice(0, startIndex);
+
+        beforeActions.forEach(action => {
+          renderAction(action, staticCanvas);
+        });
+
+        // render to main canvas
+        p5.image(staticCanvas, 0, 0);
+  
+        // render staged action and its children to hover canvas
+        if(!$stagedAction.hidden) {
+          stagedActions.forEach(action => {
+            renderAction(action, hoverCanvas);
+          });
+          p5.image(hoverCanvas, 0, 0);
+        }
+
+        // get actions after staged action if any, render directly to p5 canvas
+        const afterActions = actions.slice(endIndex + 1);
+        afterActions.forEach(action => {
+          renderAction(action, p5);
+        });
+      }
     }
   }
 
-  // let rootCached = false;
-  // function renderRoot() {
-  //   if(p5) {
-  //     let staticCanvas = p5.getStaticCanvas();
-  //     let dragCanvas = p5.getDragCanvas();
-  //     let hoverCanvas = p5.getHoverCanvas();
-  //     let cachedCanvas = p5.getCachedCanvas();
+  function renderAllActions(actions) {
+    let activeActions = compileActions($flatActionStore[$actionRootID]);
 
-  //     hoverCanvas.clear();
-  //     staticCanvas.clear();
-  //     staticCanvas.background(255);
-  //     dragCanvas.clear();
+    //then render each one
+    activeActions.forEach(action => {
+      renderAction(action, p5.getStaticCanvas());
+    });
+    // do something special for staged action if it's at the end of the list
+  }
 
-  //     // console.log("action root is ", $actionRoot);
-  //     // renderAction($actionRoot, p5.getStaticCanvas());
-  //     staticCanvas.image(cachedCanvas, 0, 0);
-  //     if(!rootCached) {
-  //       renderAction($flatActionStore[$actionRootID], cachedCanvas);
-  //       rootCached = true;
-  //       staticCanvas.image(cachedCanvas, 0, 0); //run this again, for anything depending on static canvas
-  //     }
-      
-  //     //todo: something is up with the tile patterns
-
-  //     p5.clear();
-  //     p5.image(staticCanvas, 0, 0);
-  //     p5.image(hoverCanvas, 0, 0);
-  //     p5.image(dragCanvas, 0, 0);
-  //   }
-  // }
-
+  // this actually runs the render function for an action
   function renderAction(action, canvas) {
     if(p5) {
       const renderFunction = renderers[action.effect];
@@ -219,88 +183,6 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
         // console.log("rendering", action.effect)
         renderFunction(canvas, action.params, p5);
       }
-    }
-  }
-
-  let cachedIndex = 999999;
-  function renderAll(actions, changedIndex = -1) { //changedIndex = -1 means re-render all actions
-    if(changedIndex === -1) console.log("full re-render");
-    thumbnails = [];
-    if(p5) {
-      let staticCanvas = p5.getStaticCanvas();
-      let dragCanvas = p5.getDragCanvas();
-      let hoverCanvas = p5.getHoverCanvas();
-      let cachedCanvas = p5.getCachedCanvas();
-
-      staticCanvas.clear();
-      staticCanvas.background(255);
-      // hoverCanvas.clear();
-      dragCanvas.clear();
-
-      // Render and cache actions up to changedIndex if cache is outdated
-      // Either: cachedIndex is -1 (no cache), or cachedIndex is > changedIndex (cache is outdated)
-      if (cachedIndex >= changedIndex) { //redo cache from scratch
-        cachedCanvas.clear();
-        console.log("Clearing cache");
-        // cachedCanvas.background(100, 0, 100);
-        let endIndex = changedIndex === -1 ? actions.children.length : changedIndex; //cache to end, or cache to changedIndex
-        for (let i = 0; i < endIndex; i++) {
-          renderAction(actions.children[i], cachedCanvas);
-        }
-        cachedIndex = endIndex - 1;
-        console.log("Canvas cached up to", cachedIndex);
-      }
-
-      // If cache still valid but needs more actions added, cache remaining actions up to changedIndex
-      else if(cachedIndex < changedIndex) {
-        for (let i = cachedIndex+1; i < changedIndex; i++) {
-          console.log("adding to cache", i);
-          renderAction(actions.children[i], cachedCanvas);
-        }
-        cachedIndex = changedIndex - 1;
-        console.log("Canvas cached up to", cachedIndex);
-      }
-
-      // Use cached canvas
-      console.log("Using cache up to", cachedIndex);
-      if(cachedIndex > -1) staticCanvas.image(cachedCanvas, 0, 0);
-
-      // Render remaining actions
-      for (let i = cachedIndex+1; i < actions.children.length; i++) {
-        console.log("rendering remaining action", i);
-        renderAction(actions.children[i], staticCanvas);
-      }
-
-      // const actionsToRender = actions;
-
-      // //if not cached but fromIndex is > -1 (marked), render until cached index, then cache, then resume rendering the rest
-      // // set cachedIndex to indicate cache has been stored
-      // // next time it's rendered, check for cached index, then draw cached to static canvas, then resume rendering the rest
-      // if(cachedIndex > -1) {
-      //   staticCanvas.image(cached, 0, 0);
-      //   const actionsToRender = actions.slice(cachedIndex + 1);
-      // }
-      //   actionsToRender.children.forEach(action => {
-      //     const renderFunction = renderers[action.effect];
-      //     if (renderFunction) {
-      //       if(action.effect == 'gradient') {
-      //         renderFunction(staticCanvas, action.params, p5, true).next();
-      //       }
-      //       else {
-      //         renderFunction(staticCanvas, action.params, p5); // Render to static canvas
-      //       }
-      //     }
-      //     // thumbnailCanvas.image(staticCanvas, 0, 0, thumbnailCanvas.width, thumbnailCanvas.height);
-      //     // thumbnails.push(thumbnailCanvas.canvas.toDataURL());
-      //     // thumbnails.push(getThumbnail(thumbnailCanvas, action, 10, 10));
-      //     //TODO: update specific action with thumbnail
-      //     // setActionThumbnail(action, thumbnailCanvas.canvas.toDataURL());
-      //   });
-
-      p5.clear();
-      p5.image(staticCanvas, 0, 0);
-      p5.image(hoverCanvas, 0, 0);
-      p5.image(dragCanvas, 0, 0);
     }
   }
 
@@ -329,7 +211,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
 // p5  is the p5 instance, returned by the P5 component with the instance event - connection to running sketch
 
 	const sketch = (c) => {
-    let s, t, h, a, cached, test; //s is static canvas, t is temp for dragging, h is temp for hovering, a is to show a single action thumbnail, cached saves actions that haven't changed between renders
+    let s, t, h, a, cached; //s is static canvas, t is temp for dragging, h is temp for hovering, a is to show a single action thumbnail, cached saves actions that haven't changed between renders
     let thumbnailSize = 10;
     let renderFunction;
 		c.setup = () => {
@@ -382,11 +264,6 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     }
 
     c.draw = () => {
-      // if(renderFunction) {
-      //   renderFunction(t, $stagedAction.params, p5, c.millis());
-      // }
-      // c.image(s, 0, 0); //static canvas
-      // c.image(t, 0, 0); //drag canvas
 		};
 
     c.flipY = function(y) {
@@ -426,6 +303,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
         // renderAll($actionStore); // render initial actions
         loadStencils(p5);
         console.log("p5 instance created");
+        hideAction($stagedActionID);
         renderRoot();
         console.log("initial render");
       });
@@ -451,7 +329,9 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
   | '  \   / _ \  | +| |   (_-<    / -_)  | '  \   / _ \   \ V /   / -_)  
   |_|_|_|  \___/   \_,_|   /__/_   \___|  |_|_|_|  \___/   _\_/_   \___|  
   _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""| 
-  "`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-' 
+  "`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'
+  mousemove
+  
   */
 
   function handleMouseMove(event) {
@@ -461,6 +341,8 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       path.push([x, y]);
     }
 
+    showAction($stagedActionID);
+
     /*
     _                                      
    | |_      ___    __ __    ___      _ _  
@@ -468,7 +350,9 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
    |_||_|   \___/   _\_/_   \___|   _|_|_  
    |_|"""""|_|"""""|_|"""""|_|"""""|_|"""""| 
    |"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-' 
-    */
+   hover 
+   
+   */
     
     if(!isDragging) {
       p5.getHoverCanvas().clear();
@@ -484,8 +368,6 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       // console.log($stagedAction.effect);
       const renderFunction = renderers[$stagedAction.effect];
       if (renderFunction) {
-
-        // renderFunction(p5.getHoverCanvas(), merge($stagedAction.params, { position: { x: x, y: y } }), p5);
         renderFunction(p5.getHoverCanvas(), $stagedAction.params, p5);
       }
       p5.image(p5.getStaticCanvas(), 0, 0);
@@ -499,14 +381,17 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
    \__,_|   _|_|_  \__,_|   |___/  
    |_|"""""|_|"""""|_|"""""|_|"""""| 
    |"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-' 
-    */
+   dragging 
+   
+   */
 
     else { // dragging
       p5.getDragCanvas().clear();
       const renderFunction = renderers[$stagedAction.effect]; // get the renderer for the staged effect
       let params = $stagedAction.params;
+
       if (renderFunction) {
-        // console.log("start X", startX, "startY", startY, "x", x, "y", y);
+        // set params based on dragging
         if('radius' in params) {
           let radius = Math.round(Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2))) + 1;
           updateStagedAction({ radius: radius });
@@ -530,8 +415,8 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
           updateStagedAction({ size: radius*2 });
         }
         if('width' in params) {
-          let width = Math.abs(x - startX) + 15; //not zero on first click
-          let height = Math.abs(y - startY) + 15;
+          let width = Math.abs(x - startX)*2 + 15; //not zero on first click
+          let height = Math.abs(y - startY)*2 + 15;
           updateStagedAction({ width: width, height: height});
         }
         if('stripeWidth' in params) {
@@ -566,10 +451,6 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       requestAnimationFrame(() => renderStep(generator));
     }
   }
-
-  function mapValue(value, start1, stop1, start2, stop2) {
-    return start2 + (stop2 - start2) * ((value - start1) / (stop1 - start1));
-  }
   /*
                                                _                           
     _ __     ___    _  _     ___     ___    __| |    ___   __ __ __ _ _    
@@ -577,7 +458,9 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
    |_|_|_|  \___/   \_,_|   /__/_   \___|  \__,_|   \___/   \_/\_/ |_||_|  
    |_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""| 
    |"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-' 
-     */
+   mousedown  
+   
+   */
 
   let isDragging = false;
   let dragRenderComplete = true;
@@ -609,9 +492,9 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
         debouncedStagedActionUpdate({path: path}); // why not ant path here?
       }
 
-      p5.getDragCanvas().clear();
-      dragRenderFunction = renderers[$stagedAction.effect](p5.getDragCanvas(), $stagedAction.params, p5, false); // get the renderer for the staged effect
-      dragRenderComplete = false;
+      // p5.getDragCanvas().clear();
+      // dragRenderFunction = renderers[$stagedAction.effect](p5.getDragCanvas(), $stagedAction.params, p5, false); // get the renderer for the staged effect
+      // dragRenderComplete = false;
       // if($stagedAction.effect == 'gradient') {
       //   renderStep(dragRenderFunction);
       // }
@@ -622,7 +505,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
   }
 
   function updateMouseHoldTime() {
-    
+
     updateStagedAction({ progress: getProgress() });
 
     p5.getDragCanvas().clear();
@@ -650,7 +533,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
  |_|_|_|  \___/   \_,_|   /__/_   \___|   \_,_|   |_|__  
 _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""| 
 "`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-' 
-
+mouseup
 */
 
 function handleMouseUp(event) {
@@ -664,18 +547,21 @@ function handleMouseUp(event) {
     updateStagedAction({path: getAntPath(path, $stagedAction.params.pathSpacing || 10), progress: Math.round(getProgress())}); 
 
     copyStagedActionToActionStore();
-    renderRoot();
+
 
     if($shouldRandomizeColor) randomizeCurrentColor();
     // addEffectAsStagedAction($selectedEffect, { color: $currentColor, position: { x: x, y: y } }); // reset staged action to default
-    // renderRoot();
 
     path = []; // clear current path
 
+    hideAction($stagedActionID);
+
     p5.getHoverCanvas().clear();
+    p5.getDragCanvas().clear();
     p5.getDragCanvas().reset();
     p5.getHoverCanvas().reset();
-    p5.image(p5.getStaticCanvas(), 0, 0);
+
+    renderRoot();
 
     // Once the mouse is released, remove global listener
     document.removeEventListener('mouseup', globalMouseUp);
@@ -706,7 +592,9 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
 function handleMouseLeave(event) {
   if(!isDragging) {
     clearTempCanvases(); //clear when leaving canvas, but will draw again if staged action params changed
+    hideAction($stagedActionID);
   }
+  renderRoot();
   // if(isDragging) {
   //   // handleMouseUp(event);
   // }

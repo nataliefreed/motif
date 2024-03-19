@@ -27,7 +27,7 @@ export const selectedActionID = writable('');
 export const currentColor = writable('#000000');
 export const shouldRandomizeColor = writable(true);
 
-export const renderStopIndex = writable('');
+export const playheadID = writable('');
 
 export const stagedAction = derived(
   [flatActionStore, stagedActionID], 
@@ -35,7 +35,6 @@ export const stagedAction = derived(
 );
 
 // only the "active" actions in the action store
-export const activeActionStore = derived
 
 // Derived store to create a nested structure from the flat store
 // export const nestedActionStore = derived(flatActionStore, $flatActionStore => buildNestedStructure($flatActionStore));
@@ -76,6 +75,7 @@ export function initStores(projectID: string | null) {
   flatActionStore.set(getFlatActionStore());
   printNestedListAndCheckIssues(get(flatActionStore));
 }
+
 
 // function flattenActionStore() {
 //   let flatStore:{ [key: string]: Action } = {};

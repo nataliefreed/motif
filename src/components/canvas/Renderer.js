@@ -1,21 +1,17 @@
 import { get } from 'svelte/store';
-import { flatActionStore, renderStopIndex, stagedActionID } from '../../stores/dataStore.ts';
+import { flatActionStore, playheadID, stagedActionID } from '../../stores/dataStore.ts';
+import { filter } from 'lodash';
 let paperdolls = null;
 
-export const renderers = {
+export const unroll = {
     // do each
     // render before stop index / only if active
     'do each': (p, params, p5) => {
       if(params.children) {
-        // console.log("do each", params.children);
-        // get active children??
-        let activeChildren = params.children.filter(uuid => uuid !== get(stagedActionID));
-        // console.log(get(stagedActionID), activeChildren);
-        // uuid enabled?
+        let activeChildren = params.children.filter(uuid => uuid !== get(stagedActionID)); //all except staged action
         activeChildren.forEach(uuid => {
           let child = get(flatActionStore)[uuid];
-          // console.log("trying to render", child.name);
-          if(renderers[child.name]) renderers[child.name](p, child.params, p5);
+          if(renderers[child.name]) renderers[child.name](p, child.params, p5); // console.log("trying to render", child.name);
         });
       }
     },
@@ -40,8 +36,10 @@ export const renderers = {
     }
   },
 
-  //p is pgraphics object
+}
 
+export const renderers = {
+  //p is pgraphics object
   'solid fill': (p, params, p5) => {
     p.background(params.color);
   },
@@ -328,20 +326,24 @@ export const renderers = {
     tile(p, params, p5);
   },
 
-  'straight grid': (p, params, p5) => {
-    tile(p, {...params, tiling: 'straight grid'}, p5);
-  },
-  'brick': (p, params, p5) => {
-    tile(p, {...params, tiling: 'brick'}, p5);
-  },
-  'half drop': (p, params, p5) => {
-    tile(p, {...params, tiling: 'half drop'}, p5);
-  },
-  'checkerboard': (p, params, p5) => {
-    tile(p, {...params, tiling: 'checkerboard'}, p5);
-  },
-  'radial': (p, params, p5) => {
-    tile(p, {...params, tiling: 'radial'}, p5);
+  // 'straight grid': (p, params, p5) => {
+  //   tile(p, {...params, tiling: 'straight grid'}, p5);
+  // },
+  // 'brick': (p, params, p5) => {
+  //   tile(p, {...params, tiling: 'brick'}, p5);
+  // },
+  // 'half drop': (p, params, p5) => {
+  //   tile(p, {...params, tiling: 'half drop'}, p5);
+  // },
+  // 'checkerboard': (p, params, p5) => {
+  //   tile(p, {...params, tiling: 'checkerboard'}, p5);
+  // },
+  // 'radial': (p, params, p5) => {
+  //   tile(p, {...params, tiling: 'radial'}, p5);
+  // },
+
+  'move cutout': (p, params, p5) => { //drag rectangular region
+    moveRectangularRegion(p, params, p5);
   },
 
   'grow': (p, params, p5) => {
@@ -489,39 +491,39 @@ export const renderers = {
   },
 
 
-  'copy cutout': (p, params, p5) => {
-    p.push();
+  // 'copy cutout': (p, params, p5) => {
+  //   p.push();
 
-    let w = params.width;
-    let h = params.height;
-    let x1 = params.position.x;
-    let y1 = params.position.y;
-    let x2 = params.end.x;
-    let y2 = params.end.y;
+  //   let w = params.width;
+  //   let h = params.height;
+  //   let x1 = params.position.x;
+  //   let y1 = params.position.y;
+  //   let x2 = params.end.x;
+  //   let y2 = params.end.y;
 
-    let snapshot = p5.createGraphics(w, h); // for captured rectangle
-    p.imageMode(p.CENTER);
+  //   let snapshot = p5.createGraphics(w, h); // for captured rectangle
+  //   // p.imageMode(p.CENTER);
 
-    snapshot.image(p, 0, 0, w, h, x1 - w/2, y1 - h/2, w, h);
+  //   snapshot.image(p, 0, 0, w, h, x1 - w/2, y1 - h/2, w, h);
 
-    // if(p===p) snapshot.image(p, 0, 0, w, h, x1 - w/2, y1 - h/2, w, h); // w * h rectangle centered at x1, y1 from static canvas
-    // else snapshot.image(s, 0, 0, w, h, x1 - w/2, y1 - h/2, w, h);
+  //   // if(p===p) snapshot.image(p, 0, 0, w, h, x1 - w/2, y1 - h/2, w, h); // w * h rectangle centered at x1, y1 from static canvas
+  //   // else snapshot.image(s, 0, 0, w, h, x1 - w/2, y1 - h/2, w, h);
     
-    //TODO: if you use p, it will capture the cleared canvas when released, but if you use s, it will not add the cutouts in a cumulative way
+  //   //TODO: if you use p, it will capture the cleared canvas when released, but if you use s, it will not add the cutouts in a cumulative way
 
-    //TODO: other way to check if temp canvas?
-    if(p === p5.getHoverCanvas) { //if temp canvas, draw a border
-      snapshot.stroke(0);
-      snapshot.noFill();
-      snapshot.strokeWeight(2);
-      snapshot.rect(0, 0, w, h);
-    }
-    p.image(snapshot, x2, y2, w, h, 0, 0, w, h); // draw the moved rectangle onto the active canvas
+  //   //TODO: other way to check if temp canvas?
+  //   // if(p === p5.getHoverCanvas) { //if temp canvas, draw a border
+  //   //   snapshot.stroke(0);
+  //   //   snapshot.noFill();
+  //   //   snapshot.strokeWeight(2);
+  //   //   snapshot.rect(0, 0, w, h);
+  //   // }
+  //   // p.image(snapshot, x2, y2, w, h, 0, 0, w, h); // draw the moved rectangle onto the active canvas
 
-    snapshot.remove();
+  //   snapshot.remove();
 
-    p.pop();
-  },
+  //   p.pop();
+  // },
 
   'smooth brush': (p, params, p5) => {
     s.push();
@@ -556,16 +558,8 @@ export const renderers = {
   },
 
   //TODO: figure out hover/drag behavior
-  'invert': (p, params, p5) => {
-    applyFilter(p, {...params, filter: 'INVERT'}, p5);
-  },
-
-  'grayscale': (p, params, p5) => {
-    applyFilter(p, {...params, filter: 'GRAY'}, p5);
-  },
-
-  'threshold': (p, params, p5) => {
-    applyFilter(p, {...params, filter: 'THRESHOLD'}, p5);
+  'filter': (p, params, p5) => {
+    applyFilter(p, params, p5);
   },
 
   'box': (p, params, p5) => {
@@ -773,8 +767,74 @@ export function loadStencils(p) {
 }
 
 function applyFilter(p, params, p5) {
+
+  let filterName = '';
+  switch(params.filter) {
+    case 'threshold': filterName = 'THRESHOLD'; break;
+    case 'gray': filterName = 'GRAY'; break;
+    case 'invert': filterName = 'INVERT'; break;
+    default: filterName = 'INVERT'; break;
+  }
+  // preview on hover
+  if(p === p5.getHoverCanvas()) {
+    p.image(p5.getStaticCanvas(), 0, 0);
+  }
+
   // 2nd param to filter false: don't use WebGL in P2D mode, Svelte P5 doesn't seem to support it
-  p.filter(p5[params.filter], false);
+  p.filter(p5[filterName], false);
+}
+
+function moveRectangularRegion(p, params, p5) {
+  let startX = params.start.x;
+  let startY = params.start.y;
+  let endX = params.end.x;
+  let endY = params.end.y;
+  let w = 100;
+  let h = 75;
+  // let w = params.width;
+  // let h = params.height;
+
+  p.push();
+
+  if(p!==p5.getHoverCanvas()) {
+    let sx = startX - w / 2;
+    let sy = startY - h / 2;
+    let dx = endX - w / 2;
+    let dy = endY - h / 2;
+
+    let snapshot = p5.createGraphics(w, h); // to store captured rectangle
+    snapshot.image(p5.getStaticCanvas(), 0, 0, w, h, sx, sy, w, h); // w * h rectangle centered at x, y 
+    
+    // empty white space left behind
+    // if(p === p5 || p === p5.getStaticCanvas()) {
+    //   p.erase();
+    // }
+    if(params.mode == 'move') {
+      p.fill(255);
+      p.noStroke();
+      p.rectMode(p.CENTER);
+      p.rect(startX, startY, w, h);
+    }
+    // p.noErase();
+    
+    p.image(snapshot, dx, dy, w, h, 0, 0, w, h);
+    snapshot.remove();
+  }
+
+  if(p===p5.getHoverCanvas() || p===p5.getDragCanvas()) {
+    // outline drag region
+    p.push();
+    p.rectMode(p.CENTER);
+    p.stroke(0);
+    p.noFill();
+    if(p===p5.getHoverCanvas()) {
+      p.rect(startX, startY, w, h);
+    } else {
+      p.rect(endX, endY, w, h);
+    }
+    p.pop();
+  }
+  p.pop();
 }
 
 // Tile
@@ -799,7 +859,7 @@ function tile(p, params, p5) {
     snapshot.image(p5.getStaticCanvas(), 0, 0, w, h, sx, sy, w, h); // w * h rectangle centered at x, y 
 
     if(p===p5.getHoverCanvas()) {
-      p.tint(255, 190);
+      p.tint(255, 100);
     }
 
     switch (tiling) {
@@ -822,16 +882,19 @@ function tile(p, params, p5) {
         break;
     }
 
-    snapshot.remove();
-
     if(p===p5.getHoverCanvas() || p===p5.getDragCanvas()) {
       p.push();
+
       p.rectMode(p.CENTER);
+      p.imageMode(p.CENTER);
+      p.image(snapshot, x, y, w, h, 0, 0, w, h);
       p.stroke(100);
       p.noFill();
       p.rect(x, y, w, h);
       p.pop();
     }
+
+    snapshot.remove();
     p.pop();
 }
 

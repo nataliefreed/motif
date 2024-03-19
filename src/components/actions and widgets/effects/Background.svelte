@@ -6,14 +6,11 @@
 
   export let name = '';
   export let params: any = {};
-  export let onUpdate: (params: any) => void; // callback to update the actionStore
+  export let onUpdate: (params: any, save: boolean) => void; // callback to update the actionStore
 
-  // call closure onUpdate
   function handleValueChange(event: CustomEvent) {
-    const { id, value } = event.detail;
-    const updatedParams = { ...params, [id]: value }; //update only the changed value}
-    onUpdate(updatedParams);
-    // dispatchEvent('valueChange', updatedParams);
+    const { id, value, save } = event.detail;
+    onUpdate({[id]: value }, save);
   }
 
 </script>

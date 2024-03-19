@@ -1,7 +1,7 @@
 <script lang="ts">
-  import NumberWidget from "../NumberWidget.svelte"; // Assuming you have a NumberSlider component
-  import CoordinateWidget from "../CoordinateWidget.svelte"; // Assuming you have a CoordinateInput component
-  import ChooserWidget from "../ChooserWidget.svelte"; // Assuming you have a OptionSelector component for 'choose' type
+  import NumberWidget from "../NumberWidget.svelte";
+  import CoordinateWidget from "../CoordinateWidget.svelte";
+  import ChooserWidget from "../ChooserWidget.svelte";
 
   export let name = '';
   export let params: any = {};
@@ -29,7 +29,12 @@
   <NumberWidget id="height" min={1} max={600} value={params.height || 50} on:valueChange={handleValueChange}/> 
   and offset 
   <NumberWidget id="offset" min={1} max={600} value={params.offset || 20} on:valueChange={handleValueChange}/>
-{:else if name === 'invert' || name === 'grayscale' || name === 'threshold'}
-  Color shift of type 
+{:else if name === 'filter'}
+  Color shift of type
   <ChooserWidget id="filter" options={['invert','threshold', 'gray']} selected={params.filter || 'invert'} on:valueChange={handleValueChange}/>
+{:else if name === 'move cutout'}
+  <ChooserWidget id="mode" options={['move','copy']} selected={params.mode || 'move'} on:valueChange={handleValueChange}/>
+  <CoordinateWidget id="start" value={params.start || []} on:valueChange={handleValueChange}/>
+  to
+  <CoordinateWidget id="end" value={params.end || []} on:valueChange={handleValueChange}/>
 {/if}

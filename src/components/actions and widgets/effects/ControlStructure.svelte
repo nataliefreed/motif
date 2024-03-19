@@ -12,9 +12,7 @@
 
   function handleValueChange(event: CustomEvent) {
     const { id, value } = event.detail;
-    // console.log("updating param in control structure", id, value);
-    const updatedParams = { ...params, [id]: value }; //update only the changed value
-    onUpdate(updatedParams); //closure passed in
+    onUpdate({[id]: value });
   }
 
   function toggle() {
