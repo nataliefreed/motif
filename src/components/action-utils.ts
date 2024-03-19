@@ -1,27 +1,213 @@
 import type { Action, Effect, ActionStore } from '../types/types';
 import { v4 as uuidv4 } from 'uuid';
-import { actionRootID, actionStore, myTools, toolStore, selectedActionID, selectedEffect, activeCategory, changedActionID, flatActionStore, actionRoot, stagedAction, stagedActionID, currentColor, shouldRandomizeColor, playheadID } from '../stores/dataStore'
+import { actionRootID, actionStore, myTools, toolStore, selectedActionID, selectedEffect, changedActionID, flatActionStore, actionRoot, stagedAction, stagedActionID, currentColor, shouldRandomizeColor, playheadID } from '../stores/dataStore'
 import { saveToHistory } from '../stores/history';
 import { get } from 'svelte/store';
 import { deepCopy, merge, randomWithinRange, arrayToKeyedObj } from '../utils/utils';
-import tinycolor from "tinycolor2";
 import { tick } from 'svelte';
 import { curatedRandomHexColor } from '../utils/color-utils';
+
+class ActionManager {
+  #store = flatActionStore;
+
+  constructor() {}
+
+  getAction(id: string) {
+    if (!id || id.length < 1) return null;
+    const action = get(this.#store)[id];
+    if (!action) {
+      console.log("No action found with id", id);
+      return null;
+    }
+    return action;
+  }
+
+  updateParams(id: string, params: { [key: string]: any }) {
+    this.#modifyActionStore(id, (store) => {
+      const action = store[id];
+      if (action) {
+        action.params = { ...action.params, ...params };
+      }
+    });
+  }
+
+  delete(id: string) {
+    
+    let selected = get(selectedActionID); 
+    if((selected === id)) { //which it often will be for deleting
+      selected = getNextSelection(id);
+    }
+
+    if (!id) return;
+    this.#modifyActionStore(id, (store) => {
+      // Collect all IDs to delete (the action itself and its descendants)
+      let idsToDelete = getDescendantIDs(store, id);
+
+      // Remove all references to these IDs in other actions' children arrays
+      for (let actionId in store) {
+        const action = store[actionId];
+        if (action.params.children) {
+          action.params.children = action.params.children.filter(childId => !idsToDelete.includes(childId));
+        }
+      }
+
+      // Delete the actions themselves
+      idsToDelete.forEach(actionId => delete store[actionId]);
+    });
+
+    selectAction(selected);
+  }
+
+  hide(id: string) {
+    if (!id || !get(this.#store)[id]) return;
+    this.#modifyActionStore(id, (store) => {
+      store[id].hidden = true;
+    });
+  }
+
+  show(id: string) {
+    if (!id || !get(this.#store)[id]) return;
+    this.#modifyActionStore(id, (store) => {
+      store[id].hidden = false;
+    });
+  }
+
+  showAll() {
+    this.#modifyActionStore(null, (store) => {
+      for (let uuid in store) {
+        store[uuid].hidden = false;
+      }
+    });
+  }
+
+  add(action: Action) {
+    if (!action || !action.uuid) return;
+    this.#modifyActionStore(action.uuid, (store) => {
+      store[action.uuid] = action;
+    });
+  }
+
+  // Append but don't assign to any parent
+  append(actions: { [uuid: string]: Action }) {
+    if (!actions) return;
+    let root_uuid = getRoot(actions);
+    this.#modifyActionStore(root_uuid, (store) => {
+      for (let uuid in actions) {
+        store[uuid] = actions[uuid];
+      }
+    });
+    return root_uuid;
+  }
+  
+  //after sibling
+  insertAfter(newId: string, targetId: string) {
+    this.#modifyActionStore(null, (store) => {
+      const parent = Object.values(store).find(action =>
+        action.type === 'list' &&
+        action.params.children &&
+        action.params.children.includes(targetId)
+      );
+
+      if (!parent) return;
+
+      const newSiblings = [...parent.params.children];
+      const index = newSiblings.indexOf(targetId);
+      newSiblings.splice(index + 1, 0, newId);
+
+      store[parent.uuid].params.children = newSiblings;
+    });
+  }
+
+  replaceId(targetId: string, newId: string) {
+    this.#modifyActionStore(null, (store) => {
+      const parent = Object.values(store).find(action =>
+        action.type === 'list' &&
+        action.params.children &&
+        action.params.children.includes(targetId)
+      );
+
+      if (!parent) return;
+
+      const newSiblings = [...parent.params.children];
+      const index = newSiblings.indexOf(targetId);
+      if (index !== -1) {
+        newSiblings[index] = newId;
+      }
+
+      store[parent.uuid].params.children = newSiblings;
+    });
+  }
+
+  // before sibling
+  insertBefore(newId: string, targetId: string) {
+    this.#modifyActionStore(null, (store) => {
+      const parent = Object.values(store).find(action =>
+        action.type === 'list' &&
+        action.params.children &&
+        action.params.children.includes(targetId)
+      );
+
+      if (!parent) return;
+
+      const newSiblings = [...parent.params.children];
+      const index = newSiblings.indexOf(targetId);
+      newSiblings.splice(index, 0, newId);
+
+      store[parent.uuid].params.children = newSiblings;
+    });
+  }
+
+  // Append to action store as child of specified parent
+  appendChild(actions: { [uuid: string]: Action }, uuid: string) {
+    if (!actions) return;
+    let root_uuid = getRoot(actions);
+    this.#modifyActionStore(uuid, (store) => {
+      for (let actionUuid in actions) {
+        store[actionUuid] = actions[actionUuid];
+      }
+      if (store[uuid]) {  // Add as child to the parent action
+        store[uuid].params.children.push(root_uuid);
+      }
+    });
+    return root_uuid;
+  }
+
+  // Pass in a function to change the store
+  #modifyActionStore(uuid: string | null, modifyFunction: (store: { [key: string]: Action }, uuid?: string | null) => void) {
+    this.#updateActionStore((store) => {
+      const updatedStore = { ...store };
+      modifyFunction(updatedStore, uuid);
+      return updatedStore;
+    });
+  }
+
+  // IMPORTANT! Only this method should mutate the store
+  #updateActionStore(updateFunction: (store: { [key: string]: Action }) => { [key: string]: Action }) {
+    this.#store.update((store) => {
+      const newStore = updateFunction(deepCopy(store)); // Deep copy of store
+      
+      // Validate new store, make sure it is in valid format
+      
+      // Add update to history (undo queue) if relevant
+      
+      return newStore;
+    });
+  }
+}
+const actionManager = new ActionManager();
+
+
+
+
+
+
+
 
 
 /* THESE FUNCTIONS ARE CALLED BY THE UI */
 /* note on saving to history: currently thinking about it as saving before doing something user-initiated 
-   that the user expects to be able to undo. Don't save if it doesn't do anything, otherwise duplicate is saved */
-
-export function refresh() {
-  // console.log("refreshing");
-  addCurrentEffectAsStagedAction();
-  changedActionID.set('new');
-
-  setTimeout(() => { //this is a terrible placeholder hack. the issue is that addCurrentEffectAsStagedAction doesn't update the new staged action ID until the next update cycle
-    flatActionStore.update(store => { return deepCopy(store); });
-  }, 50);
-}
+   that the user expects to be able to undo. Don't save if it doesn't do anything.
+*/
 
 export async function scrollToAction(id: string) {
   await tick(); // Wait for the DOM to update with the new item
@@ -36,6 +222,19 @@ export async function scrollToAction(id: string) {
   }
 }
 
+export function hideAction(id: string) {
+  actionManager.hide(id);
+}
+
+export function showAction(id: string) {
+  actionManager.show(id);
+}
+
+export function hideSelectedAction() {
+  saveToHistory();
+  actionManager.hide(get(selectedActionID));
+}
+
 export function selectAction(id:string) {
   if(id && id !== get(stagedActionID) && id !== get(actionRootID)) {
     selectedActionID.set(id);
@@ -45,19 +244,14 @@ export function selectAction(id:string) {
 // remove action initiated from UI
 export function removeSelectedAction() {
   let id = get(selectedActionID);
-  removeAction(id);
-}
-
-function removeAction(id:string) {
-  if(!id || !get(flatActionStore)[id] || id == get(stagedActionID)) return;
+  if(id.length < 1 || !id || !get(flatActionStore)[id] || id == get(stagedActionID)) return;
   saveToHistory();
-  deleteAction(id);
+  //get new selection
+  actionManager.delete(id);
+  // if deleted, select new selection
 }
 
-// export function playActions() {
-//   let actions = getActionsInRunOrder();
-// }
-
+// gradually clear actions from bottom to top
 export function clearAllActions() {
   let actions = getActionsInRunOrder(); //IDs
   if(!actions || actions == undefined || actions.length < 1) return;
@@ -81,9 +275,9 @@ export function clearAllActions() {
       // console.log("second to last item", penultimateItem);
       selectAction(penultimateItem);
     // Remove the last element from the array
-    const toRemove = actions.pop();
+    const toRemove = actions.pop() as string;
     // console.log("removing", toRemove);
-    deleteAction(toRemove);
+    actionManager.delete(toRemove);
     changedActionID.set(penultimateItem);
     } else {
         // If no more elements except first, clear the interval
@@ -91,7 +285,7 @@ export function clearAllActions() {
         selectedActionID.set('');
         if(newStagedActionRoot) {
           stagedActionID.set(newStagedActionRoot);
-          appendToActionStoreAsChildOf(newStagedAction, get(actionRoot).uuid);
+          actionManager.appendChild(newStagedAction, get(actionRoot).uuid);
         }
         changedActionID.set('');
     }
@@ -102,7 +296,7 @@ export function clearAllActions() {
 export function addEffectAsStagedAction(effect: Effect, params: { [key: string]: any }) {
   // let uuid = addEffectToActionStore(effect, params);
   let prevStaged = get(stagedActionID);
-  if(prevStaged.length > 0) deleteAction(prevStaged);
+  if(prevStaged.length > 0) actionManager.delete(prevStaged);
   let uuid = addEffectToActionStoreAsChildOf(effect, params, get(actionRoot).uuid);
   if(uuid) stagedActionID.set(uuid);
 }
@@ -118,39 +312,66 @@ export function addCurrentEffectAsStagedAction() {
 // used by keyboard events
 export function addEffectToActionStore(effect: Effect, params: { [key: string]: any } = {}) {
   let actions = effectToActions(effect, params);
-  if(actions) return appendToActionStore(actions);
+  if(actions) return actionManager.append(actions);
 }
 
-export function saveActionAsNewTool(action: Action) {
-  if(!action) return;
+// bubbled up by UI widgets
+export function updateActionParams(uuid:string, params:any, save = false) {
+  if (!uuid) return;
 
-  let newEffect: Effect;
-
-  if (action.type === 'list' && action.params && Array.isArray(action.params.children)) {
-    const actions = copyAction(action.uuid);
-    newEffect = actionToEffect(actions) as Effect;
-  } else {
-    // Handle non-nested actions
-    newEffect = {
-      name: action.effect + "",
-      textLabel: action.effect + "",
-      category: action.category,
-      tags: 'mytools',
-      params: deepCopy(action.params)
-    };
+  if (save) {
+    saveToHistory(); // Add to undo queue
+    // console.log("saving to history");
   }
 
-  if(!newEffect) return;
-
-  myTools.update(storeValue => {
-    if(!storeValue) storeValue = [];
-    storeValue.push(newEffect);
-    console.log("new tool added to my tools", storeValue);
-    activeCategory.set('my tools');
-    selectedEffect.set(newEffect);
-    return storeValue;
-  });
+  actionManager.updateParams(uuid, params);
 }
+
+// make a copy with new uuid and add immediately after original
+export function duplicateAction(id:string) {
+  if (!id || !get(flatActionStore)[id]) return;
+  console.log("duplicating", id);
+  let newActions = copyAction(id);
+  let root = getRoot(newActions);
+  // newAction.params.title = newAction.params.title + " copy";
+  if(root) {
+    actionManager.append(newActions);
+    actionManager.insertAfter(root, id);
+    selectedActionID.set(root);
+    saveToHistory();
+  }
+}
+
+// export function saveActionAsNewTool(action: Action) {
+//   if(!action) return;
+
+//   let newEffect: Effect;
+
+//   if (action.type === 'list' && action.params && Array.isArray(action.params.children)) {
+//     const actions = copyAction(action.uuid);
+//     newEffect = actionToEffect(actions) as Effect;
+//   } else {
+//     // Handle non-nested actions
+//     newEffect = {
+//       name: action.effect + "",
+//       textLabel: action.effect + "",
+//       category: action.category,
+//       tags: 'mytools',
+//       params: deepCopy(action.params)
+//     };
+//   }
+
+//   if(!newEffect) return;
+
+//   myTools.update(storeValue => {
+//     if(!storeValue) storeValue = [];
+//     storeValue.push(newEffect);
+//     console.log("new tool added to my tools", storeValue);
+//     activeCategory.set('my tools');
+//     selectedEffect.set(newEffect);
+//     return storeValue;
+//   });
+// }
 
 export function copyStagedActionToActionStore() {
   let stagedID = get(stagedActionID);
@@ -162,8 +383,9 @@ export function copyStagedActionToActionStore() {
     return;
   }
     saveToHistory();
-    appendToActionStore(newActions);
-    insertIdBefore(newActionRoot, stagedID);
+
+    actionManager.append(newActions);
+    actionManager.insertBefore(newActionRoot, stagedID);
     selectAction(newActionRoot);
 
     playheadID.set(newActionRoot);
@@ -181,6 +403,9 @@ export function setCurrentEffect(name: string) {
   selectedEffect.set(effect);
 }
 
+
+
+
 export function loopActionAlongPath(id:string) {
   //set selected action as the child of a repeat along path, with the path set to the current point and a shifted point
   let action = get(flatActionStore)[id];
@@ -192,6 +417,8 @@ export function loopActionAlongPath(id:string) {
         newAction.params.path.push([action.params.path[action.params.path.length-1][0]+10, action.params.path[action.params.path.length-1][1]+10]);
       }
     }
+
+    actionManager.replace(newAction.uuid, newAction);
     // if doEach, turn into along path with same name
     // if not along path, add as child of along path with current point and a shifted point with "give me a name" as title 
 
@@ -212,12 +439,6 @@ export function loopActionAlongPath(id:string) {
     //   }
     //   return data;
     // });
-
-    flatActionStore.update(store => {
-      const newStore = { ...store };
-      newStore[id] = newAction;
-      return newStore;
-    });
   }
 
   //   actionStore.update(data => {
@@ -251,36 +472,9 @@ export function loopActionAlongPath(id:string) {
 
 
 
-//called from UI
-export function updateActionParams(uuid:string, params:any, save = false) {
-  if (!uuid) return;
 
-  if (save) {
-    saveToHistory(); // Add to undo queue
-    console.log("saving to history");
-  }
 
-  _modifyActionStore(uuid, (store, uuid) => {
-    const action = store[uuid];
-    if (action) {
-      const updatedAction = { ...action, params: { ...action.params, ...params } };
-    }
-  })
 
-  _updateActionStore(store => {
-    const action = store[uuid];
-    if (action) {
-      const updatedAction = { ...action, params: { ...action.params, ...params } };
-      
-      changedActionID.set(uuid); // log which action was changed
-      return { ...store, [uuid]: updatedAction };
-
-    } else {
-      console.log("Action not found in store");
-      return store;
-    }
-  });
-}
 
 let changeOptions = {
   'color': (value:string) => { return curatedRandomHexColor() },
@@ -328,24 +522,31 @@ export function remixAction(id:string) {
     });
   }
   
-  //update store
-  _updateActionStore(store => {
-    const updatedStore = { ...store };
-    updatedStore[id].params = newParams;
-    return updatedStore;
-  });
+  actionManager.updateParams(id, newParams);
 }
 
 // TODO: finish this. I think stagedAction is being overwritten by the current effect
 export function redrawAction(id:string) {
-  // go "back in time" to before that action, move that action to stagedAction so user can re-record it
-  // when mouse released, fast forward to current time
+//   // go "back in time" to before that action, move that action to stagedAction so user can re-record it
+//   // when mouse released, fast forward to current time
 
-  let prevStaged = get(stagedActionID);
-  hideAction(prevStaged);
-  selectedActionID.set('');
-  stagedActionID.set(id);
+//   let prevStaged = get(stagedActionID);
+//   actionManager.hide(prevStaged);
+//   selectedActionID.set('');
+//   stagedActionID.set(id);
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* THESE ONLY RETURN VALUES */
 
@@ -418,108 +619,47 @@ export function compileActions(action: Action, parentID?: string): CompiledActio
         params: action.params
       });
   }
-
- 
- 
   return actions;
 }
+
+
+
+
+
+
+
 
 /* THESE FUNCTIONS ARE ONLY CALLED INTERNALLY */
 
 
-class ActionManager {
-
-  #store = flatActionStore;
-
-  add(action: Action) {
-    // add action to store
-  }
-
-  updateParams(id: string) {
-    // update action in store
-  }
-
-  delete(id: string) {
-    // delete action from store
-  }
-
-  hide(id: string) {
-  if (!id) return;
-  if (!get(this.#store)[id]) return;
-  this.#updateActionStore(store => {
-    const updatedStore = { ...store };
-    updatedStore[id].hidden = true;
-    return updatedStore;
-  });
-}
-
-  show(id: string) {
-    if (!id) return;
-    if (!get(this.#store)[id]) return;
-    this.#updateActionStore(store => {
-      const updatedStore = { ...store };
-      updatedStore[id].hidden = false;
-      return updatedStore;
-    });
-  }
-
-  showAll() {
-  this.#updateActionStore(store => {
-    const updatedStore = { ...store };
-    for (let uuid in updatedStore) {
-      updatedStore[uuid].hidden = false;
-    }
-    return updatedStore;
-  });
-}
-
-  // pass in function to change the store
-  #modifyActionStore(uuid: string, modify: (store: { [key: string]: Action }, uuid?: string) => void) {
-    this.#updateActionStore(store => {
-      const updatedStore = { ...store };
-      modify(updatedStore, uuid);
-      return updatedStore;
-    });
-  }
-
-    //IMPORTANT! Only this should mutate the store
-    #updateActionStore(updateFunction: (store: { [key: string]: Action }) => { [key: string]: Action }) {
-      this.#store.update(store => {
-        const newStore = updateFunction(deepCopy(store)); //deep copy of store
-        
-        // validate new store, make sure it is valid format
-        
-        // add update to history (undo queue) if relevant
-        
-        return newStore;
-      });
-    }
-}
-
-
-
-
-
-
-
-function reloadAction(id:string) { //replace action with a new copy of itself in same location
-  let newActions = copyAction(id);
-  let newActionRoot = getRoot(newActions);
-  if(newActionRoot) {
-    // showAction(newActionRoot);
-    appendToActionStore(newActions);
-    replaceIdWith(id, newActionRoot);
-    stagedActionID.set(newActionRoot);
-  }
-}
+// function reloadAction(id:string) { //replace action with a new copy of itself in same location
+//   let newActions = copyAction(id);
+//   let newActionRoot = getRoot(newActions);
+//   if(newActionRoot) {
+//     // showAction(newActionRoot);
+//     appendToActionStore(newActions);
+//     replaceIdWith(id, newActionRoot);
+//     stagedActionID.set(newActionRoot);
+//   }
+// }
 
 function isChildActive(parentEffect, parentParams, childID) {
   //do each and along path might be different, eg. stop after certain iterations along path
 }
 
+
+
+
+
+
+
+
+
+
+
 function addEffectToActionStoreAsChildOf(effect: Effect, params: { [key: string]: any } = {}, uuid: string) {
   let actions = effectToActions(effect, params);
-  if(actions) return appendToActionStoreAsChildOf(actions, uuid);
+  if(actions) return actionManager.appendChild(actions, uuid);
 }
 
 function effectToActions(effect: Effect, params: { [key: string]: any } = {}) {
@@ -583,6 +723,17 @@ function actionToEffect(actions: ActionStore) {
   };
 }
 
+
+
+
+
+
+
+
+
+
+
+
 //take a flat list of actions, change all uuids to new ones but preserve hierarchy
 function updateUUIDsPreservingHierarchy(actions: { [uuid: string]: Action }): { [uuid: string]: Action } {
     // A mapping of old UUIDs to new UUIDs
@@ -617,84 +768,6 @@ function updateUUIDsPreservingHierarchy(actions: { [uuid: string]: Action }): { 
     return updatedActions;
 }
 
-// append but don't assign to any parent
-function appendToActionStore(actions: { [uuid: string]: Action }) {
-  if(!actions) return;
-  let root_uuid = getRoot(actions);
-
-
-
-  flatActionStore.update(storeValue => {
-    let newActions = {...storeValue};
-    for(let uuid in actions) {
-      newActions[uuid] = actions[uuid];
-    }
-    // newActions[get(actionRoot).uuid].params.children.push(root_uuid);
-    return newActions;
-  });
-  return root_uuid;
-
-
-
-}
-
-// append to action store as child of specified parent
-function appendToActionStoreAsChildOf(actions: { [uuid: string]: Action }, uuid:string) {
-  if(!actions) return;
-  let root_uuid = getRoot(actions);
-
-
-
-  flatActionStore.update(storeValue => {
-    let newActions = {...storeValue};
-    for(let uuid in actions) {
-      newActions[uuid] = actions[uuid];
-    }
-    if(newActions[uuid]) { //add as child to
-      newActions[uuid].params.children.push(root_uuid);
-    }
-    // newActions[get(actionRoot).uuid].params.children.push(root_uuid);
-    return newActions;
-  });
-  return root_uuid;
-
-
-
-
-}
-
-function addActionToActionStore(action: Action, params: { [key: string]: any } = {}) {
-  // console.log("adding action to action store");
-  let newAction = {...action};
-  newAction.uuid = uuidv4();
-
-  selectAction(newAction.uuid); //mark action as selected in the list (most recently added)
-
-  let mergedParams = action.params;
-  if(params && action.params) {
-    mergedParams = merge(action.params, params);
-  }
-  newAction.params = mergedParams;
-
-
-
-
-
-  flatActionStore.update(storeValue => {
-    let newActions = {...storeValue};
-    newActions[newAction.uuid] = newAction;
-    newActions[get(actionRoot).uuid].params.children.push(newAction.uuid); //add child to root
-    // console.log("adding action to flat action store", newActions);
-    return newActions;
-  });
-
-
-
-
-
-  return newAction.uuid;
-}
-
 function getRoot(actions: { [uuid: string]: Action }) : string | null {
   for (let uuid in actions) {
     let isChild = Object.values(actions).some(item => item.params.children?.includes(uuid));
@@ -704,6 +777,123 @@ function getRoot(actions: { [uuid: string]: Action }) : string | null {
   }
   return null; // Return null if no root action is found
 }
+
+function getSiblings(id:string) {
+  let parent = Object.values(get(flatActionStore)).find(action => action.type === 'list'
+                                                        && action.params.children
+                                                        && action.params.children.includes(id));
+
+  if(!parent) return;
+
+  let siblings = parent.params.children;
+  return siblings;
+}
+
+function getNextSelection(id:string) {
+  let parent = Object.values(get(flatActionStore)).find(action => action.type === 'list'
+                                                        && action.params.children
+                                                        && action.params.children.includes(id));
+
+  if (!parent || (parent.uuid === get(actionRootID) && parent.params.children.length <= 1)) return '';
+
+  let siblings = parent.params.children;
+  if (siblings === undefined) return;
+
+  let index = siblings.indexOf(id);
+
+  if (index === -1) return ''; // Return if the item is not found
+
+  // Return previous sibling if it exists
+  if (index > 0) {
+    return siblings[index - 1];
+  } 
+  // Return next sibling if there's no previous one and it's not the last item
+  else if (index < siblings.length - 1) {
+    return siblings[index + 1];
+  } 
+  // Return parent if it's not the root and there are no valid siblings
+  else if (parent.uuid !== get(actionRootID)) {
+    return parent.uuid;
+  }
+}
+
+
+
+//includes root
+function getDescendantActions(id:string) {
+  const currentAction = get(flatActionStore)[id];
+  let descendants = [currentAction];
+
+  if (currentAction && currentAction.type === 'list' && currentAction.params.children) {
+    currentAction.params.children.forEach(childId => {
+      const childDescendants = getDescendantActions(childId);
+      console.log("descendants", childDescendants);
+      descendants = descendants.concat(childDescendants);
+    });
+  }
+  return descendants;
+}
+
+//includes root
+export function getDescendantIDs(store:ActionStore, id:string) {
+  const currentAction = store[id];
+  if (!currentAction) return [];
+
+  let descendants = [currentAction.uuid];
+
+  if (currentAction.type === 'list' && currentAction.params.children) {
+    currentAction.params.children.forEach(childId => {
+      const childDescendants = getDescendantIDs(store, childId);
+      descendants = descendants.concat(childDescendants); // Concatenates the UUIDs
+    });
+  }
+
+  return descendants;
+}
+
+  // make a copy with new uuids
+  function copyAction(id:string) {
+    if (!id || !get(flatActionStore)[id]) return;
+
+    let descendants = arrayToKeyedObj(getDescendantActions(id), 'uuid');
+    let newActions = deepCopy(descendants);
+
+    newActions = updateUUIDsPreservingHierarchy(newActions);
+    return newActions;
+  }
+
+
+// function addActionToActionStore(action: Action, params: { [key: string]: any } = {}) {
+//   // console.log("adding action to action store");
+//   let newAction = {...action};
+//   newAction.uuid = uuidv4();
+
+//   selectAction(newAction.uuid); //mark action as selected in the list (most recently added)
+
+//   let mergedParams = action.params;
+//   if(params && action.params) {
+//     mergedParams = merge(action.params, params);
+//   }
+//   newAction.params = mergedParams;
+
+
+
+
+
+//   flatActionStore.update(storeValue => {
+//     let newActions = {...storeValue};
+//     newActions[newAction.uuid] = newAction;
+//     newActions[get(actionRoot).uuid].params.children.push(newAction.uuid); //add child to root
+//     // console.log("adding action to flat action store", newActions);
+//     return newActions;
+//   });
+
+
+
+
+
+//   return newAction.uuid;
+// }
 
     // if (action.category === 'backgrounds') {
     //   // Insert backgrounds before the first item in the list that is not a background
@@ -795,211 +985,7 @@ function makeNamedGroup() {
 //   });
 // }
 
-function getSiblings(id:string) {
-  let parent = Object.values(get(flatActionStore)).find(action => action.type === 'list'
-                                                        && action.params.children
-                                                        && action.params.children.includes(id));
 
-  if(!parent) return;
-
-  let siblings = parent.params.children;
-  return siblings;
-}
-
-function getNextSelection(id:string) {
-  let parent = Object.values(get(flatActionStore)).find(action => action.type === 'list'
-                                                        && action.params.children
-                                                        && action.params.children.includes(id));
-
-  if (!parent || (parent.uuid === get(actionRootID) && parent.params.children.length <= 1)) return '';
-
-  let siblings = parent.params.children;
-  if (siblings === undefined) return;
-
-  let index = siblings.indexOf(id);
-
-  if (index === -1) return ''; // Return if the item is not found
-
-  // Return previous sibling if it exists
-  if (index > 0) {
-    return siblings[index - 1];
-  } 
-  // Return next sibling if there's no previous one and it's not the last item
-  else if (index < siblings.length - 1) {
-    return siblings[index + 1];
-  } 
-  // Return parent if it's not the root and there are no valid siblings
-  else if (parent.uuid !== get(actionRootID)) {
-    return parent.uuid;
-  }
-}
-
-function deleteAction(id:string) {
-
-  let selected = get(selectedActionID); 
-  if((selected === id)) { //which it often will be for deleting
-    selected = getNextSelection(id);
-  }
-  // console.log("deleting", id, "selected is now", selected, get(flatActionStore)[selected]);
-
-  flatActionStore.update(store => {
-    if(!store[id]) return store;
-    
-    // Collect all IDs to delete (the action itself and its descendants)
-    let idsToDelete = getDescendantIDs(get(flatActionStore), id);
-    let newStore = deepCopy(store);
-
-    // Remove all references to these IDs in other actions' children arrays
-    for (let uuid in newStore) {
-      if (newStore[uuid].params.children) {
-        newStore[uuid].params.children = newStore[uuid].params.children.filter(child => !idsToDelete.includes(child));
-      }
-    }
-
-    console.log("ids to delete", idsToDelete.toString());
-
-    // Delete the actions themselves
-    idsToDelete.forEach(actionId => delete newStore[actionId]);
-    
-    return newStore;
-  });
-
-  selectAction(selected);
-}
-
-
-
-//includes root
-function getDescendantActions(id:string) {
-  const currentAction = get(flatActionStore)[id];
-  let descendants = [currentAction];
-
-  if (currentAction && currentAction.type === 'list' && currentAction.params.children) {
-    currentAction.params.children.forEach(childId => {
-      const childDescendants = getDescendantActions(childId);
-      console.log("descendants", childDescendants);
-      descendants = descendants.concat(childDescendants);
-    });
-  }
-  return descendants;
-}
-
-//includes root
-export function getDescendantIDs(store:ActionStore, id:string) {
-  const currentAction = store[id];
-  if (!currentAction) return [];
-
-  let descendants = [currentAction.uuid];
-
-  if (currentAction.type === 'list' && currentAction.params.children) {
-    currentAction.params.children.forEach(childId => {
-      const childDescendants = getDescendantIDs(store, childId);
-      descendants = descendants.concat(childDescendants); // Concatenates the UUIDs
-    });
-  }
-
-  return descendants;
-}
-
-  // make a copy with new uuids
-  function copyAction(id:string) {
-    if (!id || !get(flatActionStore)[id]) return;
-
-    let descendants = arrayToKeyedObj(getDescendantActions(id), 'uuid');
-    let newActions = deepCopy(descendants);
-
-    newActions = updateUUIDsPreservingHierarchy(newActions);
-    return newActions;
-  }
-
-  // make a copy with new uuid and add immediately after original
-  export function duplicateAction(id:string) {
-    if (!id || !get(flatActionStore)[id]) return;
-    console.log("duplicating", id);
-    let newActions = copyAction(id);
-    let root = getRoot(newActions);
-    // newAction.params.title = newAction.params.title + " copy";
-    if(root) {
-      appendToActionStore(newActions);
-      insertIdAfter(root, id);
-      selectedActionID.set(root);
-      saveToHistory();
-    }
-  }
-
-  function insertIdAfter(newId:string, targetId:string) {
-    let parent = Object.values(get(flatActionStore)).find(action => action.type === 'list'
-                                                          && action.params.children
-                                                          && action.params.children.includes(targetId));
-    if(!parent) return;
-
-    let newSiblings = [...parent?.params.children];
-    let index = newSiblings.indexOf(targetId);
-    newSiblings.splice(index+1, 0, newId);
-
-    flatActionStore.update(store => {
-      let newStore = { ...store };
-      newStore[parent.uuid].params.children = newSiblings;
-      return newStore;
-    });
-  }
-
-  function replaceIdWith(targetId:string, newId:string) { //note arguments are reversed on this one
-    let parent = Object.values(get(flatActionStore)).find(action => action.type === 'list'
-                                                          && action.params.children
-                                                          && action.params.children.includes(targetId));
-    if(!parent) return;
-
-    let newSiblings = [...parent?.params.children];
-    let index = newSiblings.indexOf(targetId);
-    if (index !== -1) {
-      newSiblings.splice(index, 1, newId); // Replace targetId with newId
-    }
-
-    flatActionStore.update(store => {
-      let newStore = { ...store };
-      newStore[parent.uuid].params.children = newSiblings;
-      return newStore;
-    });
-  }
-
-  function insertIdBefore(newId:string, targetId:string) {
-    let parent = Object.values(get(flatActionStore)).find(action => action.type === 'list'
-                                                          && action.params.children
-                                                          && action.params.children.includes(targetId));
-    if(!parent) return;
-
-    let newSiblings = [...parent?.params.children];
-    let index = newSiblings.indexOf(targetId);
-    newSiblings.splice(index, 0, newId);
-
-    flatActionStore.update(store => {
-      let newStore = { ...store };
-      newStore[parent.uuid].params.children = newSiblings;
-      return newStore;
-    });
-  }
-
-  function insertIdAsChildOf(id:string) {
-  
-  }
-
-  function appendToActionStoreAfter(actions: { [uuid: string]: Action }, uuid:string) {
-    if(!actions) return;
-    let root_uuid = getRoot(actions);
-    flatActionStore.update(storeValue => {
-      let newActions = {...storeValue};
-      for(let uuid in actions) {
-        newActions[uuid] = actions[uuid];
-      }
-      if(newActions[uuid]) { //add as child to
-        newActions[uuid].params.children.push(root_uuid);
-      }
-      // newActions[get(actionRoot).uuid].params.children.push(root_uuid);
-      return newActions;
-    });
-    return root_uuid;
-  }
 
 
 

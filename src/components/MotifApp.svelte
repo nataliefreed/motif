@@ -6,7 +6,7 @@
   import ActionItem from './actions and widgets/ActionItem.svelte';
 	import type { Action, Effect } from '../types/types';
   import Canvas from './canvas/Canvas.svelte';
-  import { scrollToAction, saveActionAsNewTool, removeSelectedAction, loopActionAlongPath, remixAction, duplicateAction, redrawAction, clearAllActions, refresh } from './action-utils';
+  import { scrollToAction, removeSelectedAction, loopActionAlongPath, remixAction, duplicateAction, redrawAction, clearAllActions } from './action-utils';
   import EffectToolbar from './toolbars/EffectToolbar.svelte';
   import Notebook from './Notebook.svelte';
   import Page from './Page.svelte';
