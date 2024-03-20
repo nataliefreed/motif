@@ -544,10 +544,6 @@ export function redrawAction(id:string) {
 
 
 
-
-
-
-
 /* THESE ONLY RETURN VALUES */
 
 function getActionsInRunOrder() {
@@ -567,10 +563,13 @@ type CompiledAction = {
 
 //recursive function to get info about all actions to render
 export function compileActions(action: Action, parentID?: string): CompiledAction[] {
+
+  if(!action) return [];
+
   let actions: CompiledAction[] = [];
 
-  if(action.hidden == undefined) console.log("no hidden property", action);
-  if (action.hidden && action.uuid != get(stagedActionID)) { // Skip hidden actions, except staged action
+  // if('hidden' in action) console.log("no hidden property", action);
+  if ('hidden' in action && action.hidden && action.uuid != get(stagedActionID)) { // Skip hidden actions, except staged action
     return [];
   }
 

@@ -353,7 +353,6 @@ export const effectList = [
       }
     }
   },
-
   {
     name: 'along path',
     textLabel: 'Heart brush',
@@ -672,6 +671,95 @@ export const effectList = [
       mode: 'move'
     }
   },
+  // {
+  //   name: 'turtle',
+  //   textLabel: 'Turtle',
+  //   category: 'move',
+  //   tags: 'drawing',
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   thumbnail: 'move.jpg',
+  //   mouseActionType: 'drag',
+  //   params: {
+  //     position: {x:10, y:10},
+  //     heading: 45,
+  //   }
+  // },
+  // {
+  //   name: 'rotate',
+  //   textLabel: 'Rotate',
+  //   category: 'move',
+  //   tags: 'drawing',
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   thumbnail: 'move.jpg',
+  //   mouseActionType: 'drag',
+  //   params: {
+  //     direction: 'left',
+  //     angle: 45,
+  //   }
+  // },
+  {
+    name: 'move to',
+    textLabel: 'Move to',
+    category: 'move',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'move.jpg',
+    mouseActionType: 'click',
+    params: {
+      position: {x:100, y:100},
+    }
+  },
+  {
+    name: 'move',
+    textLabel: 'Forward',
+    category: 'move',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'move.jpg',
+    mouseActionType: 'drag',
+    params: {
+      direction: 'forward',
+      distance: 50,
+    }
+  },
+  {
+    name: 'move',
+    textLabel: 'Back',
+    category: 'move',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'move.jpg',
+    mouseActionType: 'drag',
+    params: {
+      direction: 'back',
+      distance: 50,
+    }
+  },
+  {
+    name: 'pen',
+    textLabel: 'Pen Up',
+    category: 'move',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'move.jpg',
+    mouseActionType: 'click',
+    params: {
+      mode: 'up'
+    }
+  },
+  {
+    name: 'pen',
+    textLabel: 'Pen Down',
+    category: 'move',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'move.jpg',
+    mouseActionType: 'click',
+    params: {
+      mode: 'down'
+    }
+  },
+
   // {
   //   name: 'copy cutout',
   //   textLabel: 'Copy Shape',

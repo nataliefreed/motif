@@ -37,4 +37,6 @@
   <CoordinateWidget id="start" value={params.start || []} on:valueChange={handleValueChange}/>
   to
   <CoordinateWidget id="end" value={params.end || []} on:valueChange={handleValueChange}/>
+{:else if name === 'rotate'}
+  Rotate <NumberWidget id="width" min={0} max={360} value={params.angle || 45} on:valueChange={handleValueChange}/>°
 {/if}

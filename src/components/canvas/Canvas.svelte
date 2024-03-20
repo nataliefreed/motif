@@ -7,6 +7,7 @@
   import tinycolor from "tinycolor2";
   import { getAntPath, mapValue } from '../../utils/utils.ts';
   import { curatedRandomHexColor } from '../../utils/color-utils.ts';
+  import { Turtle } from './Turtle.js';
 	
   let x = 55;
 	let y = 55;
@@ -22,6 +23,8 @@
 
   let thumbnails = [];
 
+  let turtle = new Turtle(10, 10, 0);
+
   function randomizeCurrentColor() {
     // currentColor.set(tinycolor.random().toHexString());
     currentColor.set(curatedRandomHexColor());
@@ -36,6 +39,8 @@
   // }
 
   onMount(() => {
+
+    turtle = new Turtle(10, 10, 0);
 
     // if selectedEffect changed, update staged action accordingly
     selectedEffect.subscribe(effect => {
@@ -59,7 +64,7 @@
 
     flatActionStore.subscribe(actions => {
       if($changedActionID != $stagedActionID) {
-        renderRoot();
+        renderAllActions();
       }
     });
 
@@ -94,14 +99,14 @@
     return f;
   }
 
-  export function getThumbnail(g, action, w, h) {
-  // Use the appropriate renderer to draw the action onto the buffer
-  const renderFunction = renderers[action.effect];
-  if (renderFunction) {
-    renderFunction(g, action.params, p5);
-  }
-  return g.canvas.toDataURL();
-}
+//   export function getThumbnail(g, action, w, h) {
+//   // Use the appropriate renderer to draw the action onto the buffer
+//   const renderFunction = renderers[action.effect];
+//   if (renderFunction) {
+//     renderFunction(g, action.params, p5);
+//   }
+//   return g.canvas.toDataURL();
+// }
 
   /* 
                              _                   
@@ -166,7 +171,9 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
   }
 
   function renderAllActions(actions) {
+    if(!p5) return;
     let activeActions = compileActions($flatActionStore[$actionRootID]);
+    if(activeActions.length === 0) return;
 
     //then render each one
     activeActions.forEach(action => {
@@ -179,9 +186,10 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
   function renderAction(action, canvas) {
     if(p5) {
       const renderFunction = renderers[action.effect];
+      // console.log("running render function for ", action.effect, action.params, p5, turtle);
       if (renderFunction) {
         // console.log("rendering", action.effect)
-        renderFunction(canvas, action.params, p5);
+        renderFunction(canvas, action.params, p5, turtle);
       }
     }
   }
@@ -304,7 +312,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
         loadStencils(p5);
         console.log("p5 instance created");
         hideAction($stagedActionID);
-        renderRoot();
+        renderAllActions();
         console.log("initial render");
       });
     }
@@ -368,7 +376,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       // console.log($stagedAction.effect);
       const renderFunction = renderers[$stagedAction.effect];
       if (renderFunction) {
-        renderFunction(p5.getHoverCanvas(), $stagedAction.params, p5);
+        renderFunction(p5.getHoverCanvas(), $stagedAction.params, p5, turtle);
       }
       p5.image(p5.getStaticCanvas(), 0, 0);
       p5.image(p5.getHoverCanvas(), 0, 0);
@@ -436,7 +444,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
         if($stagedAction.name === 'bounce' || $stagedAction.name === 'spiro' && 'progress' in params) {
           mousePressedTime = Date.now(); //reset whenever moved
         }
-        renderFunction(p5.getDragCanvas(), $stagedAction.params, p5);
+        renderFunction(p5.getDragCanvas(), $stagedAction.params, p5, turtle);
       }
       p5.image(p5.getStaticCanvas(), 0, 0);
       p5.image(p5.getDragCanvas(), 0, 0);
@@ -508,14 +516,14 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
 
     updateStagedAction({ progress: getProgress() });
 
-    p5.getDragCanvas().clear();
-    const renderFunction = renderers[$stagedAction.effect];
-    if (renderFunction) {
-      renderFunction(p5.getDragCanvas(), $stagedAction.params, p5);
-    }
+    // p5.getDragCanvas().clear();
+    // const renderFunction = renderers[$stagedAction.effect];
+    // if (renderFunction) {
+    //   renderFunction(p5.getDragCanvas(), $stagedAction.params, p5);
+    // }
 
-    p5.image(p5.getStaticCanvas(), 0, 0);
-    p5.image(p5.getDragCanvas(), 0, 0);
+    // p5.image(p5.getStaticCanvas(), 0, 0);
+    // p5.image(p5.getDragCanvas(), 0, 0);
 
     // continue animation loop
     animationFrameId = requestAnimationFrame(updateMouseHoldTime);
@@ -561,7 +569,7 @@ function handleMouseUp(event) {
     p5.getDragCanvas().reset();
     p5.getHoverCanvas().reset();
 
-    renderRoot();
+    renderAllActions();
 
     // Once the mouse is released, remove global listener
     document.removeEventListener('mouseup', globalMouseUp);
@@ -594,7 +602,7 @@ function handleMouseLeave(event) {
     clearTempCanvases(); //clear when leaving canvas, but will draw again if staged action params changed
     hideAction($stagedActionID);
   }
-  renderRoot();
+  renderAllActions();
   // if(isDragging) {
   //   // handleMouseUp(event);
   // }

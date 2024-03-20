@@ -3,42 +3,57 @@ import { flatActionStore, playheadID, stagedActionID } from '../../stores/dataSt
 import { filter } from 'lodash';
 let paperdolls = null;
 
-export const unroll = {
-    // do each
-    // render before stop index / only if active
-    'do each': (p, params, p5) => {
-      if(params.children) {
-        let activeChildren = params.children.filter(uuid => uuid !== get(stagedActionID)); //all except staged action
-        activeChildren.forEach(uuid => {
-          let child = get(flatActionStore)[uuid];
-          if(renderers[child.name]) renderers[child.name](p, child.params, p5); // console.log("trying to render", child.name);
-        });
-      }
-    },
+// export const unroll = {
+//     // do each
+//     // render before stop index / only if active
+//     'do each': (p, params, p5) => {
+//       if(params.children) {
+//         let activeChildren = params.children.filter(uuid => uuid !== get(stagedActionID)); //all except staged action
+//         activeChildren.forEach(uuid => {
+//           let child = get(flatActionStore)[uuid];
+//           if(renderers[child.name]) renderers[child.name](p, child.params, p5); // console.log("trying to render", child.name);
+//         });
+//       }
+//     },
 
-  // todo: add the pathSpacing
-  'along path': (p, params, p5) => {
-    if(!params.path) return;
+//   // todo: add the pathSpacing
+//   'along path': (p, params, p5) => {
+//     if(!params.path) return;
 
-    if(params.children && params.children.length > 0) { // list has children
-      params.path.forEach((point, i) => {
-        let uuid = params.children[i%params.children.length];
+//     if(params.children && params.children.length > 0) { // list has children
+//       params.path.forEach((point, i) => {
+//         let uuid = params.children[i%params.children.length];
 
-        let child = get(flatActionStore)[uuid];
+//         let child = get(flatActionStore)[uuid];
 
-        // child.params.position = {x: point[0], y: point[1]};
-        // child.params.tempPosition = {x: point[0], y: point[1]};
-
-
-        // console.log("trying to render", child.name);
-        renderers[child.name](p, { ...child.params, position: { x: point[0], y: point[1] } }, p5);
-      });
-    }
-  },
-
-}
+//         // child.params.position = {x: point[0], y: point[1]};
+//         // child.params.tempPosition = {x: point[0], y: point[1]};
+//         // console.log("trying to render", child.name);
+//         renderers[child.name](p, { ...child.params, position: { x: point[0], y: point[1] } }, p5);
+//       });
+//     }
+//   },
+// }
 
 export const renderers = {
+  'move to': (p, params, p5, turtle) => {
+    turtle.moveTo(params.position.x, params.position.y);
+    turtle.render(p);
+    // console.log("move to ", params.x, params.y, "turtle", turtle.x, turtle.y);
+    // return {position: { x: params.x, y: params.y } };
+  },
+
+  'move': (p, params, p5, turtle) => {
+    if(params.direction == "forward") {
+      turtle.forward(params.distance);
+    }
+    else if(params.direction == "back") {
+      turtle.back(params.distance);
+    }
+    turtle.render(p);
+    // return {position: { x: turtle.x+x, y: turtle.y+y } };
+  },
+
   //p is pgraphics object
   'solid fill': (p, params, p5) => {
     p.background(params.color);
@@ -213,18 +228,20 @@ export const renderers = {
     p.pop();
   },
   
-  'circle': (p, params, p5) => {
-    // debugger;
-    let x = params.tempPosition? params.tempPosition.x : params.position.x;
-    let y = params.tempPosition?  params.tempPosition.y : params.position.y;
+  'circle': (p, params, p5, turtle) => {
+    // let x = params.tempPosition? params.tempPosition.x : params.position.x;
+    // let y = params.tempPosition?  params.tempPosition.y : params.position.y;
     p.push();
     p.noStroke();
     p.fill(params.color);
-    p.circle(x, y, params.radius*2);
+    console.log("turtle", turtle);
+    console.log("circle", turtle.x,turtle.y, params.radius*2);
+    // p.circle(x, y, params.radius*2);
+    p.circle(turtle.x, turtle.y, params.radius*2);
     p.pop();
   },
 
-  'square': (p, params, p5) => {
+  'square': (p, params, p5, turtle) => {
     let x = params.position.x;
     let y = params.position.y;
     let size = params.size;
@@ -488,6 +505,11 @@ export const renderers = {
       p.circle(endPos.x, endPos.y, 5);
     }
     p.pop();
+  },
+
+  'rotate': (p, params, p5) => {
+    p.translate(p.width/2, p.height/2);
+    p.rotate(p.radians(params.angle));
   },
 
 

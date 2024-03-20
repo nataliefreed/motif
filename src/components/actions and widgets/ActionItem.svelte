@@ -7,6 +7,7 @@
   import Brush from './effects/Brush.svelte';
   import ControlStructure from './effects/ControlStructure.svelte';
   import Shape from './effects/Shape.svelte';
+  import Movement from './effects/Movement.svelte';
   import { selectedActionID, selectedCodeEffect, changedActionID, flatActionStore, stagedActionID } from '../../stores/dataStore';
   import { onMount, createEventDispatcher } from 'svelte';
   import { deepCopy } from '../../utils/utils';
@@ -88,6 +89,8 @@
                   <Stencil name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
               {:else if action.category === 'brushes'}
                   <Brush name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
+              {:else if action.category === 'move'}
+                  <Movement name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
               {/if}
           </span>
       {/if}

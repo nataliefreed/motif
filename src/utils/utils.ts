@@ -23,6 +23,15 @@ export function randomWithinRange(value, min, max, randomFactor) {
   return Math.round(Math.max(min, Math.min(max, value + (Math.random() - 0.5) * randomFactor)));
 }
 
+export function degreesToRadians(degrees: number) {
+  return degrees * (Math.PI / 180);
+}
+
+export function radiansToDegrees(radians: number) {
+  return radians * (180 / Math.PI);
+}
+
+
 /* old version that worked: https://editor.p5js.org/squishynotions/sketches/dhmmKeiuV */
 
 /*
