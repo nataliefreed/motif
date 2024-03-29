@@ -1,5 +1,5 @@
 <script>
-  import { addEffectAsStagedAction, moveStagedActionToEnd, compileActionsBeforeStaged, updateStagedAction, copyStagedActionToActionStore, addCurrentEffectAsStagedAction, compileActions, hideAction, showAction, updateActiveActions } from '../action-utils';
+  import { addEffectAsStagedAction, moveStagedActionToEnd, compileActionsBeforeStaged, updateStagedAction, copyStagedActionToActionStore, addCurrentEffectAsStagedAction, compileActions, hideAction, showAction, updateActiveActions, resetSpecialStagedActionParams } from '../action-utils';
 	import P5 from 'p5-svelte';
   import { stagedAction, activeIDs, stagedActionID, actionRootID, activeCategory, selectedEffect, currentColor, shouldRandomizeColor, changedActionID, flatActionStore, actionRoot } from '../../stores/dataStore';
   import { renderers, loadStencils } from './Renderer.js';
@@ -516,20 +516,11 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       }
 
       renderStagedAction(p5.getDragCanvas());
-      // renderAction($stagedAction, p5.getDragCanvas());
 
       p5.image(p5.getStaticCanvas(), 0, 0);
       p5.image(p5.getDragCanvas(), 0, 0);
   }
 }
-
-// export function renderStagedAction() {
-//   if(!p5) return;
-//   console.log("rendering staged action");
-//   renderAction($stagedAction, p5.getDragCanvas());
-//   p5.image(p5.getStaticCanvas(), 0, 0);
-//   p5.image(p5.getDragCanvas(), 0, 0);
-// }
 
 function renderStep(generator) {
   if (!generator.next().done && isDragging) {
@@ -596,14 +587,12 @@ function renderStep(generator) {
 
     updateStagedAction({ progress: getProgress() });
 
-    // p5.getDragCanvas().clear();
-    // const renderFunction = renderers[$stagedAction.effect];
-    // if (renderFunction) {
-    //   renderFunction(p5.getDragCanvas(), $stagedAction.params, p5);
-    // }
+    p5.getDragCanvas().clear();
 
-    // p5.image(p5.getStaticCanvas(), 0, 0);
-    // p5.image(p5.getDragCanvas(), 0, 0);
+    renderStagedAction(p5.getDragCanvas());
+
+    p5.image(p5.getStaticCanvas(), 0, 0);
+    p5.image(p5.getDragCanvas(), 0, 0);
 
     // continue animation loop
     animationFrameId = requestAnimationFrame(updateMouseHoldTime);

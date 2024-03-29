@@ -471,6 +471,10 @@ export function updateStagedAction(params) {
   updateActionParams(get(stagedActionID), params);
 }
 
+export function resetSpecialStagedActionParams() {
+  updateStagedAction({ progress: 2});
+}
+
 export function setCurrentEffect(name: string) {
   let effect = get(toolStore).find(tool => tool.name === name);
   if(!effect) return;
