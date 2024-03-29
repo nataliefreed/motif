@@ -226,6 +226,7 @@ export const effectList = [
           title: "dots",
           children: ['light_blue_dot', 'dark_blue_dot'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
+          pathSpacing: 15
         }
       },
       'light_blue_dot': {
@@ -257,6 +258,44 @@ export const effectList = [
 
   {
     name: 'along path',
+    textLabel: 'Solid Brush',
+    category: 'brushes',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'solid_brush.jpeg',
+    mouseActionType: 'drag-path',
+    nestedActions: {
+      'uuid_parent': {
+        uuid: 'uuid_parent',
+        name: 'along path',
+        type: 'list' as const,
+        category: 'control',
+        effect: 'along path',
+        params: {
+          title: "line",
+          children: ['blue_line'],
+          path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
+          pathSpacing: 10
+        }
+      },
+      'blue_line': {
+        uuid: 'blue_line',
+        name: 'straight line',
+        type: 'effect',
+        category: 'brushes',
+        effect: 'straight line',
+        params: {
+          color: '#80baee',
+          start: {x: 0, y: 0},
+          end: {x: 0, y: 0},
+          lineWeight: 5
+        }
+      },
+    }
+  },
+
+  {
+    name: 'along path',
     textLabel: 'Mosaic Brush',
     category: 'brushes',
     tags: 'drawing',
@@ -274,7 +313,7 @@ export const effectList = [
           title: "mosaic",
           children: ['red_circle', 'orange_triangle', 'gold_rectangle', 'olive_circle', 'green_triangle', 'light_blue_rectangle', 'blue_circle', 'indigo_triangle', 'purple_rectangle', 'violet_circle', 'pink_triangle'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
-          pathSpacing: 15
+          pathSpacing: 25
         }
       },
       'red_circle': {
@@ -480,7 +519,6 @@ export const effectList = [
       }
     }
   },
-  
 
   {
     name: 'bounce',
@@ -493,7 +531,7 @@ export const effectList = [
     params: {
       start: { x: 20, y: 150 },
       end: { x: 200, y: 150 },
-      progress: 1
+      progress: 2
     }
   },
 
@@ -512,6 +550,42 @@ export const effectList = [
       lineWeight: 5
     }
   },
+
+  //TODO:
+  /*
+  how drawing with this effect works:
+
+  capture the points in Canvas.svelte, 
+
+  - show turtle cursor on hover
+  - on click, draw a turtle at the start position
+  - on hover after first point placed, show a line from the turtle to the cursor (change angle)
+  - on click, draw a line from the turtle to the cursor and move the turtle there
+  - arrow keys can also move and rotate the turtle
+  - on enter or escape, end the drawing and hide the turtle
+
+  param possibilities:
+  - just a regular repeat along path that creates a path
+  - OR actually a sequence of turtle commands
+  - or can any path be turned into turtle commands? and back?
+
+  */
+
+  {
+    name: 'turtle',
+    textLabel: 'Turtle',
+    category: 'brushes',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'turtle.jpeg',
+    mouseActionType: 'keyboard',
+    params: {
+      position: {x:100, y:100},
+      color: '#f57f7e',
+      lineWeight: 5
+    }
+  },
+
   {
     name: 'tile',
     textLabel: 'Straight Grid',

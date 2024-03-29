@@ -116,7 +116,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
   */
 
   let previousActiveActions = $activeIDs;
-  export function renderActionsUntilStaged(delay = 500) {
+  export function renderActionsUntilStaged(delay = 0) {
     if(!p5) return;
 
     let actions = compileActionsBeforeStaged();
@@ -621,9 +621,11 @@ function handleMouseUp(event) {
     path.push([x, y]); //add last point to path
 
     cancelAnimationFrame(animationFrameId);
-    updateStagedAction({path: getAntPath(path, $stagedAction.params.pathSpacing || 10), progress: Math.round(getProgress())}); 
+    updateStagedAction({path: getAntPath(path, $stagedAction.params.pathSpacing || 10), progress: Math.round(getProgress())});
 
     copyStagedActionToActionStore();
+
+    resetSpecialStagedActionParams(); //reset staged action to default for progress, start, end
 
     //move staged action to end of list
     //TODO: slow replay of actions

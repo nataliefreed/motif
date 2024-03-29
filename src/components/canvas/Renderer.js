@@ -204,7 +204,8 @@ export const renderers = {
     let spiroColor = p.color(params.color);
     let x = params.position.x;
     let y = params.position.y;
-    let steps = p.map(params.progress, 0, 100, 0, 360);
+    // let steps = p.map(params.progress, 0, 100, 0, 360);
+    let steps = 360;
     // if(p === p5.getDragCanvas) debugger;
   
     let k = (R - r) / r;
@@ -528,7 +529,7 @@ export const renderers = {
             currentPos.y = p.constrain(currentPos.y, 0+radius, p.height-radius);
         }
     }
-    if(p === p5.getDragCanvas()) {
+    if(p === p5.getDragCanvas() || p === p5.getHoverCanvas()) {
       p.colorMode(p5.RGB);
       p.fill(255);
       p.circle(startPos.x, startPos.y, 5);
@@ -577,21 +578,21 @@ export const renderers = {
   //   p.pop();
   // },
 
-  'smooth brush': (p, params, p5) => {
-    s.push();
-    s.noFill();
-    s.strokeWeight(params.lineWeight);
-    s.stroke(params.color);
-    s.strokeJoin(s.ROUND);
+  // 'smooth brush': (p, params, p5) => {
+  //   s.push();
+  //   s.noFill();
+  //   s.strokeWeight(params.lineWeight);
+  //   s.stroke(params.color);
+  //   s.strokeJoin(s.ROUND);
     
-    let points = params.pointsList;
-    s.beginShape();
-    for(let i=0;i<points.length;i++) {
-      s.vertex(points[i].x, points[i].y);
-    }
-    s.endShape();
-    s.pop();
-  },
+  //   let points = params.pointsList;
+  //   s.beginShape();
+  //   for(let i=0;i<points.length;i++) {
+  //     s.vertex(points[i].x, points[i].y);
+  //   }
+  //   s.endShape();
+  //   s.pop();
+  // },
 
   'rainbox brush': (p, params, p5) => {
 

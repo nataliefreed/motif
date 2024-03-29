@@ -701,16 +701,40 @@ export function compileActions(action: Action, parentID?: string) {
           effect: action.effect,
           params: {}
         });
-        // If the action has a path, create a compiled action for each point along the path
+      // If the action has a path, create a compiled action for each point or line segment along the path
         action.params.path.forEach((point: [number, number], index: number) => {
           const childID = action.params.children[index % action.params.children.length];
           const childAction = get(flatActionStore)[childID];
 
-          const modifiedParams = {
-            ...childAction.params,
-            position: { x: point[0], y: point[1] }
-          };
+          // Initialize an empty object for modified parameters
+          let modifiedParams = {};
 
+          if ('position' in childAction.params) {
+            // If the child action has a position parameter, use the current point
+            modifiedParams = {
+              ...childAction.params,
+              position: { x: point[0], y: point[1] }
+            };
+          } else if ('start' in childAction.params && 'end' in childAction.params) {
+            // If the child action has start and end parameters, use the current and next points
+            if (index < action.params.path.length - 1) { // Ensure we don't exceed the path array bounds
+              const nextPoint = action.params.path[index + 1];
+              modifiedParams = {
+                ...childAction.params,
+                start: { x: point[0], y: point[1] },
+                end: { x: nextPoint[0], y: nextPoint[1] }
+              };
+            }
+            else {
+              return; //if at last point, don't add another action
+            }
+          } else {
+            // If the child action has neither position nor start/end, use the original parameters
+            modifiedParams = { ...childAction.params };
+          }
+
+          console.log("modified params", modifiedParams);
+          // Push the compiled action with the modified parameters
           actions.push({
             actionID: childAction.uuid,
             indexedID: childAction.uuid + `__${index}`,
@@ -720,6 +744,28 @@ export function compileActions(action: Action, parentID?: string) {
           });
         });
       }
+      //   // If the action has a path, create a compiled action for each point along the path
+      //   action.params.path.forEach((point: [number, number], index: number) => {
+      //     const childID = action.params.children[index % action.params.children.length];
+      //     const childAction = get(flatActionStore)[childID];
+
+      //     //if rather than position, action has start and end points, create the new compiled actions in staggered way like this:
+      //     // line from first point to second point, line from second point to third point, etc., until last point
+
+      //     const modifiedParams = {
+      //       ...childAction.params,
+      //       position: { x: point[0], y: point[1] }
+      //     };
+
+      //     actions.push({
+      //       actionID: childAction.uuid,
+      //       indexedID: childAction.uuid + `__${index}`,
+      //       parentID: action.uuid,
+      //       effect: childAction.effect,
+      //       params: modifiedParams
+      //     });
+      //   });
+      // }
       break;
     case 'repeat':
       const repeatCount = action.params.count || 1;

@@ -28,6 +28,8 @@
     reloadTippy();
   }
 
+  $: displayValue = Math.round(value);
+
   $: cursorStyle = ($selectedCodeEffect === null || $selectedCodeEffect === 'point') ? 'pointer' : '';
 
   function reloadTippy() {
@@ -125,7 +127,7 @@
       on:mouseover={handleMouseOver}
       on:mouseout={handleMouseOut}
       style="cursor: {cursorStyle};">
-  {value}
+  {displayValue}
 </span>
 
 <div bind:this={sliderContainer} class="slider-container not-deselect" style="display: none;">
