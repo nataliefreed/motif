@@ -2,13 +2,15 @@ import { writable, get, derived } from 'svelte/store';
 import type { Action, Effect } from '../types/types';
 import { effectList } from '../stores/effectList.js';
 import { v4 as uuidv4 } from 'uuid';
-import { initHistoryStore } from './history';
 import tinycolor from 'tinycolor2';
 import { curatedRandomHexColor } from '../utils/color-utils';
 
 export const actionStore = writable<Action>({name:"default", type:'list', category:'none', children:[], uuid:""});
 // object storing actions by UUID
 export const flatActionStore = writable<{ [key: string]: Action }>({});
+
+export const activeIDs = writable<string[]>([]);
+
 // export const stagedAction = writable<Action | null>(null);
 export const stagedActionID = writable('');
 export const changedActionID = writable('');

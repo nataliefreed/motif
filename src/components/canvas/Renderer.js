@@ -36,11 +36,10 @@ let paperdolls = null;
 // }
 
 export const renderers = {
+  //p is pgraphics object, which could be the main p5 instance or one of the pgraphics instances
   'move to': (p, params, p5, turtle) => {
     turtle.moveTo(params.position.x, params.position.y);
     turtle.render(p);
-    // console.log("move to ", params.x, params.y, "turtle", turtle.x, turtle.y);
-    // return {position: { x: params.x, y: params.y } };
   },
 
   'move': (p, params, p5, turtle) => {
@@ -51,10 +50,24 @@ export const renderers = {
       turtle.back(params.distance);
     }
     turtle.render(p);
-    // return {position: { x: turtle.x+x, y: turtle.y+y } };
   },
 
-  //p is pgraphics object
+  'stamp': (p, params, p5, turtle) => {
+    p.push();
+    p.noStroke();
+    p.fill(turtle.penColor);
+    p.ellipse(turtle.x, turtle.y, turtle.penWidth, turtle.penHeight);
+    p.pop();
+  },
+
+  'ellipse': (p, params, p5, turtle) => {
+    p.push();
+    p.noStroke();
+    p.fill(turtle.penColor);
+    p.ellipse(turtle.x, turtle.y, turtle.penWidth, turtle.penHeight);
+    p.pop();
+  },
+
   'solid fill': (p, params, p5) => {
     p.background(params.color);
   },
@@ -227,17 +240,34 @@ export const renderers = {
   
     p.pop();
   },
+
+  'shape': (p, params, p5, turtle) => {
+    p.push();
+    p.noStroke();
+    debugger;
+    p.fill(turtle.penColor);
+    switch(params.shape) {
+      case 'ellipse':
+        p.ellipse(turtle.x, turtle.y, turtle.penWidth, turtle.penHeight);
+        break;
+      case 'rectangle':
+        p.rect(turtle.x, turtle.y, turtle.penWidth, turtle.penHeight);
+        break;
+      case 'triangle':
+        p.triangle(turtle.x, turtle.y, turtle.x + turtle.penWidth, turtle.y, turtle.x + turtle.penWidth / 2, turtle.y - turtle.penHeight);
+        break;
+      default: break;
+    }
+    p.pop();
+  },
   
-  'circle': (p, params, p5, turtle) => {
-    // let x = params.tempPosition? params.tempPosition.x : params.position.x;
-    // let y = params.tempPosition?  params.tempPosition.y : params.position.y;
+  'circle': (p, params, p5) => {
+    let x = params.tempPosition? params.tempPosition.x : params.position.x;
+    let y = params.tempPosition?  params.tempPosition.y : params.position.y;
     p.push();
     p.noStroke();
     p.fill(params.color);
-    console.log("turtle", turtle);
-    console.log("circle", turtle.x,turtle.y, params.radius*2);
-    // p.circle(x, y, params.radius*2);
-    p.circle(turtle.x, turtle.y, params.radius*2);
+    p.circle(x, y, params.radius*2);
     p.pop();
   },
 

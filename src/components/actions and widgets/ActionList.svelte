@@ -1,3 +1,6 @@
+// I think this is no longer in use, replaced by ListWidget
+
+
 <script lang="ts">
 
   import type { Action } from '../../types/types';
@@ -38,46 +41,48 @@
     }
 
     function reorderItems(array, oldIndex, newIndex) {
-      const newArray = [...array]; // Create a shallow copy of the array
-      const [movedItem] = newArray.splice(oldIndex, 1); // Remove the item from old position
-      newArray.splice(newIndex, 0, movedItem); // Insert the item at new position
-      return newArray;
+      // const newArray = [...array]; // Create a shallow copy of the array
+      // const [movedItem] = newArray.splice(oldIndex, 1); // Remove the item from old position
+      // newArray.splice(newIndex, 0, movedItem); // Insert the item at new position
+      // return newArray;
     }
 
     function handleReorder(event: SortableEvent) {
-      if(event.to !== event.from) return; // make sure we are still in the same list
-      const oldIndex = event.oldIndex;
-      const newIndex = event.newIndex;
-      if (oldIndex === newIndex) return;
+    //   if(event.to !== event.from) return; // make sure we are still in the same list
+    //   const oldIndex = event.oldIndex;
+    //   const newIndex = event.newIndex;
+    //   if (oldIndex === newIndex) return;
 
-      let uuid = event.item.id;
+    //   let uuid = event.item.id;
 
-      actionStore.update(store => {
-        if(!store.children) return store;
-        if (action.category === 'top-level-list') {
-            return {
-                ...store,
-                children: reorderItems(store.children, oldIndex, newIndex)
-            };
-        } else if (action.params && action.params.children) { // if in nested list
-            // Find the parent action and update its children
-            let parentIndex = store.children.findIndex(a => a.uuid === action.uuid); //doesn't work more than one level down
-            if (parentIndex !== -1) {
-                let updatedStore = {...store};
-                updatedStore.children = [...store.children];
-                updatedStore.children[parentIndex] = {
-                    ...store.children[parentIndex],
-                    params: {
-                        ...store.children[parentIndex].params,
-                        children: reorderItems(store.children[parentIndex].params.children, oldIndex, newIndex)
-                    }
-                };
-                return updatedStore;
-            }
-        }
-        return store;
-      });
-    }
+    //   console.log("reordering", oldIndex, newIndex, uuid);
+
+    //   actionStore.update(store => {
+    //     if(!store.children) return store;
+    //     if (action.category === 'top-level-list') {
+    //         return {
+    //             ...store,
+    //             children: reorderItems(store.children, oldIndex, newIndex)
+    //         };
+    //     } else if (action.params && action.params.children) { // if in nested list
+    //         // Find the parent action and update its children
+    //         let parentIndex = store.children.findIndex(a => a.uuid === action.uuid); //doesn't work more than one level down
+    //         if (parentIndex !== -1) {
+    //             let updatedStore = {...store};
+    //             updatedStore.children = [...store.children];
+    //             updatedStore.children[parentIndex] = {
+    //                 ...store.children[parentIndex],
+    //                 params: {
+    //                     ...store.children[parentIndex].params,
+    //                     children: reorderItems(store.children[parentIndex].params.children, oldIndex, newIndex)
+    //                 }
+    //             };
+    //             return updatedStore;
+    //         }
+    //     }
+    //     return store;
+    //   });
+    // }
   });
 
   onDestroy(() => {

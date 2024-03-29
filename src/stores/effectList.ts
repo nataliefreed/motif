@@ -1,6 +1,8 @@
 // this file goes with components/actions and widgets/effects (how each effect is displayed - was: init)
 // and with components/canvas/renderer.ts (how each effect is rendered with P5 - was: onact)
 
+let defaultBrushPath = [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]];
+
 export const effectList = [
   {
     name: 'circle',
@@ -16,6 +18,18 @@ export const effectList = [
       position: {x: 100, y: 100}
     },
   },
+  // {
+  //   name: 'shape',
+  //   textLabel: 'Shape',
+  //   category: 'shapes',
+  //   tags: 'drawing',
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   thumbnail: 'shape.jpg',
+  //   mouseActionType: 'drag',
+  //   params: {
+  //     shape: 'ellipse'
+  //   },
+  // },
   {
     name: 'square',
     textLabel: 'Square',
@@ -211,7 +225,7 @@ export const effectList = [
         params: {
           title: "dots",
           children: ['light_blue_dot', 'dark_blue_dot'],
-          path: []
+          path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
         }
       },
       'light_blue_dot': {
@@ -259,7 +273,7 @@ export const effectList = [
         params: {
           title: "mosaic",
           children: ['red_circle', 'orange_triangle', 'gold_rectangle', 'olive_circle', 'green_triangle', 'light_blue_rectangle', 'blue_circle', 'indigo_triangle', 'purple_rectangle', 'violet_circle', 'pink_triangle'],
-          path: [],
+          path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
           pathSpacing: 15
         }
       },
@@ -285,7 +299,7 @@ export const effectList = [
         type: 'effect',
         category: 'shapes',
         effect: 'rectangle',
-        params: {color: 'rgb(255, 215, 0)', position: {x: 0, y: 0}, width: 15, height: 22.5}
+        params: {color: 'rgb(255, 215, 0)', position: {x: 0, y: 0}, width: 15, height: 22}
       },
       'olive_circle': {
         uuid: 'olive_circle',
@@ -371,7 +385,7 @@ export const effectList = [
         params: {
           title: "hearts",
           children: ['small_heart', 'large_heart'],
-          path: [],
+          path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
           pathSpacing: 15
         }
       },
@@ -420,7 +434,7 @@ export const effectList = [
         params: {
           title: "stars",
           children: ['pink_star', 'purple_star', 'dark_blue_star', 'blue_star', 'light_blue_star'],
-          path: [],
+          path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
           pathSpacing: 20
         }
       },
@@ -757,6 +771,44 @@ export const effectList = [
     mouseActionType: 'click',
     params: {
       mode: 'down'
+    }
+  },
+  {
+    name: 'set pen size',
+    textLabel: 'Set pen size',
+    category: 'move',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'move.jpg',
+    mouseActionType: 'click',
+    params: {
+      width: 20,
+      height: 20
+    }
+  },
+  {
+    name: 'set pen color',
+    textLabel: 'Set pen color',
+    category: 'move',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'move.jpg',
+    mouseActionType: 'click',
+    params: {
+      color: 'rgb(75, 50, 130)'
+    }
+  },
+
+  {
+    name: 'stamp',
+    textLabel: 'stamp',
+    category: 'move',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'move.jpg',
+    mouseActionType: 'click',
+    params: {
+      //could be nested actions here
     }
   },
 

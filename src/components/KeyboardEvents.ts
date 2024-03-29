@@ -1,4 +1,4 @@
-import { addEffectToActionStore, removeSelectedAction, setCurrentEffect } from "./action-utils";
+import { addEffectToActionStore, removeSelectedAction, setCurrentEffect, undo } from "./action-utils";
 import { toolStore, selectedActionID, selectedEffect } from "../stores/dataStore";
 import { historyStore } from "../stores/history";
 import { get } from "svelte/store";
@@ -26,7 +26,7 @@ function keydownHandler(event: KeyboardEvent) {
       }
       break;
     case 'u':
-      historyStore.undo();
+      undo();
       break;
     case 'Escape':
       selectedActionID.set(''); // deselect all lines of code

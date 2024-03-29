@@ -5,6 +5,7 @@
 
   export let id = '';
   export let path:[number, number][] = []; // The path points as a prop
+  let storedPaths: [number, number][][] = [];
 
   let domElement: SVGElement;
 
@@ -31,12 +32,32 @@
   function handlePointsChange(event : CustomEvent) {
     // console.log("path widget points change", event.detail.value);
     // console.log(event.detail);
+    previewEnd = true;
     dispatch('valueChange', { id: 'path', value: event.detail.value as [number, number][] });
+  }
+
+  let previewEnd = false;
+  let savedValue = path;
+  function handleMouseOver(event: MouseEvent) {
+    savedValue = path;
+    let newValue = path.map(point => [point[0] + (Math.random() - 0.5) * 10, point[1] + (Math.random() - 0.5) * 10]);
+    previewEnd = false;
+    dispatch('valueChange', { id: 'path', value: newValue });
+  }
+
+  function handleMouseOut(event: MouseEvent) {
+    if(!previewEnd) {
+      dispatch('valueChange', { id: 'path', value: savedValue });
+      previewEnd = true;
+    }
   }
 
 </script>
 
-  <svg bind:this={domElement} class="path-widget" width="1.7em" height="1.7em" viewBox="0 0 540 540" style="border: 1px solid #888; max-width: 100%; height: auto;">
+  <svg bind:this={domElement} class="path-widget" width="1.7em" height="1.7em" viewBox="0 0 540 540" style="border: 1px solid #888; max-width: 100%; height: auto;"
+    on:mouseover={handleMouseOver}
+    on:mouseout={handleMouseOut}
+  >
     <path d={pathData} stroke="lightgray" fill="none" />
     {#each path as point}
       <circle cx={point[0]} cy={point[1]} r="10" fill="black" />

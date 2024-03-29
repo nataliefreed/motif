@@ -11,7 +11,7 @@
   import { selectedActionID, selectedCodeEffect, changedActionID, flatActionStore, stagedActionID } from '../../stores/dataStore';
   import { onMount, createEventDispatcher } from 'svelte';
   import { deepCopy } from '../../utils/utils';
-  import { updateActionParams } from '../action-utils';
+  import { updateActionParams, selectAction } from '../action-utils';
 
   export let action: Action | null;
   export let depth = 0;
@@ -51,53 +51,57 @@
 //     console.log("list clicked", actionId);
 //   }
 
+  // handles click on any part of item except the drag handle
   function handleItemClick(event: Event, actionId: string) {
-    const target = event.target as Element;
-    if($selectedCodeEffect == "point" || !$selectedCodeEffect) {
-        if(target && target.classList.contains('drag-handle') || target.classList.contains('action-item-content') || target === event.currentTarget) { //if not a widget, select the action
-        selectAction(actionId);
-      }
-    }
-    else {
-      dispatch('codeEffect', { actionId, codeEffect: $selectedCodeEffect });
-    }
+    // event.stopPropagation();
+    // const target = event.target as Element;
+    // if($selectedCodeEffect == "point" || !$selectedCodeEffect) {
+    //     if(target && target.classList.contains('drag-handle') || target.classList.contains('action-item-content') || target === event.currentTarget) { //if not a widget, select the action
+    //     selectAction(actionId);
+    //   }
+    // }
+    // else {
+    //   dispatch('codeEffect', { actionId, codeEffect: $selectedCodeEffect });
+    // }
   }
 
-  function selectAction(actionID: string) {
-    selectedActionID.set(actionID);
+  function handleItemMouseover(event: Event, actionId: string) {
+    // console.log("mouse over item id", action.uuid);
+    // event.stopPropagation();
+    // wiggleAction(action.uuid);
   }
 
 </script>
+
   {#if action}
-  <span
-  class:staged={$stagedActionID === action.uuid}
-  >
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <span
+    class:staged={$stagedActionID === action.uuid}
+    class="action-item-content"
+    on:click={e => handleItemClick(e, action.uuid)}
+    on:mouseover={e => handleItemMouseover(e, action.uuid)}
+    >
       {#if action.category === 'control'}
           <ControlStructure name={action.name} params={action.params} onUpdate={handleUpdate} depth={depth+1} on:reorder/>
       {:else if action.type === 'effect'}
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <span class="action-item-content" on:click={e => handleItemClick(e, action.uuid)}>
-              {#if action.category === 'backgrounds'}
-                  <Background name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
-              {:else if action.category === 'shapes'}
-                  <Shape name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
-              {:else if action.category === 'effects'}
-                  <Eggbeater name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
-              {:else if action.category === 'patterns'}
-                  <Tiling name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
-              {:else if action.category === 'stencils'}
-                  <Stencil name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
-              {:else if action.category === 'brushes'}
-                  <Brush name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
-              {:else if action.category === 'move'}
-                  <Movement name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
-              {/if}
-          </span>
+          {#if action.category === 'backgrounds'}
+              <Background name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
+          {:else if action.category === 'shapes'}
+              <Shape name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
+          {:else if action.category === 'effects'}
+              <Eggbeater name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
+          {:else if action.category === 'patterns'}
+              <Tiling name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
+          {:else if action.category === 'stencils'}
+              <Stencil name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
+          {:else if action.category === 'brushes'}
+              <Brush name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
+          {:else if action.category === 'move'}
+              <Movement name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
+          {/if}
       {/if}
     </span>
   {/if}
-
-
 <style>
   /* .action-single-item {
     display: flex;

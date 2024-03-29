@@ -13,6 +13,7 @@
   function handleValueChange(event: CustomEvent) {
     const { id, value } = event.detail;
     onUpdate({[id]: value });
+    // console.log("handling value change in control structure", id, value);
   }
 
   function toggle() {
@@ -29,8 +30,8 @@
     <ListWidget id='children' value={params.children} {depth} on:valueChange={handleValueChange}/>
   {/if}
 {:else if name === 'along path'}
-  <StringWidget id='title' value={params.title} />
-along path<PathWidget id='path' path={params.path} on:valueChange={handleValueChange}/>
+  <!-- <StringWidget id='title' value={params.title} /> -->
+Repeat along <PathWidget id='path' path={params.path} on:valueChange={handleValueChange}/>
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <span class="toggle-arrow" on:click={toggle}> {isOpen ? '▼' : '▶'}</span>
   {#if isOpen}

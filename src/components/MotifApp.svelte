@@ -6,19 +6,18 @@
   import ActionItem from './actions and widgets/ActionItem.svelte';
 	import type { Action, Effect } from '../types/types';
   import Canvas from './canvas/Canvas.svelte';
-  import { scrollToAction, removeSelectedAction, loopActionAlongPath, remixAction, duplicateAction, redrawAction, clearAllActions } from './action-utils';
+  import { scrollToAction, removeSelectedAction, loopActionAlongPath, remixAction, duplicateAction, redrawSelectedAction, clearAllActions, undo } from './action-utils';
   import EffectToolbar from './toolbars/EffectToolbar.svelte';
   import Notebook from './Notebook.svelte';
   import Page from './Page.svelte';
   import { crossfade } from 'svelte/transition';
-  import { historyStore } from '../stores/history';
   import { fade, fly } from 'svelte/transition';
   import Tooltip from './Tooltip.svelte';
   import CategoryToolbar from './toolbars/CategoryToolbar.svelte';
   import { p5CanvasSize } from '../stores/canvasStore';
   import { setupKeyboardEvents, removeKeyboardEvents } from './KeyboardEvents';
   import EffectSettingsPanel from './toolbars/EffectSettingsPanel.svelte';
-  import { initHistoryStore } from '../stores/history';
+  import { historyStore, saveToHistory } from '../stores/history';
   // import PlayButton from './PlayButton.svelte';
   import { curatedRandomHexColor } from '../utils/color-utils';
 
@@ -32,15 +31,11 @@
 
   $: codeCursorClass = `${$selectedCodeEffect}-cursor`;
 
-
+  $: canUndo = $historyStore.length > 0;
 
   let downloadCanvas: Function;
   function handleDownload() {
     downloadCanvas();
-  }
-
-  function undo() {
-    historyStore.undo();
   }
 
   // function eyedropperSelectedAction() {
@@ -82,6 +77,17 @@
     }
   }
 
+  function handleBackgroundClick(event:MouseEvent) {
+    if(!event || !event.target) return;
+    const target = event.target as HTMLElement;
+    const tagName = target.tagName.toLowerCase();
+
+    if (tagName !== 'button' && tagName !== 'canvas' && tagName !== 'input' && tagName !== 'a') {
+      // console.log("click somewhere", event.target);
+      saveToHistory("background click");
+    }
+    event.stopPropagation();
+  }
 
   function saveTool(id:string) {
     // saveActionAsNewTool($flatActionStore[id]);
@@ -95,28 +101,31 @@
   }
 
   function handleClickOutside(event: MouseEvent) {
-    if(!$selectedActionID || $selectedActionID.length < 1) return;
+    // console.log("clicked outside", event.target);
 
-    // const target = event.target as Element;
-    // if (target.classList.contains('deselect-target')) {
-    //   deselectAction();
-    // }
-    
-    const mainList = document.querySelector('#main-list');
     let target = event.target as Node;
-    // console.log("target:", target, target.nodeName);
-    if(mainList
-      && !mainList.contains(target)
-      && target.nodeName !== 'BUTTON'
+
+    // console.log("hit target", target.nodeName);
+
+    if(target.nodeName !== 'BUTTON'
+      && target.nodeName !== 'INPUT'
+      && target.nodeName !== 'CANVAS') {
+        saveToHistory("outside click");
+    }
+
+    // deselect
+    if(!$selectedActionID || $selectedActionID.length < 1) return; //if nothing selected
+    // const mainList = document.querySelector('#main-list');
+    // if(mainList
+    //   && !mainList.contains(target)
+    if(target.nodeName !== 'BUTTON'
       && target.nodeName !== 'INPUT'
       && target.nodeName !== 'CANVAS'
+      && !(target as Element).closest('.action-list-item')
       && !(event.target as Element).closest('.dont-deselect')) {
-      deselectAction();
-    }
+        deselectAction();
+      }
   }
-  // save to undo queue whenever these stores change
-  // $: if ($myTools) { saveToHistory(); }
-  // $: if ($stagedAction) { saveToHistory(); }
   
   // // if staged action changes, update the selected effect
   // watch out for circular dependencies! see selectedEffect.subscribe
@@ -147,8 +156,6 @@
       }
 
       allCategories = [...new Set(data.map(tool => tool.category))];
-
-      initHistoryStore(); //set starting state
     });
 
     window.addEventListener('click', handleClickOutside);
@@ -205,6 +212,7 @@
 
 </script>
 
+<!-- svelte-ignore missing-declaration -->
 <div id="notebook">
 <Notebook>
   <Page slot="left">
@@ -238,7 +246,7 @@
   <Page slot="right">
     <div class="instabuttons-top">
       <!-- <PlayButton /> -->
-      <button class="instabutton" id="undoButton" on:click={undo}>Undo</button>
+      <button class="instabutton" id="undoButton" on:click={undo} disabled={!canUndo}>Undo</button>
       <!-- <button class="instabutton" id="refreshButton" on:click={refresh}><svg xmlns="http://www.w3.org/2000/svg"  height="16" width="16" viewBox="0 0 512 512">!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.<path d="M386.3 160H336c-17.7 0-32 14.3-32 32s14.3 32 32 32H464c17.7 0 32-14.3 32-32V64c0-17.7-14.3-32-32-32s-32 14.3-32 32v51.2L414.4 97.6c-87.5-87.5-229.3-87.5-316.8 0s-87.5 229.3 0 316.8s229.3 87.5 316.8 0c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0c-62.5 62.5-163.8 62.5-226.3 0s-62.5-163.8 0-226.3s163.8-62.5 226.3 0L386.3 160z"/></svg></button> -->
       <button class="instabutton" id="clearAllButton" on:click={clearAllActions}>Clear All</button>
       <div class="spacer"></div>
@@ -279,7 +287,7 @@
         <button class="instabutton selected-action-button dont-deselect" id="remixButton" disabled={!$selectedActionID} on:click={() => remixAction($selectedActionID)}><svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M234.7 42.7L197 56.8c-3 1.1-5 4-5 7.2s2 6.1 5 7.2l37.7 14.1L248.8 123c1.1 3 4 5 7.2 5s6.1-2 7.2-5l14.1-37.7L315 71.2c3-1.1 5-4 5-7.2s-2-6.1-5-7.2L277.3 42.7 263.2 5c-1.1-3-4-5-7.2-5s-6.1 2-7.2 5L234.7 42.7zM46.1 395.4c-18.7 18.7-18.7 49.1 0 67.9l34.6 34.6c18.7 18.7 49.1 18.7 67.9 0L529.9 116.5c18.7-18.7 18.7-49.1 0-67.9L495.3 14.1c-18.7-18.7-49.1-18.7-67.9 0L46.1 395.4zM484.6 82.6l-105 105-23.3-23.3 105-105 23.3 23.3zM7.5 117.2C3 118.9 0 123.2 0 128s3 9.1 7.5 10.8L64 160l21.2 56.5c1.7 4.5 6 7.5 10.8 7.5s9.1-3 10.8-7.5L128 160l56.5-21.2c4.5-1.7 7.5-6 7.5-10.8s-3-9.1-7.5-10.8L128 96 106.8 39.5C105.1 35 100.8 32 96 32s-9.1 3-10.8 7.5L64 96 7.5 117.2zm352 256c-4.5 1.7-7.5 6-7.5 10.8s3 9.1 7.5 10.8L416 416l21.2 56.5c1.7 4.5 6 7.5 10.8 7.5s9.1-3 10.8-7.5L480 416l56.5-21.2c4.5-1.7 7.5-6 7.5-10.8s-3-9.1-7.5-10.8L480 352l-21.2-56.5c-1.7-4.5-6-7.5-10.8-7.5s-9.1 3-10.8 7.5L416 352l-56.5 21.2z"/></svg> remix</button>
         <button class="instabutton selected-action-button dont-deselect" id="duplicateButton" disabled={!$selectedActionID} on:click={() => duplicateAction($selectedActionID)}><svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 512 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M64 464H288c8.8 0 16-7.2 16-16V384h48v64c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V224c0-35.3 28.7-64 64-64h64v48H64c-8.8 0-16 7.2-16 16V448c0 8.8 7.2 16 16 16zM224 304H448c8.8 0 16-7.2 16-16V64c0-8.8-7.2-16-16-16H224c-8.8 0-16 7.2-16 16V288c0 8.8 7.2 16 16 16zm-64-16V64c0-35.3 28.7-64 64-64H448c35.3 0 64 28.7 64 64V288c0 35.3-28.7 64-64 64H224c-35.3 0-64-28.7-64-64z"/></svg> duplicate</button>
         <button class="instabutton selected-action-button dont-deselect" id="repeatButton" disabled={!$selectedActionID} on:click={() => loopActionAlongPath($selectedActionID) }><svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 512 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M0 224c0 17.7 14.3 32 32 32s32-14.3 32-32c0-53 43-96 96-96H320v32c0 12.9 7.8 24.6 19.8 29.6s25.7 2.2 34.9-6.9l64-64c12.5-12.5 12.5-32.8 0-45.3l-64-64c-9.2-9.2-22.9-11.9-34.9-6.9S320 19.1 320 32V64H160C71.6 64 0 135.6 0 224zm512 64c0-17.7-14.3-32-32-32s-32 14.3-32 32c0 53-43 96-96 96H192V352c0-12.9-7.8-24.6-19.8-29.6s-25.7-2.2-34.9 6.9l-64 64c-12.5 12.5-12.5 32.8 0 45.3l64 64c9.2 9.2 22.9 11.9 34.9 6.9s19.8-16.6 19.8-29.6V448H352c88.4 0 160-71.6 160-160z"/></svg> repeat</button>
-        <button class="instabutton selected-action-button dont-deselect" id="redrawButton" disabled={!$selectedActionID} on:click={() => redrawAction($selectedActionID)}><svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M339.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L568.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S517.7-4.4 499.1 9.6L262.4 187.2c-24 18-38.2 46.1-38.4 76.1L339.3 367.1zm-19.6 25.4l-116-104.4C143.9 290.3 96 339.6 96 400c0 3.9 .2 7.8 .6 11.6C98.4 429.1 86.4 448 68.8 448H64c-17.7 0-32 14.3-32 32s14.3 32 32 32H208c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg> re-draw</button>
+        <button class="instabutton selected-action-button dont-deselect" id="redrawButton" disabled={!$selectedActionID} on:click={() => redrawSelectedAction()}><svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M339.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L568.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S517.7-4.4 499.1 9.6L262.4 187.2c-24 18-38.2 46.1-38.4 76.1L339.3 367.1zm-19.6 25.4l-116-104.4C143.9 290.3 96 339.6 96 400c0 3.9 .2 7.8 .6 11.6C98.4 429.1 86.4 448 68.8 448H64c-17.7 0-32 14.3-32 32s14.3 32 32 32H208c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg> re-draw</button>
         <!-- <button class="instabutton selected-action-button dont-deselect" id="saveToolButton" disabled={!$selectedActionID} on:click={() => saveTool($selectedActionID)}> <svg xmlns="http://www.w3.org/2000/svg" height="0.9em" viewBox="0 0 448 512">!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.<path d="M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.8 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"/></svg> <svg xmlns="http://www.w3.org/2000/svg" height="1.4em" viewBox="0 0 512 512">!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.<path d="M176 88v40H336V88c0-4.4-3.6-8-8-8H184c-4.4 0-8 3.6-8 8zm-48 40V88c0-30.9 25.1-56 56-56H328c30.9 0 56 25.1 56 56v40h28.1c12.7 0 24.9 5.1 33.9 14.1l51.9 51.9c9 9 14.1 21.2 14.1 33.9V304H384V288c0-17.7-14.3-32-32-32s-32 14.3-32 32v16H192V288c0-17.7-14.3-32-32-32s-32 14.3-32 32v16H0V227.9c0-12.7 5.1-24.9 14.1-33.9l51.9-51.9c9-9 21.2-14.1 33.9-14.1H128zM0 416V336H128v16c0 17.7 14.3 32 32 32s32-14.3 32-32V336H320v16c0 17.7 14.3 32 32 32s32-14.3 32-32V336H512v80c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64z"/></svg>&nbsp;&nbsp;</button> -->
       </div>
       <!-- <div id="code-toolbar"><CodeToolbar /></div> -->
@@ -436,6 +444,11 @@
 
   .instabutton:hover {
     background-color: #e6e6e6;
+  }
+
+  .instabutton:disabled {
+    color: gray;
+    background-color: #f4f4f4;
   }
 
   .selected-action-button {

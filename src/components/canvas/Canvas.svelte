@@ -1,13 +1,13 @@
 <script>
-  import { addEffectAsStagedAction, updateStagedAction, copyStagedActionToActionStore, addCurrentEffectAsStagedAction, compileActions, hideAction, showAction } from '../action-utils';
+  import { addEffectAsStagedAction, moveStagedActionToEnd, compileActionsBeforeStaged, updateStagedAction, copyStagedActionToActionStore, addCurrentEffectAsStagedAction, compileActions, hideAction, showAction, updateActiveActions } from '../action-utils';
 	import P5 from 'p5-svelte';
-  import { stagedAction, stagedActionID, actionRootID, activeCategory, selectedEffect, currentColor, shouldRandomizeColor, changedActionID, flatActionStore, actionRoot } from '../../stores/dataStore';
+  import { stagedAction, activeIDs, stagedActionID, actionRootID, activeCategory, selectedEffect, currentColor, shouldRandomizeColor, changedActionID, flatActionStore, actionRoot } from '../../stores/dataStore';
   import { renderers, loadStencils } from './Renderer.js';
   import { onMount, onDestroy } from 'svelte';
   import tinycolor from "tinycolor2";
   import { getAntPath, mapValue } from '../../utils/utils.ts';
   import { curatedRandomHexColor } from '../../utils/color-utils.ts';
-  import { Turtle } from './Turtle.js';
+  import { turtle } from './Turtle.js';
 	
   let x = 55;
 	let y = 55;
@@ -23,8 +23,6 @@
 
   let thumbnails = [];
 
-  let turtle = new Turtle(10, 10, 0);
-
   function randomizeCurrentColor() {
     // currentColor.set(tinycolor.random().toHexString());
     currentColor.set(curatedRandomHexColor());
@@ -39,8 +37,6 @@
   // }
 
   onMount(() => {
-
-    turtle = new Turtle(10, 10, 0);
 
     // if selectedEffect changed, update staged action accordingly
     selectedEffect.subscribe(effect => {
@@ -63,16 +59,17 @@
     });
 
     flatActionStore.subscribe(actions => {
+      // console.log("changed action id", $changedActionID, "staged action id", $stagedActionID);
       if($changedActionID != $stagedActionID) {
-        renderAllActions();
+        renderActionsUntilStaged();
       }
     });
 
-    stagedActionID.subscribe(id => {
-      if(stagedActionID !== '') {
-        // hideAction(id); //hide when first added
-      }
-    });
+    // stagedActionID.subscribe(id => {
+    //   if(stagedActionID !== '') {
+    //     // hideAction(id); //hide when first added
+    //   }
+    // });
 
     currentColor.subscribe(color => {
       // console.log("current color changed", color);
@@ -81,10 +78,10 @@
   })
 
     //if staged action empty or not found in action store, add a new staged action based on current effect
-  $: if($stagedActionID === '' || $stagedActionID === undefined || !flatActionStore[$stagedActionID]) {
-    // console.log("adding new staged action");
-    addCurrentEffectAsStagedAction();
-  }
+  // $: if($stagedActionID === '' || $stagedActionID === undefined || !flatActionStore[$stagedActionID]) {
+  //   // console.log("adding new staged action");
+  //   addCurrentEffectAsStagedAction();
+  // }
 
   export const downloadCanvas = () =>{
     if(p5) {
@@ -118,69 +115,103 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
   
   */
 
+  let previousActive = $activeIDs;
+  export function renderActionsUntilStaged(delay = 0) {
+    if(!p5) return;
+
+    let actions = compileActionsBeforeStaged();
+
+    clearAllCanvases();
+    let staticCanvas = p5.getStaticCanvas();
+    
+    // TODO: compare to previous active actions
+    // any new ones should be rendered slowly
+
+    actions.forEach(action => {
+      renderAction(action, staticCanvas);
+    });
+
+    // console.log("re-rendering", actions.length, "actions");
+
+    // render to main canvas
+    p5.image(staticCanvas, 0, 0);
+
+    //currently rendered actions
+    updateActiveActions(actions.map(action => action.actionID));
+  }
+
+
+  function renderStagedAction(canvas) {
+    if(!p5) return;
+    let actions = compileActions($flatActionStore[$stagedActionID]);
+
+    actions.forEach(action => {
+      renderAction(action, canvas);
+    });
+  }
+
   // let cachedActions = [];
   // let prevStagedActions = {};
-  export function renderRoot() {
-    if(p5) {
-
-      // console.log("rendering all");
-
-      // let cachedCanvas = p5.getCachedCanvas();
-      let staticCanvas = p5.getStaticCanvas();
-      let hoverCanvas = p5.getHoverCanvas();
+  // export function renderRoot() {
+  //   if(p5) {
+  //     let staticCanvas = p5.getStaticCanvas();
+  //     let hoverCanvas = p5.getHoverCanvas();
       
-      let actions = compileActions($flatActionStore[$actionRootID]);
+  //     // unroll the actions
+  //     let actions = compileActions($flatActionStore[$actionRootID]);
 
-      const stagedActions = actions.filter(action => 
-        action.actionID === $stagedActionID || action.parentID === $stagedActionID
-      );
+  //     // if staged action is at the end of the list, render all to static canvas
+  //     // these are the unrolled format for the actions
+  //     const stagedActions = actions.filter(action => 
+  //       action.actionID === $stagedActionID || action.parentID === $stagedActionID
+  //     );
+  //     const startIndex = actions.indexOf(stagedActions[0]);
+  //     if(startIndex === -1) { //if staged action isn't there, render all to static canvas
+  //       actions.forEach(action => {
+  //         renderAction(action, staticCanvas);
+  //       });
+  //     }
+  //     else {
+  //       const endIndex = actions.indexOf(stagedActions[stagedActions.length - 1]);
 
-      const startIndex = actions.indexOf(stagedActions[0]);
-      if(startIndex === -1) { //if staged action isn't visible, render all to static canvas
-        actions.forEach(action => {
-          renderAction(action, staticCanvas);
-        });
-      }
-      else {
-        const endIndex = actions.indexOf(stagedActions[stagedActions.length - 1]);
+  //       const beforeActions = actions.slice(0, startIndex);
 
-        const beforeActions = actions.slice(0, startIndex);
+  //       beforeActions.forEach(action => {
+  //         renderAction(action, staticCanvas);
+  //       });
 
-        beforeActions.forEach(action => {
-          renderAction(action, staticCanvas);
-        });
-
-        // render to main canvas
-        p5.image(staticCanvas, 0, 0);
+  //       // render to main canvas
+  //       p5.image(staticCanvas, 0, 0);
   
-        // render staged action and its children to hover canvas
-        if(!$stagedAction.hidden) {
-          stagedActions.forEach(action => {
-            renderAction(action, hoverCanvas);
-          });
-          p5.image(hoverCanvas, 0, 0);
-        }
+  //       // render staged action and its children to hover canvas
+  //       if(!$stagedAction.hidden) {
+  //         stagedActions.forEach(action => {
+  //           renderAction(action, hoverCanvas);
+  //         });
+  //         p5.image(hoverCanvas, 0, 0);
+  //       }
 
-        // get actions after staged action if any, render directly to p5 canvas
-        const afterActions = actions.slice(endIndex + 1);
-        afterActions.forEach(action => {
-          renderAction(action, p5);
-        });
-      }
-    }
-  }
+  //       // get actions after staged action if any, render directly to p5 canvas
+  //       const afterActions = actions.slice(endIndex + 1);
+  //       afterActions.forEach(action => {
+  //         renderAction(action, p5);
+  //       });
+  //     }
+  //   }
+  // }
 
-  function renderAllActions(actions) {
-    if(!p5) return;
-    let activeActions = compileActions($flatActionStore[$actionRootID]);
-    if(activeActions.length === 0) return;
+  // function renderAllActions() {
+    // if(!p5) return;
+    // let activeActions = compileActions($flatActionStore[$actionRootID]);
+    // if(activeActions.length === 0) return;
 
-    //then render each one
-    activeActions.forEach(action => {
-      renderAction(action, p5.getStaticCanvas());
-    });
+    // //then render each one
+    // activeActions.forEach(action => {
+    //   renderAction(action, p5.getStaticCanvas());
+    // });
     // do something special for staged action if it's at the end of the list
-  }
+  // }
+
 
   // this actually runs the render function for an action
   function renderAction(action, canvas) {
@@ -201,6 +232,14 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       p5.getHoverCanvas().clear();
       p5.image(p5.getStaticCanvas(), 0, 0);
     }
+  }
+
+  function clearAllCanvases() {
+    p5.clear();
+    p5.getDragCanvas().clear();
+    p5.getHoverCanvas().clear();
+    p5.getStaticCanvas().clear();
+    p5.getStaticCanvas().background(255);
   }
 
   /*
@@ -308,11 +347,9 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
 		p5 = event.detail;
     if(p5) {
       waitForCanvases().then(() => {
-        // renderAll($actionStore); // render initial actions
         loadStencils(p5);
         console.log("p5 instance created");
-        hideAction($stagedActionID);
-        renderAllActions();
+        renderActionsUntilStaged();
         console.log("initial render");
       });
     }
@@ -330,7 +367,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
         };
         checkSetup();
     });
-}
+  }
 
   /*                                                               
     _ __     ___    _  _     ___     ___    _ __     ___    __ __    ___   
@@ -348,8 +385,6 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       y = Math.round(p5.mouseY);
       path.push([x, y]);
     }
-
-    showAction($stagedActionID);
 
     /*
     _                                      
@@ -373,11 +408,9 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       if($stagedAction.params.path) {
           debouncedStagedActionUpdate({path: path.slice(-5)}); // show small tail of path when hovering
       }
-      // console.log($stagedAction.effect);
-      const renderFunction = renderers[$stagedAction.effect];
-      if (renderFunction) {
-        renderFunction(p5.getHoverCanvas(), $stagedAction.params, p5, turtle);
-      }
+      // renderAction($stagedAction, p5.getHoverCanvas());
+      renderStagedAction(p5.getHoverCanvas());
+      
       p5.image(p5.getStaticCanvas(), 0, 0);
       p5.image(p5.getHoverCanvas(), 0, 0);
     }
@@ -394,71 +427,81 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
    */
 
     else { // dragging
+
       p5.getDragCanvas().clear();
-      const renderFunction = renderers[$stagedAction.effect]; // get the renderer for the staged effect
+
       let params = $stagedAction.params;
 
-      if (renderFunction) {
-        // set params based on dragging
-        if('radius' in params) {
-          let radius = Math.round(Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2))) + 1;
-          updateStagedAction({ radius: radius });
-        }
-        if('r1' in params) {
-          let radius = Math.round(Math.abs(y - startY)) + 1;
-          let r2 = Math.round(radius/2);
-          updateStagedAction({ r1: radius, r2: r2 });
-        }
-        if('outer' in params) { // spiro
-          let outer = Math.round(Math.abs(y - startY)) + 30;
-          let d = Math.round(mapValue(x, 0, 500, 0, 100));
-          updateStagedAction({ outer: outer, d: d });
-        }
-        if('npoints' in params) {
-          let npoints = Math.round(Math.abs(x - startX)) + 1;
-          updateStagedAction({ npoints: npoints });
-        }
-        if('size' in params) {
-          let radius = Math.round(Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2))) + 1;
-          updateStagedAction({ size: radius*2 });
-        }
-        if('width' in params) {
-          let width = Math.abs(x - startX)*2 + 15; //not zero on first click
-          let height = Math.abs(y - startY)*2 + 15;
-          updateStagedAction({ width: width, height: height});
-        }
-        if('stripeWidth' in params) {
-          let stripeWidth = Math.round(mapValue(x, 0, 500, 20, 100));
-          updateStagedAction({ stripeWidth: stripeWidth });
-        }
-        if('angle' in params) {
-          let angle = Math.round(mapValue(y, 0, 500, 0, 360));
-          updateStagedAction({ angle: angle });
-        }
-        if('end' in params) {
-          updateStagedAction({ end: { x: x, y: y } });
-        }
-        if('path' in params) {
-          updateStagedAction({path: getAntPath(path, $stagedAction.params.pathSpacing || 10)}); // calc path spacing
-        }
-        if($stagedAction.name === 'bounce' || $stagedAction.name === 'spiro' && 'progress' in params) {
-          mousePressedTime = Date.now(); //reset whenever moved
-        }
-        renderFunction(p5.getDragCanvas(), $stagedAction.params, p5, turtle);
+      // set params based on dragging
+      if('radius' in params) {
+        let radius = Math.round(Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2))) + 1;
+        updateStagedAction({ radius: radius });
       }
-      p5.image(p5.getStaticCanvas(), 0, 0);
-      p5.image(p5.getDragCanvas(), 0, 0);
-    }
-  }
+      if('r1' in params) {
+        let radius = Math.round(Math.abs(y - startY)) + 1;
+        let r2 = Math.round(radius/2);
+        updateStagedAction({ r1: radius, r2: r2 });
+      }
+      if('outer' in params) { // spiro
+        let outer = Math.round(Math.abs(y - startY)) + 30;
+        let d = Math.round(mapValue(x, 0, 500, 0, 100));
+        updateStagedAction({ outer: outer, d: d });
+      }
+      if('npoints' in params) {
+        let npoints = Math.round(Math.abs(x - startX)) + 1;
+        updateStagedAction({ npoints: npoints });
+      }
+      if('size' in params) {
+        let radius = Math.round(Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2))) + 1;
+        updateStagedAction({ size: radius*2 });
+      }
+      if('width' in params) {
+        let width = Math.abs(x - startX)*2 + 15; //not zero on first click
+        let height = Math.abs(y - startY)*2 + 15;
+        updateStagedAction({ width: width, height: height});
+      }
+      if('stripeWidth' in params) {
+        let stripeWidth = Math.round(mapValue(x, 0, 500, 20, 100));
+        updateStagedAction({ stripeWidth: stripeWidth });
+      }
+      if('angle' in params) {
+        let angle = Math.round(mapValue(y, 0, 500, 0, 360));
+        updateStagedAction({ angle: angle });
+      }
+      if('end' in params) {
+        updateStagedAction({ end: { x: x, y: y } });
+      }
+      if('path' in params) {
+        updateStagedAction({path: getAntPath(path, $stagedAction.params.pathSpacing || 10)}); // calc path spacing
+      }
+      if($stagedAction.name === 'bounce' || $stagedAction.name === 'spiro' && 'progress' in params) {
+        mousePressedTime = Date.now(); //reset whenever moved
+      }
 
-  function renderStep(generator) {
-    if (!generator.next().done && isDragging) {
-      // If the generator is not done, render the next step
+      renderStagedAction(p5.getDragCanvas());
+      // renderAction($stagedAction, p5.getDragCanvas());
+
       p5.image(p5.getStaticCanvas(), 0, 0);
       p5.image(p5.getDragCanvas(), 0, 0);
-      requestAnimationFrame(() => renderStep(generator));
-    }
   }
+}
+
+// export function renderStagedAction() {
+//   if(!p5) return;
+//   console.log("rendering staged action");
+//   renderAction($stagedAction, p5.getDragCanvas());
+//   p5.image(p5.getStaticCanvas(), 0, 0);
+//   p5.image(p5.getDragCanvas(), 0, 0);
+// }
+
+function renderStep(generator) {
+  if (!generator.next().done && isDragging) {
+    // If the generator is not done, render the next step
+    p5.image(p5.getStaticCanvas(), 0, 0);
+    p5.image(p5.getDragCanvas(), 0, 0);
+    requestAnimationFrame(() => renderStep(generator));
+  }
+}
   /*
                                                _                           
     _ __     ___    _  _     ___     ___    __| |    ___   __ __ __ _ _    
@@ -556,20 +599,23 @@ function handleMouseUp(event) {
 
     copyStagedActionToActionStore();
 
+    //move staged action to end of list
+    //TODO: slow replay of actions
+    moveStagedActionToEnd();
 
     if($shouldRandomizeColor) randomizeCurrentColor();
     // addEffectAsStagedAction($selectedEffect, { color: $currentColor, position: { x: x, y: y } }); // reset staged action to default
 
     path = []; // clear current path
 
-    hideAction($stagedActionID);
+    // hideAction($stagedActionID);
 
     p5.getHoverCanvas().clear();
     p5.getDragCanvas().clear();
     p5.getDragCanvas().reset();
     p5.getHoverCanvas().reset();
 
-    renderAllActions();
+    renderActionsUntilStaged();
 
     // Once the mouse is released, remove global listener
     document.removeEventListener('mouseup', globalMouseUp);
@@ -599,10 +645,9 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
 //TODO: check if need to handle release click off canvas
 function handleMouseLeave(event) {
   if(!isDragging) {
-    clearTempCanvases(); //clear when leaving canvas, but will draw again if staged action params changed
-    hideAction($stagedActionID);
+    clearTempCanvases(); //clear when leaving canvas
   }
-  renderAllActions();
+  // renderActionsUntilStaged();
   // if(isDragging) {
   //   // handleMouseUp(event);
   // }

@@ -1,11 +1,13 @@
 import type { Action, Effect, ActionStore } from '../types/types';
 import { v4 as uuidv4 } from 'uuid';
-import { actionRootID, actionStore, myTools, toolStore, selectedActionID, selectedEffect, changedActionID, flatActionStore, actionRoot, stagedAction, stagedActionID, currentColor, shouldRandomizeColor, playheadID } from '../stores/dataStore'
+import { actionRootID, activeIDs, actionStore, myTools, toolStore, selectedActionID, selectedEffect, changedActionID, flatActionStore, actionRoot, stagedAction, stagedActionID, currentColor, shouldRandomizeColor, playheadID } from '../stores/dataStore'
 import { saveToHistory } from '../stores/history';
 import { get } from 'svelte/store';
 import { deepCopy, merge, randomWithinRange, arrayToKeyedObj } from '../utils/utils';
 import { tick } from 'svelte';
 import { curatedRandomHexColor } from '../utils/color-utils';
+import { historyStore } from '../stores/history';
+// import { renderStagedAction } from './canvas/Canvas.svelte';
 
 class ActionManager {
   #store = flatActionStore;
@@ -28,6 +30,23 @@ class ActionManager {
       if (action) {
         action.params = { ...action.params, ...params };
       }
+    });
+  }
+
+  // remove from parent list
+  detach(id: string) {
+    this.#modifyActionStore(null, (store) => {
+      // Find the parent action
+      const parent = Object.values(store).find(action =>
+        action.type === 'list' &&
+        action.params.children &&
+        action.params.children.includes(id)
+      );
+  
+      if (!parent) return;
+  
+      // Remove the action's ID from the parent's children array
+      parent.params.children = parent.params.children.filter(childId => childId !== id);
     });
   }
 
@@ -157,6 +176,15 @@ class ActionManager {
     });
   }
 
+  appendChildByID(childID: string, parentID: string) {
+    this.#modifyActionStore(parentID, (store) => {
+      const parent = store[parentID];
+      if (!parent || !parent.params.children) return;
+
+      parent.params.children.push(childID);
+    });
+  }
+
   // Append to action store as child of specified parent
   appendChild(actions: { [uuid: string]: Action }, uuid: string) {
     if (!actions) return;
@@ -172,11 +200,31 @@ class ActionManager {
     return root_uuid;
   }
 
+  undo() {
+    let undoState = historyStore.pop();
+    if(!undoState) return;
+    this.#modifyActionStore(null, (store) => { 
+      Object.assign(store, undoState.actionStore);
+    });
+    stagedActionID.set(undoState.stagedActionID);
+  }
+
   // Pass in a function to change the store
   #modifyActionStore(uuid: string | null, modifyFunction: (store: { [key: string]: Action }, uuid?: string | null) => void) {
     this.#updateActionStore((store) => {
       const updatedStore = { ...store };
       modifyFunction(updatedStore, uuid);
+
+      if (uuid) {
+        changedActionID.set(uuid);
+      }
+      else {
+        let root_uuid = getRoot(store);
+        if(root_uuid) {
+          changedActionID.set(root_uuid);
+        }
+      }
+
       return updatedStore;
     });
   }
@@ -187,9 +235,7 @@ class ActionManager {
       const newStore = updateFunction(deepCopy(store)); // Deep copy of store
       
       // Validate new store, make sure it is in valid format
-      
-      // Add update to history (undo queue) if relevant
-      
+
       return newStore;
     });
   }
@@ -222,22 +268,32 @@ export async function scrollToAction(id: string) {
   }
 }
 
+export function undo() {
+  actionManager.undo();
+}
+
 export function hideAction(id: string) {
   actionManager.hide(id);
+  saveToHistory("hide action");
 }
 
 export function showAction(id: string) {
   actionManager.show(id);
+  saveToHistory("show action");
 }
 
 export function hideSelectedAction() {
-  saveToHistory();
   actionManager.hide(get(selectedActionID));
+  saveToHistory("hide selected action");
 }
 
 export function selectAction(id:string) {
-  if(id && id !== get(stagedActionID) && id !== get(actionRootID)) {
-    selectedActionID.set(id);
+  if(id && id !== get(actionRootID)) {
+    if(id == get(stagedActionID)) {
+      selectedActionID.set(''); //deselect
+    } else {
+      selectedActionID.set(id);
+    }
   }
 }
 
@@ -245,18 +301,18 @@ export function selectAction(id:string) {
 export function removeSelectedAction() {
   let id = get(selectedActionID);
   if(id.length < 1 || !id || !get(flatActionStore)[id] || id == get(stagedActionID)) return;
-  saveToHistory();
   //get new selection
   actionManager.delete(id);
+  saveToHistory("remove selected action");
   // if deleted, select new selection
 }
 
 // gradually clear actions from bottom to top
 export function clearAllActions() {
+  saveToHistory("clear all actions start");
+
   let actions = getActionsInRunOrder(); //IDs
   if(!actions || actions == undefined || actions.length < 1) return;
-
-  saveToHistory();
 
   // console.log("actions to clear", actions);
 
@@ -287,7 +343,8 @@ export function clearAllActions() {
           stagedActionID.set(newStagedActionRoot);
           actionManager.appendChild(newStagedAction, get(actionRoot).uuid);
         }
-        changedActionID.set('');
+        changedActionID.set(get(actionRoot).uuid);
+        saveToHistory("clear all actions end");
     }
   }, 300); //rate at which to clear actions
 }
@@ -308,23 +365,16 @@ export function addCurrentEffectAsStagedAction() {
   addEffectAsStagedAction(effect, params);
 }
 
-// take an effect, create an action, and add to action store
-// used by keyboard events
-export function addEffectToActionStore(effect: Effect, params: { [key: string]: any } = {}) {
-  let actions = effectToActions(effect, params);
-  if(actions) return actionManager.append(actions);
-}
-
 // bubbled up by UI widgets
 export function updateActionParams(uuid:string, params:any, save = false) {
   if (!uuid) return;
 
-  if (save) {
-    saveToHistory(); // Add to undo queue
-    // console.log("saving to history");
-  }
-
   actionManager.updateParams(uuid, params);
+
+  // if (save) {
+  //   saveToHistory("save changed params"); // Add to undo queue
+  //   // console.log("saving to history");
+  // }
 }
 
 // make a copy with new uuid and add immediately after original
@@ -338,7 +388,7 @@ export function duplicateAction(id:string) {
     actionManager.append(newActions);
     actionManager.insertAfter(root, id);
     selectedActionID.set(root);
-    saveToHistory();
+    saveToHistory("duplicate action");
   }
 }
 
@@ -382,15 +432,39 @@ export function copyStagedActionToActionStore() {
   if(!stagedID || !newActions || !newActionRoot) {
     return;
   }
-    saveToHistory();
 
-    actionManager.append(newActions);
-    actionManager.insertBefore(newActionRoot, stagedID);
-    selectAction(newActionRoot);
+  saveToHistory("add action from staged action start");
 
-    playheadID.set(newActionRoot);
+  actionManager.append(newActions);
+  actionManager.insertBefore(newActionRoot, stagedID);
+  selectAction(newActionRoot);
 
-    changedActionID.set(newActionRoot);
+  // playheadID.set(newActionRoot);
+
+  changedActionID.set(newActionRoot);
+
+  saveToHistory("add action from staged action end");
+}
+
+//move staged action ID back to end of list
+export function moveStagedActionToEnd() {
+  //TODO: if it's already at the end, do nothing
+  let stagedID = get(stagedActionID);
+  if(!stagedID) return;
+  actionManager.detach(stagedID);
+  actionManager.appendChildByID(stagedID, get(actionRoot).uuid);
+}
+
+// take an effect, create an action, and add to action store
+// used by keyboard events
+export function addEffectToActionStore(effect: Effect, params: { [key: string]: any } = {}) {
+  let actions = effectToActions(effect, params);
+  if(actions) {
+    let newActionRoot = actionManager.append(actions);
+    if(!newActionRoot) return;
+    actionManager.insertBefore(newActionRoot, get(stagedActionID));
+    saveToHistory("add effect to action store");
+  }
 }
 
 export function updateStagedAction(params) {
@@ -418,7 +492,7 @@ export function loopActionAlongPath(id:string) {
       }
     }
 
-    actionManager.replace(newAction.uuid, newAction);
+    // actionManager.replace(newAction.uuid, newAction);
     // if doEach, turn into along path with same name
     // if not along path, add as child of along path with current point and a shifted point with "give me a name" as title 
 
@@ -493,12 +567,14 @@ let changeOptions = {
 
 // pick a parameter at random and change it
 export function remixAction(id:string) {
+  saveToHistory("remix action start");
   if(!id || ! get(flatActionStore)[id]) return;
 
   let action = get(flatActionStore)[id];
   let params = action.params;
   let newParams = { ...params };
   let paramNames = Object.keys(params);
+
   if(action.effect === 'along path') {
     //remix the path by wiggling each point a bit
     let newPath = changeOptions.path(params.path);
@@ -523,17 +599,39 @@ export function remixAction(id:string) {
   }
   
   actionManager.updateParams(id, newParams);
+  saveToHistory("remix action end");
 }
 
+// wiggle parameters of action
+// export function wiggleAction(id:string) {
+//   if(!id || !get(flatActionStore)[id]) return;
+
+
+
+//   // if it's the staged action, show it
+//   if(id === get(stagedActionID)) {
+//     // renderStagedAction();
+//   }
+// }
+
 // TODO: finish this. I think stagedAction is being overwritten by the current effect
-export function redrawAction(id:string) {
+export function redrawSelectedAction() {
 //   // go "back in time" to before that action, move that action to stagedAction so user can re-record it
 //   // when mouse released, fast forward to current time
+  let selected = get(selectedActionID);
+  if(selected.length < 1) return;
+  
+  // save the previous staged action
+  let prevStaged = get(stagedActionID);
+  actionManager.detach(prevStaged);
 
-//   let prevStaged = get(stagedActionID);
+  stagedActionID.set(selected);
+  selectedActionID.set('');
+  
+
+  // we need to somehow get the previous staged action back when this is done (user places action)
+
 //   actionManager.hide(prevStaged);
-//   selectedActionID.set('');
-//   stagedActionID.set(id);
 }
 
 
@@ -556,45 +654,86 @@ function getActionsInRunOrder() {
 
 type CompiledAction = {
   actionID: string;
+  indexedID?: string; // action id with loop index appended
   parentID?: string; // parent control structure id eg. do each or repeat
   effect: string;
   params: { [key: string]: any };
 };
 
-//recursive function to get info about all actions to render
-export function compileActions(action: Action, parentID?: string): CompiledAction[] {
 
-  if(!action) return [];
+// export function getActionsBefore(action: Action, stopActionID?: string): string[] {
+//   if (!action || action.hidden) return [];
+
+//   // Stop at the specified action
+//   if (action.uuid === stopActionID) return [];
+
+//   let actionIDs: string[] = [action.uuid];
+
+//   if (action.children) {
+//     for (let child of action.children) {
+//       actionIDs.push(...getActionsBefore(child, stopActionID));
+//     }
+//   }
+
+//   return actionIDs;
+// }
+
+export function updateActiveActions(active:string[]): null {
+  let unique = [...new Set(active)]; //eliminate duplicates
+  activeIDs.set(unique);
+  return null;
+}
+
+export function compileActionsBeforeStaged() {
+  let actions = compileActions(get(flatActionStore)[get(actionRootID)]);
+  let stagedActionIndex = actions.findIndex(action => action.actionID === get(stagedActionID));
+  let actionsBeforeStaged = actions.slice(0, stagedActionIndex);
+  return actionsBeforeStaged;
+}
+
+// Recursive function to compile information about actions for rendering
+export function compileActions(action: Action, parentID?: string) {
+  // Return empty arrays if the action is undefined or null
+  if (!action) return [];
 
   let actions: CompiledAction[] = [];
 
-  // if('hidden' in action) console.log("no hidden property", action);
-  if ('hidden' in action && action.hidden && action.uuid != get(stagedActionID)) { // Skip hidden actions, except staged action
+  // Skip hidden actions
+  if ('hidden' in action && action.hidden) {
     return [];
   }
 
   switch (action.effect) {
     case 'do each':
-      action.params.children.forEach((childID: string) => {
+      // For each child action, recursively compile its actions
+      for (let childID of action.params.children) {
         const childAction = get(flatActionStore)[childID];
-        actions.push(...compileActions(childAction, action.uuid));
-      });
+        const childActions = compileActions(childAction, action.uuid);
+        actions.push(...childActions);
+      }
       break;
     case 'along path':
       if (action.params.path) {
+        actions.push({ // add parent action to the list also, to make sure outer blocks are shown as active 
+          actionID: action.uuid,
+          parentID: parentID,
+          effect: action.effect,
+          params: {}
+        });
+        // If the action has a path, create a compiled action for each point along the path
         action.params.path.forEach((point: [number, number], index: number) => {
-          // Use modulo operator to cycle through children for each point
           const childID = action.params.children[index % action.params.children.length];
           const childAction = get(flatActionStore)[childID];
-    
+
           const modifiedParams = {
             ...childAction.params,
-            position: { x: point[0], y: point[1] } // Use the current point for position
+            position: { x: point[0], y: point[1] }
           };
-    
+
           actions.push({
-            actionID: childAction.uuid + `_${index}`, // Unique ID for each compiled action along the path
-            parentID: action.uuid, // Set parentID to current action's UUID
+            actionID: childAction.uuid,
+            indexedID: childAction.uuid + `__${index}`,
+            parentID: action.uuid,
             effect: childAction.effect,
             params: modifiedParams
           });
@@ -612,14 +751,83 @@ export function compileActions(action: Action, parentID?: string): CompiledActio
       break;
     default:
       actions.push({
-        actionID: action.uuid,
-        parentID: parentID, // Include parentID if this action is nested
+        actionID: action.uuid, //the action's unique ID
+        parentID: parentID, //the action it is nested within, eg. do each or repeat
         effect: action.effect,
         params: action.params
       });
   }
   return actions;
 }
+
+
+
+// //recursive function to get info about all actions to render
+// export function compileActions(action: Action, parentID?: string): CompiledAction[] {
+
+//   // Return an empty array if the action is undefined or null
+//   if(!action) return [];
+
+//   let actions: CompiledAction[] = [];
+
+//   // Skip hidden actions, except for the staged action
+//   if ('hidden' in action && action.hidden && action.uuid != get(stagedActionID)) { // Skip hidden actions, except staged action
+//     return [];
+//   }
+
+//   switch (action.effect) {
+//     case 'do each':
+//       // For each child action, recursively compile its actions
+//       action.params.children.forEach((childID: string) => {
+//         const childAction = get(flatActionStore)[childID];
+//         actions.push(...compileActions(childAction, action.uuid));
+//       });
+//       break;
+//     case 'along path':
+//       if (action.params.path) {
+//         // If the action has a path, create a compiled action for each point along the path
+//         action.params.path.forEach((point: [number, number], index: number) => {
+//           // Use modulo operator to cycle through children for each point
+//           const childID = action.params.children[index % action.params.children.length];
+//           const childAction = get(flatActionStore)[childID];
+    
+//           // Set position of each render action to current point along the path
+//           const modifiedParams = {
+//             ...childAction.params,
+//             position: { x: point[0], y: point[1] } // Use the current point for position
+//           };
+    
+//           // Add the modified action to the list with a loop index appended to parent ID
+//           actions.push({
+//             actionID: childAction.uuid + `_${index}`, // Unique ID for each compiled action along the path
+//             parentID: action.uuid, // Set parentID to current action's UUID
+//             effect: childAction.effect,
+//             params: modifiedParams
+//           });
+//         });
+//       }
+//       break;
+//     case 'repeat':
+//       // Repeat the child actions a specified number of times (unroll the loop)
+//       // no loop index saved to ID currently
+//       const repeatCount = action.params.count || 1;
+//       for (let i = 0; i < repeatCount; i++) {
+//         action.params.children.forEach((childID: string) => {
+//           const childAction = get(flatActionStore)[childID];
+//           actions.push(...compileActions(childAction, action.uuid));
+//         });
+//       }
+//       break;
+//     default:
+//       actions.push({
+//         actionID: action.uuid,
+//         parentID: parentID, // Include parentID if this action is nested
+//         effect: action.effect,
+//         params: action.params
+//       });
+//   }
+//   return actions;
+// }
 
 
 
@@ -646,15 +854,9 @@ function isChildActive(parentEffect, parentParams, childID) {
   //do each and along path might be different, eg. stop after certain iterations along path
 }
 
+function closeAllModals() {
 
-
-
-
-
-
-
-
-
+}
 
 function addEffectToActionStoreAsChildOf(effect: Effect, params: { [key: string]: any } = {}, uuid: string) {
   let actions = effectToActions(effect, params);
@@ -826,7 +1028,7 @@ function getDescendantActions(id:string) {
   if (currentAction && currentAction.type === 'list' && currentAction.params.children) {
     currentAction.params.children.forEach(childId => {
       const childDescendants = getDescendantActions(childId);
-      console.log("descendants", childDescendants);
+      // console.log("descendants", childDescendants);
       descendants = descendants.concat(childDescendants);
     });
   }

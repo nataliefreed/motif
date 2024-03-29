@@ -15,7 +15,14 @@
   let padding = 10;
 
   let initialMousePos = { x: 0, y: 0 };
-  let initialPoints = [];
+  let initialPoints: [number, number][] = [];
+
+  let storedPaths = [ // other paths to choose from
+    [[50, 50], [100, 100], [150, 50], [200, 100], [250, 50]], // Zigzag path
+    [[50, 100], [100, 50], [150, 100], [200, 50], [250, 100]], // Inverted zigzag
+    [[50, 50], [250, 100], [50, 150], [250, 200]], // Wavy path
+    [[100, 50], [200, 50], [200, 150], [100, 150], [100, 50]] // Square path
+  ];
 
   onMount(() => {
     window.addEventListener('mouseup', globalMouseUp);
@@ -70,8 +77,21 @@
     dispatch('valueChange', { id: 'path', value: points });
   }
 
+  // Helper function to convert a path to SVG path data
+  function getPathData(path) {
+    return path.map((pt, index) => `${index === 0 ? 'M' : 'L'} ${pt[0]},${pt[1]}`).join(' ');
+  }
+
+  function selectPath(index: number) {
+    points = storedPaths[index];
+    dispatch('valueChange', { id: 'path', value: points });
+  }
+
   const gridLines = Array.from({ length: gridSize / gridSpacing + 1}, (_, i) => i * gridSpacing);
 </script>
+
+
+
 
 <svg bind:this={gridElement} class="grid-widget" width="{scaledGridSize}px" height="{scaledGridSize}px" viewBox={`0 0 ${gridSize} ${gridSize}`} on:mousedown={handleMouseDown} on:mousemove={movePoint} on:mouseup={handleMouseUp}>
 
@@ -99,12 +119,45 @@
   
 </svg>
 
+<!-- Display stored paths as a grid -->
+<div class="stored-paths">
+  {#each storedPaths as storedPath, index}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <svg
+      class="stored-path"
+      width="50"
+      height="50"
+      viewBox="0 0 540 540"
+      on:click={() => selectPath(index)}>
+
+      <path d={getPathData(storedPath)} stroke="lightgray" fill="none" />
+      {#each storedPath as point}
+        <circle cx={point[0]} cy={point[1]} r="5" fill="black" />
+      {/each}
+
+      </svg>
+    {/each}
+  </div>
+
+
+
   
 <style>
   .grid-widget {
     /* border: 1px solid gray; */
     cursor: crosshair;
     padding: 10px;
+  }
+
+  .stored-paths {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 1em;
+  }
+  .stored-path {
+    margin: 0.5em;
+    cursor: pointer;
+    border: 1px solid #ccc;
   }
 </style>
 
