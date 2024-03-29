@@ -115,8 +115,8 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
   
   */
 
-  let previousActive = $activeIDs;
-  export function renderActionsUntilStaged(delay = 0) {
+  let previousActiveActions = $activeIDs;
+  export function renderActionsUntilStaged(delay = 500) {
     if(!p5) return;
 
     let actions = compileActionsBeforeStaged();
@@ -124,20 +124,33 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     clearAllCanvases();
     let staticCanvas = p5.getStaticCanvas();
     
-    // TODO: compare to previous active actions
-    // any new ones should be rendered slowly
+    // Compare to previous active actions
+    // Any new ones should be rendered slowly
 
-    actions.forEach(action => {
-      renderAction(action, staticCanvas);
-    });
+    // get list of newly active actions
+    let newActionIDs = actions
+      .map(action => action.actionID)
+      .filter(id => !previousActiveActions.includes(id));
 
-    // console.log("re-rendering", actions.length, "actions");
+    // Filter the actions to get only the new actions
+    let newActions = actions.filter(action => newActionIDs.includes(action.actionID));
 
-    // render to main canvas
-    p5.image(staticCanvas, 0, 0);
+    // Render the new actions gradually
+    if (newActions.length > 0) {
+      renderGradually(newActions, staticCanvas, delay);
+    } else {
+      // If there are no new actions, render all actions normally
+      actions.forEach(action => {
+        renderAction(action, staticCanvas);
+      });
+      p5.image(staticCanvas, 0, 0);
+    }
 
-    //currently rendered actions
+    // Update the list of active actions
     updateActiveActions(actions.map(action => action.actionID));
+
+    // Update the previous active actions
+    previousActiveActions = actions.map(action => action.actionID);
   }
 
 
@@ -149,6 +162,30 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       renderAction(action, canvas);
     });
   }
+
+function renderGradually(actions, canvas, delay) {
+  let index = 0;
+
+  function renderNextAction() {
+    if (index >= actions.length) return Promise.resolve(); // All actions rendered
+
+    renderAction(actions[index], canvas);
+    p5.image(canvas, 0, 0);
+    updateActiveActions(actions.slice(0, index + 1).map(action => action.actionID));
+
+    index++;
+
+    // Return a promise that resolves after the delay, then calls renderNextAction again
+    return new Promise(resolve => {
+      setTimeout(() => {
+        resolve(renderNextAction());
+      }, delay);
+    });
+  }
+
+  return renderNextAction(); // Start rendering the first action
+}
+
 
   // let cachedActions = [];
   // let prevStagedActions = {};
