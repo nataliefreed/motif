@@ -744,28 +744,6 @@ export function compileActions(action: Action, parentID?: string) {
           });
         });
       }
-      //   // If the action has a path, create a compiled action for each point along the path
-      //   action.params.path.forEach((point: [number, number], index: number) => {
-      //     const childID = action.params.children[index % action.params.children.length];
-      //     const childAction = get(flatActionStore)[childID];
-
-      //     //if rather than position, action has start and end points, create the new compiled actions in staggered way like this:
-      //     // line from first point to second point, line from second point to third point, etc., until last point
-
-      //     const modifiedParams = {
-      //       ...childAction.params,
-      //       position: { x: point[0], y: point[1] }
-      //     };
-
-      //     actions.push({
-      //       actionID: childAction.uuid,
-      //       indexedID: childAction.uuid + `__${index}`,
-      //       parentID: action.uuid,
-      //       effect: childAction.effect,
-      //       params: modifiedParams
-      //     });
-      //   });
-      // }
       break;
     case 'repeat':
       const repeatCount = action.params.count || 1;

@@ -116,40 +116,20 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
   */
 
   let previousActiveActions = $activeIDs;
-  export function renderActionsUntilStaged(delay = 0) {
+  export function renderActionsUntilStaged(delay = 500, pathDelay = 10) {
     if(!p5) return;
 
     let actions = compileActionsBeforeStaged();
-
     clearAllCanvases();
     let staticCanvas = p5.getStaticCanvas();
-    
-    // Compare to previous active actions
-    // Any new ones should be rendered slowly
 
-    // get list of newly active actions
-    let newActionIDs = actions
-      .map(action => action.actionID)
-      .filter(id => !previousActiveActions.includes(id));
-
-    // Filter the actions to get only the new actions
-    let newActions = actions.filter(action => newActionIDs.includes(action.actionID));
-
-    // Render the new actions gradually
-    if (newActions.length > 0) {
-      renderGradually(newActions, staticCanvas, delay);
-    } else {
-      // If there are no new actions, render all actions normally
-      actions.forEach(action => {
-        renderAction(action, staticCanvas);
-      });
+    renderGradually(actions, staticCanvas, delay, pathDelay).then(() => {
+      // Update the canvas and active actions after all actions are rendered
       p5.image(staticCanvas, 0, 0);
-    }
+      updateActiveActions(actions.map(action => action.actionID));
+    });
 
-    // Update the list of active actions
-    updateActiveActions(actions.map(action => action.actionID));
-
-    // Update the previous active actions
+    // Update the previous active actions for the next call
     previousActiveActions = actions.map(action => action.actionID);
   }
 
@@ -163,79 +143,42 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     });
   }
 
-function renderGradually(actions, canvas, delay) {
+
+  function renderGradually(actions, canvas, delay, pathDelay = 10) {
+  let previousActiveActions = []; // Assuming this is defined somewhere in your code
+
   let index = 0;
 
   function renderNextAction() {
     if (index >= actions.length) return Promise.resolve(); // All actions rendered
 
+    // Determine if the action is new or existing
+    let isNewAction = !previousActiveActions.includes(actions[index].actionID);
+
+    // Render the action
     renderAction(actions[index], canvas);
-    p5.image(canvas, 0, 0);
-    updateActiveActions(actions.slice(0, index + 1).map(action => action.actionID));
+
+    // Update the canvas and active actions only if it's a new action
+    if (isNewAction) {
+      p5.image(canvas, 0, 0);
+      updateActiveActions(actions.slice(0, index + 1).map(action => action.actionID));
+    }
 
     index++;
+
+    // Determine the delay for the next action
+    let nextDelay = isNewAction ? (actions[index] && actions[index].indexedID ? pathDelay : delay) : 0;
 
     // Return a promise that resolves after the delay, then calls renderNextAction again
     return new Promise(resolve => {
       setTimeout(() => {
         resolve(renderNextAction());
-      }, delay);
+      }, nextDelay);
     });
   }
 
   return renderNextAction(); // Start rendering the first action
 }
-
-
-  // let cachedActions = [];
-  // let prevStagedActions = {};
-  // export function renderRoot() {
-  //   if(p5) {
-  //     let staticCanvas = p5.getStaticCanvas();
-  //     let hoverCanvas = p5.getHoverCanvas();
-      
-  //     // unroll the actions
-  //     let actions = compileActions($flatActionStore[$actionRootID]);
-
-  //     // if staged action is at the end of the list, render all to static canvas
-  //     // these are the unrolled format for the actions
-  //     const stagedActions = actions.filter(action => 
-  //       action.actionID === $stagedActionID || action.parentID === $stagedActionID
-  //     );
-  //     const startIndex = actions.indexOf(stagedActions[0]);
-  //     if(startIndex === -1) { //if staged action isn't there, render all to static canvas
-  //       actions.forEach(action => {
-  //         renderAction(action, staticCanvas);
-  //       });
-  //     }
-  //     else {
-  //       const endIndex = actions.indexOf(stagedActions[stagedActions.length - 1]);
-
-  //       const beforeActions = actions.slice(0, startIndex);
-
-  //       beforeActions.forEach(action => {
-  //         renderAction(action, staticCanvas);
-  //       });
-
-  //       // render to main canvas
-  //       p5.image(staticCanvas, 0, 0);
-  
-  //       // render staged action and its children to hover canvas
-  //       if(!$stagedAction.hidden) {
-  //         stagedActions.forEach(action => {
-  //           renderAction(action, hoverCanvas);
-  //         });
-  //         p5.image(hoverCanvas, 0, 0);
-  //       }
-
-  //       // get actions after staged action if any, render directly to p5 canvas
-  //       const afterActions = actions.slice(endIndex + 1);
-  //       afterActions.forEach(action => {
-  //         renderAction(action, p5);
-  //       });
-  //     }
-  //   }
-  // }
 
   // function renderAllActions() {
     // if(!p5) return;
