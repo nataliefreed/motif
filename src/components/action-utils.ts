@@ -380,7 +380,7 @@ export function updateActionParams(uuid:string, params:any, save = false) {
 // make a copy with new uuid and add immediately after original
 export function duplicateAction(id:string) {
   if (!id || !get(flatActionStore)[id]) return;
-  console.log("duplicating", id);
+  // console.log("duplicating", id);
   let newActions = copyAction(id);
   let root = getRoot(newActions);
   // newAction.params.title = newAction.params.title + " copy";
@@ -478,78 +478,6 @@ export function setCurrentEffect(name: string) {
 }
 
 
-
-
-export function loopActionAlongPath(id:string) {
-  //set selected action as the child of a repeat along path, with the path set to the current point and a shifted point
-  let action = get(flatActionStore)[id];
-  if (action) {
-    let newAction = { ...action };
-    // if already along path, add another point
-    if(action.effect === "along path") {
-      if(action.params && action.params.path.length > 0) {
-        newAction.params.path.push([action.params.path[action.params.path.length-1][0]+10, action.params.path[action.params.path.length-1][1]+10]);
-      }
-    }
-
-    // actionManager.replace(newAction.uuid, newAction);
-    // if doEach, turn into along path with same name
-    // if not along path, add as child of along path with current point and a shifted point with "give me a name" as title 
-
-
-    // const alongPath = $toolStore.find(tool => tool.name === "along path");
-    // if(!alongPath) return;
-    // const x = (action.params && action.params.position)? action.params.position.x : 0;
-    // const y = (action.params && action.params.position)? action.params.position.y : 0;
-    // const newActions = effectToActions(alongPath, {children: [action], path: [[x, y], [x+10, y+10]]});
-    //replace selected action with new repeat along path action
-    // actionStore.update(data => {
-    //   if (data && data.children) {
-    //     const index = data.children.findIndex(action => action.uuid === id); //get current index
-    //     if (index > -1) {
-    //       data.children.splice(index, 1, newActions);
-    //       selectedActionID.set(newActions.uuid);
-    //     }
-    //   }
-    //   return data;
-    // });
-  }
-
-  //   actionStore.update(data => {
-  //     if (data && data.children) {
-  //       const index = data.children.findIndex(action => action.uuid === $selectedActionID); //get current index
-  //       if (index > -1) {
-  //         let selectedAction = data.children[index];
-  //         if(selectedAction.name === "along path") {
-  //           //add another point
-  //           if(selectedAction.params && selectedAction.params.path.length > 0) {
-  //             selectedAction.params.path.push([selectedAction.params.path[selectedAction.params.path.length-1][0]+10, selectedAction.params.path[selectedAction.params.path.length-1][1]+10]);
-  //           }
-  //         }
-  //         else {
-  //           const repeatEffect = $toolStore.find(tool => tool.name === "along path");
-  //           if(!repeatEffect) return;
-  //           const x = (selectedAction.params && selectedAction.params.position)? selectedAction.params.position.x : 0;
-  //           const y = (selectedAction.params && selectedAction.params.position)? selectedAction.params.position.y : 0;
-  //           const newActions = effectToActions(repeatEffect, {children: [selectedAction], path: [[x, y], [x+10, y+10]]});
-  //           //replace selected action with new repeat along path action
-  //           data.children.splice(index, 1, newActions);
-  //           // data.children.splice(index+1, 0, newAction);
-  //           selectedActionID.set(newActions.uuid);
-  //         }
-  //       }
-  //     }
-  //     return data;
-  //   });
-  // }
-}
-
-
-
-
-
-
-
 let changeOptions = {
   'color': (value:string) => { return curatedRandomHexColor() },
   'radius': (value:number) => { return randomWithinRange(value, 5, 300, 20) },
@@ -602,6 +530,55 @@ export function remixAction(id:string) {
   saveToHistory("remix action end");
 }
 
+// put action inside a repeat along path
+export function repeatSelectedActionAlongPath() {
+  let selected = get(selectedActionID);
+  if(selected.length < 1) return;
+
+  let selectedAction = actionManager.getAction(selected);
+  if (!selectedAction) return;
+
+  // Check if the selected action is already a repeat along path
+  if (selectedAction.effect === 'along path') {
+    // If it is, add another point along the path
+    let lastPoint = selectedAction.params.path[selectedAction.params.path.length - 1];
+    selectedAction.params.path.push([lastPoint[0] + 20, lastPoint[1] + 20]);
+    actionManager.updateParams(selected, { path: selectedAction.params.path });
+  } else {
+    // If it's not, create a new "repeat along path" action with the selected action as a child
+    let x = selectedAction.params.position ? selectedAction.params.position.x : 0;
+    let y = selectedAction.params.position ? selectedAction.params.position.y : 0;
+    let newPath = [[x, y], [x + 20, y + 20]];
+
+    // Create a new "repeat along path" action with the selected action as a child
+    let newAlongPath = createAlongPathAction([selected], newPath);
+    let added = actionManager.append(newAlongPath);
+
+    // Replace the selected action with the new "repeat along path" action
+    actionManager.replaceId(selected, added);
+    selectedActionID.set(added); // Update the selected action ID
+  }
+
+  saveToHistory('Repeat selected action along path');
+}
+
+function createAlongPathAction(children: string[], path: number[][]) {
+  let action = {
+    uuid: uuidv4(),
+    name: 'along path',
+    type: 'list',
+    category: 'control',
+    effect: 'along path',
+    params: {
+      title: "Custom Repeat Along Path",
+      children: children,
+      path: path,
+    },
+    hidden: false,
+  };
+  return { [action.uuid]: action };
+}
+
 // wiggle parameters of action
 // export function wiggleAction(id:string) {
 //   if(!id || !get(flatActionStore)[id]) return;
@@ -614,7 +591,7 @@ export function remixAction(id:string) {
 //   }
 // }
 
-// TODO: finish this. I think stagedAction is being overwritten by the current effect
+// TODO: animate when this happens
 export function redrawSelectedAction() {
 //   // go "back in time" to before that action, move that action to stagedAction so user can re-record it
 //   // when mouse released, fast forward to current time
@@ -629,7 +606,7 @@ export function redrawSelectedAction() {
   selectedActionID.set('');
   
 
-  // we need to somehow get the previous staged action back when this is done (user places action)
+  // we need to somehow get the previous staged action back when this is done (once user places action)
 
 //   actionManager.hide(prevStaged);
 }
