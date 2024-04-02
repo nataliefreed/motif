@@ -15,7 +15,7 @@ export const effectList = [
     params: {
       radius: 20,
       color: '#1B54B1',
-      position: {x: 100, y: 100}
+      position: {x: 250, y: 430}
     },
   },
   // {
@@ -40,7 +40,7 @@ export const effectList = [
     params: {
       size: 40,
       color: '#D55601',
-      position: {x: 100, y: 100}
+      position: {x: 250, y: 430}
     }
   },
   {
@@ -55,7 +55,7 @@ export const effectList = [
       nsides: 6,
       radius: 20,
       color: '#9c83e1',
-      position: {x: 100, y: 100}
+      position: {x: 250, y: 430}
     }
   },
   {
@@ -71,7 +71,7 @@ export const effectList = [
       r1: 20,
       r2: 10,
       color: '#a2d16b',
-      position: {x: 100, y: 100}
+      position: {x: 250, y: 430}
     }
   },
   {
@@ -87,7 +87,7 @@ export const effectList = [
       inner: 24,
       d: 20,
       color: '#FF0000',
-      position: {x: 100, y: 100},
+      position: {x: 250, y: 430},
       progress: 100
     },
   },
@@ -102,7 +102,7 @@ export const effectList = [
     params: {
       size: 40,
       color: '#da6bb1',
-      position: {x: 100, y: 100}
+      position: {x: 250, y: 430}
     }
   },
   {
@@ -117,7 +117,7 @@ export const effectList = [
       width: 50,  
       height: 30,
       color: '#52bf67',
-      position: {x: 100, y: 100}
+      position: {x: 250, y: 430}
     }
   },
   {
@@ -132,7 +132,7 @@ export const effectList = [
       width: 40,
       height: 40,
       color: '#62aed2',
-      position: {x: 100, y: 100}
+      position: {x: 250, y: 430}
     }
   },
   {

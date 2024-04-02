@@ -1,6 +1,6 @@
 import type { Action, Effect, ActionStore } from '../types/types';
 import { v4 as uuidv4 } from 'uuid';
-import { actionRootID, activeIDs, actionStore, myTools, toolStore, selectedActionID, selectedEffect, changedActionID, flatActionStore, actionRoot, stagedAction, stagedActionID, currentColor, shouldRandomizeColor, playheadID } from '../stores/dataStore'
+import { actionRootID, activeIDs, actionStore, myTools, toolStore, selectedActionID, selectedEffect, changedActionID, flatActionStore, actionRoot, stagedAction, stagedActionID, currentColor, shouldRandomizeColor, playheadID, hoveredActionID } from '../stores/dataStore'
 import { saveToHistory } from '../stores/history';
 import { get } from 'svelte/store';
 import { deepCopy, merge, randomWithinRange, arrayToKeyedObj } from '../utils/utils';
@@ -297,6 +297,18 @@ export function selectAction(id:string) {
   }
 }
 
+export function hoverAction(id:string) {
+  if(id && id !== get(actionRootID)) {
+    hoveredActionID.set(id);
+    //set shifted params based on timestamp
+
+  }
+  else {
+    hoveredActionID.set('');
+    //reset params to original
+  }
+}
+
 // remove action initiated from UI
 export function removeSelectedAction() {
   let id = get(selectedActionID);
@@ -534,6 +546,17 @@ export function remixAction(id:string) {
   saveToHistory("remix action end");
 }
 
+// wiggle parameters of action
+export function wiggleAction(id:string) {
+  // //get the action from the store
+  // let action = get(flatActionStore)[id];
+  // //make a copy of it
+  // let previewAction = deepCopy(action);
+  // //change the parameters
+  // let params = previewAction.params;
+  // previewAction.params.color = changeOptions.color(params.color);
+}
+
 // put action inside a repeat along path
 export function repeatSelectedActionAlongPath() {
   let selected = get(selectedActionID);
@@ -582,9 +605,6 @@ function createAlongPathAction(children: string[], path: number[][]) {
   };
   return { [action.uuid]: action };
 }
-
-// wiggle parameters of action
-// export function wiggleAction(id:string) {
 //   if(!id || !get(flatActionStore)[id]) return;
 
 
@@ -593,7 +613,6 @@ function createAlongPathAction(children: string[], path: number[][]) {
 //   if(id === get(stagedActionID)) {
 //     // renderStagedAction();
 //   }
-// }
 
 // TODO: animate when this happens
 export function redrawSelectedAction() {
@@ -604,9 +623,10 @@ export function redrawSelectedAction() {
   
   // save the previous staged action
   let prevStaged = get(stagedActionID);
-  actionManager.detach(prevStaged);
 
   stagedActionID.set(selected);
+
+  actionManager.detach(prevStaged);
   selectedActionID.set('');
   
 
@@ -662,6 +682,14 @@ type CompiledAction = {
 export function updateActiveActions(active:string[]): null {
   let unique = [...new Set(active)]; //eliminate duplicates
   activeIDs.set(unique);
+  // console.log("active actions", unique.map(action => action.substring(0, 6) + "..."));
+  return null;
+}
+
+export function addToActiveActions(id:string): null {
+  let active = get(activeIDs);
+  active.push(id);
+  updateActiveActions(active);
   return null;
 }
 
@@ -669,6 +697,16 @@ export function compileActionsBeforeStaged() {
   let actions = compileActions(get(flatActionStore)[get(actionRootID)]);
   let stagedActionIndex = actions.findIndex(action => action.actionID === get(stagedActionID));
   let actionsBeforeStaged = actions.slice(0, stagedActionIndex);
+
+  // //if there's a hovered action, put it back
+  // let hoveredID = get(hoveredActionID);
+  // if(hoveredID.length > 0) {
+  //   let hoveredIndex = actions.findIndex(action => action.actionID === hoveredID);
+  //   if(hoveredIndex > -1) {
+  //     actionsBeforeStaged.push(actions[hoveredIndex]);
+  //   }
+  // }
+
   return actionsBeforeStaged;
 }
 
@@ -684,6 +722,11 @@ export function compileActions(action: Action, parentID?: string) {
     return [];
   }
 
+  // //check if it is in the preview action store
+  // if(get(previewAction) != null && action.uuid === get(previewAction).uuid) {
+  //   action = get(previewAction);
+  // }
+
   switch (action.effect) {
     case 'do each':
       // For each child action, recursively compile its actions
@@ -694,7 +737,6 @@ export function compileActions(action: Action, parentID?: string) {
       }
       break;
     case 'along path':
-      if (action.params.path) {
         actions.push({ // add parent action to the list also, to make sure outer blocks are shown as active 
           actionID: action.uuid,
           parentID: parentID,
@@ -733,7 +775,7 @@ export function compileActions(action: Action, parentID?: string) {
             modifiedParams = { ...childAction.params };
           }
 
-          console.log("modified params", modifiedParams);
+          // console.log("modified params", modifiedParams);
           // Push the compiled action with the modified parameters
           actions.push({
             actionID: childAction.uuid,
@@ -743,7 +785,6 @@ export function compileActions(action: Action, parentID?: string) {
             params: modifiedParams
           });
         });
-      }
       break;
     case 'repeat':
       const repeatCount = action.params.count || 1;

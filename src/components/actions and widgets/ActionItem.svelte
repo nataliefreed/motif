@@ -78,8 +78,6 @@
     <span
     class:staged={$stagedActionID === action.uuid}
     class="action-item-content"
-    on:click={e => handleItemClick(e, action.uuid)}
-    on:mouseover={e => handleItemMouseover(e, action.uuid)}
     >
       {#if action.category === 'control'}
           <ControlStructure name={action.name} params={action.params} onUpdate={handleUpdate} depth={depth+1} on:reorder/>

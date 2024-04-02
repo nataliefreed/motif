@@ -1,7 +1,7 @@
 <script>
-  import { addEffectAsStagedAction, moveStagedActionToEnd, compileActionsBeforeStaged, updateStagedAction, copyStagedActionToActionStore, addCurrentEffectAsStagedAction, compileActions, hideAction, showAction, updateActiveActions, resetSpecialStagedActionParams } from '../action-utils';
+  import { addEffectAsStagedAction, moveStagedActionToEnd, compileActionsBeforeStaged, updateStagedAction, copyStagedActionToActionStore, addCurrentEffectAsStagedAction, compileActions, hideAction, showAction, updateActiveActions, addToActiveActions, resetSpecialStagedActionParams } from '../action-utils';
 	import P5 from 'p5-svelte';
-  import { stagedAction, activeIDs, stagedActionID, actionRootID, activeCategory, selectedEffect, currentColor, shouldRandomizeColor, changedActionID, flatActionStore, actionRoot } from '../../stores/dataStore';
+  import { stagedAction, activeIDs, stagedActionID, actionRootID, activeCategory, selectedEffect, currentColor, shouldRandomizeColor, changedActionID, flatActionStore, actionRoot, hoveredActionID } from '../../stores/dataStore';
   import { renderers, loadStencils } from './Renderer.js';
   import { onMount, onDestroy } from 'svelte';
   import tinycolor from "tinycolor2";
@@ -23,12 +23,33 @@
 
   let thumbnails = [];
 
+  let renderedActions = {
+    static: [],
+    drag: [],
+    hover: []
+  };
+  let timeStagedActionRendered = 0;
+
+  // whenever renderedActions changes, update activeActions store
+  $: updateActiveActions([...renderedActions.static, ...renderedActions.drag, ...renderedActions.hover]);
+
   function randomizeCurrentColor() {
     // currentColor.set(tinycolor.random().toHexString());
     currentColor.set(curatedRandomHexColor());
   }
 
   $: if($shouldRandomizeColor) randomizeCurrentColor();
+
+  // render hovered action
+  // $: if ($hoveredActionID && $hoveredActionID.length > 0) {
+  //   let hovered = compileActions($flatActionStore[$hoveredActionID]);
+  //   clearTempCanvases();
+  //   hovered.forEach(action => {
+  //     renderAction(action, p5.getHoverCanvas());
+  //   });
+  // } else {
+    // clearTempCanvases();
+  // }
 
   // $: if($changedActionID != '') {
   //   if($changedActionID != $stagedActionID) {
@@ -59,9 +80,14 @@
     });
 
     flatActionStore.subscribe(actions => {
-      // console.log("changed action id", $changedActionID, "staged action id", $stagedActionID);
+      if(!p5) return;
       if($changedActionID != $stagedActionID) {
+        clearTempCanvases();
         renderActionsUntilStaged();
+      }
+      else if($changedActionID === $stagedActionID && !mouseOverCanvas){
+        clearTempCanvases();
+        renderStagedAction(p5.getHoverCanvas());
       }
     });
 
@@ -123,30 +149,56 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     clearAllCanvases();
     let staticCanvas = p5.getStaticCanvas();
 
-    renderGradually(actions, staticCanvas, delay, pathDelay).then(() => {
-      // Update the canvas and active actions after all actions are rendered
-      p5.image(staticCanvas, 0, 0);
-      updateActiveActions(actions.map(action => action.actionID));
+    // console.log("rendering", actions.length, "actions");
+    actions.forEach(action => {
+      renderAction(action, staticCanvas);
     });
 
-    // Update the previous active actions for the next call
-    previousActiveActions = actions.map(action => action.actionID);
+    p5.image(staticCanvas, 0, 0);
+
+    // renderGradually(actions, staticCanvas, delay, pathDelay).then(() => {
+    //   // Update the canvas and active actions after all actions are rendered
+    //   p5.image(staticCanvas, 0, 0);
+    //   updateActiveActions(actions.map(action => action.actionID));
+    // });
+
+    // // Update the previous active actions for the next call
+    // previousActiveActions = actions.map(action => action.actionID);
   }
 
-
+  let stagedCanvasTimeout;
+  let stagedCanvasFade;
   function renderStagedAction(canvas) {
     if(!p5) return;
+    clearTimeout(stagedCanvasTimeout);
+    clearInterval(stagedCanvasFade);
     let actions = compileActions($flatActionStore[$stagedActionID]);
-
     actions.forEach(action => {
       renderAction(action, canvas);
     });
+    p5.image(canvas, 0, 0);
+
+    if(!mouseOverCanvas && !($hoveredActionID === $stagedActionID)) {
+      stagedCanvasTimeout = setTimeout(() => { //after 1 second, start fading out
+        let alpha = 255;
+        stagedCanvasFade = setInterval(() => {
+          fadeTempCanvases(alpha);
+          alpha -= 50;
+          // console.log("alpha", alpha);
+          if(alpha <= 0) {
+            clearInterval(stagedCanvasFade);
+            clearTempCanvases();
+            renderedActions.drag = [];
+            renderedActions.hover = [];
+          }
+        }, 50);
+      }, 500);
+    }
   }
 
 
   function renderGradually(actions, canvas, delay, pathDelay = 10) {
-  let previousActiveActions = []; // Assuming this is defined somewhere in your code
-
+  let previousActiveActions = [];
   let index = 0;
 
   function renderNextAction() {
@@ -180,20 +232,8 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
   return renderNextAction(); // Start rendering the first action
 }
 
-  // function renderAllActions() {
-    // if(!p5) return;
-    // let activeActions = compileActions($flatActionStore[$actionRootID]);
-    // if(activeActions.length === 0) return;
 
-    // //then render each one
-    // activeActions.forEach(action => {
-    //   renderAction(action, p5.getStaticCanvas());
-    // });
-    // do something special for staged action if it's at the end of the list
-  // }
-
-
-  // this actually runs the render function for an action
+  // Call the render function for an action
   function renderAction(action, canvas) {
     if(p5) {
       const renderFunction = renderers[action.effect];
@@ -201,15 +241,47 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       if (renderFunction) {
         // console.log("rendering", action.effect)
         renderFunction(canvas, action.params, p5, turtle);
+        // p5.image(canvas, 0, 0);
+      }
+
+      // update the active actions
+      // these update even if render function not found in order to show the active actions in the DOM
+      switch(canvas) {
+        case p5.getStaticCanvas():
+          renderedActions.static.push(action.actionID);
+          break;
+        case p5.getDragCanvas():
+          renderedActions.drag.push(action.actionID);
+          break;
+        case p5.getHoverCanvas():
+          renderedActions.hover.push(action.actionID);
+          break;
       }
     }
+  }
+
+  function fadeTempCanvases(alpha) {
+    if(!p5) return;
+    p5.background(255);
+    p5.image(p5.getStaticCanvas(), 0, 0);
+    // p5.getDragCanvas().tint(255, alpha);
+    // p5.getHoverCanvas().tint(255, alpha);
+    // console.log("fading", alpha);
+    p5.tint(255, alpha);
+    p5.image(p5.getDragCanvas(), 0, 0);
+    p5.image(p5.getHoverCanvas(), 0, 0);
+    p5.noTint();
   }
 
   function clearTempCanvases() { //don't clear static canvas
     if(p5) {
       p5.background(255);
       p5.getDragCanvas().clear();
+      renderedActions.drag = [];
       p5.getHoverCanvas().clear();
+      renderedActions.hover = [];
+
+      // draw the static canvas as background
       p5.image(p5.getStaticCanvas(), 0, 0);
     }
   }
@@ -220,6 +292,10 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     p5.getHoverCanvas().clear();
     p5.getStaticCanvas().clear();
     p5.getStaticCanvas().background(255);
+
+    renderedActions.static = [];
+    renderedActions.drag = [];
+    renderedActions.hover = [];
   }
 
   /*
@@ -388,11 +464,12 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       if($stagedAction.params.path) {
           debouncedStagedActionUpdate({path: path.slice(-5)}); // show small tail of path when hovering
       }
-      // renderAction($stagedAction, p5.getHoverCanvas());
+
+      clearTempCanvases();
       renderStagedAction(p5.getHoverCanvas());
       
-      p5.image(p5.getStaticCanvas(), 0, 0);
-      p5.image(p5.getHoverCanvas(), 0, 0);
+      // p5.image(p5.getStaticCanvas(), 0, 0);
+      // p5.image(p5.getHoverCanvas(), 0, 0);
     }
 
     /*
@@ -458,21 +535,19 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
         mousePressedTime = Date.now(); //reset whenever moved
       }
 
+      clearTempCanvases();
       renderStagedAction(p5.getDragCanvas());
-
-      p5.image(p5.getStaticCanvas(), 0, 0);
-      p5.image(p5.getDragCanvas(), 0, 0);
   }
 }
 
-function renderStep(generator) {
-  if (!generator.next().done && isDragging) {
-    // If the generator is not done, render the next step
-    p5.image(p5.getStaticCanvas(), 0, 0);
-    p5.image(p5.getDragCanvas(), 0, 0);
-    requestAnimationFrame(() => renderStep(generator));
-  }
-}
+// function renderStep(generator) {
+//   if (!generator.next().done && isDragging) {
+//     // If the generator is not done, render the next step
+//     p5.image(p5.getStaticCanvas(), 0, 0);
+//     p5.image(p5.getDragCanvas(), 0, 0);
+//     requestAnimationFrame(() => renderStep(generator));
+//   }
+// }
   /*
                                                _                           
     _ __     ___    _  _     ___     ___    __| |    ___   __ __ __ _ _    
@@ -485,6 +560,7 @@ function renderStep(generator) {
    */
 
   let isDragging = false;
+  let mouseOverCanvas = false;
   let dragRenderComplete = true;
   let mousePressedTime = 0;
   let animationFrameId = null;
@@ -530,11 +606,12 @@ function renderStep(generator) {
 
     updateStagedAction({ progress: getProgress() });
 
-    p5.getDragCanvas().clear();
+    // p5.getDragCanvas().clear();
 
+    clearTempCanvases();
     renderStagedAction(p5.getDragCanvas());
 
-    p5.image(p5.getStaticCanvas(), 0, 0);
+    // p5.image(p5.getStaticCanvas(), 0, 0);
     p5.image(p5.getDragCanvas(), 0, 0);
 
     // continue animation loop
@@ -618,6 +695,8 @@ function handleMouseLeave(event) {
   if(!isDragging) {
     clearTempCanvases(); //clear when leaving canvas
   }
+
+  mouseOverCanvas = false;
   // renderActionsUntilStaged();
   // if(isDragging) {
   //   // handleMouseUp(event);
@@ -626,6 +705,10 @@ function handleMouseLeave(event) {
   //   path = []; // clear current path
   // }
   // isDragging = false;
+}
+
+function handleMouseOver(event) {
+  mouseOverCanvas = true;
 }
 
 </script>
@@ -637,7 +720,8 @@ function handleMouseLeave(event) {
      on:mousedown={handleMouseDown} 
      on:mouseup={handleMouseUp} 
      on:mousemove={handleMouseMove}
-     on:mouseleave={handleMouseLeave}>
+     on:mouseleave={handleMouseLeave}
+     on:mouseover={handleMouseOver}>
      <!-- style="width: calc(var(--adjusted-page-width)*0.85);"> -->
      <P5 {sketch} target={canvasContainer} on:instance={handleNewInstance} />
 </div>
