@@ -7,7 +7,7 @@ import { deepCopy, merge, randomWithinRange, arrayToKeyedObj } from '../utils/ut
 import { tick } from 'svelte';
 import { curatedRandomHexColor } from '../utils/color-utils';
 import { historyStore } from '../stores/history';
-// import { renderStagedAction } from './canvas/Canvas.svelte';
+import tinycolor from "tinycolor2";
 
 class ActionManager {
   #store = flatActionStore;
@@ -368,13 +368,14 @@ export function addEffectAsStagedAction(effect: Effect, params: { [key: string]:
   if(prevStaged.length > 0) actionManager.delete(prevStaged);
   let uuid = addEffectToActionStoreAsChildOf(effect, params, get(actionRoot).uuid);
   if(uuid) stagedActionID.set(uuid);
+  updateStagedActionColor(get(currentColor));
 }
 
 export function addCurrentEffectAsStagedAction() {
   let effect = get(selectedEffect);
-  let params = { color: get(currentColor) };
+  // let params = { color: get(currentColor) };
   if(!effect) return;
-  addEffectAsStagedAction(effect, params);
+  addEffectAsStagedAction(effect, {});
 }
 
 // bubbled up by UI widgets
@@ -481,6 +482,29 @@ export function addEffectToActionStore(effect: Effect, params: { [key: string]: 
 
 export function updateStagedAction(params) {
   updateActionParams(get(stagedActionID), params);
+}
+
+export function updateStagedActionColor(color:string) {
+  //look for color in params, including children for along path
+  let stagedID = get(stagedActionID);
+  if(!stagedID) return;
+  let params = get(flatActionStore)[stagedID].params;
+  if(!params) return;
+
+  if('color' in params) {
+    updateStagedAction({ color: color });
+  }
+  else if('children' in params) {
+    let children = params.children;
+    for(let childID of children) {
+      let child = get(flatActionStore)[childID];
+      if('color' in child.params) {
+        actionManager.updateParams(childID, { color: color });
+        // make color a little different for the next child
+        color = tinycolor(color).darken(30).toHexString();
+      }
+    }
+  }
 }
 
 export function resetSpecialStagedActionParams() {
@@ -743,10 +767,12 @@ export function compileActions(action: Action, parentID?: string) {
           effect: action.effect,
           params: {}
         });
+        if(!action.params.children) return;
       // If the action has a path, create a compiled action for each point or line segment along the path
         action.params.path.forEach((point: [number, number], index: number) => {
           const childID = action.params.children[index % action.params.children.length];
           const childAction = get(flatActionStore)[childID];
+          if(!childAction) return;
 
           // Initialize an empty object for modified parameters
           let modifiedParams = {};

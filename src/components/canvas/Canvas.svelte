@@ -1,10 +1,9 @@
 <script>
-  import { addEffectAsStagedAction, moveStagedActionToEnd, compileActionsBeforeStaged, updateStagedAction, copyStagedActionToActionStore, addCurrentEffectAsStagedAction, compileActions, hideAction, showAction, updateActiveActions, addToActiveActions, resetSpecialStagedActionParams } from '../action-utils';
+  import { addEffectAsStagedAction, moveStagedActionToEnd, compileActionsBeforeStaged, updateStagedAction, updateStagedActionColor, copyStagedActionToActionStore, addCurrentEffectAsStagedAction, compileActions, hideAction, showAction, updateActiveActions, addToActiveActions, resetSpecialStagedActionParams } from '../action-utils';
 	import P5 from 'p5-svelte';
   import { stagedAction, activeIDs, stagedActionID, actionRootID, activeCategory, selectedEffect, currentColor, shouldRandomizeColor, changedActionID, flatActionStore, actionRoot, hoveredActionID } from '../../stores/dataStore';
   import { renderers, loadStencils } from './Renderer.js';
   import { onMount, onDestroy } from 'svelte';
-  import tinycolor from "tinycolor2";
   import { getAntPath, mapValue } from '../../utils/utils.ts';
   import { curatedRandomHexColor } from '../../utils/color-utils.ts';
   import { turtle } from './Turtle.js';
@@ -68,7 +67,7 @@
         shouldRandomizeColor.set(false);
         currentColor.set(effect.params.color);
       } else {
-        params.color = $currentColor;
+        updateStagedActionColor($currentColor);
       }
         // params.color2 = tinyColor($currentColor).rotate(180).toHexString();
       // }
@@ -91,6 +90,26 @@
       }
     });
 
+    // hoveredActionID.subscribe(id => {
+    //   if(!p5) return;
+    //   let actions = compileActions($flatActionStore[id]);
+    //   if(actions.length > 0) {
+    //     clearTempCanvases();
+    //     actions.forEach(action => {
+    //       renderAction(action, p5.getHoverCanvas());
+    //     });
+    //     p5.background(255);
+    //     p5.tint(255, 50);
+    //     p5.image(p5.getStaticCanvas(), 0, 0);
+    //     p5.noTint();
+    //     p5.image(p5.getHoverCanvas(), 0, 0);
+    //   }
+    //   else {
+    //     clearTempCanvases();
+    //     renderActionsUntilStaged();
+    //   }
+    // });
+
     // stagedActionID.subscribe(id => {
     //   if(stagedActionID !== '') {
     //     // hideAction(id); //hide when first added
@@ -98,8 +117,7 @@
     // });
 
     currentColor.subscribe(color => {
-      // console.log("current color changed", color);
-      updateStagedAction({ color: color });
+      updateStagedActionColor(color);
     });
   })
 

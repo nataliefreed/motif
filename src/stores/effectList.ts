@@ -209,6 +209,44 @@ export const effectList = [
 
   {
     name: 'along path',
+    textLabel: 'Solid Brush',
+    category: 'brushes',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'solid_brush.jpeg',
+    mouseActionType: 'drag-path',
+    nestedActions: {
+      'uuid_parent': {
+        uuid: 'uuid_parent',
+        name: 'along path',
+        type: 'list' as const,
+        category: 'control',
+        effect: 'along path',
+        params: {
+          title: "line",
+          children: ['line'],
+          path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
+          pathSpacing: 10
+        }
+      },
+      'line': {
+        uuid: 'line',
+        name: 'straight line',
+        type: 'effect',
+        category: 'brushes',
+        effect: 'straight line',
+        params: {
+          color: '#80baee',
+          start: {x: 0, y: 0},
+          end: {x: 0, y: 0},
+          lineWeight: 5
+        }
+      },
+    }
+  },
+
+  {
+    name: 'along path',
     textLabel: 'Dot brush',
     category: 'brushes',
     tags: 'drawing',
@@ -225,6 +263,7 @@ export const effectList = [
         params: {
           title: "dots",
           children: ['light_blue_dot', 'dark_blue_dot'],
+          color: '#80babd',
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
           pathSpacing: 15
         }
@@ -258,44 +297,6 @@ export const effectList = [
 
   {
     name: 'along path',
-    textLabel: 'Solid Brush',
-    category: 'brushes',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'solid_brush.jpeg',
-    mouseActionType: 'drag-path',
-    nestedActions: {
-      'uuid_parent': {
-        uuid: 'uuid_parent',
-        name: 'along path',
-        type: 'list' as const,
-        category: 'control',
-        effect: 'along path',
-        params: {
-          title: "line",
-          children: ['blue_line'],
-          path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
-          pathSpacing: 10
-        }
-      },
-      'blue_line': {
-        uuid: 'blue_line',
-        name: 'straight line',
-        type: 'effect',
-        category: 'brushes',
-        effect: 'straight line',
-        params: {
-          color: '#80baee',
-          start: {x: 0, y: 0},
-          end: {x: 0, y: 0},
-          lineWeight: 5
-        }
-      },
-    }
-  },
-
-  {
-    name: 'along path',
     textLabel: 'Mosaic Brush',
     category: 'brushes',
     tags: 'drawing',
@@ -313,6 +314,7 @@ export const effectList = [
           title: "mosaic",
           children: ['red_circle', 'orange_triangle', 'gold_rectangle', 'olive_circle', 'green_triangle', 'light_blue_rectangle', 'blue_circle', 'indigo_triangle', 'purple_rectangle', 'violet_circle', 'pink_triangle'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
+          color: '#80babd',
           pathSpacing: 25
         }
       },
@@ -474,7 +476,8 @@ export const effectList = [
           title: "stars",
           children: ['pink_star', 'purple_star', 'dark_blue_star', 'blue_star', 'light_blue_star'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
-          pathSpacing: 20
+          color: '#80babd',
+          pathSpacing: 30
         }
       },
       'pink_star': {
