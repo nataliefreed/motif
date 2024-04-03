@@ -508,7 +508,7 @@ export function updateStagedActionColor(color:string) {
 }
 
 export function resetSpecialStagedActionParams() {
-  updateStagedAction({ progress: 2});
+  updateStagedAction({ progress: 2, path: []});
 }
 
 export function setCurrentEffect(name: string) {
@@ -946,6 +946,9 @@ function effectToActions(effect: Effect, params: { [key: string]: any } = {}) {
       let mergedParams = merge(deepCopy(effect.nestedActions['uuid_parent'].params), deepCopy(params)); // just top level action params
       let newActions = deepCopy(effect.nestedActions);
       newActions['uuid_parent'].params = mergedParams;
+
+      newActions['uuid_parent'].textLabel = effect.textLabel;
+
       newActions = updateUUIDsPreservingHierarchy(newActions);
       actions = newActions;
     }
@@ -965,6 +968,7 @@ function effectToActions(effect: Effect, params: { [key: string]: any } = {}) {
     };
     actions[action.uuid] = action;
   }
+  // console.log("actions", actions);
   return actions;
 }
 

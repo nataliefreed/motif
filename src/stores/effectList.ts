@@ -297,6 +297,44 @@ export const effectList = [
 
   {
     name: 'along path',
+    textLabel: 'Connected Line',
+    category: 'brushes',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'solid_brush.jpeg',
+    mouseActionType: 'continuous-path',
+    nestedActions: {
+      'uuid_parent': {
+        uuid: 'uuid_parent',
+        name: 'along path',
+        type: 'list' as const,
+        category: 'control',
+        effect: 'along path',
+        params: {
+          title: "line",
+          children: ['line'],
+          path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
+          pathSpacing: 10
+        }
+      },
+      'line': {
+        uuid: 'line',
+        name: 'straight line',
+        type: 'effect',
+        category: 'brushes',
+        effect: 'straight line',
+        params: {
+          color: '#80baee',
+          start: {x: 0, y: 0},
+          end: {x: 0, y: 0},
+          lineWeight: 5
+        }
+      },
+    }
+  },
+
+  {
+    name: 'along path',
     textLabel: 'Mosaic Brush',
     category: 'brushes',
     tags: 'drawing',

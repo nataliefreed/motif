@@ -58,6 +58,8 @@
 
   onMount(() => {
 
+    window.addEventListener('keydown', handleKeyPress);
+
     // if selectedEffect changed, update staged action accordingly
     selectedEffect.subscribe(effect => {
       if(!effect) return;
@@ -75,7 +77,7 @@
       addEffectAsStagedAction(effect, params); //drawing effects have staged action
       if(p5) {
         p5.getHoverCanvas().clear();
-      } 
+      }
     });
 
     flatActionStore.subscribe(actions => {
@@ -119,6 +121,11 @@
     currentColor.subscribe(color => {
       updateStagedActionColor(color);
     });
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+      cleanupP5();
+    }
   })
 
     //if staged action empty or not found in action store, add a new staged action based on current effect
@@ -161,6 +168,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
 
   let previousActiveActions = $activeIDs;
   export function renderActionsUntilStaged(delay = 1000, pathDelay = 10) {
+    console.log("rendering actions until staged");
     if(!p5) return;
 
     let actions = compileActionsBeforeStaged();
@@ -456,7 +464,13 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     if (p5) {
       x = Math.round(p5.mouseX);
       y = Math.round(p5.mouseY);
-      path.push([x, y]);
+      if(!continuousPathStarted) {
+        path.push([x, y]);
+      }
+      else {
+        path[path.length - 1] = [x, y];
+        updateStagedAction({path: path});
+      }
     }
 
     /*
@@ -470,24 +484,26 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
    
    */
     
-    if(!isDragging) {
-      p5.getHoverCanvas().clear();
-      if($stagedAction.params.position) {
-        debouncedStagedActionUpdate({ position: { x: x, y: y } });
-      }
-      if($stagedAction.params.start) {
-        debouncedStagedActionUpdate({ start: { x: x, y: y } });
-      }
-      if($stagedAction.params.path) {
-          debouncedStagedActionUpdate({path: path.slice(-5)}); // show small tail of path when hovering
-      }
+      if(!isDragging) {
 
-      clearTempCanvases();
-      renderStagedAction(p5.getHoverCanvas());
-      
-      // p5.image(p5.getStaticCanvas(), 0, 0);
-      // p5.image(p5.getHoverCanvas(), 0, 0);
-    }
+        p5.getHoverCanvas().clear();
+        if($stagedAction.params.position) {
+          updateStagedAction({ position: { x: x, y: y } });
+        }
+        if($stagedAction.params.start) {
+          updateStagedAction({ start: { x: x, y: y } });
+        }
+        if($stagedAction.params.end) {
+          updateStagedAction({ end: { x: x, y: y } });
+        }
+        if($stagedAction.params.path) {
+          if(!continuousPathStarted) {
+            updateStagedAction({path: path.slice(-5)}); // show small tail of path when hovering
+          }
+        }
+        clearTempCanvases();
+        renderStagedAction(p5.getHoverCanvas());
+      }
 
     /*
        _                     __ _  
@@ -501,8 +517,6 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
    */
 
     else { // dragging
-
-      p5.getDragCanvas().clear();
 
       let params = $stagedAction.params;
 
@@ -545,7 +559,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       if('end' in params) {
         updateStagedAction({ end: { x: x, y: y } });
       }
-      if('path' in params) {
+      if('path' in params && !continuousPathStarted) {
         updateStagedAction({path: getAntPath(path, $stagedAction.params.pathSpacing || 10)}); // calc path spacing
       }
       if($stagedAction.name === 'bounce' || $stagedAction.name === 'spiro' && 'progress' in params) {
@@ -556,15 +570,6 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       renderStagedAction(p5.getDragCanvas());
   }
 }
-
-// function renderStep(generator) {
-//   if (!generator.next().done && isDragging) {
-//     // If the generator is not done, render the next step
-//     p5.image(p5.getStaticCanvas(), 0, 0);
-//     p5.image(p5.getDragCanvas(), 0, 0);
-//     requestAnimationFrame(() => renderStep(generator));
-//   }
-// }
   /*
                                                _                           
     _ __     ___    _  _     ___     ___    __| |    ___   __ __ __ _ _    
@@ -578,9 +583,9 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
 
   let isDragging = false;
   let mouseOverCanvas = false;
-  let dragRenderComplete = true;
   let mousePressedTime = 0;
   let animationFrameId = null;
+  let continuousPathStarted = false;
 
   function handleMouseDown(event) {
 
@@ -594,25 +599,32 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
 
       startX = Math.round(p5.mouseX);
       startY = Math.round(p5.mouseY);
-      path = []; // clear current path
-      path.push([x, y]);
+
+      if($stagedAction.textLabel === "Connected Line") {
+        if(!continuousPathStarted) {
+          path = [];
+          continuousPathStarted = true;
+          path.push([startX, startY]);
+        }
+        else {
+        
+        }
+      }
+      else {
+        continuousPathStarted = false;
+        path = []; // clear current path
+        path.push([startX, startY]);
+      }
 
       if($stagedAction.params.position) {
-        debouncedStagedActionUpdate({ position: { x: startX, y: startY }});
+        updateStagedAction({ position: { x: startX, y: startY }});
       }
       if($stagedAction.params.start) {
-        debouncedStagedActionUpdate({ start: { x: startX, y: startY }, end: { x: startX, y: startY }}); // add first point as last point when mouse first pressed so it doesn't jump to previous last point
+        updateStagedAction({ start: { x: startX, y: startY }, end: { x: startX, y: startY }}); // add first point as last point when mouse first pressed so it doesn't jump to previous last point
       }
       if($stagedAction.params.path) {
-        debouncedStagedActionUpdate({path: path}); // why not ant path here?
+        updateStagedAction({path: path});
       }
-
-      // p5.getDragCanvas().clear();
-      // dragRenderFunction = renderers[$stagedAction.effect](p5.getDragCanvas(), $stagedAction.params, p5, false); // get the renderer for the staged effect
-      // dragRenderComplete = false;
-      // if($stagedAction.effect == 'gradient') {
-      //   renderStep(dragRenderFunction);
-      // }
 
       // Listen for global mouseup to handle cases where mouse is released outside the canvas
       document.addEventListener('mouseup', globalMouseUp);
@@ -655,32 +667,17 @@ function handleMouseUp(event) {
     isDragging = false;
     x = Math.round(p5.mouseX);
     y = Math.round(p5.mouseY);
+
     path.push([x, y]); //add last point to path
 
-    cancelAnimationFrame(animationFrameId);
-    updateStagedAction({path: getAntPath(path, $stagedAction.params.pathSpacing || 10), progress: Math.round(getProgress())});
-
-    copyStagedActionToActionStore();
-
-    resetSpecialStagedActionParams(); //reset staged action to default for progress, start, end
-
-    //move staged action to end of list
-    //TODO: slow replay of actions
-    moveStagedActionToEnd();
-
-    if($shouldRandomizeColor) randomizeCurrentColor();
-    // addEffectAsStagedAction($selectedEffect, { color: $currentColor, position: { x: x, y: y } }); // reset staged action to default
-
-    path = []; // clear current path
-
-    // hideAction($stagedActionID);
-
-    p5.getHoverCanvas().clear();
-    p5.getDragCanvas().clear();
-    p5.getDragCanvas().reset();
-    p5.getHoverCanvas().reset();
-
-    renderActionsUntilStaged();
+    if(!continuousPathStarted) {
+      cancelAnimationFrame(animationFrameId);
+      updateStagedAction({path: getAntPath(path, $stagedAction.params.pathSpacing || 10), progress: Math.round(getProgress())});
+      endAction();
+    }
+    else {
+      updateStagedAction({path: path});
+    }
 
     // Once the mouse is released, remove global listener
     document.removeEventListener('mouseup', globalMouseUp);
@@ -688,13 +685,37 @@ function handleMouseUp(event) {
 }
 
 function globalMouseUp(event) {
-  // console.log("global mouse up");
-  // p.image(0, 0, staticCanvas);
-  // hoverCanvas.clear();
-  // dragCanvas.clear();
   if (isDragging) {
     handleMouseUp(event);
   }
+}
+
+function handleDoubleClick(event) {
+  endContinuousPath();
+}
+
+export function endContinuousPath() {
+  if(continuousPathStarted) {
+    continuousPathStarted = false;
+    endAction();
+  }
+}
+
+function endAction() {
+  path = [];
+  copyStagedActionToActionStore();
+  resetSpecialStagedActionParams(); //reset staged action to default for progress, start, end, path
+  //move staged action to end of list
+  moveStagedActionToEnd();
+
+  p5.getHoverCanvas().clear();
+  p5.getDragCanvas().clear();
+  p5.getDragCanvas().reset();
+  p5.getHoverCanvas().reset();
+
+  if($shouldRandomizeColor) randomizeCurrentColor();
+
+  renderActionsUntilStaged();
 }
 
 /*
@@ -712,20 +733,17 @@ function handleMouseLeave(event) {
   if(!isDragging) {
     clearTempCanvases(); //clear when leaving canvas
   }
-
   mouseOverCanvas = false;
-  // renderActionsUntilStaged();
-  // if(isDragging) {
-  //   // handleMouseUp(event);
-  // }
-  // else {
-  //   path = []; // clear current path
-  // }
-  // isDragging = false;
 }
 
 function handleMouseOver(event) {
   mouseOverCanvas = true;
+}
+
+function handleKeyPress(event) {
+  if(event.key === 'Enter') {
+    endContinuousPath();
+  }
 }
 
 </script>
@@ -738,7 +756,9 @@ function handleMouseOver(event) {
      on:mouseup={handleMouseUp} 
      on:mousemove={handleMouseMove}
      on:mouseleave={handleMouseLeave}
-     on:mouseover={handleMouseOver}>
+     on:mouseover={handleMouseOver}
+     on:dblclick={handleDoubleClick}
+     on:keydown={handleKeyPress}>
      <!-- style="width: calc(var(--adjusted-page-width)*0.85);"> -->
      <P5 {sketch} target={canvasContainer} on:instance={handleNewInstance} />
 </div>
@@ -785,21 +805,3 @@ function handleMouseOver(event) {
     /* border: 1px solid black; */
   }
 </style>
-
-<!--  -->
-<!-- <div> -->
-<!-- <label> -->
-	<!-- X -->
-	<!-- <input type="range" bind:value={x} min="0" max="400" step="0.01" /> -->
-	<!-- {Math.round(x)} -->
-<!-- </label> -->
-<!-- </div> -->
-<!--  -->
-<!-- <div> -->
-<!-- <label> -->
-	<!-- Y -->
-	<!-- <input type="range" bind:value={y} min="0" max="400" step="0.01" /> -->
-	<!-- {Math.round(y)} -->
-<!-- </label> -->
-<!-- </div> -->
-

@@ -481,14 +481,14 @@ export const renderers = {
 
   'straight line': (p, params, p5) => {
     // debugger;
-    if(p !== p5.getHoverCanvas()) {
+    // if(p !== p5.getHoverCanvas()) {
       p.push();
       p.strokeWeight(params.lineWeight);
       p.noFill();
       p.stroke(params.color);
       p.line(params.start.x, params.start.y, params.end.x, params.end.y);
       p.pop();
-    }
+    // }
   },
 
   'bounce': (p, params, p5) => {
