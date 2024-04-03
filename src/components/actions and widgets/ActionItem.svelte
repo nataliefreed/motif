@@ -21,15 +21,17 @@
 
   const dispatch = createEventDispatcher();
 
-  onMount(() => {
-    if(action && action.category === 'top-level-list') { //expand main list by default
-        isOpen = true;
-    }
-  });
+  // onMount(() => {
+  //   if(action && action.category === 'top-level-list') { //expand main list by default
+  //       isOpen = true;
+  //   } else {
+  //       isOpen = false;
+  //   }
+  // });
 
-  function toggle() {
-      isOpen = !isOpen;
-  }
+  // function toggle() {
+  //     isOpen = !isOpen;
+  // }
 
   // on added, params are { children: [...] }
   // on removed, params are { children: [...] }

@@ -160,7 +160,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
   */
 
   let previousActiveActions = $activeIDs;
-  export function renderActionsUntilStaged(delay = 500, pathDelay = 10) {
+  export function renderActionsUntilStaged(delay = 1000, pathDelay = 10) {
     if(!p5) return;
 
     let actions = compileActionsBeforeStaged();
@@ -171,18 +171,44 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     actions.forEach(action => {
       renderAction(action, staticCanvas);
     });
-
     p5.image(staticCanvas, 0, 0);
-
     // renderGradually(actions, staticCanvas, delay, pathDelay).then(() => {
     //   // Update the canvas and active actions after all actions are rendered
     //   p5.image(staticCanvas, 0, 0);
-    //   updateActiveActions(actions.map(action => action.actionID));
     // });
-
-    // // Update the previous active actions for the next call
-    // previousActiveActions = actions.map(action => action.actionID);
   }
+
+  function renderGradually(actions, canvas, delay, pathDelay = 10) {
+  let previousActiveActions = [];
+  let index = 0;
+
+  function renderNextAction() {
+    if (index >= actions.length) return Promise.resolve(); // All actions rendered
+
+    let shouldDelay = actions[index].actionID === $hoveredActionID;
+
+    // Render the action
+    renderAction(actions[index], canvas);
+
+    if (shouldDelay) {
+      p5.image(canvas, 0, 0);
+    }
+
+    index++;
+
+    // // Determine the delay for the next action
+    let nextDelay = shouldDelay ? (actions[index] && actions[index].indexedID ? pathDelay : delay) : 0;
+
+    // Return a promise that resolves after the delay, then calls renderNextAction again
+    return new Promise(resolve => {
+      setTimeout(() => {
+        resolve(renderNextAction());
+      }, nextDelay);
+    });
+  }
+
+  return renderNextAction(); // Start rendering the first action
+}
 
   let stagedCanvasTimeout;
   let stagedCanvasFade;
@@ -210,45 +236,9 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
             renderedActions.hover = [];
           }
         }, 50);
-      }, 500);
+      }, 750);
     }
   }
-
-
-  function renderGradually(actions, canvas, delay, pathDelay = 10) {
-  let previousActiveActions = [];
-  let index = 0;
-
-  function renderNextAction() {
-    if (index >= actions.length) return Promise.resolve(); // All actions rendered
-
-    // Determine if the action is new or existing
-    let isNewAction = !previousActiveActions.includes(actions[index].actionID);
-
-    // Render the action
-    renderAction(actions[index], canvas);
-
-    // Update the canvas and active actions only if it's a new action
-    if (isNewAction) {
-      p5.image(canvas, 0, 0);
-      updateActiveActions(actions.slice(0, index + 1).map(action => action.actionID));
-    }
-
-    index++;
-
-    // Determine the delay for the next action
-    let nextDelay = isNewAction ? (actions[index] && actions[index].indexedID ? pathDelay : delay) : 0;
-
-    // Return a promise that resolves after the delay, then calls renderNextAction again
-    return new Promise(resolve => {
-      setTimeout(() => {
-        resolve(renderNextAction());
-      }, nextDelay);
-    });
-  }
-
-  return renderNextAction(); // Start rendering the first action
-}
 
 
   // Call the render function for an action
@@ -289,6 +279,15 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     p5.image(p5.getDragCanvas(), 0, 0);
     p5.image(p5.getHoverCanvas(), 0, 0);
     p5.noTint();
+  }
+
+  function fadeBackgroundCanvas(alpha) {
+    if(!p5) return;
+    p5.background(255);
+    p5.tint(255, alpha);
+    p5.image(p5.getStaticCanvas(), 0, 0);
+    p5.noTint();
+    p5.image(p5.getHoverCanvas(), 0, 0);
   }
 
   function clearTempCanvases() { //don't clear static canvas
