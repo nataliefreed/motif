@@ -45,8 +45,12 @@
 
   function handlePointsChange(event: CustomEvent) {
     points = event.detail.value;
-    x = event.detail.value[0][0];
-    displayY = maxY - event.detail.value[0][1];
+    updateValue(points);
+  }
+
+  function updateValue(value: [number, number][]) {
+    x = value[0][0];
+    displayY = maxY - value[0][1];
     dispatchValueChange();
   }
 
@@ -61,10 +65,38 @@
       dispatchValueChange(actualY);
     }
   }
+
+  let savedValue = points;
+  let previewEnd = true;
+  let oscillateID: number;
+  function handleMouseOver(event: Event) {
+    console.log("mouse over");
+    savedValue = points;
+    previewEnd = false;
+    const startTime = Date.now();
+    oscillateID = setInterval(() => {
+      const elapsedTime = Date.now() - startTime;
+      const oscillationAngle = elapsedTime / 100; // adjust speed
+      const oscillationAmount = Math.sin(oscillationAngle)*20; // adjust amplitude
+      let newY = maxY - displayY + Math.round(oscillationAmount*Math.random());
+      if(newY > 500) newY = 500;
+      if(newY < 0) newY = 0;
+      updateValue([[x, newY]]);
+    }, 100);
+  }
+  
+  function handleMouseLeave(event: Event) {
+    //console.log("returning to saved value!");
+    clearInterval(oscillateID);
+    if(!previewEnd) {
+      updateValue(savedValue);
+      previewEnd = true;
+    }
+  }
   
 </script>
 
-<span class="coordinate" bind:this={domElement}>
+<span class="coordinate" bind:this={domElement} on:mouseover={handleMouseOver} on:mouseleave={handleMouseLeave}>
 ({x}, {displayY})
 <!-- (<NumberWidget id="x" min={0} max={600} value={x} on:valueChange={handleXChange}/>,
 <NumberWidget id="y" min={0} max={600} value={displayY} on:valueChange={handleYChange}/>) -->
