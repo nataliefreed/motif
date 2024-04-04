@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { onMount, onDestroy } from 'svelte';
+  import { flatActionStore } from '../../stores/dataStore';
 
   const dispatch = createEventDispatcher();
 
@@ -17,12 +18,19 @@
   let initialMousePos = { x: 0, y: 0 };
   let initialPoints: [number, number][] = [];
 
-  let storedPaths = [ // other paths to choose from
-    [[50, 50], [100, 100], [150, 50], [200, 100], [250, 50]], // Zigzag path
-    [[50, 100], [100, 50], [150, 100], [200, 50], [250, 100]], // Inverted zigzag
-    [[50, 50], [250, 100], [50, 150], [250, 200]], // Wavy path
-    [[100, 50], [200, 50], [200, 150], [100, 150], [100, 50]] // Square path
-  ];
+  // let storedPaths = [ // other paths to choose from
+  //   [[50, 50], [100, 100], [150, 50], [200, 100], [250, 50]], // Zigzag path
+  //   [[50, 100], [100, 50], [150, 100], [200, 50], [250, 100]], // Inverted zigzag
+  //   [[50, 50], [250, 100], [50, 150], [250, 200]], // Wavy path
+  //   [[100, 50], [200, 50], [200, 150], [100, 150], [100, 50]] // Square path
+  // ];
+
+  let storedPaths = [];
+  for (const key in $flatActionStore) {
+    if ($flatActionStore[key].params?.path) {
+      storedPaths.push($flatActionStore[key].params.path);
+    }
+  }
 
   onMount(() => {
     window.addEventListener('mouseup', globalMouseUp);
@@ -153,6 +161,8 @@
     display: flex;
     flex-wrap: wrap;
     margin-top: 1em;
+    overflow-x: auto;
+    max-height: 75px;
   }
   .stored-path {
     margin: 0.5em;
