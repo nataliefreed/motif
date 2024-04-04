@@ -15,19 +15,19 @@
 
   export let action: Action | null;
   export let depth = 0;
-  export let isOpen = false;
+  let isOpen = false;
 
   let animate = false;
 
   const dispatch = createEventDispatcher();
 
-  // onMount(() => {
-  //   if(action && action.category === 'top-level-list') { //expand main list by default
-  //       isOpen = true;
-  //   } else {
-  //       isOpen = false;
-  //   }
-  // });
+  onMount(() => {
+    if(action && action.name === 'do each') { //expand do each by default
+        isOpen = true;
+    } else {
+        isOpen = false;
+    }
+  });
 
   // function toggle() {
   //     isOpen = !isOpen;
@@ -82,7 +82,7 @@
     class="action-item-content"
     >
       {#if action.category === 'control'}
-          <ControlStructure name={action.name} params={action.params} onUpdate={handleUpdate} depth={depth+1} on:reorder/>
+          <ControlStructure name={action.name} params={action.params} {isOpen} onUpdate={handleUpdate} depth={depth+1} on:reorder/>
       {:else if action.type === 'effect'}
           {#if action.category === 'backgrounds'}
               <Background name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>

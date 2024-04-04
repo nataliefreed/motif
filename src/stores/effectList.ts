@@ -223,7 +223,7 @@ export const effectList = [
         category: 'control',
         effect: 'along path',
         params: {
-          title: "line",
+          title: "Paintbrush",
           children: ['line'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
           pathSpacing: 10
@@ -233,8 +233,9 @@ export const effectList = [
         uuid: 'line',
         name: 'straight line',
         type: 'effect',
-        category: 'brushes',
+        category: 'shapes',
         effect: 'straight line',
+        thumbnail: 'straight_line.jpeg',
         params: {
           color: '#80baee',
           start: {x: 0, y: 0},
@@ -261,7 +262,7 @@ export const effectList = [
         category: 'control',
         effect: 'along path',
         params: {
-          title: "dots",
+          title: "Dot brush",
           children: ['light_blue_dot', 'dark_blue_dot'],
           color: '#80babd',
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
@@ -311,7 +312,7 @@ export const effectList = [
         category: 'control',
         effect: 'along path',
         params: {
-          title: "line",
+          title: "Connected line",
           children: ['line'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
           pathSpacing: 10
@@ -321,8 +322,9 @@ export const effectList = [
         uuid: 'line',
         name: 'straight line',
         type: 'effect',
-        category: 'brushes',
+        category: 'shapes',
         effect: 'straight line',
+        thumbnail: 'straight_line.jpeg',
         params: {
           color: '#80baee',
           start: {x: 0, y: 0},
@@ -579,14 +581,14 @@ export const effectList = [
   {
     name: 'straight line',
     textLabel: 'straight line',
-    category: 'brushes',
+    category: 'shapes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
     thumbnail: 'straight_line.jpeg',
     mouseActionType: 'drag',
     params: {
-      start: {x:100, y:100},
-      end: {x:300, y:300},
+      start: {x:225, y:450},
+      end: {x:275, y:440},
       color: '#f57f7e',
       lineWeight: 5
     }

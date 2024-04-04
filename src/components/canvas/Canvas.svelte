@@ -168,7 +168,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
 
   let previousActiveActions = $activeIDs;
   export function renderActionsUntilStaged(delay = 1000, pathDelay = 10) {
-    console.log("rendering actions until staged");
+    // console.log("rendering actions until staged");
     if(!p5) return;
 
     let actions = compileActionsBeforeStaged();
