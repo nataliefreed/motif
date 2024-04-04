@@ -18,6 +18,7 @@
   }
 
   function toggle() {
+    console.log("toggling");
       isOpen = !isOpen;
   }
 
@@ -31,7 +32,7 @@
     <ListWidget id='children' value={params.children} {depth} on:valueChange={handleValueChange}/>
   {/if}
 {:else if name === 'along path'}
-  <ChildrenWidget id='children' value={params.children}/>
+  <ChildrenWidget id='children' on:miniActionClick={toggle} value={params.children}/>
   <!-- <StringWidget id='title' value={params.title} /> -->
   along<PathWidget id='path' path={params.path} on:valueChange={handleValueChange}/>
   <!-- svelte-ignore a11y-click-events-have-key-events -->

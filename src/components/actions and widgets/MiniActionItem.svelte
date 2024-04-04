@@ -4,6 +4,7 @@
   import { updateActionParams, selectAction } from '../action-utils';
 
   export let action: Action | null;
+  const dispatch = createEventDispatcher();
 
   function createPolygonPoints(nsides, radius, centerX, centerY) {
     let points = '';
@@ -38,10 +39,17 @@
     return path;
   }
 
+  function handleClick() {
+    if(!action) return;
+    selectAction(action.uuid);
+    dispatch('miniActionClick', action.uuid);
+  }
+
 </script>
 
 {#if action}
-  <span>
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <span on:click={handleClick}>
     {#if action.category === 'shapes'}
       {@const size = 14}
       {#if action.name === 'circle'}
@@ -90,6 +98,7 @@
 svg {
   transform: translateY(2px);
   margin: 0 1px;
+  cursor: pointer;
 }
 
 </style>

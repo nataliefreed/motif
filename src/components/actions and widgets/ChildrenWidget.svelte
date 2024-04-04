@@ -22,7 +22,7 @@
     }
     return action;
   }
-
+  
 </script>
 
 <span bind:this={listElement}>
@@ -30,7 +30,7 @@
   {#each children.map(checkAction) as action (action.uuid)}
     {#if action}
       <!-- <ColorWidget id='color' value={action.params.color} /> -->
-      <MiniActionItem {action} />
+      <MiniActionItem on:miniActionClick {action} />
     {/if}
     <!-- {action.name} 
     {#if action.thumbnail}
