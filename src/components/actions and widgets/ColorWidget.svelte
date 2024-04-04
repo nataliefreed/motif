@@ -58,7 +58,7 @@
     // updateColorButton(newValue.toRgbString());
     // oscillate value
     oscillateID = setInterval(() => {
-      updateColorButton(tinycolor(value).spin(1).toHexString());
+      updateColorButton(tinycolor(value).spin(2).toHexString());
     }, 20);
   }
   function handleMouseOut(event: Event) {
