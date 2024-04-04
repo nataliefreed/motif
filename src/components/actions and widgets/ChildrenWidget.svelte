@@ -3,6 +3,8 @@
   import { flatActionStore } from '../../stores/dataStore';
   import { v4 as uuidv4 } from 'uuid';
   import ColorWidget from './ColorWidget.svelte';
+  import MiniActionItem from './MiniActionItem.svelte';
+  import type { Action } from '../../types/types';
 
   export let id = '';
   export let value: string[] = [];
@@ -12,7 +14,7 @@
   // get the child actions from their uuids
   $: children = value.map(uuid => $flatActionStore[uuid]);
 
-  function checkAction(action) {
+  function checkAction(action: Action) {
     if (!action) {
       // console.error("Action not found");
       // Return a default action object to prevent the app from breaking
@@ -24,13 +26,18 @@
 </script>
 
 <span bind:this={listElement}>
+  [
   {#each children.map(checkAction) as action (action.uuid)}
-    <ColorWidget id='color' value={action.params.color} />
+    {#if action}
+      <!-- <ColorWidget id='color' value={action.params.color} /> -->
+      <MiniActionItem {action} />
+    {/if}
     <!-- {action.name} 
     {#if action.thumbnail}
       <img src={`/assets/effect-thumbnails/${action.thumbnail}`} alt="{action.name} thumbnail" class="thumbnail">
     {/if} -->
   {/each}
+  ]
 </span>
 
 <style>
