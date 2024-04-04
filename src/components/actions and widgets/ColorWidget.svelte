@@ -39,11 +39,21 @@
 
   let previewEnd = false;
 
+  let filterStyle = '';
+
   function updateColorButton(hexColor: string) {
-    colorButton.style.background = tinycolor(hexColor).toHexString();
+    const color = tinycolor(hexColor);
+    const hue = color.toHsv().h;
+    filterStyle = `hue-rotate(${hue}deg)`;
     dispatch('valueChange', { id, value: hexColor, save: firstUpdate });
     firstUpdate = false;
   }
+
+  // function updateColorButton(hexColor: string) {
+  //   colorButton.style.background = tinycolor(hexColor).toHexString();
+  //   dispatch('valueChange', { id, value: hexColor, save: firstUpdate });
+  //   firstUpdate = false;
+  // }
 
   function randomize() {
     var randomColor = tinycolor.random();
@@ -104,7 +114,7 @@
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<span
+<!-- <span
   class="color-palette-widget"
   bind:this={colorButton}
   on:click={handleClick}
@@ -112,7 +122,22 @@
   on:mouseout={handleMouseOut}
   style="background-color: {value}; cursor: {cursorStyle};"
   id={id}
+> -->
+
+<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+<span>
+<span
+  bind:this={colorButton}
+  on:click={handleClick}
+  on:mouseover={handleMouseOver}
+  on:mouseout={handleMouseOut}
+  style="cursor: {cursorStyle};"
+  id={id}
+  class="color-palette-widget"
 >
+  <img src="/assets/widgets/splotch.png" alt="Color splotch" class="splotch-image" />
+  <div class="color-overlay" style="background-color: {value};"></div>
+</span>
 
 <input
   type="color"
@@ -121,26 +146,14 @@
   on:input={handleColorChange}
   value={value}
 />
-
 </span>
+
+<!-- </span> -->
 
 
 
 
 <style>
-  .color-palette-widget {
-    box-sizing: border-box;
-    border-radius: 50%;
-    width: 1.5em;
-    height: 1.5em;
-    padding: 0;
-    border: none;
-    border: 2px solid rgba(0,0,0,0.1);
-    /* cursor: pointer; */
-    display: inline-block;
-    line-height: 1.5em;
-    vertical-align: middle;
-  }
 
   .hidden-color-picker {
     width: 1px;
@@ -152,6 +165,33 @@
     background-color: transparent;
     fill: transparent;
   }
+
+  .color-palette-widget {
+    position: relative;
+    width: 1.7em;
+    /* height: 1.5em; */
+    padding: 0;
+    /* border: 2px solid rgba(0,0,0,0.1); */
+    display: inline-block;
+    vertical-align: middle;
+    transform: translateY(-0.1em);
+    -webkit-transform: translateY(-0.1em);
+}
+
+.splotch-image {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.color-overlay {
+  position: absolute;
+  top: 2px;
+  left: 0;
+  right: 0;
+  bottom: 2px;
+  mix-blend-mode: overlay;
+}
 </style>
 
 
