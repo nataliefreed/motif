@@ -5,7 +5,7 @@
 
   const dispatch = createEventDispatcher();
 
-  export let points;
+  export let points:[number, number][] = [];
   let gridElement:SVGElement | null;
 
   let gridSize = 500;
@@ -25,15 +25,18 @@
   //   [[100, 50], [200, 50], [200, 150], [100, 150], [100, 50]] // Square path
   // ];
 
-  let storedPaths = [];
-  for (const key in $flatActionStore) {
-    if ($flatActionStore[key].params?.path) {
-      storedPaths.push($flatActionStore[key].params.path);
-    }
-  }
+  let storedPaths:[] = [];
 
   onMount(() => {
     window.addEventListener('mouseup', globalMouseUp);
+
+    // refresh the list of paths
+    storedPaths = [];
+    for (const key in $flatActionStore) {
+      if ($flatActionStore[key].params?.path) {
+        storedPaths.push($flatActionStore[key].params.path);
+      }
+    }
   });
 
   onDestroy(() => {
@@ -121,7 +124,10 @@
   <line x1="0" y1="{gridSize}" x2={gridSize} y2={gridSize} stroke="black" stroke-width=3 marker-end="url(#arrowhead)"/>
   <line x1="0" y1={gridSize} x2="0" y2="0" stroke="black" stroke-width=3 marker-end="url(#arrowhead)"/>
 
-  {#each points as point}
+  {#each points as point, index}
+    {#if index > 0}
+      <line x1={points[index - 1][0]} y1={points[index - 1][1]} x2={point[0]} y2={point[1]} stroke="black" />
+    {/if}
     <circle cx={point[0]} cy={point[1]} r="5" fill="black"/>
   {/each}
   
@@ -139,7 +145,10 @@
       on:click={() => selectPath(index)}>
 
       <path d={getPathData(storedPath)} stroke="lightgray" fill="none" />
-      {#each storedPath as point}
+      {#each storedPath as point, index}
+        {#if index > 0}
+          <line x1={storedPath[index - 1][0]} y1={storedPath[index - 1][1]} x2={point[0]} y2={point[1]} stroke="black" />
+        {/if}
         <circle cx={point[0]} cy={point[1]} r="5" fill="black" />
       {/each}
 
