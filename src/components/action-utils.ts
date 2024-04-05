@@ -570,6 +570,15 @@ export function remixAction(id:string) {
   saveToHistory("remix action end");
 }
 
+export function isChildOfAlongPath(id:string) {
+  let parent = Object.values(get(flatActionStore))
+                     .find(action => action.type === 'list' && action.params.children && action.params.children.includes(id));
+  if(parent && parent.effect === 'along path') {
+    return true;
+  }
+  return false;
+}
+
 // wiggle parameters of action
 export function wiggleAction(id:string) {
   // //get the action from the store

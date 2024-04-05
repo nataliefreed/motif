@@ -87,7 +87,7 @@
           {#if action.category === 'backgrounds'}
               <Background name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
           {:else if action.category === 'shapes'}
-              <Shape name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
+              <Shape uuid={action.uuid} name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
           {:else if action.category === 'effects'}
               <Eggbeater name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
           {:else if action.category === 'patterns'}

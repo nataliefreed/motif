@@ -11,7 +11,7 @@
   function toggleRandom() {
     shouldRandomize = !$shouldRandomizeColor;
     shouldRandomizeColor.set(shouldRandomize);
-    console.log($shouldRandomizeColor);
+    // console.log($shouldRandomizeColor);
   }
 
 </script>

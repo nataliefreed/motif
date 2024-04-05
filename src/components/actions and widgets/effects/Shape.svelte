@@ -3,8 +3,10 @@
   import NumberWidget from "../NumberWidget.svelte";
   import CoordinateWidget from "../CoordinateWidget.svelte";
   import ChooserWidget from "../ChooserWidget.svelte";
+  import { isChildOfAlongPath } from "../../action-utils";
 
   export let name = '';
+  export let uuid = '';
   export let params: any = {};
   export let onUpdate: (params: any) => void; // callback to update the actionStore
 
@@ -79,8 +81,9 @@
     in width <NumberWidget id="lineWeight" value={params.lineWeight || 5} on:valueChange={handleValueChange}/>
 {/if}
 
-    {#if params.position}
+  {#if params.position && !isChildOfAlongPath(uuid)}
     at 
-      <CoordinateWidget id="position" value={params.position} on:valueChange={handleValueChange}/>
-    {/if}
+    <CoordinateWidget id="position" value={params.position} on:valueChange={handleValueChange}/>
   {/if}
+
+{/if}
