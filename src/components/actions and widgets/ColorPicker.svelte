@@ -13,6 +13,7 @@
   let alpha = c.a;
 
   $: color = tinycolor({ r: red, g: green, b: blue, a: alpha });
+  $: value = rgbaString;
 
   $: rgbaString = color.toRgbString();
   $: rgbString = tinycolor(rgbaString).setAlpha(1).toRgbString();
@@ -30,9 +31,9 @@
 
   <div class="sliders">
     <div class="slider">
-      <label for="red" style="color:red">Red</label>
-      <input type="number" min="0" max="255" bind:value={red} on:input={updateColor} style="color:red">
-      <input type="range" id="red" min="0" max="255" bind:value={red} on:input={updateColor} style="--slider-gradient: {gradientRed};">
+      <label class="color-label" for="red" style="color:red">Red</label>
+      <input class="color-label" type="number" min="0" max="255" bind:value={red} on:input={updateColor} style="color:red">
+      <input class="color-label" type="range" id="red" min="0" max="255" bind:value={red} on:input={updateColor} style="--slider-gradient: {gradientRed};">
     </div>
     <div class="slider">
       <label for="green" style="color:green">Green</label>
@@ -73,7 +74,12 @@
     margin-bottom: 17px;
     display: flex;
     flex-direction: row;
+    align-items: center;
   }
+
+  /* .color-label {
+    flex-align: baseline;
+  } */
 
   .slider input[type='range'] {
     appearance: none;
