@@ -614,20 +614,20 @@ export const effectList = [
 
   */
 
-  {
-    name: 'turtle',
-    textLabel: 'Turtle',
-    category: 'brushes',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'turtle.jpeg',
-    mouseActionType: 'keyboard',
-    params: {
-      position: {x:100, y:100},
-      color: '#f57f7e',
-      lineWeight: 5
-    }
-  },
+  // {
+  //   name: 'turtle',
+  //   textLabel: 'Turtle',
+  //   category: 'brushes',
+  //   tags: 'drawing',
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   thumbnail: 'turtle.jpeg',
+  //   mouseActionType: 'keyboard',
+  //   params: {
+  //     position: {x:100, y:100},
+  //     color: '#f57f7e',
+  //     lineWeight: 5
+  //   }
+  // },
 
   {
     name: 'tile',
@@ -828,106 +828,106 @@ export const effectList = [
   //     angle: 45,
   //   }
   // },
-  {
-    name: 'move to',
-    textLabel: 'Move to',
-    category: 'move',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'move.jpg',
-    mouseActionType: 'click',
-    params: {
-      position: {x:100, y:100},
-    }
-  },
-  {
-    name: 'move',
-    textLabel: 'Forward',
-    category: 'move',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'move.jpg',
-    mouseActionType: 'drag',
-    params: {
-      direction: 'forward',
-      distance: 50,
-    }
-  },
-  {
-    name: 'move',
-    textLabel: 'Back',
-    category: 'move',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'move.jpg',
-    mouseActionType: 'drag',
-    params: {
-      direction: 'back',
-      distance: 50,
-    }
-  },
-  {
-    name: 'pen',
-    textLabel: 'Pen Up',
-    category: 'move',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'move.jpg',
-    mouseActionType: 'click',
-    params: {
-      mode: 'up'
-    }
-  },
-  {
-    name: 'pen',
-    textLabel: 'Pen Down',
-    category: 'move',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'move.jpg',
-    mouseActionType: 'click',
-    params: {
-      mode: 'down'
-    }
-  },
-  {
-    name: 'set pen size',
-    textLabel: 'Set pen size',
-    category: 'move',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'move.jpg',
-    mouseActionType: 'click',
-    params: {
-      width: 20,
-      height: 20
-    }
-  },
-  {
-    name: 'set pen color',
-    textLabel: 'Set pen color',
-    category: 'move',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'move.jpg',
-    mouseActionType: 'click',
-    params: {
-      color: 'rgb(75, 50, 130)'
-    }
-  },
+  // {
+  //   name: 'move to',
+  //   textLabel: 'Move to',
+  //   category: 'move',
+  //   tags: 'drawing',
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   thumbnail: 'move.jpg',
+  //   mouseActionType: 'click',
+  //   params: {
+  //     position: {x:100, y:100},
+  //   }
+  // },
+  // {
+  //   name: 'move',
+  //   textLabel: 'Forward',
+  //   category: 'move',
+  //   tags: 'drawing',
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   thumbnail: 'move.jpg',
+  //   mouseActionType: 'drag',
+  //   params: {
+  //     direction: 'forward',
+  //     distance: 50,
+  //   }
+  // },
+  // {
+  //   name: 'move',
+  //   textLabel: 'Back',
+  //   category: 'move',
+  //   tags: 'drawing',
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   thumbnail: 'move.jpg',
+  //   mouseActionType: 'drag',
+  //   params: {
+  //     direction: 'back',
+  //     distance: 50,
+  //   }
+  // },
+  // {
+  //   name: 'pen',
+  //   textLabel: 'Pen Up',
+  //   category: 'move',
+  //   tags: 'drawing',
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   thumbnail: 'move.jpg',
+  //   mouseActionType: 'click',
+  //   params: {
+  //     mode: 'up'
+  //   }
+  // },
+  // {
+  //   name: 'pen',
+  //   textLabel: 'Pen Down',
+  //   category: 'move',
+  //   tags: 'drawing',
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   thumbnail: 'move.jpg',
+  //   mouseActionType: 'click',
+  //   params: {
+  //     mode: 'down'
+  //   }
+  // },
+  // {
+  //   name: 'set pen size',
+  //   textLabel: 'Set pen size',
+  //   category: 'move',
+  //   tags: 'drawing',
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   thumbnail: 'move.jpg',
+  //   mouseActionType: 'click',
+  //   params: {
+  //     width: 20,
+  //     height: 20
+  //   }
+  // },
+  // {
+  //   name: 'set pen color',
+  //   textLabel: 'Set pen color',
+  //   category: 'move',
+  //   tags: 'drawing',
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   thumbnail: 'move.jpg',
+  //   mouseActionType: 'click',
+  //   params: {
+  //     color: 'rgb(75, 50, 130)'
+  //   }
+  // },
 
-  {
-    name: 'stamp',
-    textLabel: 'stamp',
-    category: 'move',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'move.jpg',
-    mouseActionType: 'click',
-    params: {
-      //could be nested actions here
-    }
-  },
+  // {
+  //   name: 'stamp',
+  //   textLabel: 'stamp',
+  //   category: 'move',
+  //   tags: 'drawing',
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   thumbnail: 'move.jpg',
+  //   mouseActionType: 'click',
+  //   params: {
+  //     //could be nested actions here
+  //   }
+  // },
 
   // {
   //   name: 'copy cutout',

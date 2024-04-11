@@ -2,7 +2,8 @@
 
   import { createEventDispatcher } from "svelte";
   import { onMount } from 'svelte';
-    import { shouldRandomizeColor } from "../../stores/dataStore";
+    import { shouldRandomizeColor, currentColor } from "../../stores/dataStore";
+    import ColorWidget from "../actions and widgets/ColorWidget.svelte";
 
   let colors = [
     '#FEFEFE','#D7D7D7','#B7B7B7','#636363','#363636','#070707','#EE1B25','#F5661F','#FCF500','#7CC475','#428DCC','#2C3094','#1C1463','#652B92','#300049','#790046',
@@ -15,7 +16,7 @@
   export let activeColor = '';
 
   onMount(() => {
-    updateColor(colors[Math.floor(Math.random() * colors.length)]);
+    updateColor($currentColor);
   });
 
   function handleClick(color:string) {
@@ -29,10 +30,15 @@
     dispatch('colorChange', activeColor);
   }
 
+  function handleValueChange(event: CustomEvent) {
+    updateColor(event.detail.value);
+  }
+
 </script>
 
 <div class="color-palette-container">
-  <div class="current-color" style="background-color: {activeColor}"></div>
+  <!-- <div class="current-color" style="background-color: {activeColor}"></div> -->
+  <div class="preview-widget"><ColorWidget id="color" size={3.5} value={activeColor} on:valueChange={handleValueChange} /></div>
   <div class="color-palette">
     {#each colors as color}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -46,7 +52,13 @@
 
 <style>
 
+.preview-widget {
+  width: 60px;
+  height: 50px;
+}
+
 .color-palette-container {
+  margin-top: 10px;
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
@@ -55,6 +67,8 @@
 }
 
 .current-color {
+  box-sizing: border-box;
+  /* border: 0.5px solid black; */
   width: 50px;
   height: 50px;
   flex-shrink: 0;
@@ -70,14 +84,15 @@
 }
 
 .color-item {
-  border: 1px solid black;
+  box-sizing: border-box;
+  /* border: 0.5px solid black; */
   flex-grow: 1;
   flex-basis: 23px;
   flex-shrink: 1;
 }
 
 .selected {
-  border: 1px solid yellow;
+  border: 2px solid yellow;
 }
 
 </style>

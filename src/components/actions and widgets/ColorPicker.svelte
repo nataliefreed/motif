@@ -71,7 +71,7 @@
   }
 
   .slider {
-    margin-bottom: 17px;
+    margin-bottom: 10px;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -94,16 +94,17 @@
   .preview {
     display: flex;
     flex-direction: row;
-    margin-top: 10px;
+    /* margin-top: 10px; */
     margin-bottom: 0px;
   }
 
   .preview-slider {
     flex-grow: 1;
+    margin-bottom: 0px;
   }
 
   .preview-slider input[type='range'] {
-    height: 40px;
+    height: 30px;
     width: 100%;
     background: transparent;
     background: var(--slider-gradient);
@@ -111,7 +112,7 @@
     margin: 0;
   }
 
-  .color-preview {
+  .color-preview-fallback {
     width: 40px;
     height: 40px;
     border-radius: 10px;
@@ -119,6 +120,21 @@
     border: 1px solid;
     box-sizing: border-box;
   }
+
+  .color-preview {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    margin-right: 16px;
+    vertical-align: middle;
+    transform: translateY(-5px);
+    -webkit-transform: translateY(-5px);
+    -webkit-mask-image: url('/assets/widgets/splotch-alpha-mask.png');
+    mask-image: url('/assets/widgets/splotch-alpha-mask.png');
+    -webkit-mask-size: cover;
+    mask-size: cover;
+}
 
   input[type='number'] {
       margin: 0 5px;

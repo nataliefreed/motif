@@ -312,13 +312,6 @@
   <ActionItem action={$stagedAction} />
 </Tooltip> -->
 
-<!-- <svelte:window on:mousemove={handleMouseMove} /> -->
-
-<!-- staged action that follows mouse cursor -->
-<!-- <div style="position: fixed; left: {mouseX + offsetX}px; top: {mouseY + offsetY}px; pointer-events: none;">
-  <div class="stagedActionHover"><ActionItem action={$stagedAction} /></div>
-</div> -->
-
 <style>
 
   /* * {
@@ -350,7 +343,7 @@
   }
 
   #main-list {
-    /* margin-left: 4.8em; */
+    margin-left: calc(var(--adjusted-page-width)*0.05); /* Margin from left edge */
   }
   /* .code-area {
     margin-top: 30px;
@@ -377,7 +370,10 @@
   }
 
   .drawing-effect-toolbar {
-    border: 1px solid black;
+    /* border: 1px solid black; */
+    padding: 2px;
+    height: 100%;
+    background-color: lightgray;
   }
 
   .staged-action {
@@ -394,41 +390,6 @@
     box-shadow: 1px 2px 3px 2px gray; */
   }
 
-  .staged-action-in-list, .staged-action-above-canvas {
-    /* font-style: italic; */
-    /* opacity: 50%; */
-    color: gray;
-    /* margin: 1.7em 0 0 2em; */
-    width: 75%;
-    border: 1px solid gray;
-    padding: 10px;
-    background-color: white;
-    box-shadow: 1px 2px 3px 2px gray;
-  }
-
-  .staged-action-in-list {
-    margin-left: 5em;
-    margin-bottom: 30px;
-  }
-
-  .staged-action-above-canvas {
-    position: absolute;
-    top: 50px;
-  }
-
-  .stagedActionHover {
-    background-color: white;
-  }
-
-  #staged-action-in-panel {
-    margin-top: 20px;
-    padding: 5px;
-    font-style: italic;
-    max-height: 150px;
-    overflow: auto;
-    border: 1px solid black;
-  }
-
   .instabutton {
     padding: 5px 10px;
     font-size: 1em;
@@ -436,9 +397,6 @@
     cursor: pointer;
     border: none;
     border-radius: 5px;
-    /* background-color: transparent; */
-    /* font-weight: bold; */
-    /* background-color:  */
     color: black;
   }
 
@@ -484,21 +442,37 @@
     color: gray;
   }
 
-  .instabuttons-top {
-    position: absolute;
-    left: --calc(var(--canvas-width)*0.1);
-    /* left: 10px; */
-    width: 60%;
-    right: 20px;
-    top: 20px;
+  .instabuttons-top { 
     display: flex;
     flex-direction: row;
-    gap: 10px;
-    justify-content: center;
+    gap: 40px;
+    justify-content: space-between;
+    width: calc(var(--adjusted-page-width)*0.87);
+    margin-left: calc(var(--adjusted-page-width)*0.09);
+    margin-top: 20px;
+    z-index: 100;
   }
 
-  .spacer {
-    flex-grow: 1;
+  .instabuttons-top .left-group,
+  .instabuttons-top .center-group,
+  .instabuttons-top .right-group {
+    display: flex;
+    gap: 10px;
+  }
+
+  .instabuttons-top .left-group {
+      justify-content: flex-start;
+      max-height: 30px;
+  }
+
+  .instabuttons-top .center-group {
+      justify-content: center;
+      flex-grow: 1;
+  }
+
+  .instabuttons-top .right-group {
+      justify-content: flex-end;
+      max-height: 30px;
   }
 
   #undoButton, #refreshButton, #clearAllButton {
@@ -523,44 +497,5 @@
   .point-cursor {
     cursor: auto;
   }
-  .random-cursor {
-    cursor: url('/assets/cursors/random.svg') 9 9, pointer;
-  }
-  .rainbow-cursor {
-    cursor: url('/assets/cursors/rainbow-solid.svg') 9 9, pointer;
-  }
-  .shuffle-cursor {
-    cursor: url('/assets/cursors/shuffle-solid.svg') 9 9, pointer;
-  }
-  .repeat-cursor {
-    cursor: url('/assets/cursors/clone-regular.svg') 9 9, pointer;
-  }
-  .redo-cursor {
-    cursor: url('/assets/cursors/pen-to-square-solid.svg') 9 9, pointer;
-  }
-  .erase-cursor {
-    cursor: url('/assets/cursors/eraser-solid.svg') 9 9, pointer;
-  }
-  .sample-cursor {
-    cursor: url('/assets/cursors/vial-solid.svg') 9 9, pointer;
-  }
-  .connect-cursor {
-    cursor: url('/assets/cursors/diagram-project-solid.svg') 9 9, pointer;
-  }
 
 </style>
-
-<!-- <style>
-  .staged-action {
-    position: absolute; /* so we can position it anywhere in the parent container */
-    transform: translate(0, 0); /* start position */
-    transition: transform 1s ease-in-out; /* 1s duration, ease-in-out timing function */
-  }
-
-  .staged-action.animate-to-end {
-    transform: translate(0, 200px); /* move down by 200px */
-  }
-
-
-
-</style> -->

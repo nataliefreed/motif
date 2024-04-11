@@ -10,12 +10,14 @@
   export let value = '#FFFFFF';
   let savedValue = value;
 
+  export let size = 1.7;
+
   const dispatch = createEventDispatcher();
 
   let colorButton: HTMLElement;
 
   onMount(() => {
-    colorButton.style.background = tinycolor(value).toHexString();
+    // colorButton.style.background = tinycolor(value).toHexString();
   });
 
   let previewEnd = false;
@@ -81,9 +83,8 @@
   on:mouseout={handleMouseOut}
   id={id}
   class="color-palette-widget"
+  style="background-color: {value}; width:{size}em; height:{size}em;"
 >
-  <img src="/assets/widgets/splotch.png" alt="Color splotch" class="splotch-image" />
-  <div class="color-overlay" style="background-color: {value};"></div>
 </span>
 
 {#if colorButton}
@@ -100,31 +101,49 @@
 .color-palette-widget {
     position: relative;
     width: 1.7em;
-    /* height: 1.5em; */
+    height: 1.7em;
     padding: 0;
     /* border: 2px solid rgba(0,0,0,0.1); */
     display: inline-block;
     vertical-align: middle;
     transform: translateY(-0.1em);
     -webkit-transform: translateY(-0.1em);
+    -webkit-mask-image: url('/assets/widgets/splotch-alpha-mask.png');
+    mask-image: url('/assets/widgets/splotch-alpha-mask.png');
+    -webkit-mask-size: cover;
+    mask-size: cover;
 }
 
 .color-picker {
   padding: 10px;
 }
 
-.splotch-image {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.color-overlay {
-  position: absolute;
+/* .color-overlay {
+  position: relative;
   top: 2px;
   left: 0;
   right: 0;
   bottom: 2px;
-  mix-blend-mode: overlay;
+  -webkit-mask-image: url('/assets/widgets/splotch-alpha-mask.png');
+  mask-image: url('/assets/widgets/splotch-alpha-mask.png');
+  -webkit-mask-size: cover;
+  mask-size: cover;
+} */
+
+/* .splotch-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
+
+.color-overlay {
+  position: relative;
+  top: 2px;
+  left: 0;
+  right: 0;
+  bottom: 2px;
+} */
 </style>

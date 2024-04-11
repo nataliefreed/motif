@@ -107,5 +107,10 @@
   .staged {
     padding: 0 10px;
   }
+
+  .action-item-content {
+    margin-left: 3px;
+  }
+
 </style>
 

@@ -260,7 +260,6 @@ function getDynamicStyle(id:string) {
         <span class="paintbrush">
           <!-- style={getPaintbrushColor(action.uuid)} -->
           <svg bind:this={stagedIcon} xmlns="http://www.w3.org/2000/svg" height="30" width="32" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M339.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L568.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S517.7-4.4 499.1 9.6L262.4 187.2c-24 18-38.2 46.1-38.4 76.1L339.3 367.1zm-19.6 25.4l-116-104.4C143.9 290.3 96 339.6 96 400c0 3.9 .2 7.8 .6 11.6C98.4 429.1 86.4 448 68.8 448H64c-17.7 0-32 14.3-32 32s14.3 32 32 32H208c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg>
-          
         </span>
       {:else}
         <span class="drag-handle"></span>
@@ -280,6 +279,7 @@ function getDynamicStyle(id:string) {
     text-decoration: green wavy underline;
   } */
 
+  /* list */
   ol {
     counter-reset: list-counter; /* Initialize a counter */
     list-style-type: none; /* Remove default list style */
@@ -293,13 +293,15 @@ function getDynamicStyle(id:string) {
     justify-content: flex-start;
     align-items: flex-start;
     width: 100%;
+    margin: 0;
   }
 
+/* list item */
   li {
     border: 2px solid transparent; /* Invisible border */
     user-select: none; /* prevent text selection - makes it easier to grab */
     position: relative;
-    padding-left: 2.2em; /* Space for the index - note: this seems to multiply for each list level so there is probably a better way*/
+    padding-left: 2.2em; /* Space for the numbered index */
     padding-right: 4px; /* makes selection box look nicer */
   }
 
@@ -315,12 +317,12 @@ function getDynamicStyle(id:string) {
     box-sizing: border-box; /* Include padding and border in element's width and height */
     border: 2px solid #757575;
     /* background-color: white; */
-    background-color: #f6f6f6;
+    /* background-color: #f6f6f6; */
     border-radius: 2px;
     /* border-style: dashed none dashed none; */
     border: none;
     color: #2c2c2c;
-    background: white;
+    /* background: white; */
     /* background: transparent; */
     opacity: 1;
     /* font-weight: bold; */
@@ -329,6 +331,7 @@ function getDynamicStyle(id:string) {
     margin: 1em 5px;
     padding-left: 2.5em; /* indent a little extra for paintbrush which is larger than index */
   }
+
 
   .staged::after {
     content: "";
@@ -340,10 +343,10 @@ function getDynamicStyle(id:string) {
     background:
       repeating-linear-gradient(
           -45deg,
-          rgba(85, 85, 85, 0.1),
-          rgba(85, 85, 85, 0.1) 10px,
-          rgba(59, 59, 59, 0.2) 10px,
-          rgba(59, 59, 59, 0.2) 20px
+          rgba(238, 238, 238),
+          rgba(238, 238, 238) 10px,
+          rgba(216, 216, 216) 10px,
+          rgba(216, 216, 216) 20px
         );    
     border-radius: 4px;
     z-index: -1;
@@ -387,7 +390,7 @@ function getDynamicStyle(id:string) {
   .paintbrush {
     position: absolute;
     left: 0;
-    background-color: white;
+    /* background-color: white; */
     /* transform: translateY(-50%); */
   }
 

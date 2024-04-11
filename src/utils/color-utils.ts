@@ -1,9 +1,10 @@
 import tinycolor from 'tinycolor2';
 
-export function curatedRandomHexColor(alpha=1) {
+export function curatedRandomHexColor() {
 	const h = Math.random() * 360;
 	const s = randomBetween(80, 100);
-	const l = 60;
+	const l = randomBetween(50, 70);
+	const alpha = randomBetween(0.6, 1);
 	let color = tinycolor({h: h, s: s, l: l, a: alpha});
 	return color.toHex8String();
 }
