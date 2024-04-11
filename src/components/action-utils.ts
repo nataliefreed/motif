@@ -1,6 +1,6 @@
 import type { Action, Effect, ActionStore } from '../types/types';
 import { v4 as uuidv4 } from 'uuid';
-import { actionRootID, activeIDs, actionStore, myTools, toolStore, selectedActionID, selectedEffect, changedActionID, flatActionStore, actionRoot, stagedAction, stagedActionID, currentColor, shouldRandomizeColor, playheadID, hoveredActionID } from '../stores/dataStore'
+import { actionRootID, activeIDs, actionStore, myTools, toolStore, selectedActionID, selectedEffect, changedActionID, flatActionStore, actionRoot, stagedAction, stagedActionID, currentColor, shouldRandomizeColor, playheadID, hoveredActionID, renderRequested, isPlaying, renderDelay, currentlyRenderingActionID, playSpeed, firstPlay } from '../stores/dataStore'
 import { saveToHistory } from '../stores/history';
 import { get } from 'svelte/store';
 import { deepCopy, merge, randomWithinRange, arrayToKeyedObj } from '../utils/utils';
@@ -8,12 +8,14 @@ import { tick } from 'svelte';
 import { curatedRandomHexColor } from '../utils/color-utils';
 import { historyStore } from '../stores/history';
 import tinycolor from "tinycolor2";
+import { getSpiroPoints, getSpecklesPoints } from './canvas/Renderer.js'
 
 class ActionManager {
   #store = flatActionStore;
 
   constructor() {}
 
+  // Get an action from the store by its ID
   getAction(id: string) {
     if (!id || id.length < 1) return null;
     const action = get(this.#store)[id];
@@ -24,6 +26,7 @@ class ActionManager {
     return action;
   }
 
+  // Update the parameters of an action in the store by its ID
   updateParams(id: string, params: { [key: string]: any }) {
     this.#modifyActionStore(id, (store) => {
       const action = store[id];
@@ -33,7 +36,7 @@ class ActionManager {
     });
   }
 
-  // remove from parent list
+  // Detach an action from its parent list by its ID
   detach(id: string) {
     this.#modifyActionStore(null, (store) => {
       // Find the parent action
@@ -50,6 +53,7 @@ class ActionManager {
     });
   }
 
+  // Delete an action and its descendants by its ID
   delete(id: string) {
     
     let selected = get(selectedActionID); 
@@ -99,14 +103,16 @@ class ActionManager {
     });
   }
 
+  // Add a single action to the store by its ID, don't assign to any parent
   add(action: Action) {
     if (!action || !action.uuid) return;
     this.#modifyActionStore(action.uuid, (store) => {
       store[action.uuid] = action;
     });
+    return action.uuid;
   }
 
-  // Append but don't assign to any parent
+  // Append multiple actions to the store, don't assign to any parent
   append(actions: { [uuid: string]: Action }) {
     if (!actions) return;
     let root_uuid = getRoot(actions);
@@ -117,26 +123,9 @@ class ActionManager {
     });
     return root_uuid;
   }
-  
-  //after sibling
-  insertAfter(newId: string, targetId: string) {
-    this.#modifyActionStore(null, (store) => {
-      const parent = Object.values(store).find(action =>
-        action.type === 'list' &&
-        action.params.children &&
-        action.params.children.includes(targetId)
-      );
 
-      if (!parent) return;
-
-      const newSiblings = [...parent.params.children];
-      const index = newSiblings.indexOf(targetId);
-      newSiblings.splice(index + 1, 0, newId);
-
-      store[parent.uuid].params.children = newSiblings;
-    });
-  }
-
+  // change out the ID in the parent's children array for another ID - does not modify the action at either ID, just swaps out the parent's reference to it
+  // TODO: don't call as separate modification
   replaceId(targetId: string, newId: string) {
     this.#modifyActionStore(null, (store) => {
       const parent = Object.values(store).find(action =>
@@ -157,7 +146,105 @@ class ActionManager {
     });
   }
 
+// Make a copy of an action, insert after original, delete the original action, return the ID of the copy
+replaceWithCopy(id: string) {
+  let action = this.getAction(id);
+  if (!action) return null;
+
+  let copy = copyAction(id);
+  let copyID = Object.keys(copy)[0];
+
+  if(!copyID) return;
+
+  this.#modifyActionStore(null, (store) => {
+    // Add the copy to the store
+    store[copyID] = copy[copyID];
+
+    // Find the parent of the original action
+    const parent = Object.values(store).find(action =>
+      action.params.children &&
+      action.params.children.includes(id)
+    );
+
+    if (parent) {
+      // Insert the copy as a sibling after the original
+      const index = parent.params.children.indexOf(id);
+      parent.params.children.splice(index + 1, 0, copyID);
+    }
+
+    // Collect all IDs to delete (the action itself and its descendants)
+    let idsToDelete = getDescendantIDs(store, id);
+
+    // Remove all references to these IDs in other actions' children arrays
+    for (let actionID in store) {
+      const action = store[actionID];
+      if (action.params.children) {
+        action.params.children = action.params.children.filter(childId => !idsToDelete.includes(childId));
+      }
+    }
+
+    // Delete the actions themselves
+    idsToDelete.forEach(actionId => delete store[actionId]);
+  });
+
+  return copyID;
+}
+  
+  // insert ID of an action into parent's children array after specified sibling
+  insertAfter(newId: string, targetId: string) {
+    this.#modifyActionStore(null, (store) => {
+      const parent = Object.values(store).find(action =>
+        action.type === 'list' &&
+        action.params.children &&
+        action.params.children.includes(targetId)
+      );
+
+      if (!parent) return;
+
+      const newSiblings = [...parent.params.children];
+      const index = newSiblings.indexOf(targetId);
+      newSiblings.splice(index + 1, 0, newId);
+
+      store[parent.uuid].params.children = newSiblings;
+    });
+  }
+
+  // Move the action with ID newId to be after the action with ID targetId
+  moveAfter(newId: string, targetId: string) {
+    this.#modifyActionStore(null, (store) => {
+      // Find the current parent of the action to be moved
+      const currentParent = Object.values(store).find(action =>
+        action.type === 'list' &&
+        action.params.children &&
+        action.params.children.includes(newId)
+      );
+
+      // Find the target parent where the action should be moved to
+      const targetParent = Object.values(store).find(action =>
+        action.type === 'list' &&
+        action.params.children &&
+        action.params.children.includes(targetId)
+      );
+
+      // If either the current parent or the target parent is not found, do nothing
+      if (!currentParent || !targetParent) return;
+
+      // Remove the action from its current parent's children
+      const currentIndex = currentParent.params.children.indexOf(newId);
+      if (currentIndex !== -1) {
+        currentParent.params.children.splice(currentIndex, 1);
+      }
+
+      // Insert the action after the target in the target parent's children
+      const targetIndex = targetParent.params.children.indexOf(targetId);
+      if (targetIndex !== -1) {
+        targetParent.params.children.splice(targetIndex + 1, 0, newId);
+      }
+    });
+  }
+
   // before sibling
+  // insert ID of an action into parent's children array before specified sibling
   insertBefore(newId: string, targetId: string) {
     this.#modifyActionStore(null, (store) => {
       const parent = Object.values(store).find(action =>
@@ -176,6 +263,7 @@ class ActionManager {
     });
   }
 
+  // insert ID of an action as child of specified parent
   appendChildByID(childID: string, parentID: string) {
     this.#modifyActionStore(parentID, (store) => {
       const parent = store[parentID];
@@ -185,7 +273,42 @@ class ActionManager {
     });
   }
 
-  // Append to action store as child of specified parent
+  // Move the action with ID newId before the action with ID targetId
+  moveBefore(newId: string, targetId: string) {
+    this.#modifyActionStore(null, (store) => {
+      // Find the current parent of the action to be moved
+      const currentParent = Object.values(store).find(action =>
+        action.type === 'list' &&
+        action.params.children &&
+        action.params.children.includes(newId)
+      );
+
+      // Find the target parent where the action should be moved to
+      const targetParent = Object.values(store).find(action =>
+        action.type === 'list' &&
+        action.params.children &&
+        action.params.children.includes(targetId)
+      );
+
+      // If either the current parent or the target parent is not found, do nothing
+      if (!currentParent || !targetParent) return;
+
+      // Remove the action from its current parent's children
+      const currentIndex = currentParent.params.children.indexOf(newId);
+      if (currentIndex !== -1) {
+        currentParent.params.children.splice(currentIndex, 1);
+      }
+
+      // Insert the action before the target in the target parent's children
+      const targetIndex = targetParent.params.children.indexOf(targetId);
+      if (targetIndex !== -1) {
+        targetParent.params.children.splice(targetIndex, 0, newId);
+      }
+    });
+  }
+
+
+  // Append actions to action store as child of specified parent
   appendChild(actions: { [uuid: string]: Action }, uuid: string) {
     if (!actions) return;
     let root_uuid = getRoot(actions);
@@ -247,9 +370,6 @@ class ActionManager {
   #updateActionStore(updateFunction: (store: { [key: string]: Action }) => { [key: string]: Action }) {
     this.#store.update((store) => {
       const newStore = updateFunction(deepCopy(store)); // Deep copy of store
-      
-      // Validate new store, make sure it is in valid format
-
       return newStore;
     });
   }
@@ -553,6 +673,7 @@ export function duplicateAction(id:string) {
     selectedActionID.set(root);
     saveToHistory("duplicate action");
   }
+  return root;
 }
 
 // export function saveActionAsNewTool(action: Action) {
@@ -631,6 +752,9 @@ export function addEffectToActionStore(effect: Effect, params: { [key: string]: 
 }
 
 export function updateStagedAction(params) {
+  // if('progress' in params) {
+    // console.log("saving progress", params);
+  // }
   updateActionParams(get(stagedActionID), params);
 }
 
@@ -658,7 +782,12 @@ export function updateStagedActionColor(color:string) {
 }
 
 export function resetSpecialStagedActionParams() {
-  updateStagedAction({ progress: 2, path: []});
+  if('path' in get(stagedAction).params) {
+    updateStagedAction({ path: []});
+  }
+  if('progress' in get(stagedAction).params) {
+    updateStagedAction({ progress: 2});
+  }
 }
 
 export function setCurrentEffect(name: string) {
@@ -666,7 +795,6 @@ export function setCurrentEffect(name: string) {
   if(!effect) return;
   selectedEffect.set(effect);
 }
-
 
 let changeOptions = {
   'color': (value:string) => { return curatedRandomHexColor() },
@@ -681,6 +809,11 @@ let changeOptions = {
   'outer': (value:number) => randomWithinRange(value, 5, 300, 20),
   'inner': (value:number) => randomWithinRange(value, 5, 200, 20),
   'path': (value:[[number, number]]) => value.map(point => [point[0] + (Math.random() - 0.5) * 10, point[1] + (Math.random() - 0.5) * 10]),
+}
+
+export function remixDuplicate(id:string) {
+  let newID = duplicateAction(id);
+  if(newID) remixAction(newID);
 }
 
 // pick a parameter at random and change it
@@ -720,13 +853,18 @@ export function remixAction(id:string) {
   saveToHistory("remix action end");
 }
 
-export function isChildOfAlongPath(id:string) {
-  let parent = Object.values(get(flatActionStore))
-                     .find(action => action.type === 'list' && action.params.children && action.params.children.includes(id));
-  if(parent && parent.effect === 'along path') {
-    return true;
-  }
-  return false;
+export function convertSelectedAction() {
+  let selected = get(selectedActionID);
+  if(selected.length < 1) return;
+
+  let selectedAction = actionManager.getAction(selected);
+  if (!selectedAction) return;
+
+  let newAction = convertToPathType([selectedAction]);
+  if(newAction === null) return;
+  let added = actionManager.append(newAction);
+  actionManager.replaceId(selected, added);
+  selectedActionID.set(added);
 }
 
 // wiggle parameters of action
@@ -772,8 +910,82 @@ export function repeatSelectedActionAlongPath() {
   saveToHistory('Repeat selected action along path');
 }
 
+//this is a weird but awesome one
+//"find the pattern" button, sort of
+function convertToPathType(actions: Action[]) {
+  let convertedActions: { [uuid: string]: Action } = {};
+  let path = [];
+  let children: { [uuid: string]: Action } = {};
+
+  if(actions.length < 1) return;
+  else if(actions.length === 1) {
+    let action = actions[0];
+    // If it's already a path type or is inside a path type, do nothing
+    if (action.name === 'along path' || isChildOfAlongPath(action.uuid)) {
+      return;
+    } else if(action.name === 'spiro') {
+      path = getSpiroPoints(action.params);
+      let line = effectNameToActions('straight line', { start: path[0], end: path[path.length - 1], color: action.params.color, lineWeight: 2 });
+      if (line) {
+        children = line;
+      }
+    }
+    else if(action.name === 'speckles') {
+      path = getSpecklesPoints(action.params);
+      let circle = effectNameToActions('circle', { radius: 1, color: action.params.color });
+      if(circle) {
+        children = circle;
+      }
+    }
+  }
+  else if(actions.length > 1) {
+    //make sure none are along path actions, or inside an along path
+    //look for coordinate types in the params (position, start, end)
+    //if there are at least 2, collect the positions and create a path
+  }
+
+  if(path.length > 0 && Object.keys(children).length > 0) {
+    let alongPath = createAlongPathAction(Object.keys(children), path);
+    convertedActions = { ...alongPath, ...children };
+  }
+
+  return Object.keys(convertedActions).length > 0 ? convertedActions : null; //just for now return null if we didn't do anything to the action
+
+  //if it's already a path type, do nothing
+  //if it contains a path type or is inside a path type, do nothing
+  //if(action.name === 'along path' || isChildOfAlongPath(action.uuid)))
+
+  //else if it is a single object:
+    //if it is a type that has computed points, get those points and convert to path type
+    //these include speckles and spiro
+    // action.name === 'spiro'
+    // action.name == 'speckles'
+    //create a new along path type
+    //create a small circle for speckles, and a line for spiro and place inside along path
+
+  //else if it is one or more objects and they have at least two coordinates
+    //create a new path type
+    //get the coordinates and populate the path
+    //put all the objects inside the along path
+}
+
+//like the reverse of convert to path type
+function explode(action: Action) {
+  //if it's an along path, unroll it and convert to individual actions
+}
+
+export function isChildOfAlongPath(id:string) {
+  let parent = Object.values(get(flatActionStore))
+                     .find(action => action.type === 'list' && action.params.children && action.params.children.includes(id));
+  if(parent && parent.effect === 'along path') {
+    return true;
+  }
+  return false;
+}
+
+
 function createAlongPathAction(children: string[], path: number[][]) {
-  let action = {
+  let action: Action = {
     uuid: uuidv4(),
     name: 'along path',
     type: 'list',
@@ -788,41 +1000,22 @@ function createAlongPathAction(children: string[], path: number[][]) {
   };
   return { [action.uuid]: action };
 }
-//   if(!id || !get(flatActionStore)[id]) return;
 
-
-
-//   // if it's the staged action, show it
-//   if(id === get(stagedActionID)) {
-//     // renderStagedAction();
-//   }
-
-// TODO: animate when this happens
+// go "back in time" to before that action, move that action to stagedAction so user can re-record it
+// when mouse released, fast forward to current time
 export function redrawSelectedAction() {
-//   // go "back in time" to before that action, move that action to stagedAction so user can re-record it
-//   // when mouse released, fast forward to current time
+  saveToHistory("start redraw");
   let selected = get(selectedActionID);
   if(selected.length < 1) return;
-  
-  // save the previous staged action
-  let prevStaged = get(stagedActionID);
 
-  stagedActionID.set(selected);
-
-  actionManager.detach(prevStaged);
-  selectedActionID.set('');
-  
-
-  // we need to somehow get the previous staged action back when this is done (once user places action)
-
-//   actionManager.hide(prevStaged);
+  let newAction = actionManager.replaceWithCopy(selected);
+  if(newAction) {
+    selectedActionID.set('');
+    actionManager.delete(get(stagedActionID));
+    stagedActionID.set(newAction);
+  }
+  renderRequested.set(true);
 }
-
-
-
-
-
-
 
 
 
@@ -863,6 +1056,7 @@ type CompiledAction = {
 // }
 
 export function updateActiveActions(active:string[]): null {
+  // console.log("updating active actions", active);
   let unique = [...new Set(active)]; //eliminate duplicates
   activeIDs.set(unique);
   // console.log("active actions", unique.map(action => action.substring(0, 6) + "..."));
@@ -878,8 +1072,10 @@ export function addToActiveActions(id:string): null {
 
 export function compileActionsBeforeStaged() {
   let actions = compileActions(get(flatActionStore)[get(actionRootID)]);
+  if(!actions) return [];
   let stagedActionIndex = actions.findIndex(action => action.actionID === get(stagedActionID));
   let actionsBeforeStaged = actions.slice(0, stagedActionIndex);
+  // console.log("actions before staged", actionsBeforeStaged.length);
 
   // //if there's a hovered action, put it back
   // let hoveredID = get(hoveredActionID);
@@ -1092,6 +1288,12 @@ function closeAllModals() {
 function addEffectToActionStoreAsChildOf(effect: Effect, params: { [key: string]: any } = {}, uuid: string) {
   let actions = effectToActions(effect, params);
   if(actions) return actionManager.appendChild(actions, uuid);
+}
+
+function effectNameToActions(name: string, params: { [key: string]: any } = {}) {
+  let effect = get(toolStore).find(tool => tool.name === name);
+  if(!effect) return;
+  return effectToActions(effect, params);
 }
 
 function effectToActions(effect: Effect, params: { [key: string]: any } = {}) {

@@ -33,6 +33,15 @@ export const shouldRandomizeColor = writable(true);
 
 export const playheadID = writable('');
 
+export const isPlaying = writable(false);
+export const firstPlay = writable(false);
+
+export const renderRequested = writable(false);
+export const renderDelay = writable(0);
+export const currentlyRenderingActionID = writable('');
+
+export const playSpeed = writable(10);
+
 export const stagedAction = derived(
   [flatActionStore, stagedActionID], 
   ([$flatActionStore, $stagedActionID]) => $flatActionStore[$stagedActionID]

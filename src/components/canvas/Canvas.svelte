@@ -1,7 +1,7 @@
 <script>
-  import { addEffectAsStagedAction, moveStagedActionToEnd, compileActionsBeforeStaged, updateStagedAction, updateStagedActionColor, copyStagedActionToActionStore, addCurrentEffectAsStagedAction, compileActions, hideAction, showAction, updateActiveActions, addToActiveActions, resetSpecialStagedActionParams } from '../action-utils';
+  import { addEffectAsStagedAction, moveStagedActionToEnd, compileActionsBeforeStaged, updateStagedAction, updateStagedActionColor, copyStagedActionToActionStore, addCurrentEffectAsStagedAction, compileActions, hideAction, showAction, updateActiveActions, resetSpecialStagedActionParams, stopPlaying, play, pause, scrollToAction } from '../action-utils';
 	import P5 from 'p5-svelte';
-  import { stagedAction, activeIDs, stagedActionID, actionRootID, activeCategory, selectedEffect, currentColor, shouldRandomizeColor, changedActionID, flatActionStore, actionRoot, hoveredActionID } from '../../stores/dataStore';
+  import { stagedAction, activeIDs, stagedActionID, actionRootID, activeCategory, selectedEffect, currentColor, shouldRandomizeColor, changedActionID, flatActionStore, actionRoot, hoveredActionID, renderRequested, isPlaying, renderDelay, currentlyRenderingActionID } from '../../stores/dataStore';
   import { renderers, loadStencils } from './Renderer.js';
   import { onMount, onDestroy } from 'svelte';
   import { getAntPath, mapValue } from '../../utils/utils.ts';
@@ -22,12 +22,13 @@
 
   let thumbnails = [];
 
+  let actionQueue = [];
+
   let renderedActions = {
     static: [],
     drag: [],
     hover: []
   };
-  let timeStagedActionRendered = 0;
 
   // whenever renderedActions changes, update activeActions store
   $: updateActiveActions([...renderedActions.static, ...renderedActions.drag, ...renderedActions.hover]);
@@ -38,23 +39,6 @@
   }
 
   $: if($shouldRandomizeColor) randomizeCurrentColor();
-
-  // render hovered action
-  // $: if ($hoveredActionID && $hoveredActionID.length > 0) {
-  //   let hovered = compileActions($flatActionStore[$hoveredActionID]);
-  //   clearTempCanvases();
-  //   hovered.forEach(action => {
-  //     renderAction(action, p5.getHoverCanvas());
-  //   });
-  // } else {
-    // clearTempCanvases();
-  // }
-
-  // $: if($changedActionID != '') {
-  //   if($changedActionID != $stagedActionID) {
-  //     renderRoot();
-  //   }
-  // }
 
   onMount(() => {
 
@@ -83,12 +67,21 @@
     flatActionStore.subscribe(actions => {
       if(!p5) return;
       if($changedActionID != $stagedActionID) {
-        clearTempCanvases();
         renderActionsUntilStaged();
       }
       else if($changedActionID === $stagedActionID && !mouseOverCanvas){
         clearTempCanvases();
         renderStagedAction(p5.getHoverCanvas());
+      }
+    });
+
+    renderRequested.subscribe(value => {
+      // console.log("render requested");
+      if(value) {
+        // clearTempCanvases();
+        // renderActionsUntilStaged();
+        // renderStagedAction(p5.getHoverCanvas());
+        // renderRequested.set(false);
       }
     });
 
@@ -166,68 +159,103 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
   
   */
 
-  let previousActiveActions = $activeIDs;
-  export function renderActionsUntilStaged(delay = 1000, pathDelay = 10) {
-    // console.log("rendering actions until staged");
+  // TODO: don't start over on pause
+  function renderActionsUntilStaged() {
     if(!p5) return;
+    actionQueue = compileActionsBeforeStaged();
+    // console.log("action queue has", actionQueue.length, "actions");
+    actionQueue.splice(0, 0, { effect:'clear', params: {} } );
+    currentActionIndex = 0;
+    // clearAllCanvases();
+    renderFromQueue();
+  }
 
-    let actions = compileActionsBeforeStaged();
+  let isRendering = false;
+  let currentActionIndex = 0;
+  async function renderFromQueue(delay = 0) {
+
+    if(!p5) return;
+    if(isRendering) return;
+    // console.log("starting render with queue of length", actionQueue.length);
+    // console.log(actionQueue.map(action => action.effect));
+
+    isRendering = true;
+
     clearAllCanvases();
+    // console.log("actions before staged", actions, actions.length);
     let staticCanvas = p5.getStaticCanvas();
 
-    // console.log("rendering", actions.length, "actions");
-    actions.forEach(action => {
-      renderAction(action, staticCanvas);
-    });
-    p5.image(staticCanvas, 0, 0);
-    // renderGradually(actions, staticCanvas, delay, pathDelay).then(() => {
-    //   // Update the canvas and active actions after all actions are rendered
-    //   p5.image(staticCanvas, 0, 0);
-    // });
-  }
+    // let delays = actions.map(action => action.parentID === $changedActionID ? delay : 0);
+    // delays[0] = 0; //first action renders immediately
 
-  function renderGradually(actions, canvas, delay, pathDelay = 10) {
-  let previousActiveActions = [];
-  let index = 0;
-
-  function renderNextAction() {
-    if (index >= actions.length) return Promise.resolve(); // All actions rendered
-
-    let shouldDelay = actions[index].actionID === $hoveredActionID;
-
-    // Render the action
-    renderAction(actions[index], canvas);
-
-    if (shouldDelay) {
-      p5.image(canvas, 0, 0);
+    while (currentActionIndex < actionQueue.length) {
+      const action = actionQueue[currentActionIndex];
+      // console.log("rendering action", action.actionID, action.effect, action.params);
+      // console.log("which is action", currentActionIndex + 1, "of", actionQueue.length);
+      delay = action.indexedID || action.effect === 'along path'? $renderDelay / 30 : $renderDelay;
+      if(action.effect === 'clear') { delay = 0; }
+      await renderAction(action, staticCanvas, delay);
+      currentActionIndex++;
+      // console.log("queue is now", actionQueue.length);
     }
 
-    index++;
+    // console.log("got through the queue!", actionQueue.length);
 
-    // // Determine the delay for the next action
-    let nextDelay = shouldDelay ? (actions[index] && actions[index].indexedID ? pathDelay : delay) : 0;
+    // console.log(actionQueue.map(action => action.effect));
 
-    // Return a promise that resolves after the delay, then calls renderNextAction again
-    return new Promise(resolve => {
-      setTimeout(() => {
-        resolve(renderNextAction());
-      }, nextDelay);
-    });
+    p5.image(staticCanvas, 0, 0);
+    isRendering = false;
+    renderDelay.set(0);
+    isPlaying.set(false);
+    // console.log("finished render");
   }
 
-  return renderNextAction(); // Start rendering the first action
+  // Call the render function for an action
+  function renderAction(action, canvas, delay = 0) {
+  return new Promise(resolve => {
+
+    if (p5) {
+      const renderFunction = renderers[action.effect];
+      currentlyRenderingActionID.set(action.actionID);
+      if(renderFunction) {
+        if (delay > 0) {
+          setTimeout(() => {
+            if($isPlaying) {
+              renderFunction(canvas, action.params, p5, turtle);
+              updateRenderedActions(action, canvas); // Update the active actions
+              scrollToAction(action.actionID);
+              p5.image(canvas, 0, 0);
+            }
+            resolve(); // Resolve the promise after rendering
+            }, delay);
+        } else {
+          // Render immediately
+          renderFunction(canvas, action.params, p5, turtle);
+          updateRenderedActions(action, canvas); // Update the active actions
+          resolve(); // Resolve the promise after rendering
+        }
+      } else {
+        // Update even if render function not found in order to show the active actions in the DOM
+        updateRenderedActions(action, canvas); // Update the active actions
+        resolve();
+      }   
+    } else {
+      resolve();
+    }
+  });
 }
 
   let stagedCanvasTimeout;
   let stagedCanvasFade;
-  function renderStagedAction(canvas) {
+  async function renderStagedAction(canvas) {
+    // console.log("rendering staged action");
     if(!p5) return;
     clearTimeout(stagedCanvasTimeout);
     clearInterval(stagedCanvasFade);
     let actions = compileActions($flatActionStore[$stagedActionID]);
-    actions.forEach(action => {
+    for (let action of actions) {
       renderAction(action, canvas);
-    });
+    }
     p5.image(canvas, 0, 0);
 
     if(!mouseOverCanvas && !($hoveredActionID === $stagedActionID)) {
@@ -248,33 +276,20 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     }
   }
 
-
-  // Call the render function for an action
-  function renderAction(action, canvas) {
-    if(p5) {
-      const renderFunction = renderers[action.effect];
-      // console.log("running render function for ", action.effect, action.params, p5, turtle);
-      if (renderFunction) {
-        // console.log("rendering", action.effect)
-        renderFunction(canvas, action.params, p5, turtle);
-        // p5.image(canvas, 0, 0);
-      }
-
-      // update the active actions
-      // these update even if render function not found in order to show the active actions in the DOM
-      switch(canvas) {
-        case p5.getStaticCanvas():
-          renderedActions.static.push(action.actionID);
-          break;
-        case p5.getDragCanvas():
-          renderedActions.drag.push(action.actionID);
-          break;
-        case p5.getHoverCanvas():
-          renderedActions.hover.push(action.actionID);
-          break;
-      }
-    }
+function updateRenderedActions(action, canvas) {
+  switch (canvas) {
+    case p5.getStaticCanvas():
+      renderedActions.static.push(action.actionID);
+      break;
+    case p5.getDragCanvas():
+      renderedActions.drag.push(action.actionID);
+      break;
+    case p5.getHoverCanvas():
+      renderedActions.hover.push(action.actionID);
+      break;
   }
+  renderedActions = renderedActions; // Trigger update
+}
 
   function fadeTempCanvases(alpha) {
     if(!p5) return;
@@ -633,18 +648,19 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
 
   function updateMouseHoldTime() {
 
-    updateStagedAction({ progress: getProgress() });
+    if('progress' in $stagedAction.params) {
+      // console.log("updating mouse hold time");
+      updateStagedAction({ progress: getProgress() });
 
-    // p5.getDragCanvas().clear();
+      clearTempCanvases();
+      renderStagedAction(p5.getDragCanvas());
 
-    clearTempCanvases();
-    renderStagedAction(p5.getDragCanvas());
+      p5.image(p5.getStaticCanvas(), 0, 0);
+      p5.image(p5.getDragCanvas(), 0, 0);
 
-    // p5.image(p5.getStaticCanvas(), 0, 0);
-    p5.image(p5.getDragCanvas(), 0, 0);
-
-    // continue animation loop
-    animationFrameId = requestAnimationFrame(updateMouseHoldTime);
+      // continue animation loop
+      animationFrameId = requestAnimationFrame(updateMouseHoldTime);
+    }
   }
 
   function getProgress() {
@@ -672,11 +688,18 @@ function handleMouseUp(event) {
 
     if(!continuousPathStarted) {
       cancelAnimationFrame(animationFrameId);
-      updateStagedAction({path: getAntPath(path, $stagedAction.params.pathSpacing || 10), progress: Math.round(getProgress())});
+      if('path' in $stagedAction.params) {
+        updateStagedAction({path: getAntPath(path, $stagedAction.params.pathSpacing || 10)});
+      }
+      if('progress' in stagedAction) {
+        updateStagedAction({progress: getProgress()});
+      }
       endAction();
     }
     else {
-      updateStagedAction({path: path});
+      if('path' in $stagedAction.params) {
+        updateStagedAction({path: path});
+      }
     }
 
     // Once the mouse is released, remove global listener
@@ -705,8 +728,12 @@ function endAction() {
   path = [];
   copyStagedActionToActionStore();
   resetSpecialStagedActionParams(); //reset staged action to default for progress, start, end, path
+
+  if($stagedAction.name != $selectedEffect.name) {
+    addCurrentEffectAsStagedAction();
+  }
   //move staged action to end of list
-  moveStagedActionToEnd();
+  // moveStagedActionToEnd();
 
   p5.getHoverCanvas().clear();
   p5.getDragCanvas().clear();
@@ -714,8 +741,6 @@ function endAction() {
   p5.getHoverCanvas().reset();
 
   if($shouldRandomizeColor) randomizeCurrentColor();
-
-  renderActionsUntilStaged();
 }
 
 /*
@@ -734,10 +759,19 @@ function handleMouseLeave(event) {
     clearTempCanvases(); //clear when leaving canvas
   }
   mouseOverCanvas = false;
+  // if(playingPaused) {
+  //   play();
+  //   playingPaused = false;
+  // }
 }
 
+// let playingPaused = false;
 function handleMouseOver(event) {
   mouseOverCanvas = true;
+  if($isPlaying) {
+    pause();
+    // playingPaused = true;
+  }
 }
 
 function handleKeyPress(event) {
