@@ -203,10 +203,24 @@ class ActionManager {
   undo() {
     let undoState = historyStore.pop();
     if(!undoState) return;
-    this.#modifyActionStore(null, (store) => { 
+    this.#modifyActionStore(null, (store) => {
       Object.assign(store, undoState.actionStore);
     });
     stagedActionID.set(undoState.stagedActionID);
+  }
+
+  redo() {
+    let redoState = historyStore.redo();
+    if (!redoState) return;
+    this.#modifyActionStore(null, (store: ActionStore) => {
+      Object.assign(store, redoState.actionStore);
+    });
+    stagedActionID.set(redoState.stagedActionID);
+  }
+
+  refresh() {
+    // update store to trigger re-render
+    this.#modifyActionStore(null, (store) => store);
   }
 
   // Pass in a function to change the store
@@ -269,7 +283,143 @@ export async function scrollToAction(id: string) {
 }
 
 export function undo() {
+  stopPlaying();
   actionManager.undo();
+}
+
+export function redo() {
+  stopPlaying();
+  actionManager.redo();
+}
+
+export function rewindToBeginning() {
+  stopPlaying();
+  //move staged action to start
+  let stagedID = get(stagedActionID);
+  if(stagedID.length < 1) return;
+  let rootChildren = get(actionRoot).params.children;
+  if(rootChildren && rootChildren.length > 0) {
+    actionManager.detach(stagedID);
+    actionManager.insertBefore(stagedID, rootChildren[0]);
+  }
+}
+
+export function fastForwardToEnd() {
+  stopPlaying();
+  //move staged action to end
+  moveStagedActionToEnd();
+}
+
+export function stepForward() {
+  let stagedID = get(stagedActionID);
+  if (!stagedID) return;
+
+  let sibs = getSiblings(stagedID);
+  let numSibs = sibs.length;
+  if (numSibs < 2) return;
+
+  let index = sibs.indexOf(stagedID);
+  if(index >= numSibs - 1) return; //if at end, do nothing
+  let nextIndex = (index + 1) % (numSibs);
+  let nextSib = sibs[nextIndex];
+  // selectedActionID.set(nextSib);
+  // debugger;
+  actionManager.detach(stagedID);
+
+  if(index < numSibs - 1) {
+    actionManager.insertAfter(stagedID, nextSib);
+  }
+  // else {
+  //   actionManager.insertBefore(stagedID, nextSib); // if it is at the end, move to the beginning
+  // }
+}
+
+export function stepBackward() {
+  let stagedID = get(stagedActionID);
+  if(!stagedID) return;
+
+  let sibs = getSiblings(stagedID);
+  let numSibs = sibs.length;
+  if (numSibs < 2) return;
+
+  let index = sibs.indexOf(stagedID);
+  if(index <= 0) return; //if at beginning, do nothing
+  let prevIndex = index - 1;
+  let prevSib = sibs[prevIndex < 0 ? numSibs - 1 : prevIndex];
+  // selectedActionID.set(prevSib);
+  actionManager.detach(stagedID);
+  actionManager.insertBefore(stagedID, prevSib);
+}
+
+// let playInterval: Timeout | null = null;
+
+let firstPlayDone = false;
+export function play() {
+  if(firstPlayDone) {
+    firstPlay.set(true);
+  }
+  else {
+    firstPlayDone = true;
+  }
+  moveStagedActionToEnd();
+  isPlaying.set(true);
+  renderDelay.set(1000/get(playSpeed));
+  // actionManager.refresh();
+  // let staged = get(stagedActionID);
+  // if(!staged) return;
+  // // if staged action is at the end, move it to the beginning
+  // // otherwise play from where it is
+  // if(get(actionRoot).params.children[get(actionRoot).params.children.length - 1] === staged) {
+  //   rewindToBeginning();
+  // }
+  // // start a delayed render of each action
+  // isPlaying.set(true);
+  // playInterval = setInterval(() => {
+  //   stepForward();
+  //   //if at end, stop
+  //   if(get(actionRoot).params.children[get(actionRoot).params.children.length - 1] === get(stagedActionID)) {
+  //     isPlaying.set(false);
+  //     clearInterval(playInterval);
+  //     renderDelay.set(0);
+  //   }
+  // }, 500);
+  // stepForward();
+}
+
+export function pause() {
+  let currentlyRendering = actionManager.getAction(get(currentlyRenderingActionID));
+  if(currentlyRendering) {
+    actionManager.moveBefore(get(stagedActionID), get(currentlyRenderingActionID));
+  }
+  renderDelay.set(0);
+  isPlaying.set(false);
+
+
+  // isPlaying.set(false);
+  //   let currentlyRendering = actionManager.getAction(get(currentlyRenderingActionID));
+  //   if(currentlyRendering) {
+  //     actionManager.detach(get(stagedActionID));
+  //     actionManager.insertAfter(get(stagedActionID), get(currentlyRenderingActionID));
+  //   }
+  // renderDelay.set(0);
+  // actionManager.refresh();
+}
+
+export function togglePlay() {
+  if(get(isPlaying)) {
+    pause();
+  } else {
+    play();
+  }
+}
+
+export function stopPlaying() {
+  // stop the delayed render
+  // leave staged action where it is
+  // clearInterval(playInterval);
+  isPlaying.set(false);
+  renderDelay.set(0);
+  // actionManager.refresh();
 }
 
 export function hideAction(id: string) {
