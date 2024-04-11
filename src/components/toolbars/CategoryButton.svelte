@@ -24,7 +24,7 @@
     justify-content: center;
     align-items: center;
     background-color: #dedede;
-    border: 1px solid black;
+    border: 0.5px solid black;
     /* border-radius: 5px; */
     color: rgb(77, 77, 77);
     /* margin: 5px; */

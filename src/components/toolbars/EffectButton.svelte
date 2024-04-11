@@ -30,7 +30,9 @@
     height: calc(var(--toolbar-height)*1.5);
     justify-content: center;
     align-items: center;
-    border: 1px solid black;
+    border: 0.5px solid black;
+    border: none;
+    border-radius: 2px;
     /* border-radius: 5px; */
     cursor: pointer;
     background-size: cover; /* Ensure the image covers the button */

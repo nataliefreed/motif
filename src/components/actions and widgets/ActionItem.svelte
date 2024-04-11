@@ -15,21 +15,23 @@
 
   export let action: Action | null;
   export let depth = 0;
-  export let isOpen = false;
+  let isOpen = false;
 
   let animate = false;
 
   const dispatch = createEventDispatcher();
 
   onMount(() => {
-    if(action && action.category === 'top-level-list') { //expand main list by default
+    if(action && action.name === 'do each') { //expand do each by default
         isOpen = true;
+    } else {
+        isOpen = false;
     }
   });
 
-  function toggle() {
-      isOpen = !isOpen;
-  }
+  // function toggle() {
+  //     isOpen = !isOpen;
+  // }
 
   // on added, params are { children: [...] }
   // on removed, params are { children: [...] }
@@ -78,16 +80,14 @@
     <span
     class:staged={$stagedActionID === action.uuid}
     class="action-item-content"
-    on:click={e => handleItemClick(e, action.uuid)}
-    on:mouseover={e => handleItemMouseover(e, action.uuid)}
     >
       {#if action.category === 'control'}
-          <ControlStructure name={action.name} params={action.params} onUpdate={handleUpdate} depth={depth+1} on:reorder/>
+          <ControlStructure name={action.name} params={action.params} {isOpen} onUpdate={handleUpdate} depth={depth+1} on:reorder/>
       {:else if action.type === 'effect'}
           {#if action.category === 'backgrounds'}
               <Background name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
           {:else if action.category === 'shapes'}
-              <Shape name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
+              <Shape uuid={action.uuid} name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
           {:else if action.category === 'effects'}
               <Eggbeater name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
           {:else if action.category === 'patterns'}
@@ -103,14 +103,14 @@
     </span>
   {/if}
 <style>
-  /* .action-single-item {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  } */
 
   .staged {
     padding: 0 10px;
   }
+
+  .action-item-content {
+    margin-left: 3px;
+  }
+
 </style>
 

@@ -1,10 +1,9 @@
 <script>
-  import { addEffectAsStagedAction, moveStagedActionToEnd, compileActionsBeforeStaged, updateStagedAction, copyStagedActionToActionStore, addCurrentEffectAsStagedAction, compileActions, hideAction, showAction, updateActiveActions, resetSpecialStagedActionParams } from '../action-utils';
+  import { addEffectAsStagedAction, moveStagedActionToEnd, compileActionsBeforeStaged, updateStagedAction, updateStagedActionColor, copyStagedActionToActionStore, addCurrentEffectAsStagedAction, compileActions, hideAction, showAction, updateActiveActions, resetSpecialStagedActionParams, stopPlaying, play, pause, scrollToAction } from '../action-utils';
 	import P5 from 'p5-svelte';
-  import { stagedAction, activeIDs, stagedActionID, actionRootID, activeCategory, selectedEffect, currentColor, shouldRandomizeColor, changedActionID, flatActionStore, actionRoot } from '../../stores/dataStore';
+  import { stagedAction, activeIDs, stagedActionID, actionRootID, activeCategory, selectedEffect, currentColor, shouldRandomizeColor, changedActionID, flatActionStore, actionRoot, hoveredActionID, renderRequested, isPlaying, renderDelay, currentlyRenderingActionID } from '../../stores/dataStore';
   import { renderers, loadStencils } from './Renderer.js';
   import { onMount, onDestroy } from 'svelte';
-  import tinycolor from "tinycolor2";
   import { getAntPath, mapValue } from '../../utils/utils.ts';
   import { curatedRandomHexColor } from '../../utils/color-utils.ts';
   import { turtle } from './Turtle.js';
@@ -23,6 +22,17 @@
 
   let thumbnails = [];
 
+  let actionQueue = [];
+
+  let renderedActions = {
+    static: [],
+    drag: [],
+    hover: []
+  };
+
+  // whenever renderedActions changes, update activeActions store
+  $: updateActiveActions([...renderedActions.static, ...renderedActions.drag, ...renderedActions.hover]);
+
   function randomizeCurrentColor() {
     // currentColor.set(tinycolor.random().toHexString());
     currentColor.set(curatedRandomHexColor());
@@ -30,13 +40,9 @@
 
   $: if($shouldRandomizeColor) randomizeCurrentColor();
 
-  // $: if($changedActionID != '') {
-  //   if($changedActionID != $stagedActionID) {
-  //     renderRoot();
-  //   }
-  // }
-
   onMount(() => {
+
+    window.addEventListener('keydown', handleKeyPress);
 
     // if selectedEffect changed, update staged action accordingly
     selectedEffect.subscribe(effect => {
@@ -47,7 +53,7 @@
         shouldRandomizeColor.set(false);
         currentColor.set(effect.params.color);
       } else {
-        params.color = $currentColor;
+        updateStagedActionColor($currentColor);
       }
         // params.color2 = tinyColor($currentColor).rotate(180).toHexString();
       // }
@@ -55,15 +61,49 @@
       addEffectAsStagedAction(effect, params); //drawing effects have staged action
       if(p5) {
         p5.getHoverCanvas().clear();
-      } 
+      }
     });
 
     flatActionStore.subscribe(actions => {
-      // console.log("changed action id", $changedActionID, "staged action id", $stagedActionID);
+      if(!p5) return;
       if($changedActionID != $stagedActionID) {
         renderActionsUntilStaged();
       }
+      else if($changedActionID === $stagedActionID && !mouseOverCanvas){
+        clearTempCanvases();
+        renderStagedAction(p5.getHoverCanvas());
+      }
     });
+
+    renderRequested.subscribe(value => {
+      // console.log("render requested");
+      if(value) {
+        // clearTempCanvases();
+        // renderActionsUntilStaged();
+        // renderStagedAction(p5.getHoverCanvas());
+        // renderRequested.set(false);
+      }
+    });
+
+    // hoveredActionID.subscribe(id => {
+    //   if(!p5) return;
+    //   let actions = compileActions($flatActionStore[id]);
+    //   if(actions.length > 0) {
+    //     clearTempCanvases();
+    //     actions.forEach(action => {
+    //       renderAction(action, p5.getHoverCanvas());
+    //     });
+    //     p5.background(255);
+    //     p5.tint(255, 50);
+    //     p5.image(p5.getStaticCanvas(), 0, 0);
+    //     p5.noTint();
+    //     p5.image(p5.getHoverCanvas(), 0, 0);
+    //   }
+    //   else {
+    //     clearTempCanvases();
+    //     renderActionsUntilStaged();
+    //   }
+    // });
 
     // stagedActionID.subscribe(id => {
     //   if(stagedActionID !== '') {
@@ -72,9 +112,13 @@
     // });
 
     currentColor.subscribe(color => {
-      // console.log("current color changed", color);
-      updateStagedAction({ color: color });
+      updateStagedActionColor(color);
     });
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+      cleanupP5();
+    }
   })
 
     //if staged action empty or not found in action store, add a new staged action based on current effect
@@ -115,101 +159,169 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
   
   */
 
-  let previousActiveActions = $activeIDs;
-  export function renderActionsUntilStaged(delay = 500, pathDelay = 10) {
+  // TODO: don't start over on pause
+  function renderActionsUntilStaged() {
     if(!p5) return;
+    actionQueue = compileActionsBeforeStaged();
+    // console.log("action queue has", actionQueue.length, "actions");
+    actionQueue.splice(0, 0, { effect:'clear', params: {} } );
+    currentActionIndex = 0;
+    // clearAllCanvases();
+    renderFromQueue();
+  }
 
-    let actions = compileActionsBeforeStaged();
+  let isRendering = false;
+  let currentActionIndex = 0;
+  async function renderFromQueue(delay = 0) {
+
+    if(!p5) return;
+    if(isRendering) return;
+    // console.log("starting render with queue of length", actionQueue.length);
+    // console.log(actionQueue.map(action => action.effect));
+
+    isRendering = true;
+
     clearAllCanvases();
+    // console.log("actions before staged", actions, actions.length);
     let staticCanvas = p5.getStaticCanvas();
 
-    renderGradually(actions, staticCanvas, delay, pathDelay).then(() => {
-      // Update the canvas and active actions after all actions are rendered
-      p5.image(staticCanvas, 0, 0);
-      updateActiveActions(actions.map(action => action.actionID));
-    });
+    // let delays = actions.map(action => action.parentID === $changedActionID ? delay : 0);
+    // delays[0] = 0; //first action renders immediately
 
-    // Update the previous active actions for the next call
-    previousActiveActions = actions.map(action => action.actionID);
-  }
-
-
-  function renderStagedAction(canvas) {
-    if(!p5) return;
-    let actions = compileActions($flatActionStore[$stagedActionID]);
-
-    actions.forEach(action => {
-      renderAction(action, canvas);
-    });
-  }
-
-
-  function renderGradually(actions, canvas, delay, pathDelay = 10) {
-  let previousActiveActions = []; // Assuming this is defined somewhere in your code
-
-  let index = 0;
-
-  function renderNextAction() {
-    if (index >= actions.length) return Promise.resolve(); // All actions rendered
-
-    // Determine if the action is new or existing
-    let isNewAction = !previousActiveActions.includes(actions[index].actionID);
-
-    // Render the action
-    renderAction(actions[index], canvas);
-
-    // Update the canvas and active actions only if it's a new action
-    if (isNewAction) {
-      p5.image(canvas, 0, 0);
-      updateActiveActions(actions.slice(0, index + 1).map(action => action.actionID));
+    while (currentActionIndex < actionQueue.length) {
+      const action = actionQueue[currentActionIndex];
+      // console.log("rendering action", action.actionID, action.effect, action.params);
+      // console.log("which is action", currentActionIndex + 1, "of", actionQueue.length);
+      delay = action.indexedID || action.effect === 'along path'? $renderDelay / 30 : $renderDelay;
+      if(action.effect === 'clear') { delay = 0; }
+      await renderAction(action, staticCanvas, delay);
+      currentActionIndex++;
+      // console.log("queue is now", actionQueue.length);
     }
 
-    index++;
+    // console.log("got through the queue!", actionQueue.length);
 
-    // Determine the delay for the next action
-    let nextDelay = isNewAction ? (actions[index] && actions[index].indexedID ? pathDelay : delay) : 0;
+    // console.log(actionQueue.map(action => action.effect));
 
-    // Return a promise that resolves after the delay, then calls renderNextAction again
-    return new Promise(resolve => {
-      setTimeout(() => {
-        resolve(renderNextAction());
-      }, nextDelay);
-    });
+    p5.image(staticCanvas, 0, 0);
+    isRendering = false;
+    renderDelay.set(0);
+    isPlaying.set(false);
+    // console.log("finished render");
   }
 
-  return renderNextAction(); // Start rendering the first action
+  // Call the render function for an action
+  function renderAction(action, canvas, delay = 0) {
+  return new Promise(resolve => {
+
+    if (p5) {
+      const renderFunction = renderers[action.effect];
+      currentlyRenderingActionID.set(action.actionID);
+      if(renderFunction) {
+        if (delay > 0) {
+          setTimeout(() => {
+            if($isPlaying) {
+              renderFunction(canvas, action.params, p5, turtle);
+              updateRenderedActions(action, canvas); // Update the active actions
+              scrollToAction(action.actionID);
+              p5.image(canvas, 0, 0);
+            }
+            resolve(); // Resolve the promise after rendering
+            }, delay);
+        } else {
+          // Render immediately
+          renderFunction(canvas, action.params, p5, turtle);
+          updateRenderedActions(action, canvas); // Update the active actions
+          resolve(); // Resolve the promise after rendering
+        }
+      } else {
+        // Update even if render function not found in order to show the active actions in the DOM
+        updateRenderedActions(action, canvas); // Update the active actions
+        resolve();
+      }   
+    } else {
+      resolve();
+    }
+  });
 }
 
-  // function renderAllActions() {
-    // if(!p5) return;
-    // let activeActions = compileActions($flatActionStore[$actionRootID]);
-    // if(activeActions.length === 0) return;
-
-    // //then render each one
-    // activeActions.forEach(action => {
-    //   renderAction(action, p5.getStaticCanvas());
-    // });
-    // do something special for staged action if it's at the end of the list
-  // }
-
-
-  // this actually runs the render function for an action
-  function renderAction(action, canvas) {
-    if(p5) {
-      const renderFunction = renderers[action.effect];
-      // console.log("running render function for ", action.effect, action.params, p5, turtle);
-      if (renderFunction) {
-        // console.log("rendering", action.effect)
-        renderFunction(canvas, action.params, p5, turtle);
-      }
+  let stagedCanvasTimeout;
+  let stagedCanvasFade;
+  async function renderStagedAction(canvas) {
+    // console.log("rendering staged action");
+    if(!p5) return;
+    clearTimeout(stagedCanvasTimeout);
+    clearInterval(stagedCanvasFade);
+    let actions = compileActions($flatActionStore[$stagedActionID]);
+    for (let action of actions) {
+      renderAction(action, canvas);
     }
+    p5.image(canvas, 0, 0);
+
+    if(!mouseOverCanvas && !($hoveredActionID === $stagedActionID)) {
+      stagedCanvasTimeout = setTimeout(() => { //after 1 second, start fading out
+        let alpha = 255;
+        stagedCanvasFade = setInterval(() => {
+          fadeTempCanvases(alpha);
+          alpha -= 50;
+          // console.log("alpha", alpha);
+          if(alpha <= 0) {
+            clearInterval(stagedCanvasFade);
+            clearTempCanvases();
+            renderedActions.drag = [];
+            renderedActions.hover = [];
+          }
+        }, 50);
+      }, 750);
+    }
+  }
+
+function updateRenderedActions(action, canvas) {
+  switch (canvas) {
+    case p5.getStaticCanvas():
+      renderedActions.static.push(action.actionID);
+      break;
+    case p5.getDragCanvas():
+      renderedActions.drag.push(action.actionID);
+      break;
+    case p5.getHoverCanvas():
+      renderedActions.hover.push(action.actionID);
+      break;
+  }
+  renderedActions = renderedActions; // Trigger update
+}
+
+  function fadeTempCanvases(alpha) {
+    if(!p5) return;
+    p5.background(255);
+    p5.image(p5.getStaticCanvas(), 0, 0);
+    // p5.getDragCanvas().tint(255, alpha);
+    // p5.getHoverCanvas().tint(255, alpha);
+    // console.log("fading", alpha);
+    p5.tint(255, alpha);
+    p5.image(p5.getDragCanvas(), 0, 0);
+    p5.image(p5.getHoverCanvas(), 0, 0);
+    p5.noTint();
+  }
+
+  function fadeBackgroundCanvas(alpha) {
+    if(!p5) return;
+    p5.background(255);
+    p5.tint(255, alpha);
+    p5.image(p5.getStaticCanvas(), 0, 0);
+    p5.noTint();
+    p5.image(p5.getHoverCanvas(), 0, 0);
   }
 
   function clearTempCanvases() { //don't clear static canvas
     if(p5) {
       p5.background(255);
       p5.getDragCanvas().clear();
+      renderedActions.drag = [];
       p5.getHoverCanvas().clear();
+      renderedActions.hover = [];
+
+      // draw the static canvas as background
       p5.image(p5.getStaticCanvas(), 0, 0);
     }
   }
@@ -220,6 +332,10 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     p5.getHoverCanvas().clear();
     p5.getStaticCanvas().clear();
     p5.getStaticCanvas().background(255);
+
+    renderedActions.static = [];
+    renderedActions.drag = [];
+    renderedActions.hover = [];
   }
 
   /*
@@ -363,7 +479,13 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     if (p5) {
       x = Math.round(p5.mouseX);
       y = Math.round(p5.mouseY);
-      path.push([x, y]);
+      if(!continuousPathStarted) {
+        path.push([x, y]);
+      }
+      else {
+        path[path.length - 1] = [x, y];
+        updateStagedAction({path: path});
+      }
     }
 
     /*
@@ -377,23 +499,26 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
    
    */
     
-    if(!isDragging) {
-      p5.getHoverCanvas().clear();
-      if($stagedAction.params.position) {
-        debouncedStagedActionUpdate({ position: { x: x, y: y } });
+      if(!isDragging) {
+
+        p5.getHoverCanvas().clear();
+        if($stagedAction.params.position) {
+          updateStagedAction({ position: { x: x, y: y } });
+        }
+        if($stagedAction.params.start) {
+          updateStagedAction({ start: { x: x, y: y } });
+        }
+        if($stagedAction.params.end) {
+          updateStagedAction({ end: { x: x, y: y } });
+        }
+        if($stagedAction.params.path) {
+          if(!continuousPathStarted) {
+            updateStagedAction({path: path.slice(-5)}); // show small tail of path when hovering
+          }
+        }
+        clearTempCanvases();
+        renderStagedAction(p5.getHoverCanvas());
       }
-      if($stagedAction.params.start) {
-        debouncedStagedActionUpdate({ start: { x: x, y: y } });
-      }
-      if($stagedAction.params.path) {
-          debouncedStagedActionUpdate({path: path.slice(-5)}); // show small tail of path when hovering
-      }
-      // renderAction($stagedAction, p5.getHoverCanvas());
-      renderStagedAction(p5.getHoverCanvas());
-      
-      p5.image(p5.getStaticCanvas(), 0, 0);
-      p5.image(p5.getHoverCanvas(), 0, 0);
-    }
 
     /*
           _                    __ _  
@@ -407,8 +532,6 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
    */
 
     else { // dragging
-
-      p5.getDragCanvas().clear();
 
       let params = $stagedAction.params;
 
@@ -451,26 +574,15 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       if('end' in params) {
         updateStagedAction({ end: { x: x, y: y } });
       }
-      if('path' in params) {
+      if('path' in params && !continuousPathStarted) {
         updateStagedAction({path: getAntPath(path, $stagedAction.params.pathSpacing || 10)}); // calc path spacing
       }
       if($stagedAction.name === 'bounce' || $stagedAction.name === 'spiro' && 'progress' in params) {
         mousePressedTime = Date.now(); //reset whenever moved
       }
 
+      clearTempCanvases();
       renderStagedAction(p5.getDragCanvas());
-
-      p5.image(p5.getStaticCanvas(), 0, 0);
-      p5.image(p5.getDragCanvas(), 0, 0);
-  }
-}
-
-function renderStep(generator) {
-  if (!generator.next().done && isDragging) {
-    // If the generator is not done, render the next step
-    p5.image(p5.getStaticCanvas(), 0, 0);
-    p5.image(p5.getDragCanvas(), 0, 0);
-    requestAnimationFrame(() => renderStep(generator));
   }
 }
   /*
@@ -485,9 +597,10 @@ function renderStep(generator) {
    */
 
   let isDragging = false;
-  let dragRenderComplete = true;
+  let mouseOverCanvas = false;
   let mousePressedTime = 0;
   let animationFrameId = null;
+  let continuousPathStarted = false;
 
   function handleMouseDown(event) {
 
@@ -501,25 +614,32 @@ function renderStep(generator) {
 
       startX = Math.round(p5.mouseX);
       startY = Math.round(p5.mouseY);
-      path = []; // clear current path
-      path.push([x, y]);
+
+      if($stagedAction.textLabel === "Connected Line") {
+        if(!continuousPathStarted) {
+          path = [];
+          continuousPathStarted = true;
+          path.push([startX, startY]);
+        }
+        else {
+        
+        }
+      }
+      else {
+        continuousPathStarted = false;
+        path = []; // clear current path
+        path.push([startX, startY]);
+      }
 
       if($stagedAction.params.position) {
-        debouncedStagedActionUpdate({ position: { x: startX, y: startY }});
+        updateStagedAction({ position: { x: startX, y: startY }});
       }
       if($stagedAction.params.start) {
-        debouncedStagedActionUpdate({ start: { x: startX, y: startY }, end: { x: startX, y: startY }}); // add first point as last point when mouse first pressed so it doesn't jump to previous last point
+        updateStagedAction({ start: { x: startX, y: startY }, end: { x: startX, y: startY }}); // add first point as last point when mouse first pressed so it doesn't jump to previous last point
       }
       if($stagedAction.params.path) {
-        debouncedStagedActionUpdate({path: path}); // why not ant path here?
+        updateStagedAction({path: path});
       }
-
-      // p5.getDragCanvas().clear();
-      // dragRenderFunction = renderers[$stagedAction.effect](p5.getDragCanvas(), $stagedAction.params, p5, false); // get the renderer for the staged effect
-      // dragRenderComplete = false;
-      // if($stagedAction.effect == 'gradient') {
-      //   renderStep(dragRenderFunction);
-      // }
 
       // Listen for global mouseup to handle cases where mouse is released outside the canvas
       document.addEventListener('mouseup', globalMouseUp);
@@ -528,17 +648,19 @@ function renderStep(generator) {
 
   function updateMouseHoldTime() {
 
-    updateStagedAction({ progress: getProgress() });
+    if('progress' in $stagedAction.params) {
+      // console.log("updating mouse hold time");
+      updateStagedAction({ progress: getProgress() });
 
-    p5.getDragCanvas().clear();
+      clearTempCanvases();
+      renderStagedAction(p5.getDragCanvas());
 
-    renderStagedAction(p5.getDragCanvas());
+      p5.image(p5.getStaticCanvas(), 0, 0);
+      p5.image(p5.getDragCanvas(), 0, 0);
 
-    p5.image(p5.getStaticCanvas(), 0, 0);
-    p5.image(p5.getDragCanvas(), 0, 0);
-
-    // continue animation loop
-    animationFrameId = requestAnimationFrame(updateMouseHoldTime);
+      // continue animation loop
+      animationFrameId = requestAnimationFrame(updateMouseHoldTime);
+    }
   }
 
   function getProgress() {
@@ -561,32 +683,24 @@ function handleMouseUp(event) {
     isDragging = false;
     x = Math.round(p5.mouseX);
     y = Math.round(p5.mouseY);
+
     path.push([x, y]); //add last point to path
 
-    cancelAnimationFrame(animationFrameId);
-    updateStagedAction({path: getAntPath(path, $stagedAction.params.pathSpacing || 10), progress: Math.round(getProgress())});
-
-    copyStagedActionToActionStore();
-
-    resetSpecialStagedActionParams(); //reset staged action to default for progress, start, end
-
-    //move staged action to end of list
-    //TODO: slow replay of actions
-    moveStagedActionToEnd();
-
-    if($shouldRandomizeColor) randomizeCurrentColor();
-    // addEffectAsStagedAction($selectedEffect, { color: $currentColor, position: { x: x, y: y } }); // reset staged action to default
-
-    path = []; // clear current path
-
-    // hideAction($stagedActionID);
-
-    p5.getHoverCanvas().clear();
-    p5.getDragCanvas().clear();
-    p5.getDragCanvas().reset();
-    p5.getHoverCanvas().reset();
-
-    renderActionsUntilStaged();
+    if(!continuousPathStarted) {
+      cancelAnimationFrame(animationFrameId);
+      if('path' in $stagedAction.params) {
+        updateStagedAction({path: getAntPath(path, $stagedAction.params.pathSpacing || 10)});
+      }
+      if('progress' in stagedAction) {
+        updateStagedAction({progress: getProgress()});
+      }
+      endAction();
+    }
+    else {
+      if('path' in $stagedAction.params) {
+        updateStagedAction({path: path});
+      }
+    }
 
     // Once the mouse is released, remove global listener
     document.removeEventListener('mouseup', globalMouseUp);
@@ -594,13 +708,39 @@ function handleMouseUp(event) {
 }
 
 function globalMouseUp(event) {
-  // console.log("global mouse up");
-  // p.image(0, 0, staticCanvas);
-  // hoverCanvas.clear();
-  // dragCanvas.clear();
   if (isDragging) {
     handleMouseUp(event);
   }
+}
+
+function handleDoubleClick(event) {
+  endContinuousPath();
+}
+
+export function endContinuousPath() {
+  if(continuousPathStarted) {
+    continuousPathStarted = false;
+    endAction();
+  }
+}
+
+function endAction() {
+  path = [];
+  copyStagedActionToActionStore();
+  resetSpecialStagedActionParams(); //reset staged action to default for progress, start, end, path
+
+  if($stagedAction.name != $selectedEffect.name) {
+    addCurrentEffectAsStagedAction();
+  }
+  //move staged action to end of list
+  // moveStagedActionToEnd();
+
+  p5.getHoverCanvas().clear();
+  p5.getDragCanvas().clear();
+  p5.getDragCanvas().reset();
+  p5.getHoverCanvas().reset();
+
+  if($shouldRandomizeColor) randomizeCurrentColor();
 }
 
 /*
@@ -618,14 +758,26 @@ function handleMouseLeave(event) {
   if(!isDragging) {
     clearTempCanvases(); //clear when leaving canvas
   }
-  // renderActionsUntilStaged();
-  // if(isDragging) {
-  //   // handleMouseUp(event);
+  mouseOverCanvas = false;
+  // if(playingPaused) {
+  //   play();
+  //   playingPaused = false;
   // }
-  // else {
-  //   path = []; // clear current path
-  // }
-  // isDragging = false;
+}
+
+// let playingPaused = false;
+function handleMouseOver(event) {
+  mouseOverCanvas = true;
+  if($isPlaying) {
+    pause();
+    // playingPaused = true;
+  }
+}
+
+function handleKeyPress(event) {
+  if(event.key === 'Enter') {
+    endContinuousPath();
+  }
 }
 
 </script>
@@ -637,7 +789,10 @@ function handleMouseLeave(event) {
      on:mousedown={handleMouseDown} 
      on:mouseup={handleMouseUp} 
      on:mousemove={handleMouseMove}
-     on:mouseleave={handleMouseLeave}>
+     on:mouseleave={handleMouseLeave}
+     on:mouseover={handleMouseOver}
+     on:dblclick={handleDoubleClick}
+     on:keydown={handleKeyPress}>
      <!-- style="width: calc(var(--adjusted-page-width)*0.85);"> -->
      <P5 {sketch} target={canvasContainer} on:instance={handleNewInstance} />
 </div>
@@ -684,21 +839,3 @@ function handleMouseLeave(event) {
     /* border: 1px solid black; */
   }
 </style>
-
-<!--  -->
-<!-- <div> -->
-<!-- <label> -->
-	<!-- X -->
-	<!-- <input type="range" bind:value={x} min="0" max="400" step="0.01" /> -->
-	<!-- {Math.round(x)} -->
-<!-- </label> -->
-<!-- </div> -->
-<!--  -->
-<!-- <div> -->
-<!-- <label> -->
-	<!-- Y -->
-	<!-- <input type="range" bind:value={y} min="0" max="400" step="0.01" /> -->
-	<!-- {Math.round(y)} -->
-<!-- </label> -->
-<!-- </div> -->
-

@@ -1,10 +1,12 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { onMount, onDestroy } from 'svelte';
+  import { flatActionStore } from '../../stores/dataStore';
+  import { getPaths } from '../pathManager';
 
   const dispatch = createEventDispatcher();
 
-  export let points;
+  export let points:[number, number][] = [];
   let gridElement:SVGElement | null;
 
   let gridSize = 500;
@@ -17,15 +19,11 @@
   let initialMousePos = { x: 0, y: 0 };
   let initialPoints: [number, number][] = [];
 
-  let storedPaths = [ // other paths to choose from
-    [[50, 50], [100, 100], [150, 50], [200, 100], [250, 50]], // Zigzag path
-    [[50, 100], [100, 50], [150, 100], [200, 50], [250, 100]], // Inverted zigzag
-    [[50, 50], [250, 100], [50, 150], [250, 200]], // Wavy path
-    [[100, 50], [200, 50], [200, 150], [100, 150], [100, 50]] // Square path
-  ];
+  let storedPaths = [];
 
   onMount(() => {
     window.addEventListener('mouseup', globalMouseUp);
+    storedPaths = getPaths();
   });
 
   onDestroy(() => {
@@ -77,7 +75,7 @@
     dispatch('valueChange', { id: 'path', value: points });
   }
 
-  // Helper function to convert a path to SVG path data
+  // Convert path data to SVG path
   function getPathData(path) {
     return path.map((pt, index) => `${index === 0 ? 'M' : 'L'} ${pt[0]},${pt[1]}`).join(' ');
   }
@@ -89,8 +87,6 @@
 
   const gridLines = Array.from({ length: gridSize / gridSpacing + 1}, (_, i) => i * gridSpacing);
 </script>
-
-
 
 
 <svg bind:this={gridElement} class="grid-widget" width="{scaledGridSize}px" height="{scaledGridSize}px" viewBox={`0 0 ${gridSize} ${gridSize}`} on:mousedown={handleMouseDown} on:mousemove={movePoint} on:mouseup={handleMouseUp}>
@@ -113,7 +109,10 @@
   <line x1="0" y1="{gridSize}" x2={gridSize} y2={gridSize} stroke="black" stroke-width=3 marker-end="url(#arrowhead)"/>
   <line x1="0" y1={gridSize} x2="0" y2="0" stroke="black" stroke-width=3 marker-end="url(#arrowhead)"/>
 
-  {#each points as point}
+  {#each points as point, index}
+    {#if index > 0}
+      <line x1={points[index - 1][0]} y1={points[index - 1][1]} x2={point[0]} y2={point[1]} stroke="black" />
+    {/if}
     <circle cx={point[0]} cy={point[1]} r="5" fill="black"/>
   {/each}
   
@@ -121,6 +120,7 @@
 
 <!-- Display stored paths as a grid -->
 <div class="stored-paths">
+  {#if storedPaths && storedPaths.length > 0}
   {#each storedPaths as storedPath, index}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <svg
@@ -131,13 +131,17 @@
       on:click={() => selectPath(index)}>
 
       <path d={getPathData(storedPath)} stroke="lightgray" fill="none" />
-      {#each storedPath as point}
+      {#each storedPath as point, index}
+        {#if index > 0}
+          <line x1={storedPath[index - 1][0]} y1={storedPath[index - 1][1]} x2={point[0]} y2={point[1]} stroke="black" />
+        {/if}
         <circle cx={point[0]} cy={point[1]} r="5" fill="black" />
       {/each}
 
       </svg>
     {/each}
-  </div>
+  {/if}
+</div>
 
 
 
@@ -153,6 +157,8 @@
     display: flex;
     flex-wrap: wrap;
     margin-top: 1em;
+    overflow-x: auto;
+    max-height: 75px;
   }
   .stored-path {
     margin: 0.5em;

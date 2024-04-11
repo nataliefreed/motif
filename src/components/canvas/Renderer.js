@@ -2,6 +2,7 @@ import { get } from 'svelte/store';
 import { flatActionStore, playheadID, stagedActionID } from '../../stores/dataStore.ts';
 import { filter } from 'lodash';
 let paperdolls = null;
+import { noise } from '../../utils/noise.js'
 
 // export const unroll = {
 //     // do each
@@ -37,6 +38,12 @@ let paperdolls = null;
 
 export const renderers = {
   //p is pgraphics object, which could be the main p5 instance or one of the pgraphics instances
+  'clear': (p, params, p5, turtle) => {
+    p.clear();
+    p.fill(255);
+    // console.log('cleared');
+  },
+
   'move to': (p, params, p5, turtle) => {
     turtle.moveTo(params.position.x, params.position.y);
     turtle.render(p);
@@ -100,26 +107,17 @@ export const renderers = {
 
   'speckles': (p, params, p5) => {
     let c = params.color;
-    let progress = params.progress;
-    let n = params.position.x * params.position.y;
-    let r = params.radius;
-
+    let path = getSpecklesPoints(params, p.width, p.height);
+  
     p.push();
-    //put more and more speckles on the screen
-    //progress does 2 things: density of speckles (more over time) and where in the Perlin noise function you are
-    //(so the speckles change every refresh, it's not just adding more over time to the existing ones)
     p.noStroke();
     p.fill(c);
-
-    p.translate(-p.width/2, -p.height/2);
-
-    for (let i = 0; i < progress*100; i++) {
-      // Use Perlin noise to determine whether to draw a speckle at this position
-      let x = p.noise(n + i * 0.01)*p.width*2;
-      let y = p.noise(2*n + i * 0.01)*p.height*2;
-      p.ellipse(x, y, 2, 2); // Draw a small ellipse at this position
+    // p.translate(-p.width/2, -p.height/2);
+  
+    for (let i = 0; i < path.length; i++) {
+      p.ellipse(path[i][0], path[i][1], 2, 2);
     }
-
+  
     p.pop();
   },
 
@@ -198,45 +196,18 @@ export const renderers = {
   },
 
   'spiro': (p, params, p5) => {
-    let R = params.outer || 30;
-    let r = params.inner || 24;
-    let d = params.d;
     let spiroColor = p.color(params.color);
     let x = params.position.x;
     let y = params.position.y;
-    // let steps = p.map(params.progress, 0, 100, 0, 360);
-    let steps = 360;
-    // if(p === p5.getDragCanvas) debugger;
-  
-    let k = (R - r) / r;
-    let spacing = p.TWO_PI / 30.0;
+    let path = getSpiroPoints(params);
   
     p.push();
-    p.translate(x, y);
-
-
-    // if(p === p5.getHoverCanvas() || p === p5.getDragCanvas()) {
-    //   //show the gears (start with circles)
-    //   p.noFill();
-    //   p.stroke(100);
-    //   //outer gear - R is numTeeth (circumference but in some unit?), how do I get radius?
-    //   p.circle(0, 0, R*2);
-    //   //inner gear - place where it is currently drawing
-    //   //pen point - draw as small circle
-    // }
-
+    // p.translate(x, y);
     p.stroke(spiroColor);
     p.strokeWeight(2);
   
-    // for (let theta = 0; theta < 12 * p.TWO_PI; theta += spacing) {
-    let theta = 0;
-    for (let i = 0; i < steps; i++) {
-      let x1 = (R - r) * Math.cos(theta) + d * Math.cos(k * theta);
-      let y1 = (R - r) * Math.sin(theta) - d * Math.sin(k * theta);
-      let x2 = (R - r) * Math.cos(theta + spacing) + d * Math.cos(k * (theta + spacing));
-      let y2 = (R - r) * Math.sin(theta + spacing) - d * Math.sin(k * (theta + spacing));
-      p.line(x1, y1, x2, y2);
-      theta += spacing;
+    for (let i = 0; i < path.length - 1; i++) {
+      p.line(path[i][0], path[i][1], path[i + 1][0], path[i + 1][1]);
     }
   
     p.pop();
@@ -481,14 +452,14 @@ export const renderers = {
 
   'straight line': (p, params, p5) => {
     // debugger;
-    if(p !== p5.getHoverCanvas()) {
+    // if(p !== p5.getHoverCanvas()) {
       p.push();
       p.strokeWeight(params.lineWeight);
       p.noFill();
       p.stroke(params.color);
       p.line(params.start.x, params.start.y, params.end.x, params.end.y);
       p.pop();
-    }
+    // }
   },
 
   'bounce': (p, params, p5) => {
@@ -1054,6 +1025,45 @@ function scaleRect(p, params, p5) {
     p.rect(x, y, w, h);
     p.pop();
   }
+}
+
+export function getSpiroPoints(params) {
+  let R = params.outer || 30;
+  let r = params.inner || 24;
+  let d = params.d;
+  let steps = 360;
+  let k = (R - r) / r;
+  let spacing = Math.PI / 15.0;
+  let theta = 0;
+  let path = [];
+
+  let offsetX = params.position.x;
+  let offsetY = params.position.y;
+
+  for (let i = 0; i < steps; i++) {
+    let x = (R - r) * Math.cos(theta) + d * Math.cos(k * theta);
+    let y = (R - r) * Math.sin(theta) - d * Math.sin(k * theta);
+    path.push([x+offsetX, y+offsetY]);
+    theta += spacing;
+  }
+  return path;
+}
+
+export function getSpecklesPoints(params, w=500, h=500) {
+  let progress = params.progress;
+  let n = params.position.x * params.position.y;
+  let path = [];
+
+  //put more and more speckles on the screen
+  //progress does 2 things: density of speckles (more over time) and where in the Perlin noise function you are
+  //(so the speckles change every refresh, it's not just adding more over time to the existing ones)
+  for (let i = 0; i < progress * 100; i++) {
+    let x = noise(n + i * 0.01) * w * 2;
+    let y = noise(2 * n + i * 0.01) * h * 2;
+    path.push([x - w/2, y - h/2]);
+  }
+
+  return path;
 }
 
 

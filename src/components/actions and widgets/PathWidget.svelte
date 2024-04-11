@@ -5,7 +5,6 @@
 
   export let id = '';
   export let path:[number, number][] = []; // The path points as a prop
-  let storedPaths: [number, number][][] = [];
 
   let domElement: SVGElement;
 
@@ -59,7 +58,10 @@
     on:mouseout={handleMouseOut}
   >
     <path d={pathData} stroke="lightgray" fill="none" />
-    {#each path as point}
+    {#each path as point, index}
+      {#if index > 0}
+        <line x1={path[index - 1][0]} y1={path[index - 1][1]} x2={point[0]} y2={point[1]} stroke="black" />
+      {/if}
       <circle cx={point[0]} cy={point[1]} r="10" fill="black" />
     {/each}
   </svg>

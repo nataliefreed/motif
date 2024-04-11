@@ -5,9 +5,9 @@
 <!-- <div class="page"> -->
   <div class="container">
     <div class="lined-paper">
-      <ul>
+      <div id="written-content">
         <slot></slot>
-      </ul>
+      </div>
     </div>
   </div>
 <!-- </div> -->
@@ -19,30 +19,31 @@
       display: flex;
       width: 100%;
       height: 85%;
-      margin-top: 3em;
+      /* margin-top: 3em; */
       /* margin-left: 4em; */
       /* flex: 1 0 auto; */
+      /* border: 1px solid red; */
   }
 
   .lined-paper {
       width: 100%;
       height: 100%;
-      margin-top: 5px;
+      margin-top: 0px;
       overflow-y: auto;
       overflow-x: hidden;
-        background-image: repeating-linear-gradient(
+        background-image: repeating-linear-gradient( /* blue horizontal lines */
         to bottom, 
         transparent, 
         transparent calc(2em + 2px), 
         #add8e6 calc(2em + 2px), 
         #add8e6 calc(2em + 3px));
-      line-height: calc(2em - 0.3px);
+      line-height: calc(2em - 1px);
       scroll-snap-type: y mandatory;
       position: relative;
       flex-shrink: 0;
   }
 
-  .lined-paper ul {
+  /* .lined-paper ul {
       list-style: none;
       margin: 3px 0 0 5em;
       margin: 0;
@@ -54,7 +55,7 @@
       position: relative;
       left: calc(var(--adjusted-page-width)*0.1);
       top: 4px;
-  }
+  } */
 
   /* red vertical margins */
   .container::before {
@@ -62,10 +63,16 @@
     position: absolute;
     top: 0;
     bottom: 0;
-    left: calc(var(--adjusted-page-width)*0.1); /* Margin from left edge */
+    /*left: calc(var(--adjusted-page-width)*0.14); */ /* Margin from left edge */
+    left: 3.9em;
     width: 0.1em; /* Line weight */
     background-color: #ffbed1; /* Light red color */
     /* z-index: -1; */
+  }
+
+  #written-content {
+    margin-top: 4px;
+    margin-left: 1.7em;
   }
 
 </style>

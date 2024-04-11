@@ -17,7 +17,7 @@
 <style>
   .toolbar {
     background-color: white;
-    border: 1px solid black;
+    /* border: 1px solid black; */
     align-items: center;
     justify-content: start;
   } 

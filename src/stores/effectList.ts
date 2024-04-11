@@ -15,7 +15,7 @@ export const effectList = [
     params: {
       radius: 20,
       color: '#1B54B1',
-      position: {x: 100, y: 100}
+      position: {x: 250, y: 430}
     },
   },
   // {
@@ -40,7 +40,7 @@ export const effectList = [
     params: {
       size: 40,
       color: '#D55601',
-      position: {x: 100, y: 100}
+      position: {x: 250, y: 430}
     }
   },
   {
@@ -55,7 +55,7 @@ export const effectList = [
       nsides: 6,
       radius: 20,
       color: '#9c83e1',
-      position: {x: 100, y: 100}
+      position: {x: 250, y: 430}
     }
   },
   {
@@ -71,7 +71,7 @@ export const effectList = [
       r1: 20,
       r2: 10,
       color: '#a2d16b',
-      position: {x: 100, y: 100}
+      position: {x: 250, y: 430}
     }
   },
   {
@@ -87,7 +87,7 @@ export const effectList = [
       inner: 24,
       d: 20,
       color: '#FF0000',
-      position: {x: 100, y: 100},
+      position: {x: 250, y: 430},
       progress: 100
     },
   },
@@ -102,7 +102,7 @@ export const effectList = [
     params: {
       size: 40,
       color: '#da6bb1',
-      position: {x: 100, y: 100}
+      position: {x: 250, y: 430}
     }
   },
   {
@@ -117,7 +117,7 @@ export const effectList = [
       width: 50,  
       height: 30,
       color: '#52bf67',
-      position: {x: 100, y: 100}
+      position: {x: 250, y: 430}
     }
   },
   {
@@ -132,7 +132,7 @@ export const effectList = [
       width: 40,
       height: 40,
       color: '#62aed2',
-      position: {x: 100, y: 100}
+      position: {x: 250, y: 430}
     }
   },
   {
@@ -209,6 +209,45 @@ export const effectList = [
 
   {
     name: 'along path',
+    textLabel: 'Solid Brush',
+    category: 'brushes',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'solid_brush.jpeg',
+    mouseActionType: 'drag-path',
+    nestedActions: {
+      'uuid_parent': {
+        uuid: 'uuid_parent',
+        name: 'along path',
+        type: 'list' as const,
+        category: 'control',
+        effect: 'along path',
+        params: {
+          title: "Paintbrush",
+          children: ['line'],
+          path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
+          pathSpacing: 10
+        }
+      },
+      'line': {
+        uuid: 'line',
+        name: 'straight line',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'straight line',
+        thumbnail: 'straight_line.jpeg',
+        params: {
+          color: '#80baee',
+          start: {x: 0, y: 0},
+          end: {x: 0, y: 0},
+          lineWeight: 5
+        }
+      },
+    }
+  },
+
+  {
+    name: 'along path',
     textLabel: 'Dot brush',
     category: 'brushes',
     tags: 'drawing',
@@ -223,8 +262,9 @@ export const effectList = [
         category: 'control',
         effect: 'along path',
         params: {
-          title: "dots",
+          title: "Dot brush",
           children: ['light_blue_dot', 'dark_blue_dot'],
+          color: '#80babd',
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
           pathSpacing: 15
         }
@@ -258,12 +298,12 @@ export const effectList = [
 
   {
     name: 'along path',
-    textLabel: 'Solid Brush',
+    textLabel: 'Connected Line',
     category: 'brushes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
     thumbnail: 'solid_brush.jpeg',
-    mouseActionType: 'drag-path',
+    mouseActionType: 'continuous-path',
     nestedActions: {
       'uuid_parent': {
         uuid: 'uuid_parent',
@@ -272,18 +312,19 @@ export const effectList = [
         category: 'control',
         effect: 'along path',
         params: {
-          title: "line",
-          children: ['blue_line'],
+          title: "Connected line",
+          children: ['line'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
           pathSpacing: 10
         }
       },
-      'blue_line': {
-        uuid: 'blue_line',
+      'line': {
+        uuid: 'line',
         name: 'straight line',
         type: 'effect',
-        category: 'brushes',
+        category: 'shapes',
         effect: 'straight line',
+        thumbnail: 'straight_line.jpeg',
         params: {
           color: '#80baee',
           start: {x: 0, y: 0},
@@ -313,6 +354,7 @@ export const effectList = [
           title: "mosaic",
           children: ['red_circle', 'orange_triangle', 'gold_rectangle', 'olive_circle', 'green_triangle', 'light_blue_rectangle', 'blue_circle', 'indigo_triangle', 'purple_rectangle', 'violet_circle', 'pink_triangle'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
+          color: '#80babd',
           pathSpacing: 25
         }
       },
@@ -474,7 +516,8 @@ export const effectList = [
           title: "stars",
           children: ['pink_star', 'purple_star', 'dark_blue_star', 'blue_star', 'light_blue_star'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
-          pathSpacing: 20
+          color: '#80babd',
+          pathSpacing: 30
         }
       },
       'pink_star': {
@@ -538,14 +581,14 @@ export const effectList = [
   {
     name: 'straight line',
     textLabel: 'straight line',
-    category: 'brushes',
+    category: 'shapes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
     thumbnail: 'straight_line.jpeg',
     mouseActionType: 'drag',
     params: {
-      start: {x:100, y:100},
-      end: {x:300, y:300},
+      start: {x:225, y:450},
+      end: {x:275, y:440},
       color: '#f57f7e',
       lineWeight: 5
     }
@@ -571,20 +614,20 @@ export const effectList = [
 
   */
 
-  {
-    name: 'turtle',
-    textLabel: 'Turtle',
-    category: 'brushes',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'turtle.jpeg',
-    mouseActionType: 'keyboard',
-    params: {
-      position: {x:100, y:100},
-      color: '#f57f7e',
-      lineWeight: 5
-    }
-  },
+  // {
+  //   name: 'turtle',
+  //   textLabel: 'Turtle',
+  //   category: 'brushes',
+  //   tags: 'drawing',
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   thumbnail: 'turtle.jpeg',
+  //   mouseActionType: 'keyboard',
+  //   params: {
+  //     position: {x:100, y:100},
+  //     color: '#f57f7e',
+  //     lineWeight: 5
+  //   }
+  // },
 
   {
     name: 'tile',
@@ -785,106 +828,106 @@ export const effectList = [
   //     angle: 45,
   //   }
   // },
-  {
-    name: 'move to',
-    textLabel: 'Move to',
-    category: 'move',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'move.jpg',
-    mouseActionType: 'click',
-    params: {
-      position: {x:100, y:100},
-    }
-  },
-  {
-    name: 'move',
-    textLabel: 'Forward',
-    category: 'move',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'move.jpg',
-    mouseActionType: 'drag',
-    params: {
-      direction: 'forward',
-      distance: 50,
-    }
-  },
-  {
-    name: 'move',
-    textLabel: 'Back',
-    category: 'move',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'move.jpg',
-    mouseActionType: 'drag',
-    params: {
-      direction: 'back',
-      distance: 50,
-    }
-  },
-  {
-    name: 'pen',
-    textLabel: 'Pen Up',
-    category: 'move',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'move.jpg',
-    mouseActionType: 'click',
-    params: {
-      mode: 'up'
-    }
-  },
-  {
-    name: 'pen',
-    textLabel: 'Pen Down',
-    category: 'move',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'move.jpg',
-    mouseActionType: 'click',
-    params: {
-      mode: 'down'
-    }
-  },
-  {
-    name: 'set pen size',
-    textLabel: 'Set pen size',
-    category: 'move',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'move.jpg',
-    mouseActionType: 'click',
-    params: {
-      width: 20,
-      height: 20
-    }
-  },
-  {
-    name: 'set pen color',
-    textLabel: 'Set pen color',
-    category: 'move',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'move.jpg',
-    mouseActionType: 'click',
-    params: {
-      color: 'rgb(75, 50, 130)'
-    }
-  },
+  // {
+  //   name: 'move to',
+  //   textLabel: 'Move to',
+  //   category: 'move',
+  //   tags: 'drawing',
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   thumbnail: 'move.jpg',
+  //   mouseActionType: 'click',
+  //   params: {
+  //     position: {x:100, y:100},
+  //   }
+  // },
+  // {
+  //   name: 'move',
+  //   textLabel: 'Forward',
+  //   category: 'move',
+  //   tags: 'drawing',
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   thumbnail: 'move.jpg',
+  //   mouseActionType: 'drag',
+  //   params: {
+  //     direction: 'forward',
+  //     distance: 50,
+  //   }
+  // },
+  // {
+  //   name: 'move',
+  //   textLabel: 'Back',
+  //   category: 'move',
+  //   tags: 'drawing',
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   thumbnail: 'move.jpg',
+  //   mouseActionType: 'drag',
+  //   params: {
+  //     direction: 'back',
+  //     distance: 50,
+  //   }
+  // },
+  // {
+  //   name: 'pen',
+  //   textLabel: 'Pen Up',
+  //   category: 'move',
+  //   tags: 'drawing',
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   thumbnail: 'move.jpg',
+  //   mouseActionType: 'click',
+  //   params: {
+  //     mode: 'up'
+  //   }
+  // },
+  // {
+  //   name: 'pen',
+  //   textLabel: 'Pen Down',
+  //   category: 'move',
+  //   tags: 'drawing',
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   thumbnail: 'move.jpg',
+  //   mouseActionType: 'click',
+  //   params: {
+  //     mode: 'down'
+  //   }
+  // },
+  // {
+  //   name: 'set pen size',
+  //   textLabel: 'Set pen size',
+  //   category: 'move',
+  //   tags: 'drawing',
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   thumbnail: 'move.jpg',
+  //   mouseActionType: 'click',
+  //   params: {
+  //     width: 20,
+  //     height: 20
+  //   }
+  // },
+  // {
+  //   name: 'set pen color',
+  //   textLabel: 'Set pen color',
+  //   category: 'move',
+  //   tags: 'drawing',
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   thumbnail: 'move.jpg',
+  //   mouseActionType: 'click',
+  //   params: {
+  //     color: 'rgb(75, 50, 130)'
+  //   }
+  // },
 
-  {
-    name: 'stamp',
-    textLabel: 'stamp',
-    category: 'move',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'move.jpg',
-    mouseActionType: 'click',
-    params: {
-      //could be nested actions here
-    }
-  },
+  // {
+  //   name: 'stamp',
+  //   textLabel: 'stamp',
+  //   category: 'move',
+  //   tags: 'drawing',
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   thumbnail: 'move.jpg',
+  //   mouseActionType: 'click',
+  //   params: {
+  //     //could be nested actions here
+  //   }
+  // },
 
   // {
   //   name: 'copy cutout',
