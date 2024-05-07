@@ -1,5 +1,6 @@
-import { flatActionStore } from '../stores/dataStore';
+import { flatActionStore, stagedActionID } from '../stores/dataStore';
 import { writable, get } from 'svelte/store';
+import { getSpiroPoints, getSpecklesPoints } from '../utils/utils';
 // import { actionManager } from './action-utils';
 
 let paths = [];
@@ -11,16 +12,25 @@ let starterPaths = [ // patterns
   [[100, 50], [200, 50], [200, 150], [100, 150], [100, 50]] // Square path
 ];
 
-export function getPaths() {
+export function getPaths() : [] | [number, number][][] {
+  let paths = [];
   for (const id in get(flatActionStore)) {
-    let action = get(flatActionStore)[id];
-    if ('path' in action.params && action.params.path.length > 0) {
-      let path = action.params.path; // todo: make sure this is a copy if editable from this component
-      paths.push(path);
+    if(id != get(stagedActionID)) {
+      let action = get(flatActionStore)[id];
+      if ('path' in action.params && action.params.path.length > 1) {
+        let path = action.params.path; // todo: make sure this is a copy if editable from this component
+        paths.push(path);
+      }
+      else if(action.name === "spiro") {
+        let path = getSpiroPoints(action.params);
+        paths.push(path);
+      }
+      // else if(action.name === "speckles") { //too many points!
+      //   let path = getSpecklesPoints(action.params);
+      //   paths.push(path);
+      // }
     }
-    // else if() { // get the paths for noise and spiro
-    
-    // }
   }
+  return paths;
 }
 
