@@ -10,7 +10,7 @@ export const effectList = [
     category: 'shapes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'circle.jpg',
+    thumbnail: 'circle.png',
     mouseActionType: 'drag',
     params: {
       radius: 20,
@@ -35,7 +35,7 @@ export const effectList = [
     textLabel: 'Square',
     category: 'shapes',
     tags: 'drawing',
-    thumbnail: 'square.jpg',
+    thumbnail: 'square.png',
     mouseActionType: 'drag',
     params: {
       size: 40,
@@ -43,13 +43,30 @@ export const effectList = [
       position: {x: 250, y: 430}
     }
   },
+
+  {
+    name: 'straight line',
+    textLabel: 'Line',
+    category: 'shapes',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'straight_line.png',
+    mouseActionType: 'drag',
+    params: {
+      start: {x:225, y:450},
+      end: {x:275, y:440},
+      color: '#f57f7e',
+      lineWeight: 5
+    }
+  },
+
   {
     name: 'polygon',
     textLabel: 'Polygon',
     category: 'shapes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'polygon.jpeg',
+    thumbnail: 'polygon.png',
     mouseActionType: 'drag',
     params: {
       nsides: 6,
@@ -64,7 +81,7 @@ export const effectList = [
     category: 'shapes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'star.jpg',
+    thumbnail: 'star.png',
     mouseActionType: 'drag',
     params: {
       npoints: 7,
@@ -97,7 +114,7 @@ export const effectList = [
     category: 'shapes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'heart.jpg',
+    thumbnail: 'heart.png',
     mouseActionType: 'drag',
     params: {
       size: 40,
@@ -111,7 +128,7 @@ export const effectList = [
     category: 'shapes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'rectangle.jpeg',
+    thumbnail: 'rectangle.png',
     mouseActionType: 'drag',
     params: {
       width: 50,  
@@ -126,7 +143,7 @@ export const effectList = [
     category: 'shapes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'triangle.jpeg',
+    thumbnail: 'triangle.png',
     mouseActionType: 'drag',
     params: {
       width: 40,
@@ -161,8 +178,7 @@ export const effectList = [
     params: {
       color: '#79C2D7',
       color2: '#E869A3',
-      angle: 0,
-      progress: -10
+      angle: 0
     }
   },
   {
@@ -175,20 +191,6 @@ export const effectList = [
     mouseActionType: 'drag',
     params: {
       color: '#bbaa00'
-    }
-  },
-  {
-    name: 'speckles',
-    textLabel: 'Speckles',
-    category: 'backgrounds',
-    tags: 'drawing',
-    cursor: '/assets/cursors/fill-drip-solid.svg',
-    thumbnail: 'speckles.png',
-    mouseActionType: 'drag',
-    params: {
-      color: '#bbaa00',
-      progress: 5,
-      position: [0, 0]
     }
   },
 
@@ -209,11 +211,48 @@ export const effectList = [
 
   {
     name: 'along path',
-    textLabel: 'Solid Brush',
-    category: 'brushes',
+    textLabel: 'Dot brush',
+    category: 'lines',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'solid_brush.jpeg',
+    thumbnail: 'dot_brush.jpeg',
+    mouseActionType: 'drag-path',
+    nestedActions: {
+      'uuid_parent': {
+        uuid: 'uuid_parent',
+        name: 'along path',
+        type: 'list' as const,
+        category: 'control',
+        effect: 'along path',
+        params: { /* note: leaving color out means child colors will be updated */
+          title: "Dot brush",
+          children: ['dot'],
+          path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
+          pathSpacing: 15
+        }
+      },
+      'dot': {
+        uuid: 'dot',
+        name: 'circle',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'circle',
+        params: {
+          radius: 3,
+          color: '#80babd',
+          position: {x: 0, y: 0}
+        }
+      },
+    }
+  },
+
+  {
+    name: 'along path',
+    textLabel: 'Line Brush',
+    category: 'lines',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'solid_brush.png',
     mouseActionType: 'drag-path',
     nestedActions: {
       'uuid_parent': {
@@ -223,7 +262,7 @@ export const effectList = [
         category: 'control',
         effect: 'along path',
         params: {
-          title: "Paintbrush",
+          title: "Line Brush",
           children: ['line'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
           pathSpacing: 10
@@ -248,61 +287,11 @@ export const effectList = [
 
   {
     name: 'along path',
-    textLabel: 'Dot brush',
-    category: 'brushes',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'dot_brush.jpeg',
-    mouseActionType: 'drag-path',
-    nestedActions: {
-      'uuid_parent': {
-        uuid: 'uuid_parent',
-        name: 'along path',
-        type: 'list' as const,
-        category: 'control',
-        effect: 'along path',
-        params: {
-          title: "Dot brush",
-          children: ['light_blue_dot', 'dark_blue_dot'],
-          color: '#80babd',
-          path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
-          pathSpacing: 15
-        }
-      },
-      'light_blue_dot': {
-        uuid: 'light_blue_dot',
-        name: 'circle',
-        type: 'effect',
-        category: 'shapes',
-        effect: 'circle',
-        params: {
-          radius: 3,
-          color: '#80babd',
-          position: {x: 0, y: 0}
-        }
-      },
-      'dark_blue_dot': {
-        uuid: 'dark_blue_dot',
-        name: 'circle',
-        type: 'effect',
-        category: 'shapes',
-        effect: 'circle',
-        params: {
-          radius: 3,
-          color: '#19518a',
-          position: {x: 0, y: 0}
-        }
-      }
-    }
-  },
-
-  {
-    name: 'along path',
     textLabel: 'Connected Line',
-    category: 'brushes',
+    category: 'lines',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'solid_brush.jpeg',
+    thumbnail: 'connected_brush.png',
     mouseActionType: 'continuous-path',
     nestedActions: {
       'uuid_parent': {
@@ -332,6 +321,56 @@ export const effectList = [
           lineWeight: 5
         }
       },
+    }
+  },
+
+  {
+    name: 'along path',
+    textLabel: 'Pattern Maker',
+    category: 'lines',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'connected_brush.png',
+    mouseActionType: 'continuous-path',
+    nestedActions: {
+      'uuid_parent': {
+        uuid: 'uuid_parent',
+        name: 'along path',
+        type: 'list' as const,
+        category: 'control',
+        effect: 'along path',
+        params: {
+          title: "Connected line",
+          children: ['light_blue_dot', 'dark_blue_dot'],
+          color: '#80babd',
+          path: [[10, 50]],
+          pathSpacing: 10
+        }
+      },
+      'light_blue_dot': {
+        uuid: 'light_blue_dot',
+        name: 'circle',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'circle',
+        params: {
+          radius: 20,
+          color: '#80babd',
+          position: {x: 0, y: 0}
+        }
+      },
+      'dark_blue_dot': {
+        uuid: 'dark_blue_dot',
+        name: 'circle',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'circle',
+        params: {
+          radius: 25,
+          color: '#19518a',
+          position: {x: 0, y: 0}
+        }
+      }
     }
   },
 
@@ -565,7 +604,7 @@ export const effectList = [
 
   {
     name: 'bounce',
-    textLabel: 'bounce',
+    textLabel: 'Rainbow Bounce',
     category: 'brushes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -579,20 +618,20 @@ export const effectList = [
   },
 
   {
-    name: 'straight line',
-    textLabel: 'straight line',
-    category: 'shapes',
+    name: 'speckles',
+    textLabel: 'Speckles',
+    category: 'backgrounds',
     tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'straight_line.jpeg',
+    cursor: '/assets/cursors/fill-drip-solid.svg',
+    thumbnail: 'speckles.png',
     mouseActionType: 'drag',
     params: {
-      start: {x:225, y:450},
-      end: {x:275, y:440},
-      color: '#f57f7e',
-      lineWeight: 5
+      color: '#bbaa00',
+      progress: 5,
+      position: [0, 0]
     }
   },
+
 
   //TODO:
   /*
@@ -646,7 +685,7 @@ export const effectList = [
   },
   {
     name: 'tile',
-    textLabel: 'Brick',
+    textLabel: 'Brick Pattern',
     category: 'patterns',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -691,7 +730,7 @@ export const effectList = [
   },
   {
     name: 'tile',
-    textLabel: 'Radial',
+    textLabel: 'Radial Pattern',
     category: 'patterns',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -792,7 +831,7 @@ export const effectList = [
     category: 'effects',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'move.jpg',
+    thumbnail: 'move.png',
     mouseActionType: 'drag',
     params: {
       start: {x:100, y:100},
@@ -1025,11 +1064,11 @@ export const effectList = [
   // },
   {
     name: 'box',
-    textLabel: 'Box',
+    textLabel: 'Paper Box',
     category: 'stencils',
     tags: 'stencils',
     cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'box.jpg',
+    thumbnail: 'box.png',
     mouseActionType: 'drag',
     pinnedByDefault: false,
     params: {
@@ -1044,7 +1083,7 @@ export const effectList = [
     category: 'stencils',
     tags: 'stencils',
     cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'paper doll.jpg',
+    thumbnail: 'paper_doll.png',
     mouseActionType: 'drag',
     params: {
       radius: 20,

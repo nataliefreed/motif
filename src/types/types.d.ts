@@ -17,6 +17,7 @@ export interface Action {
   obscured?: boolean;
   pinned?: boolean;
   hidden: boolean;
+  mouseActionType?: string;
 }
 
 export type Effect = {
