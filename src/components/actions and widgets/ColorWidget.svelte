@@ -72,6 +72,9 @@
     }
   }
 
+  // on:mouseover={handleMouseOver}
+  // on:mouseout={handleMouseOut}
+
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
@@ -79,8 +82,6 @@
 <span
   bind:this={colorButton}
   on:click={handleClick}
-  on:mouseover={handleMouseOver}
-  on:mouseout={handleMouseOut}
   id={id}
   class="color-palette-widget"
   style="background-color: {value}; width:{size}em; height:{size}em;"
@@ -112,6 +113,12 @@
     mask-image: url('/assets/widgets/splotch-alpha-mask.png');
     -webkit-mask-size: cover;
     mask-size: cover;
+}
+
+.color-palette-widget:hover {
+  cursor: pointer;
+  box-shadow: 0 0 5px 0 rgba(0,0,0,0.1);
+  transform: scale(1.2) translateY(-0.1em);
 }
 
 .color-picker {

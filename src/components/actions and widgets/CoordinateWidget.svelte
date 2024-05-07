@@ -22,7 +22,6 @@
     if(typeof value.y !== 'number') value.y = 0;
     x = value.x;
     displayY = maxY - value.y; // Flip the y value for display
-
     points = [[x, value.y]];
   }
 
@@ -66,32 +65,42 @@
     }
   }
 
+  function handleXChangeFromNumberbox(event: Event) {
+    if(event.target) {
+      const target = event.target as HTMLInputElement;
+      let x = parseInt(target.value);
+      if(x > maxY) x = maxY;
+      if(x < 0) x = 0;
+      dispatchValueChange();
+    }
+  }
+
   let savedValue = points;
   let previewEnd = true;
   let oscillateID: number;
   function handleMouseOver(event: Event) {
-    console.log("mouse over");
-    savedValue = points;
-    previewEnd = false;
-    const startTime = Date.now();
-    oscillateID = setInterval(() => {
-      const elapsedTime = Date.now() - startTime;
-      const oscillationAngle = elapsedTime / 100; // adjust speed
-      const oscillationAmount = Math.sin(oscillationAngle)*20; // adjust amplitude
-      let newY = maxY - displayY + Math.round(oscillationAmount*Math.random());
-      if(newY > 500) newY = 500;
-      if(newY < 0) newY = 0;
-      updateValue([[x, newY]]);
-    }, 100);
+    // console.log("mouse over");
+    // savedValue = points;
+    // previewEnd = false;
+    // const startTime = Date.now();
+    // oscillateID = setInterval(() => {
+    //   const elapsedTime = Date.now() - startTime;
+    //   const oscillationAngle = elapsedTime / 100; // adjust speed
+    //   const oscillationAmount = Math.sin(oscillationAngle)*20; // adjust amplitude
+    //   let newY = maxY - displayY + Math.round(oscillationAmount*Math.random());
+    //   if(newY > 500) newY = 500;
+    //   if(newY < 0) newY = 0;
+    //   updateValue([[x, newY]]);
+    // }, 100);
   }
   
   function handleMouseLeave(event: Event) {
     //console.log("returning to saved value!");
-    clearInterval(oscillateID);
-    if(!previewEnd) {
-      updateValue(savedValue);
-      previewEnd = true;
-    }
+    // clearInterval(oscillateID);
+    // if(!previewEnd) {
+    //   updateValue(savedValue);
+    //   previewEnd = true;
+    // }
   }
   
 </script>
@@ -109,6 +118,7 @@
         <div>
           x = <input type="number"
           bind:value={value.x}
+          on:input={handleXChangeFromNumberbox}
           min={0} 
           max={500}/>
         </div>
@@ -129,6 +139,11 @@
     text-decoration: underline lightgray 2px;
     text-underline-offset: 5px;
     cursor: pointer;
+  }
+
+  .coordinate:hover {
+    color: #f5a623;
+    transform: scale(1.1);
   }
 
   .grid-with-numberBoxes {
