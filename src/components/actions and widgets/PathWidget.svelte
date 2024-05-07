@@ -53,7 +53,7 @@
 
 </script>
 
-  <svg bind:this={domElement} class="path-widget" width="1.7em" height="1.7em" viewBox="0 0 540 540" style="border: 1px solid #888; max-width: 100%; height: auto;"
+  <svg bind:this={domElement} class="path-widget" width="1.7em" height="1.7em" viewBox="0 0 540 540" style="border: 1px solid #ddd; max-width: 100%; height: auto;"
     on:mouseover={handleMouseOver}
     on:mouseout={handleMouseOut}
   >
@@ -66,9 +66,12 @@
     {/each}
   </svg>
 
+  <!-- dom element here is the inline path preview -->
   {#if domElement}
-    <Tooltip element={domElement}>
-      <PathEditor points={path} on:valueChange={handlePointsChange}/>
+    <Tooltip element={domElement} let:showContent>
+      {#if showContent}
+        <PathEditor points={path} on:valueChange={handlePointsChange}/>
+      {/if}
     </Tooltip>
   {/if}
 
