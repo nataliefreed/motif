@@ -18,11 +18,11 @@
   let sliderContainer: HTMLDivElement;
   let tippyInstance: any;
 
-  $: if (value < min) {
-    value = min;
-  } else if (value > max) {
-    value = max;
-  }
+  // $: if (value < min) {
+  //   value = min;
+  // } else if (value > max) {
+  //   value = max;
+  // }
 
   $: if(numberWidget) {
     reloadTippy();
@@ -72,21 +72,11 @@
     dispatch('valueChange', { id, value: savedValue });
     previewEnd = true;
 
-    if(tippyInstance && $selectedCodeEffect == 'point' || !$selectedCodeEffect) {
-      tippyInstance.show();
-    }
-    else switch($selectedCodeEffect) {
-      case "random":
-        randomize();
-        dispatch('valueChange', { id, value: +value });
-        break;
-      default: break;
-    }
+    tippyInstance.show();
   }
 
     let previewEnd = false;
     let savedValue = value;
-    // let oscillateID: number;
     function handleMouseOver(event: Event) {
     savedValue = value;
     let newValue = value+10;
@@ -101,22 +91,29 @@
     }
   }
 
+  function handleFocus(event: FocusEvent) {
+    const input = event.target as HTMLInputElement;
+    input.select();
+  }
+
   function handleChange(event: Event) {
+    // const target = event.target as HTMLInputElement;
+    // value = +target.value; // Update the local value but don't dispatch yet
+  }
+
+  function handleFinalChange(event: Event) {
     const target = event.target as HTMLInputElement;
-    // console.log("target.value:", target.value);
-    dispatch('valueChange', { id, value: +target.value });
+    let newValue = +target.value;
+    if(newValue < min) {
+      newValue = min;
+    } else if(newValue > max) {
+      newValue = max;
+    }
+    dispatch('valueChange', { id, value: newValue });
   }
 
-  function randomize() {
-    value = Math.floor(Math.random() * (max - min + 1)) + min;
-  }
-
-  // $: if(value && inputElement && sliderElement) {
-  //     if (value !== +inputElement.value) {
-  //       inputElement.value = value.toString();
-  //       sliderElement.value = value.toString();
-  //     }
-  //   }
+  // on:mouseover={handleMouseOver}
+  // on:mouseout={handleMouseOut}
 
 </script>
 
@@ -124,8 +121,6 @@
 <span class="number-widget"
       bind:this={numberWidget}
       on:click={handleClick}
-      on:mouseover={handleMouseOver}
-      on:mouseout={handleMouseOut}
       style="cursor: {cursorStyle};">
   {displayValue}
 </span>
@@ -137,7 +132,9 @@
   bind:value={value} 
   min={min} 
   max={max}
-  on:input={handleChange}/>
+  on:focus={handleFocus}
+  on:input={handleChange}
+  on:change={handleFinalChange}/>
 
   <input type="range"
   class="slider-for-numberbox" 
@@ -145,21 +142,14 @@
   min={min} 
   max={max}
   bind:this={sliderElement}
-  on:input={handleChange}/>
+  on:input={handleFinalChange}/>
 
 </div>
 
 <style>
   .slider-container {
     padding: 10px;
-    /* background: white; */
-    /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    border: 1px solid #ccc; */
   }
-
-  /* .slider-container:has([data-tippy-root]) { //todo: check - no longer needed?
-    display: block;
-  } */
 
   /* number that can be clicked to display a slider modal*/
   .number-widget {
@@ -171,6 +161,7 @@
 
   .number-widget:hover {
     color: #f5a623;
+    transform: scale(1.1);
   }
 
   .slider-for-numberbox {
@@ -203,30 +194,3 @@
     background-color: lightgray;
   }
 </style>
-
-<!-- TODO: sortable reordering causing issues with Tippy -->
-<!-- function onReorder(event:any) {
-  // Destroy all tippy instances before reordering
-  tippyInstance.destroyAll();
-
-  console.log("actionStore:", {$actionStore});
-  const { oldIndex, newIndex } = event.detail;
-  if (oldIndex === newIndex) return;
-
-  actionStore.update(currentData => {
-    if (!currentData.children) return currentData;
-    const [movedItem] = currentData.children.splice(oldIndex, 1);
-    currentData.children.splice(newIndex, 0, movedItem);
-    return currentData;
-  });
-
-  // Reinitialize tippy after reordering is complete
-  tippyInstance = tippy(inputElement, {
-    content: sliderContainer,
-    interactive: true,
-    arrow: true,
-    placement: 'bottom',
-    trigger: 'click',
-    hideOnClick: 'toggle'
-  });
-} -->
