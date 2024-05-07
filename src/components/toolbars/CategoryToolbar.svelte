@@ -6,7 +6,7 @@
 
 </script>
 
-<div class="horizontal-toolbar">
+<div class="vertical-toolbar">
   {#each categories as category}
     <CategoryButton category={category} isActive={category === $activeCategory}></CategoryButton>
   {/each}

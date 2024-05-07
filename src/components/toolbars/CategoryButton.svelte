@@ -9,33 +9,50 @@
   }
 </script>
 
-
-<button on:click={handleCategoryClick} class="category-button {isActive ? 'active' : ''}">{category}
-<slot></slot>
-</button>
+<div class="category-button-container">
+  <button 
+    on:click={handleCategoryClick}
+    class="category-button {isActive ? 'active' : ''}"
+    >
+    <img src="/assets/category-thumbnails/{category}.png" alt="{category}">
+    <!-- {category} -->
+  </button>
+</div>
 
 <style>
+
+  .category-button-container {
+    /* border: 1px solid green; */
+    box-sizing: border-box;
+    padding: 0 5% 0 25%;
+    width: 100%;
+  }
   .category-button {
     display: flex;
-    /* width: calc(var(--toolbar-height)*3.5);
-    height: calc(var(--toolbar-height)*1.5); */
-    width: 100%;
-    /* height: 100%; */
     justify-content: center;
     align-items: center;
-    background-color: #dedede;
-    border: 0.5px solid black;
-    /* border-radius: 5px; */
-    color: rgb(77, 77, 77);
-    /* margin: 5px; */
+    border-radius: 20px;
+    border: none;
+    background-color: transparent;
     cursor: pointer;
-    padding: 5px 5px;
+    padding: 20% 0;
     font-size: 0.8em;
     font-family: 'FuturaHandwritten';
+    /* border: 1px solid red; */
   }
 
   .category-button.active {
-    background-color: #f5a623;
+    background-color: #dcdcdc;
+    /* filter: drop-shadow(0px 0px 10px rgb(169, 169, 169)); */
+  }
+
+  .category-button.active img {
+    filter: drop-shadow(3px 4px 1px #646464);
+  }
+
+  .category-button img {
+    width: 60%;
+    /* transition: filter 0.3s ease; */
   }
 </style>
 
