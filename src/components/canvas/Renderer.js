@@ -374,6 +374,12 @@ export const renderers = {
   },
 
   'shift': (p, params, p5) => {
+
+      // preview on hover
+    if(p === p5.getHoverCanvas() || p === p5.getDragCanvas()) {
+      p.image(p5.getStaticCanvas(), 0, 0); //so that hover canvas has something to shift
+    }
+
     let lineHeight = params.height;
     let offset = params.offset;
     if(params.orientation === "horizontal") {
