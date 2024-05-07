@@ -2,8 +2,7 @@
 
   import { createEventDispatcher } from "svelte";
   import { onMount } from 'svelte';
-    import { shouldRandomizeColor, currentColor } from "../../stores/dataStore";
-    import ColorWidget from "../actions and widgets/ColorWidget.svelte";
+  import { shouldRandomizeColor, currentColor } from "../../stores/dataStore";
 
   let colors = [
     '#FEFEFE','#D7D7D7','#B7B7B7','#636363','#363636','#070707','#EE1B25','#F5661F','#FCF500','#7CC475','#428DCC','#2C3094','#1C1463','#652B92','#300049','#790046',
@@ -38,7 +37,6 @@
 
 <div class="color-palette-container">
   <!-- <div class="current-color" style="background-color: {activeColor}"></div> -->
-  <div class="preview-widget"><ColorWidget id="color" size={3.5} value={activeColor} on:valueChange={handleValueChange} /></div>
   <div class="color-palette">
     {#each colors as color}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -52,11 +50,6 @@
 
 <style>
 
-.preview-widget {
-  width: 60px;
-  height: 50px;
-}
-
 .color-palette-container {
   margin-top: 10px;
   display: flex;
@@ -64,15 +57,6 @@
   justify-content: flex-start;
   width: 100%;
   height: 50px;
-}
-
-.current-color {
-  box-sizing: border-box;
-  /* border: 0.5px solid black; */
-  width: 50px;
-  height: 50px;
-  flex-shrink: 0;
-  /* border: 2px solid gray; */
 }
 
 .color-palette {
@@ -86,9 +70,9 @@
 .color-item {
   box-sizing: border-box;
   /* border: 0.5px solid black; */
-  flex-grow: 1;
+  /* flex-grow: 1; */
   flex-basis: 23px;
-  flex-shrink: 1;
+  /* flex-shrink: 1; */
 }
 
 .selected {

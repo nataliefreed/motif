@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import tinycolor from 'tinycolor2';
+  import ColorPalette from '../toolbars/ColorPalette.svelte';
 
   const dispatch = createEventDispatcher();
 
@@ -55,6 +56,8 @@
       <input type="range" id="opacity" min="0" max="1" step="0.01" bind:value={alpha} on:input={updateColor} style="--slider-gradient: {gradientAlpha};">
     </div>
   </div>
+
+  <ColorPalette/>
 
 </div>
 
