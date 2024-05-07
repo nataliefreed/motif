@@ -6,6 +6,7 @@
   import ActionItem from './actions and widgets/ActionItem.svelte';
 	import type { Action, Effect } from '../types/types';
   import Canvas from './canvas/Canvas.svelte';
+  import Ruler from './canvas/Ruler.svelte';
   import { scrollToAction, removeSelectedAction, repeatSelectedActionAlongPath, remixAction, duplicateAction, remixDuplicate, redrawSelectedAction, convertSelectedAction, clearAllActions, undo, redo, rewindToBeginning, fastForwardToEnd, stepBackward, stepForward } from './action-utils';
   import EffectToolbar from './toolbars/EffectToolbar.svelte';
   import Notebook from './Notebook.svelte';
@@ -161,19 +162,20 @@
 <Notebook>
   <Page slot="left">
 
-    <div class="drawing-grid-container">
-
-      <!-- First Row -->
-      <div class="drawing-area"><Canvas/></div>
-  
-      <div class="category-toolbar"><CategoryToolbar categories={allCategories} /></div>
-      <div class="drawing-effect-toolbar"><EffectToolbar /></div>
-      
-      <!-- Third Row -->
-      <div>
-        <EffectSettingsPanel />
+    <div class="drawing-area-container">
+      <div class="drawing-area-with-category-toolbar">
+        <div class="category-toolbar"><CategoryToolbar categories={allCategories} /></div>
+          <div class="drawing-area-with-effect-toolbar">
+            <div class="drawing-area">
+                <Ruler><Canvas/></Ruler>
+              </div>
+            <div class="effect-toolbar"><EffectToolbar/></div>
+          </div>
+        </div>
       </div>
-    </div>
+        <!-- <EffectSettingsPanel /> -->
+      <!-- </div> -->
+    <!-- </div> -->
 
   </Page>
   <Page slot="right">
@@ -181,11 +183,11 @@
       <div class="left-group">
         
         <button class="instabutton" id="undoButton" on:click={undo} disabled={!canUndo}>
-          <svg xmlns="http://www.w3.org/2000/svg" height="16" width="16" viewBox="0 0 512 512" style="vertical-align: middle;"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M48.5 224H40c-13.3 0-24-10.7-24-24V72c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2L98.6 96.6c87.6-86.5 228.7-86.2 315.8 1c87.5 87.5 87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3c-62.2-62.2-162.7-62.5-225.3-1L185 183c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8H48.5z"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="vertical-align: middle;"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M48.5 224H40c-13.3 0-24-10.7-24-24V72c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2L98.6 96.6c87.6-86.5 228.7-86.2 315.8 1c87.5 87.5 87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3c-62.2-62.2-162.7-62.5-225.3-1L185 183c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8H48.5z"/></svg>
         </button>
         
         <button class="instabutton" id="redoButton" on:click={redo} disabled={!canRedo}>
-          <svg xmlns="http://www.w3.org/2000/svg" height="16" width="16" viewBox="0 0 512 512" style="vertical-align: middle;"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M463.5 224H472c13.3 0 24-10.7 24-24V72c0-9.7-5.8-18.5-14.8-22.2s-19.3-1.7-26.2 5.2L413.4 96.6c-87.6-86.5-228.7-86.2-315.8 1c-87.5 87.5-87.5 229.3 0 316.8s229.3 87.5 316.8 0c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0c-62.5 62.5-163.8 62.5-226.3 0s-62.5-163.8 0-226.3c62.2-62.2 162.7-62.5 225.3-1L327 183c-6.9 6.9-8.9 17.2-5.2 26.2s12.5 14.8 22.2 14.8H463.5z"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="vertical-align: middle;"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M463.5 224H472c13.3 0 24-10.7 24-24V72c0-9.7-5.8-18.5-14.8-22.2s-19.3-1.7-26.2 5.2L413.4 96.6c-87.6-86.5-228.7-86.2-315.8 1c-87.5 87.5-87.5 229.3 0 316.8s229.3 87.5 316.8 0c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0c-62.5 62.5-163.8 62.5-226.3 0s-62.5-163.8 0-226.3c62.2-62.2 162.7-62.5 225.3-1L327 183c-6.9 6.9-8.9 17.2-5.2 26.2s12.5 14.8 22.2 14.8H463.5z"/></svg>
         </button>
         
         <button class="instabutton" id="clearAllButton" on:click={clearAllActions}>Clear All</button>
@@ -277,23 +279,60 @@
     border: 1px solid red;
   } */
 
-  .drawing-grid-container {
-    display: grid;
-    /* grid-template-columns: 1fr 40px; */
-    grid-template-columns: 501px;
-    /* grid-template-rows: 3fr auto 1fr 40px; */
-    grid-template-rows: 501px auto 37px 1fr;
-    /* margin: auto; */
-    max-height: calc(var(--page-height)*0.9);
-    margin-top: 40px;
+  .drawing-area-container {
+    /* border: 2px solid blue; */
+    display: flex;
+    flex-direction: column;
+    /* width: calc(min(var(--page-width), var(--page-height))*0.75);
+    height: calc(min(var(--page-width), var(--page-height))*0.75); */
+    width: calc(var(--page-width)*0.8);
+    height: calc(var(--page-height)*0.8);
+    margin-right: 10%;
+  }
+
+  .drawing-area-with-category-toolbar {
+    /* border: 2px solid red; */
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+  .drawing-area-with-effect-toolbar {
+    /* border: 1px solid red; */
+    display: flex;
+    flex-direction: column;
+    width: 85%;
+    height: 100%
+    /* overflow: hidden; */
+  }
+
+  .category-toolbar {
+    width: 15%;
+    height: 85%;
+  }
+
+  .effect-toolbar {
+    /* border: 1px solid blue; */
+    /* border: 1px solid black; */
+    height: 15%;
+    /* background-color: lightgray; */
   }
 
   .drawing-area {
-    overflow: hidden;
-    margin-bottom: 20px;
-    /* padding: 1px; */
-    border: 1px solid black;
-    box-shadow: 1px 2px 3px 2px gray;
+    /* border: 2px solid green; */
+    /* display: flex;
+    align-items: flex-start;
+    justify-content: flex-end; */
+    width: calc(var(--page-width)*0.7);
+    height: calc(var(--page-width)*0.7);
+    max-width: 523px;
+    max-height: 523px;
+    /* margin-bottom: 20px; */
+    /* box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px; */
+    /* box-shadow: rgba(0, 0, 0, 0.07) 0px 1px 2px, rgba(0, 0, 0, 0.07) 0px 2px 4px, rgba(0, 0, 0, 0.07) 0px 4px 8px, rgba(0, 0, 0, 0.07) 0px 8px 16px, rgba(0, 0, 0, 0.07) 0px 16px 32px, rgba(0, 0, 0, 0.07) 0px 32px 64px; */
   }
 
   #code-zone {
@@ -303,6 +342,7 @@
 
   #main-list {
     margin-left: calc(var(--adjusted-page-width)*0.05); /* Margin from left edge */
+    margin-bottom: 100px;
   }
   /* .code-area {
     margin-top: 30px;
@@ -328,13 +368,6 @@
     align-items: center;
   }
 
-  .drawing-effect-toolbar {
-    /* border: 1px solid black; */
-    padding: 2px;
-    height: 100%;
-    background-color: lightgray;
-  }
-
   .staged-action {
     /* font-style: italic; */
     display: flex;
@@ -350,8 +383,8 @@
   }
 
   .instabutton {
-    padding: 5px 10px;
-    font-size: 1em;
+    padding: 0.5vh 0.5vw;
+    font-size: 0.7vw;
     font-family: 'FuturaHandwritten';
     cursor: pointer;
     border: none;
@@ -366,6 +399,11 @@
   .instabutton:disabled {
     color: gray;
     background-color: #f4f4f4;
+  }
+
+  .instabutton svg {
+    height: 1em;
+    width: auto;
   }
 
   .selected-action-button {
@@ -404,11 +442,11 @@
   .instabuttons-top { 
     display: flex;
     flex-direction: row;
-    gap: 40px;
     justify-content: space-between;
     width: calc(var(--adjusted-page-width)*0.87);
     margin-left: calc(var(--adjusted-page-width)*0.09);
-    margin-top: 20px;
+    margin-top: 2vh;
+    margin-bottom: 2vh;
     z-index: 100;
   }
 
@@ -416,12 +454,12 @@
   .instabuttons-top .center-group,
   .instabuttons-top .right-group {
     display: flex;
-    gap: 10px;
+    gap: 0.5vw;
   }
 
   .instabuttons-top .left-group {
       justify-content: flex-start;
-      max-height: 30px;
+      height: 3vh;
   }
 
   .instabuttons-top .center-group {
@@ -430,16 +468,8 @@
   }
 
   .instabuttons-top .right-group {
+      height: 3vh;
       justify-content: flex-end;
-      max-height: 30px;
-  }
-
-  #undoButton, #refreshButton, #clearAllButton {
-
-  }
-
-  #exportButton, #importButton {
-
   }
 
   .instabuttons-bottom {
@@ -447,9 +477,10 @@
     bottom: 30px;
     display: flex;
     flex-direction: row;
-    gap: 10px;
-    margin-left: 100px;
-    /* margin-bottom: 100px; */
+    gap: 1vw;
+    left: 5%;
+    right: 5%;
+    justify-content: center;
   }
 
   /* Cursor styles */
