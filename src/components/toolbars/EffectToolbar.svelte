@@ -26,17 +26,13 @@
   <div class="horizontal-toolbar">
     {#if $activeCategory}
       {#each tools as tool}
-        <div class="effect-button"><EffectButton tool={tool} thumbnail={tool.thumbnail?tool.thumbnail:''}/></div>
+        <EffectButton tool={tool} thumbnail={tool.thumbnail?tool.thumbnail:''}/>
       {/each}
     {/if}
   </div>
 
 
 <style>
-
-  .effect-button {
-    margin-right: 2px;
-  }
 
   .vertical-toolbar {
     display: flex;
@@ -48,8 +44,14 @@
   .horizontal-toolbar {
     display: flex;
     flex-direction: row;
-    align-items: center;
-    justify-content: start;
+    align-items: flex-start;
+    justify-content: flex-start;
+    width: 96%;
+    height: 100%;
+    gap: 2%;
+    padding: 2%;
+    overflow-y: auto;
+    /* gap: 5px; */
   } 
 
 </style>

@@ -21,9 +21,10 @@
 <style>
   .outer-container {
     min-height: 100%; /* At least the height of the viewport */
-    overflow: none;
+    /* overflow: none; */
     display: flex;
-    align-items: flex-start;
+    align-items: center;
+    justify-content: center;
   }
 
   .notebook {
@@ -38,7 +39,7 @@
 
   .cover {
     margin: var(--cover-gap);
-    background-color: #bcbcbc;
+    background-color: #d2d2d2;
     /* background-color: #bdc6dc; */
     border: 1.5px solid  #636363;
     width: calc(var(--page-width) + 2*var(--cover-margin) + var(--page-inset));
@@ -49,8 +50,18 @@
     justify-content: center;
     position: relative;
     box-shadow: 1px 1px 2px 2px gray;
+    box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
     margin-bottom: 20px;
   }
+
+  /* .left {
+    box-shadow: rgba(240, 46, 170, 0.4) -5px -5px, rgba(240, 46, 170, 0.3) -10px -10px, rgba(240, 46, 170, 0.2) -15px -15px, rgba(240, 46, 170, 0.1) -20px -20px, rgba(240, 46, 170, 0.05) -25px -25px;
+  }
+
+  .right {
+    box-shadow: rgba(240, 46, 170, 0.4) 5px 5px, rgba(240, 46, 170, 0.3) 10px 10px, rgba(240, 46, 170, 0.2) 15px 15px, rgba(240, 46, 170, 0.1) 20px 20px, rgba(240, 46, 170, 0.05) 25px 25px;
+      
+  } */
 
   /* Move the right edge of the left-page towards the center */
 .cover:nth-child(1) .left-page {

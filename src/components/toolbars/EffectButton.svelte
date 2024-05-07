@@ -9,13 +9,14 @@
   function handleClick() {
     selectedEffect.set(tool); // set the selected effect in the store
   }
+  // transition:slide={{axis: 'x', duration: 800}}
 </script>
 
 <button 
   class="effect-button"
+  id={tool.name+"-button"};
   class:code-button={tool.tags === 'recipe'}
   on:click={handleClick} 
-  transition:slide={{axis: 'x', duration: 800}} 
   class:selected={$selectedEffect === tool}
   style:background-image={thumbnail ? `url(/assets/effect-thumbnails/${thumbnail})` : ''}
   >
@@ -26,19 +27,18 @@
 <style>
   .effect-button {
     display: flex;
-    width: calc(var(--toolbar-height)*1.5);
-    height: calc(var(--toolbar-height)*1.5);
+    /* max-width: 80%; */
+    height: 50%;
+    min-width: 15%;
+    /* padding: 0px 12px; */
     justify-content: center;
     align-items: center;
-    border: 0.5px solid black;
+    /* border: 0.5px solid black; */
+    border-radius: 5px;
     border: none;
-    border-radius: 2px;
-    /* border-radius: 5px; */
     cursor: pointer;
     background-size: cover; /* Ensure the image covers the button */
     background-position: center; /* Center the background image */
-    /* margin: 0 5px; */
-    font-size: 0.5em;
     font-family: 'FuturaHandwritten';
   }
 
