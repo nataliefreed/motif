@@ -1,5 +1,6 @@
 import { Vector } from 'ts-matrix';
 import P5 from 'p5-svelte';
+import { noise } from './noise.js';
 
 export function deepCopy(obj: Object) {
   let copy = {};
@@ -29,6 +30,45 @@ export function degreesToRadians(degrees: number) {
 
 export function radiansToDegrees(radians: number) {
   return radians * (180 / Math.PI);
+}
+
+export function getSpiroPoints(params: any) {
+  let R = params.outer || 30;
+  let r = params.inner || 24;
+  let d = params.d;
+  let steps = 360;
+  let k = (R - r) / r;
+  let spacing = Math.PI / 15.0;
+  let theta = 0;
+  let path = [];
+
+  let offsetX = params.position.x;
+  let offsetY = params.position.y;
+
+  for (let i = 0; i < steps; i++) {
+    let x = (R - r) * Math.cos(theta) + d * Math.cos(k * theta);
+    let y = (R - r) * Math.sin(theta) - d * Math.sin(k * theta);
+    path.push([x+offsetX, y+offsetY]);
+    theta += spacing;
+  }
+  return path;
+}
+
+export function getSpecklesPoints(params: any, w=500, h=500) {
+  let progress = params.progress;
+  let n = params.position.x * params.position.y;
+  let path = [];
+
+  //put more and more speckles on the screen
+  //progress does 2 things: density of speckles (more over time) and where in the Perlin noise function you are
+  //(so the speckles change every refresh, it's not just adding more over time to the existing ones)
+  for (let i = 0; i < progress * 100; i++) {
+    let x = noise(n + i * 0.01) * w * 2;
+    let y = noise(2 * n + i * 0.01) * h * 2;
+    path.push([x - w/2, y - h/2]);
+  }
+
+  return path;
 }
 
 
