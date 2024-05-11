@@ -11,25 +11,26 @@
 
   let contentElement;
   let tooltip;
+  export let settings = {};
 
   $: if(element) {
-    reloadTippy(); //re-link to new content
+    reloadTippy(); //re-link to new content - todo: clean this up
   }
 
   function reloadTippy() {
     // console.log("reloading tippy");
     if(tooltip) tooltip.destroy();
     tooltip = tippy(element, {
+      plugins: [followCursor],
       content: contentElement,
       theme: 'light-border',
-      // flipOnUpdate: true,
       interactive: true,
       allowHTML: true,
       arrow: true,
-      placement: 'bottom',
       trigger: 'click',
       hideOnClick: true,
       appendTo: document.body,
+      ...settings,
       onShow(instance) {
         showContent = true;
         // console.log("tooltip showing");
