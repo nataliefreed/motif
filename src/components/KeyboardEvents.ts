@@ -1,4 +1,4 @@
-import { addEffectToActionStore, removeSelectedAction, setCurrentEffect, undo } from "./action-utils";
+import { addCurrentEffectAsStagedAction, addEffectToActionStore, copyStagedActionToActionStore, removeSelectedAction, setCurrentEffect, undo } from "./action-utils";
 import { toolStore, selectedActionID, selectedEffect } from "../stores/dataStore";
 import { historyStore } from "../stores/history";
 import { get } from "svelte/store";
@@ -20,6 +20,7 @@ function keydownHandler(event: KeyboardEvent) {
     case 'r':
       // get a random effect
       let effectList: Effect[] = get(toolStore);
+      effectList = effectList.filter(effect => effect.category !== 'stencils');
       if(effectList.length > 0) {
         let randomEffect = effectList[Math.floor(Math.random() * effectList.length)];
         addEffectToActionStore(randomEffect, {});
@@ -36,25 +37,40 @@ function keydownHandler(event: KeyboardEvent) {
     case 'Backspace':
       removeSelectedAction();
       break;
+    case 's':
+      copyStagedActionToActionStore();
+      break;
+    case 'left': 
+      
+      break; 
+    case 'right':
+
+      break; 
+    case 'up':
+
+      break; 
+    case 'down':
+           
+      break; 
   }
 }
 
 function keyupHandler(event: KeyboardEvent) {
-  // Check the element in focus to avoid overriding default behavior
-  if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.classList.contains('string-widget'))) {
-    return;
-  }
+//   // Check the element in focus to avoid overriding default behavior
+//   if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.classList.contains('string-widget'))) {
+//     return;
+//   }
 
-  switch (event.key) {
-    case 'a':
-      // Handle 'a' key for canvas
-      break;
-    case 'Escape':
-      // deselect all lines of code
-      // go back to pointer tool in code view
-      // set isDragging to false?
-      break;
-  }
+//   switch (event.key) {
+//     case 'a':
+      
+//       break;
+//     case 'Escape':
+//       // deselect all lines of code
+//       // go back to pointer tool in code view
+//       // set isDragging to false?
+//       break;
+//   }
 }
 
 
