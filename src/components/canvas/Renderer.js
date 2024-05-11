@@ -83,7 +83,8 @@ export const renderers = {
     let color1 = p.color(params.color);
     let color2 = p.color(params.color2);
     let angle = p.radians(params.angle);
-    let progress = params.progress + 10;
+    // let progress = params.progress + 10;
+    let progress = 100;
   
     let len = Math.sqrt(p.width * p.width + p.height * p.height); // diagonal length
   
@@ -865,6 +866,10 @@ function moveRectangularRegion(p, params, p5) {
     p.pop();
   }
   p.pop();
+}
+
+function rotateRegion(p, params, p5) {
+  let angle = params.angle;
 }
 
 // Tile
