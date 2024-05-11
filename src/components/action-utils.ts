@@ -335,10 +335,10 @@ replaceWithCopy(id: string) {
   redo() {
     let redoState = historyStore.redo();
     if (!redoState) return;
+    stagedActionID.set(redoState.stagedActionID);
     this.#modifyActionStore(null, (store: ActionStore) => {
       Object.assign(store, redoState.actionStore);
     });
-    stagedActionID.set(redoState.stagedActionID);
   }
 
   refresh() {
@@ -484,35 +484,15 @@ export function play() {
   moveStagedActionToEnd();
   isPlaying.set(true);
   renderDelay.set(1000/get(playSpeed));
-  // actionManager.refresh();
-  // let staged = get(stagedActionID);
-  // if(!staged) return;
-  // // if staged action is at the end, move it to the beginning
-  // // otherwise play from where it is
-  // if(get(actionRoot).params.children[get(actionRoot).params.children.length - 1] === staged) {
-  //   rewindToBeginning();
-  // }
-  // // start a delayed render of each action
-  // isPlaying.set(true);
-  // playInterval = setInterval(() => {
-  //   stepForward();
-  //   //if at end, stop
-  //   if(get(actionRoot).params.children[get(actionRoot).params.children.length - 1] === get(stagedActionID)) {
-  //     isPlaying.set(false);
-  //     clearInterval(playInterval);
-  //     renderDelay.set(0);
-  //   }
-  // }, 500);
-  // stepForward();
 }
 
 export function pause() {
+  renderDelay.set(0);
+  isPlaying.set(false);
   let currentlyRendering = actionManager.getAction(get(currentlyRenderingActionID));
   if(currentlyRendering) {
     actionManager.moveBefore(get(stagedActionID), get(currentlyRenderingActionID));
   }
-  renderDelay.set(0);
-  isPlaying.set(false);
 
 
   // isPlaying.set(false);
@@ -628,7 +608,7 @@ export function clearAllActions() {
         changedActionID.set(get(actionRoot).uuid);
         saveToHistory("clear all actions end");
     }
-  }, 300); //rate at which to clear actions
+  }, 10); //rate at which to clear actions
 }
 
 // set staged action
@@ -717,7 +697,7 @@ export function copyStagedActionToActionStore() {
     return;
   }
 
-  saveToHistory("add action from staged action start");
+  // saveToHistory("add action from staged action start");
 
   actionManager.append(newActions);
   actionManager.insertBefore(newActionRoot, stagedID);
@@ -751,11 +731,13 @@ export function addEffectToActionStore(effect: Effect, params: { [key: string]: 
   }
 }
 
-export function updateStagedAction(params) {
+export function updateStagedAction(params: { [key: string]: any } = {} ) {
   // if('progress' in params) {
     // console.log("saving progress", params);
   // }
+  // historyStore.pause();
   updateActionParams(get(stagedActionID), params);
+  // historyStore.resume();
 }
 
 export function updateStagedActionColor(color:string) {
@@ -808,6 +790,7 @@ let changeOptions = {
   'angle': (value:number) => randomWithinRange(value, 0, 360, 20),
   'outer': (value:number) => randomWithinRange(value, 5, 300, 20),
   'inner': (value:number) => randomWithinRange(value, 5, 200, 20),
+  'position' (value:{x:number, y:number}) { return { x: Math.round(value.x + (Math.random() - 0.5) * 10), y: Math.round(value.y + (Math.random() - 0.5) * 10) } },
   'path': (value:[[number, number]]) => value.map(point => [point[0] + (Math.random() - 0.5) * 10, point[1] + (Math.random() - 0.5) * 10]),
 }
 
@@ -830,6 +813,7 @@ export function remixAction(id:string) {
     //remix the path by wiggling each point a bit
     let newPath = changeOptions.path(params.path);
     newParams.path = newPath;
+    //todo: change the items in the children array
   }
   else if(action.effect === 'do each') {
     // pick a random child and remix it
@@ -847,6 +831,10 @@ export function remixAction(id:string) {
         newParams[key] = changeOptions[key](params[key]);
       }
     });
+    // then change position a little bit
+    // if('position' in params) {
+    //   newParams.position = { x: params.position.x + (Math.random() - 0.5) * 10, y: params.position.y + (Math.random() - 0.5) * 10 };
+    // }
   }
   
   actionManager.updateParams(id, newParams);
@@ -889,14 +877,15 @@ export function repeatSelectedActionAlongPath() {
   // Check if the selected action is already a repeat along path
   if (selectedAction.effect === 'along path') {
     // If it is, add another point along the path
-    let lastPoint = selectedAction.params.path[selectedAction.params.path.length - 1];
-    selectedAction.params.path.push([lastPoint[0] + 20, lastPoint[1] + 20]);
-    actionManager.updateParams(selected, { path: selectedAction.params.path });
-  } else {
-    // If it's not, create a new "repeat along path" action with the selected action as a child
+    // let lastPoint = selectedAction.params.path[selectedAction.params.path.length - 1];
+    // selectedAction.params.path.push([lastPoint[0] + 20, lastPoint[1] + 20]);
+    // actionManager.updateParams(selected, { path: selectedAction.params.path });
+  } else { //todo: make sure it's not a child of an along path
+    // If it's not a repeat, create a new "repeat along path" action with the selected action as a child
     let x = selectedAction.params.position ? selectedAction.params.position.x : 0;
     let y = selectedAction.params.position ? selectedAction.params.position.y : 0;
-    let newPath = [[x, y], [x + 20, y + 20]];
+    let newPath = getRandomGridPath(x, y);
+    // let newPath = [[x, y], [x + 20, y + 20]];
 
     // Create a new "repeat along path" action with the selected action as a child
     let newAlongPath = createAlongPathAction([selected], newPath);
@@ -908,6 +897,27 @@ export function repeatSelectedActionAlongPath() {
   }
 
   saveToHistory('Repeat selected action along path');
+}
+
+function getRandomGridPath(x:number, y:number) {
+  let path = [];
+  let w = 500-x; //starting at x, y
+  let h = 500-y;
+  
+  let numRows = Math.ceil(Math.random() * 9);
+  let numCols = Math.ceil(Math.random() * 9);
+
+  let rowSpacing = w / numRows;
+  let colSpacing = h / numCols;
+
+  for(let i = 0; i < numRows; i++) {
+    for(let j = 0; j < numCols; j++) {
+      path.push([x + i * rowSpacing, y + j * colSpacing]);
+    }
+  }
+
+  return path;
+
 }
 
 //this is a weird but awesome one
@@ -1001,18 +1011,22 @@ function createAlongPathAction(children: string[], path: number[][]) {
   return { [action.uuid]: action };
 }
 
-// go "back in time" to before that action, move that action to stagedAction so user can re-record it
-// when mouse released, fast forward to current time
+// make a copy of the action to be able to draw with it
 export function redrawSelectedAction() {
   saveToHistory("start redraw");
   let selected = get(selectedActionID);
   if(selected.length < 1) return;
 
-  let newAction = actionManager.replaceWithCopy(selected);
-  if(newAction) {
+  // let newAction = actionManager.replaceWithCopy(selected);
+  let newAction = copyAction(selected);
+  let id = getRoot(newAction);
+  if(newAction && id && id.length > 0) {
+    setCurrentEffect(get(stagedAction).effect); //TODO: make this work for different types of along path effects
+    actionManager.appendChild(newAction, get(actionRoot).uuid);
     selectedActionID.set('');
     actionManager.delete(get(stagedActionID));
-    stagedActionID.set(newAction);
+    stagedActionID.set(id);
+    // console.log("staged action", get(stagedAction));
   }
   renderRequested.set(true);
 }
@@ -1071,22 +1085,15 @@ export function addToActiveActions(id:string): null {
 }
 
 export function compileActionsBeforeStaged() {
+  return compileActionsBefore(get(stagedActionID));
+}
+
+export function compileActionsBefore(id: string) {
   let actions = compileActions(get(flatActionStore)[get(actionRootID)]);
   if(!actions) return [];
-  let stagedActionIndex = actions.findIndex(action => action.actionID === get(stagedActionID));
-  let actionsBeforeStaged = actions.slice(0, stagedActionIndex);
-  // console.log("actions before staged", actionsBeforeStaged.length);
-
-  // //if there's a hovered action, put it back
-  // let hoveredID = get(hoveredActionID);
-  // if(hoveredID.length > 0) {
-  //   let hoveredIndex = actions.findIndex(action => action.actionID === hoveredID);
-  //   if(hoveredIndex > -1) {
-  //     actionsBeforeStaged.push(actions[hoveredIndex]);
-  //   }
-  // }
-
-  return actionsBeforeStaged;
+  let actionIndex = actions.findIndex(action => action.actionID === id);
+  let actionsBefore = actions.slice(0, actionIndex);
+  return actionsBefore;
 }
 
 // Recursive function to compile information about actions for rendering
@@ -1132,6 +1139,7 @@ export function compileActions(action: Action, parentID?: string) {
           // Initialize an empty object for modified parameters
           let modifiedParams = {};
 
+          //TODO: do this recursively: if the child action is a repeat, compile its actions with a relative path, ie. start at the parent point
           if ('position' in childAction.params) {
             // If the child action has a position parameter, use the current point
             modifiedParams = {
@@ -1309,12 +1317,14 @@ function effectToActions(effect: Effect, params: { [key: string]: any } = {}) {
       newActions['uuid_parent'].params = mergedParams;
 
       newActions['uuid_parent'].textLabel = effect.textLabel;
+      newActions['uuid_parent'].hidden = false;
+      newActions['uuid_parent'].mouseActionType = effect.mouseActionType;
 
       newActions = updateUUIDsPreservingHierarchy(newActions);
       actions = newActions;
     }
   }
-  else { // todo: effects could really just be actions without a specific uuid
+  else {  // TODO: actions could just be effects with a UUID to make this all less confusing
     let mergedParams = merge(deepCopy(effect.params), deepCopy(params));
     const action: Action = {
       name: effect.name,
@@ -1325,11 +1335,11 @@ function effectToActions(effect: Effect, params: { [key: string]: any } = {}) {
       params: mergedParams,
       uuid: uuidv4(),
       pinned: effect.pinnedByDefault,
-      hidden: false
+      hidden: false,
+      mouseActionType: effect.mouseActionType,
     };
     actions[action.uuid] = action;
   }
-  // console.log("actions", actions);
   return actions;
 }
 
