@@ -89,13 +89,32 @@
       }
     });
 
+    let unhoverDelay;
+    hoveredActionID.subscribe(id => {
+      clearTimeout(unhoverDelay);
+      if(!p5) return;
+      if(id.length > 0) {
+        renderActionsIncludingHovered();
+      }
+      else if(id === '') {
+        //wait for a moment, then check again.
+        //if still no hovered action, render staged action
+        //that way it doesn't flicker when moving between actions
+        unhoverDelay = setTimeout(() => {
+          if(id === '') {
+            renderActionsUntilStaged();
+          }
+        }, 100);
+      }
+    });
+
     renderRequested.subscribe(value => {
       // console.log("render requested");
       if(value) {
-        // clearTempCanvases();
-        // renderActionsUntilStaged();
-        // renderStagedAction(p5.getHoverCanvas());
-        // renderRequested.set(false);
+        clearTempCanvases();
+        renderActionsUntilStaged();
+        renderStagedAction(p5.getHoverCanvas());
+        renderRequested.set(false);
       }
     });
 
@@ -108,20 +127,14 @@
     //       renderAction(action, p5.getHoverCanvas());
     //     });
     //     p5.background(255);
-    //     p5.tint(255, 50);
+    //     // p5.tint(255, 50);
     //     p5.image(p5.getStaticCanvas(), 0, 0);
-    //     p5.noTint();
+    //     // p5.noTint();
     //     p5.image(p5.getHoverCanvas(), 0, 0);
     //   }
     //   else {
     //     clearTempCanvases();
     //     renderActionsUntilStaged();
-    //   }
-    // });
-
-    // stagedActionID.subscribe(id => {
-    //   if(stagedActionID !== '') {
-    //     // hideAction(id); //hide when first added
     //   }
     // });
 
@@ -173,12 +186,26 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
   
   */
 
+  async function renderActionsIncludingHovered() {
+    if(!p5) return;
+    let actions = compileActionsBefore($hoveredActionID);
+    clearAllCanvases();
+    actions.forEach((action, i) => {
+      renderAction(action, p5.getStaticCanvas());
+    });
+    let hoverActions = compileActions($flatActionStore[$hoveredActionID]);
+    hoverActions.forEach((action, i) => {
+      renderAction(action, p5.getStaticCanvas());
+    });
+    p5.image(p5.getStaticCanvas(), 0, 0);
+  }
+
   // TODO: don't start over on pause
-  function renderActionsUntilStaged() {
+  function renderActionsUntilStaged(delay = 0) {
     if(!p5) return;
     actionQueue = compileActionsBeforeStaged();
     // console.log("action queue has", actionQueue.length, "actions");
-    actionQueue.splice(0, 0, { effect:'clear', params: {} } );
+    // actionQueue.splice(0, 0, { effect:'clear', params: {} } );
     currentActionIndex = 0;
     // clearAllCanvases();
     renderFromQueue();
@@ -186,18 +213,14 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
 
   let isRendering = false;
   let currentActionIndex = 0;
-  async function renderFromQueue(delay = 0) {
+  async function renderFromQueue() {
 
     if(!p5) return;
     if(isRendering) return;
-    // console.log("starting render with queue of length", actionQueue.length);
     // console.log(actionQueue.map(action => action.effect));
 
     isRendering = true;
-
-    clearAllCanvases();
-    // console.log("actions before staged", actions, actions.length);
-    let staticCanvas = p5.getStaticCanvas();
+    await clearAllCanvases(); //wait for active actions to clear
 
     // let delays = actions.map(action => action.parentID === $changedActionID ? delay : 0);
     // delays[0] = 0; //first action renders immediately
@@ -206,18 +229,16 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       const action = actionQueue[currentActionIndex];
       // console.log("rendering action", action.actionID, action.effect, action.params);
       // console.log("which is action", currentActionIndex + 1, "of", actionQueue.length);
-      delay = action.indexedID || action.effect === 'along path'? $renderDelay / 30 : $renderDelay;
+      let delay = action.indexedID || action.effect === 'along path'? $renderDelay / 30 : $renderDelay;
       if(action.effect === 'clear') { delay = 0; }
-      await renderAction(action, staticCanvas, delay);
+      await renderAction(action, p5.getStaticCanvas(), delay);
       currentActionIndex++;
-      // console.log("queue is now", actionQueue.length);
     }
 
     // console.log("got through the queue!", actionQueue.length);
-
     // console.log(actionQueue.map(action => action.effect));
 
-    p5.image(staticCanvas, 0, 0);
+    p5.image(p5.getStaticCanvas(), 0, 0);
     isRendering = false;
     renderDelay.set(0);
     isPlaying.set(false);
@@ -233,31 +254,43 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       currentlyRenderingActionID.set(action.actionID);
       if(renderFunction) {
         if (delay > 0) {
+          // console.log("rendering", action.actionID, "with delay of", delay);
           setTimeout(() => {
-            if($isPlaying) {
-              renderFunction(canvas, action.params, p5, turtle);
-              updateRenderedActions(action, canvas); // Update the active actions
-              scrollToAction(action.actionID);
-              p5.image(canvas, 0, 0);
-            }
-            resolve(); // Resolve the promise after rendering
+              if($isPlaying) {
+                renderFunction(canvas, action.params, p5, turtle);
+                p5.image(canvas, 0, 0);
+                scrollToAction(action.actionID);
+                updateRenderedActions(action, canvas); // Update the active actions
+              }
+              resolve();
             }, delay);
+          } else {
+            // Render immediately
+            // console.log("rendering", action.actionID, "immediately");
+            renderFunction(canvas, action.params, p5, turtle);
+            updateRenderedActions(action, canvas); // Update the active actions
+            resolve(); // Resolve the promise after rendering
+          }
         } else {
-          // Render immediately
-          renderFunction(canvas, action.params, p5, turtle);
+          // Update even if render function not found in order to show the active actions in the DOM
           updateRenderedActions(action, canvas); // Update the active actions
-          resolve(); // Resolve the promise after rendering
-        }
+          resolve();
+        }   
       } else {
-        // Update even if render function not found in order to show the active actions in the DOM
-        updateRenderedActions(action, canvas); // Update the active actions
         resolve();
-      }   
-    } else {
-      resolve();
-    }
+      }
   });
 }
+
+  async function renderHoveredAction(canvas) {
+    if(!p5) return;
+    let actions = compileActions($flatActionStore[$hoveredActionID]);
+    for (let action of actions) { //render the hovered action and any of its children
+      // renderAction(action, canvas);
+      renderAction(action, canvas);
+    }
+    p5.image(canvas, 0, 0);
+  }
 
   let stagedCanvasTimeout;
   let stagedCanvasFade;
@@ -273,7 +306,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     p5.image(canvas, 0, 0);
 
     if(!mouseOverCanvas && !($hoveredActionID === $stagedActionID)) {
-      stagedCanvasTimeout = setTimeout(() => { //after 1 second, start fading out
+      stagedCanvasTimeout = setTimeout(() => { //after x time, start fading out
         let alpha = 255;
         stagedCanvasFade = setInterval(() => {
           fadeTempCanvases(alpha);
@@ -286,7 +319,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
             renderedActions.hover = [];
           }
         }, 50);
-      }, 750);
+      }, 500);
     }
   }
 
@@ -340,7 +373,8 @@ function updateRenderedActions(action, canvas) {
     }
   }
 
-  function clearAllCanvases() {
+  async function clearAllCanvases() {
+    // console.log("clearing all");
     p5.clear();
     p5.getDragCanvas().clear();
     p5.getHoverCanvas().clear();
@@ -350,6 +384,8 @@ function updateRenderedActions(action, canvas) {
     renderedActions.static = [];
     renderedActions.drag = [];
     renderedActions.hover = [];
+    
+    await tick();
   }
 
   /*
@@ -461,6 +497,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
         console.log("p5 instance created");
         renderActionsUntilStaged();
         console.log("initial render");
+        saveToHistory("initial render");
       });
     }
   }
@@ -845,15 +882,11 @@ function disableContextMenu(event) {
 
 <style>
   .canvasContainer  {
-    /* position: absolute; */
-    /* top: calc(var(--lined-paper-line-height)*2); */
-    /* overflow: hidden; */
-    /* width: calc(var(--adjusted-page-width)*0.85); */
-    max-width: 501px;
-    max-height: 501px;
+    max-width: 500px;
+    max-height: 500px;
     /* border: 1px solid black; */
     /* box-shadow: 1px 1px 2px 2px gray; */
-    cursor: url('/assets/cursors/paintbrush-solid.svg') 0 28, pointer;
+    cursor: var(--cursor);
   }
 
   #thumbnailContainer {

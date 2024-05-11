@@ -10,6 +10,7 @@
   import { selectAction, hoverAction, copyStagedActionToActionStore } from '../action-utils';
   import tinycolor from 'tinycolor2';
   import { v4 as uuidv4 } from 'uuid';
+    import PathWidget from './PathWidget.svelte';
 
   export let id = '';
   export let value: string[] = [];
@@ -110,10 +111,15 @@
     // }
   }
 
-  function handleItemMouseover(event: Event, actionId: string) {
+  function handleItemMouseover(event: MouseEvent, actionId: string) {
     event.stopPropagation();
       const target = event.target as Element;
-      if(target && target.classList.contains('drag-handle') || target.classList.contains('action-item-content') || target === event.currentTarget) { //if not a widget, set the action as hovered
+      // if(actionId === $stagedActionID) {
+      //   hoverAction(actionId);
+      // }
+      const offsetX = event.offsetX; //mouse relative to target
+      // if(target && !target.classList.contains('addStagedActionButton') && target.classList.contains('drag-handle') || target.classList.contains('action-item-content') || target === event.currentTarget) { //if not a widget, set the action as hovered
+        if(target && (target.classList.contains('drag-handle') || (offsetX <= 50 && target.classList.contains('action-item-content')))) { //if over drag handle, set the action as hovered
         hoverAction(actionId);
       }
   }
@@ -233,6 +239,19 @@ function getDynamicStyle(id:string) {
   // {#if action.pinned}
   //       <span class="pin"><svg xmlns="http://www.w3.org/2000/svg" height="16" width="10" viewBox="0 0 320 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M16 144a144 144 0 1 1 288 0A144 144 0 1 1 16 144zM160 80c8.8 0 16-7.2 16-16s-7.2-16-16-16c-53 0-96 43-96 96c0 8.8 7.2 16 16 16s16-7.2 16-16c0-35.3 28.7-64 64-64zM128 480V317.1c10.4 1.9 21.1 2.9 32 2.9s21.6-1 32-2.9V480c0 17.7-14.3 32-32 32s-32-14.3-32-32z"/></svg></span>
   //     {/if}
+
+  // <!-- <span class="paintbrush"> -->
+  //         <!-- style={getPaintbrushColor(action.uuid)} -->
+          
+  //       <!-- </span> -->
+  //       <!-- <PathWidget id={action.uuid} path={action.params.path} /> -->
+  //     {:else}
+  // <svg bind:this={stagedIcon} xmlns="http://www.w3.org/2000/svg" height="10" width="10" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M339.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L568.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S517.7-4.4 499.1 9.6L262.4 187.2c-24 18-38.2 46.1-38.4 76.1L339.3 367.1zm-19.6 25.4l-116-104.4C143.9 290.3 96 339.6 96 400c0 3.9 .2 7.8 .6 11.6C98.4 429.1 86.4 448 68.8 448H64c-17.7 0-32 14.3-32 32s14.3 32 32 32H208c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg>
+
+  // {#if $stagedActionID === action.uuid && $hoveredActionID === action.uuid}
+  //       <svg class=addStagedActionButton on:click={e => handleAddButton(e)} xmlns="http://www.w3.org/2000/svg" height="25" width="25" viewBox="0 0 384 512"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M32 448c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c53 0 96-43 96-96l0-306.7 73.4 73.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-128-128c-12.5-12.5-32.8-12.5-45.3 0l-128 128c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L160 109.3 160 416c0 17.7-14.3 32-32 32l-96 0z"/></svg>
+  // {/if}
+
 }
 
 </script>
@@ -246,6 +265,7 @@ function getDynamicStyle(id:string) {
       class:selected={$selectedActionID === action.uuid}
       class:staged={$stagedActionID === action.uuid}
       class:obscured={action.obscured}
+      class:hidden={action.hidden}
       class:draggable={!action.pinned}
       class:inactive={!$activeIDs.includes(action.uuid)}
       class:hovered={$hoveredActionID === action.uuid}
@@ -256,20 +276,11 @@ function getDynamicStyle(id:string) {
       in:scale={{ duration: $stagedActionID === action.uuid? 1000 : 500, start: 0.25, opacity: 1 }}
       id={`${action.uuid}`}
     >
-      {#if $stagedActionID === action.uuid}
-        <span class="paintbrush">
-          <!-- style={getPaintbrushColor(action.uuid)} -->
-          <svg bind:this={stagedIcon} xmlns="http://www.w3.org/2000/svg" height="30" width="32" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M339.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L568.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S517.7-4.4 499.1 9.6L262.4 187.2c-24 18-38.2 46.1-38.4 76.1L339.3 367.1zm-19.6 25.4l-116-104.4C143.9 290.3 96 339.6 96 400c0 3.9 .2 7.8 .6 11.6C98.4 429.1 86.4 448 68.8 448H64c-17.7 0-32 14.3-32 32s14.3 32 32 32H208c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg>
-        </span>
-      {:else}
+      {#if $stagedActionID !== action.uuid}
         <span class="drag-handle"></span>
       {/if}
       <ActionItem {action} {depth} />
-      {#if $stagedActionID === action.uuid}
-        <button id=addStagedActionButton on:click={e => handleAddButton(e)}>+</button>
-      {/if}
       <!-- _ _{action.uuid.substr(0, 6)} -->
-
     </li>
   {/each}
 </ol>
@@ -313,33 +324,51 @@ function getDynamicStyle(id:string) {
     /* display: block; */
   }
 
+  .hovered {
+    background-color: #f0f0f0;
+  }
+
+  .hovered.selected {
+    background-color: #fafaa9;
+  }
+
+  .hovered.staged {
+    background-color: #ffffff;
+  }
+
+  .fixed {
+    position: fixed;
+  }
+
   .staged {
+    display: flex;
+    align-items: center;
     box-sizing: border-box; /* Include padding and border in element's width and height */
-    border: 2px solid #757575;
-    /* background-color: white; */
-    /* background-color: #f6f6f6; */
-    border-radius: 2px;
-    /* border-style: dashed none dashed none; */
-    border: none;
+    border: 1px solid #e2e2e2;
+    border-radius: 10px;
+    box-shadow: rgba(17, 17, 26, 0.1) 0px 1px 0px, rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 48px;
+    /* border: none; */
     color: #2c2c2c;
-    /* background: white; */
-    /* background: transparent; */
     opacity: 1;
-    /* font-weight: bold; */
     font-style: normal;
     z-index: 0;
-    margin: 1em 5px;
-    padding-left: 2.5em; /* indent a little extra for paintbrush which is larger than index */
+    margin: 1em 5px 0.7em 10px;
+    padding: 1em;
+    /* padding-left: 3em;  */
+    /* indent a little extra for paintbrush which is larger than index */
+    background-color: #ffffff;
+    z-index: 1;
   }
 
 
   .staged::after {
-    content: "";
-    position: absolute;
-    left: 2.5em; /* blank area at start for paintbrush */
-    top: 0;
-    right: 2.5em; /* blank area at end for add button */
-    bottom: 0;
+    /* content: "";
+    position: absolute; */
+    /* left: 3em; */
+    /* blank area at start for paintbrush */
+    /* top: 0.5em;
+    right: 0.5em;
+    bottom: 0.5em;
     background:
       repeating-linear-gradient(
           -45deg,
@@ -349,8 +378,21 @@ function getDynamicStyle(id:string) {
           rgba(216, 216, 216) 20px
         );    
     border-radius: 4px;
-    z-index: -1;
+    z-index: -1; */
   }
+
+  .hovered.staged::after {
+    background-color: #ffffff;
+    /* background:
+      repeating-linear-gradient(
+          -45deg,
+          rgba(223, 223, 223),
+          rgb(223, 223, 223) 10px,
+          rgb(202, 202, 202) 10px,
+          rgba(202, 202, 202) 20px
+        );     */
+  }
+
 
   li::before {
     pointer-events: none; /* prevent click events on the index */
@@ -387,12 +429,12 @@ function getDynamicStyle(id:string) {
     margin-left: 4px;
   }
 
-  .paintbrush {
-    position: absolute;
-    left: 0;
+  /* .paintbrush { */
+    /* position: absolute; */
+    /* left: 0; */
     /* background-color: white; */
-    /* transform: translateY(-50%); */
-  }
+    /* transform: translate(10%, 10%); */
+  /* } */
 
   .alpha-style li::before {
     content: counter(list-counter, lower-alpha); /* Alpha numbering */
@@ -431,6 +473,10 @@ function getDynamicStyle(id:string) {
     opacity: 0.5;
   }
 
+  .hidden {
+    display: none;
+  }
+
   .scale-from-left {
     transform-origin: left center; /* Scale from the left */
   }
@@ -441,34 +487,27 @@ function getDynamicStyle(id:string) {
     font-style: italic;
   }
 
-  .hovered {
-    background-color: #f0f0f0;
-  }
-
-  .hovered.selected {
-    background-color: #fafaa9;
-  }
-
-  #addStagedActionButton {
-    background-color: #f0f0f0;
-    border: 1px solid #ccc;
-    border-radius: 50%;
-    color: #333;
-    font-size: 1.2em;
-    font-weight: bold;
+  .addStagedActionButton {
+    /* background-color: #f0f0f0; */
+    /* border: 1px solid #ccc; */
+    border-radius: 4px;
     width: 1.5em;
     height: 1.5em;
+    padding: 4px;
     cursor: pointer;
-    /* float: right; */
-    /* transform: translate(50%, -50%); */
-  }
+    margin-left: 0.5em;
+    /* transform: translate(-10%, 10%); */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    /* box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset; */
+}
 
-  #addStagedActionButton:hover {
+.addStagedActionButton:hover {
     background-color: #e0e0e0;
-  }
+    /* box-shadow: 0 4px 6px rgba(0,0,0,0.15); */
+}
 
-  #addStagedActionButton:active {
+.addStagedActionButton:active {
     background-color: #d0d0d0;
-  }
-
+    /* box-shadow: 0 1px 2px rgba(0,0,0,0.1); */
+}
 </style>
