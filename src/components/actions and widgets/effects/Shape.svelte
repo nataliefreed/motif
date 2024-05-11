@@ -71,6 +71,6 @@
     <CoordinateWidget id="position" value={params.position} on:valueChange={handleValueChange}/>
   {/if}
 
-  in color <ColorWidget id="color" value={params.color} on:valueChange={handleValueChange}/>
+  in color <ColorWidget id="color" value={params.color} lockedIndex={params.lockedIndex > -1? params.lockedIndex : -1} on:valueChange={handleValueChange}/>
 
 {/if}

@@ -19,3 +19,8 @@ export function curatedRandomHexColor() {
 function randomBetween(min: number, max: number) {
 	return min + Math.random() * (max - min);
 }
+
+export function getReadableColor(backgroundColor: string) {
+	const colorObj = tinycolor(backgroundColor);
+	return colorObj.isLight() ? 'black' : 'white';
+}

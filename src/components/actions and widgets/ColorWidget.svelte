@@ -1,14 +1,15 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import tinycolor from 'tinycolor2';
-  import { selectedCodeEffect } from '../../stores/dataStore';
   import { createEventDispatcher } from 'svelte';
   import ColorPicker from './ColorPicker.svelte';
   import Tooltip from '../Tooltip.svelte';
+  import { getReadableColor } from '../../utils/color-utils';
+  import { activePalette } from '../../stores/colorStore';
 
   export let id = '';
   export let value = '#FFFFFF';
-  let savedValue = value;
+  export let lockedIndex = -1;
 
   export let size = 1.7;
 
@@ -18,6 +19,7 @@
 
   onMount(() => {
     // colorButton.style.background = tinycolor(value).toHexString();
+    // console.log("locked index at mount", lockedIndex);
   });
 
   let previewEnd = false;
@@ -38,42 +40,25 @@
     previewEnd = true;
   }
 
-  function handleClick(event: Event) {
-    updateColorButton(savedValue);
-    clearInterval(oscillateID);
-    previewEnd = true;
-  }
-
   function handleColorChange(event: CustomEvent) {
     value = event.detail.value;
     updateColorButton(value);
   }
 
-  let oscillateID;
-  function handleMouseOver(event: Event) {
-    savedValue = value;
-    // let newValue = tinycolor(value);
-    // newValue.spin(10);
-    // if(newValue.isDark()) newValue.brighten(20);
-    // else newValue.darken(20);
-    previewEnd = false;
-    // updateColorButton(newValue.toRgbString());
-    // oscillate value
-    oscillateID = setInterval(() => {
-      updateColorButton(tinycolor(value).spin(2).toHexString());
-    }, 20);
-  }
-  function handleMouseOut(event: Event) {
-    //console.log("returning to saved value!");
-    clearInterval(oscillateID);
-    if(!previewEnd) {
-      updateColorButton(savedValue);
-      previewEnd = true;
+  function handleLockChange(event: CustomEvent) {
+    lockedIndex = event.detail.lockedIndex;
+    // console.log("locked index", lockedIndex);
+    if(id==="color2") { //workaround, right now only gradient has 2 colors
+      dispatch('valueChange', { id:"lockedIndex2", value: lockedIndex });
+    } else {
+      dispatch('valueChange', { id:"lockedIndex", value: lockedIndex });
     }
   }
 
-  // on:mouseover={handleMouseOver}
-  // on:mouseout={handleMouseOut}
+  $: if(lockedIndex > -1) {
+    value = $activePalette[lockedIndex];
+    updateColorButton(value);
+  }
 
 </script>
 
@@ -81,18 +66,20 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <span
   bind:this={colorButton}
-  on:click={handleClick}
   id={id}
-  class="color-palette-widget"
-  style="background-color: {value}; width:{size}em; height:{size}em;"
+  class="color-palette-widget {lockedIndex > -1 ? 'locked' : ''}"
+  style="background-color: {value}; color: {getReadableColor(value)}; width:{size}em; height:{size}em;"
 >
+  {#if lockedIndex > -1} <span class="color-label">{lockedIndex+1}</span> {/if}
 </span>
 
 {#if colorButton}
-  <Tooltip element={colorButton}>
-    <div class="color-picker">
-      <ColorPicker {value} on:valueChange={handleColorChange} />
-   </div>
+  <Tooltip element={colorButton} let:showContent>
+    {#if showContent}
+      <div class="color-picker">
+        <ColorPicker bind:value={value} bind:selectedColorIndex={lockedIndex} on:valueChange={handleColorChange} on:lockChange={handleLockChange} />
+    </div>
+   {/if}
   </Tooltip>
 {/if}
 
@@ -115,6 +102,20 @@
     mask-size: cover;
 }
 
+.locked {
+  /* mask-image: none; */
+  border-radius: 50%;
+}
+
+.color-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.9em;
+  font-style: normal;
+}
+
 .color-palette-widget:hover {
   cursor: pointer;
   box-shadow: 0 0 5px 0 rgba(0,0,0,0.1);
@@ -124,33 +125,4 @@
 .color-picker {
   padding: 10px;
 }
-
-/* .color-overlay {
-  position: relative;
-  top: 2px;
-  left: 0;
-  right: 0;
-  bottom: 2px;
-  -webkit-mask-image: url('/assets/widgets/splotch-alpha-mask.png');
-  mask-image: url('/assets/widgets/splotch-alpha-mask.png');
-  -webkit-mask-size: cover;
-  mask-size: cover;
-} */
-
-/* .splotch-image {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.color-overlay {
-  position: relative;
-  top: 2px;
-  left: 0;
-  right: 0;
-  bottom: 2px;
-} */
 </style>

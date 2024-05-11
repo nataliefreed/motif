@@ -16,12 +16,12 @@
 </script>
 
 {#if name === 'solid fill'}
-  Fill with <ColorWidget id="color" value={params.color} on:valueChange={handleValueChange}/>
+  Fill with <ColorWidget id="color" value={params.color} lockedIndex={params.lockedIndex} on:valueChange={handleValueChange}/>
 {:else if name === 'gradient'}
   Gradient from 
-  <ColorWidget id="color" value={params.color} on:valueChange={handleValueChange}/>
+  <ColorWidget id="color" value={params.color} lockedIndex={params.lockedIndex} on:valueChange={handleValueChange}/>
   to 
-  <ColorWidget id="color2" value={params.color2} on:valueChange={handleValueChange}/>
+  <ColorWidget id="color2" value={params.color2} lockedIndex={params.lockedIndex2} on:valueChange={handleValueChange}/>
   at angle 
   <NumberWidget id="angle" min={0} max={360} value={params.angle} on:valueChange={handleValueChange}/>°
 {:else if name === 'stripes'}
@@ -30,12 +30,12 @@
   at angle 
   <NumberWidget id="angle" min={0} max={360} value={params.angle} on:valueChange={handleValueChange}/>°
   in color 
-  <ColorWidget id="color" value={params.color} on:valueChange={handleValueChange}/>
+  <ColorWidget id="color" value={params.color} lockedIndex={params.lockedIndex} on:valueChange={handleValueChange}/>
 {:else if name === 'speckles'}
   Speckles for time
   <NumberWidget id="progress" min={0} max={100} value={params.progress} on:valueChange={handleValueChange}/>
   at
   <CoordinateWidget id="position" value={params.position} on:valueChange={handleValueChange}/>
   in
-  <ColorWidget id="color" value={params.color} on:valueChange={handleValueChange}/>
+  <ColorWidget id="color" value={params.color} lockedIndex={params.lockedIndex} on:valueChange={handleValueChange}/>
 {/if}

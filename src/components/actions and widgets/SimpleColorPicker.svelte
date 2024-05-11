@@ -1,15 +1,10 @@
 <script lang="ts">
-  import { onMount, createEventDispatcher, tick } from 'svelte';
+  import { onMount, createEventDispatcher } from 'svelte';
   import tinycolor from 'tinycolor2';
-  import ColorPalette from '../toolbars/ColorPalette.svelte';
-  import { activePalette, showSavedColors, pickerPalette }  from '../../stores/colorStore';
-  import { getReadableColor } from '../../utils/color-utils';
 
   const dispatch = createEventDispatcher();
 
   export let value: string; //initial value
-
-  export let selectedColorIndex = -1;
 
   let c = tinycolor(value).toRgb();
   let red = c.r;
@@ -40,40 +35,13 @@
   });
 
   function updateColor() {
-    unlockColor();
     dispatch('valueChange', { value: color.toRgbString() });
-  }
-
-  function handleColorClick(event: Event) {
-    let target = event.target as HTMLElement;
-    let newColor = tinycolor(target.style.backgroundColor);
-    updateColorComponents(newColor);
-    color = tinycolor({ r: red, g: green, b: blue, a: alpha });
-    updateColor();
-  }
-
-  function handleSavedPaletteClick(index: number) {
-    if(selectedColorIndex === index) {
-      unlockColor();
-      return;
-    } else {
-      selectedColorIndex = index;
-      
-      let newColor = tinycolor($activePalette[index]);
-      updateColorComponents(newColor);
-      dispatch('lockChange', { lockedIndex: selectedColorIndex });
-      // dispatch('valueChange', { value: newColor.toRgbString() });
-    }
-  }
-
-  function unlockColor() {
-    selectedColorIndex = -1;
-    dispatch('lockChange', { lockedIndex: selectedColorIndex });
   }
 
 </script>
 
 <div class="color-picker">
+  <!-- <div>{color.toHexString()}</div> -->
   <div class="sliders">
     <div class="slider">
       <label class="color-label" for="red" style="color:red">Red</label>
@@ -104,38 +72,6 @@
 
 </div>
 
-<div id="palette">
-  {#each pickerPalette as color, index}
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div class="color-item"
-    on:click={handleColorClick}
-    style="background-color: {color};">
-    </div>
-  {/each}
-</div>
-
-
-{#if $showSavedColors || selectedColorIndex !== -1}
-<div id="saved-palette">
-  {#each $activePalette as color, index}
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div class="color-item {(selectedColorIndex === index) ? 'selected' : ''}"
-    on:click={e => handleSavedPaletteClick(index)}
-    style="--actual-color: {color}; --label-color: {getReadableColor(color)};">
-      {index+1}
-    </div>
-  {/each}
-</div>
-{/if}
-
-
-
-
-  <!-- <div class="preview"> -->
-    <!-- <div class="color-preview" style="background-color: {rgbaString}; border-color:{rgbString};"></div> -->
-   
-<!-- </div> -->
-
 <style>
   .color-picker {
     display: flex;
@@ -159,64 +95,6 @@
     align-items: center;
   }
 
-  #palette, #saved-palette {
-   margin: 5px 0;
-   width: 100%;
-   display: flex;
-   flex-direction: row;
-   gap: 3px;
-   flex-wrap: wrap;
-   /* border: 1px solid lightgray; */
-   border-radius: 5px;
-   padding: 5px;
-   /* background-color: rgb(234, 234, 234); */
-  }
-
-  .color-item {
-    /* border: 0.5px solid lightgray; */
-    box-sizing: border-box;
-    border-radius: 50%;
-    width: 25px;
-    height: 25px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    -webkit-mask-image: url('/assets/widgets/splotch-alpha-mask.png');
-    mask-image: url('/assets/widgets/splotch-alpha-mask.png');
-    -webkit-mask-size: cover;
-    mask-size: cover;
-    background-color: lightgray;
-    color: black;
-  }
-
-  .color-item:hover {
-    cursor: pointer;
-    box-shadow: 0 0 5px 1px gray;
-    background-color: var(--actual-color);
-    color: var(--label-color);
-    mask-image: none;
-  }
-
-  .color-item.selected {
-    /* border: 3px solid rgb(95, 95, 95); */
-    background-color: var(--actual-color);
-    color: var(--label-color);
-    box-shadow: 0 0 5px 1px gray;
-    /* box-shadow: 0 0 5px 1px gray; */
-    mask-image: none;
-  }
-
-  .color-item.selected:hover {
-    /* background-color: lightgray; */
-    /* color: black; */
-    box-shadow: none;
-  }
-
-  /* .color-label {
-    flex-align: baseline;
-  } */
-
   .slider input[type='range'] {
     appearance: none;
     background: transparent;
@@ -230,7 +108,7 @@
   .preview {
     display: flex;
     flex-direction: row;
-    margin: 8px 0 0 0;
+    margin: 10px 0;
     align-items: center;
     justify-content: flex-start;
     gap: 5px;
