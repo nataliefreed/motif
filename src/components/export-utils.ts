@@ -1,6 +1,6 @@
 
 import { addMetadataFromBase64DataURI, getMetadata } from 'meta-png';
-import { flatActionStore, stagedActionID } from '../stores/dataStore';
+import { flatActionStore, stagedActionID, drawingLocked } from '../stores/dataStore';
 import { get } from 'svelte/store';
 import type { Action } from '../types/types';
 import { deepCopy } from '../utils/utils';
@@ -67,6 +67,7 @@ export function importCodeFromImage() {
           
           if (jsonData) {
             const data = JSON.parse(jsonData);
+            if(data) { drawingLocked.set(true); }; //importing a design locks the drawing to start in parameter setting mode
             flatActionStore.update(store => { return data; });
             addCurrentEffectAsStagedAction();
           }

@@ -1,13 +1,14 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { actionStore, toolStore, selectedEffect, activeCategory, stagedAction, stagedActionID, changedActionID, selectedActionID, selectedCodeEffect, currentColor, actionRoot, flatActionStore, playSpeed, renderDelay, isPlaying, firstPlay } from '../stores/dataStore';
+  import { actionStore, toolStore, selectedEffect, activeCategory, stagedAction, stagedActionID, changedActionID, selectedActionID, selectedCodeEffect, currentColor, actionRoot, flatActionStore, playSpeed, renderDelay, isPlaying, firstPlay, drawingLocked } from '../stores/dataStore';
   import { exportCodeWithImage, importCodeFromImage } from './export-utils';
   import LinedPaper from './LinedPaper.svelte';
   import ActionItem from './actions and widgets/ActionItem.svelte';
 	import type { Action, Effect } from '../types/types';
   import Canvas from './canvas/Canvas.svelte';
   import Ruler from './canvas/Ruler.svelte';
-  import { scrollToAction, removeSelectedAction, repeatSelectedActionAlongPath, remixAction, duplicateAction, remixDuplicate, redrawSelectedAction, convertSelectedAction, clearAllActions, undo, redo, rewindToBeginning, fastForwardToEnd, stepBackward, stepForward } from './action-utils';
+  import ColorBank from './toolbars/ColorBank.svelte';
+  import { scrollToAction, removeSelectedAction, repeatSelectedActionAlongPath, remixAction, duplicateAction, remixDuplicate, redrawSelectedAction, convertSelectedAction, clearAllActions, undo, redo, rewindToBeginning, fastForwardToEnd, stepBackward, stepForward, hideAction, showAction } from './action-utils';
   import EffectToolbar from './toolbars/EffectToolbar.svelte';
   import Notebook from './Notebook.svelte';
   import Page from './Page.svelte';
@@ -19,6 +20,7 @@
   import { curatedRandomHexColor } from '../utils/color-utils';
   import PlayButton from './PlayButton.svelte';
   import NumberWidget from './actions and widgets/NumberWidget.svelte';
+  import { showSavedColors } from '../stores/colorStore';
 
   let allCategories:string[] = [];
 
@@ -26,8 +28,17 @@
     scrollToAction($selectedActionID);
   }
 
+  // $: if($drawingLocked) {
+    // hideAction($stagedActionID);
+  // } else {
+    // showAction($stagedActionID);
+  // }
+
   $: canUndo = $historyStore.past.length > 0;
   $: canRedo = $historyStore.future.length > 0;
+
+  const lockIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="1em" height="1em"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path fill="rgb(227, 227, 227)" d="M144 144v48H304V144c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192V144C80 64.5 144.5 0 224 0s144 64.5 144 144v48h16c35.3 0 64 28.7 64 64V448c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V256c0-35.3 28.7-64 64-64H80z"/></svg>`;
+  const unlockIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="1em" height="1em"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path fill="rgb(227, 227, 227)"d="M144 144c0-44.2 35.8-80 80-80c31.9 0 59.4 18.6 72.3 45.7c7.6 16 26.7 22.8 42.6 15.2s22.8-26.7 15.2-42.6C331 33.7 281.5 0 224 0C144.5 0 80 64.5 80 144v48H64c-35.3 0-64 28.7-64 64V448c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V256c0-35.3-28.7-64-64-64H144V144z"/></svg>`;
 
   // function randomizeAction() {
   //   if ($stagedAction) {
@@ -64,17 +75,17 @@
   //   }
   // }
 
-  function handleBackgroundClick(event:MouseEvent) {
-    if(!event || !event.target) return;
-    const target = event.target as HTMLElement;
-    const tagName = target.tagName.toLowerCase();
+  // function handleBackgroundClick(event:MouseEvent) {
+  //   if(!event || !event.target) return;
+  //   const target = event.target as HTMLElement;
+  //   const tagName = target.tagName.toLowerCase();
 
-    if (tagName !== 'button' && tagName !== 'canvas' && tagName !== 'input' && tagName !== 'a') {
-      // console.log("click somewhere", event.target);
-      saveToHistory("background click");
-    }
-    event.stopPropagation();
-  }
+  //   if (tagName !== 'button' && tagName !== 'canvas' && tagName !== 'input' && tagName !== 'a') {
+  //     // console.log("click somewhere", event.target);
+  //     saveToHistory("background click");
+  //   }
+  //   event.stopPropagation();
+  // }
 
   function saveTool(id:string) {
     // saveActionAsNewTool($flatActionStore[id]);
@@ -94,11 +105,11 @@
 
     // console.log("hit target", target.nodeName);
 
-    if(target.nodeName !== 'BUTTON'
-      && target.nodeName !== 'INPUT'
-      && target.nodeName !== 'CANVAS') {
-        saveToHistory("outside click");
-    }
+    // if(target.nodeName !== 'BUTTON'
+    //   && target.nodeName !== 'INPUT'
+    //   && target.nodeName !== 'CANVAS') {
+    //     saveToHistory("outside click");
+    // }
 
     // deselect
     if(!$selectedActionID || $selectedActionID.length < 1) return; //if nothing selected
@@ -155,6 +166,8 @@
 
   let count = 1;
 
+  let drawingArea;
+
 </script>
 
 <!-- svelte-ignore missing-declaration -->
@@ -162,19 +175,31 @@
 <Notebook>
   <Page slot="left">
 
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <div class="lock-button" on:click={e=>{drawingLocked.set(!$drawingLocked)}}>{@html $drawingLocked?lockIcon:unlockIcon}</div>
+
     <div class="drawing-area-container">
       <div class="drawing-area-with-category-toolbar">
-        <div class="category-toolbar"><CategoryToolbar categories={allCategories} /></div>
+        <div class="category-toolbar"><CategoryToolbar categories={$drawingLocked?[]:allCategories} /></div>
           <div class="drawing-area-with-effect-toolbar">
-            <div class="drawing-area">
+            <div class="drawing-area" bind:this={drawingArea}>
+                {#if $drawingLocked}
+                  <Tooltip element={drawingArea} settings={{trigger:'mouseenter', offset: [0, -200], hideOnClick:false}}>
+                    {#if $drawingLocked}
+                      <div>Drawing is locked! Try changing the code on the right or the saved colors below.</div>
+                    {/if}
+                  </Tooltip>
+                {/if}
                 <Ruler><Canvas/></Ruler>
               </div>
-            <div class="effect-toolbar"><EffectToolbar/></div>
+              {#if !$drawingLocked}<div class="effect-toolbar"><EffectToolbar/></div>{/if}
           </div>
         </div>
       </div>
-        <!-- <EffectSettingsPanel /> -->
-      <!-- </div> -->
+
+      <div class="color-bank"><ColorBank activeColor={$currentColor}/></div>
+    
+      <!-- <EffectSettingsPanel /> -->
     <!-- </div> -->
 
   </Page>
@@ -232,7 +257,7 @@
           <ul>
             {#each Object.values($flatActionStore) as action (action.uuid)}
               <li style:color={action.uuid === $stagedActionID ? 'red' : 'black'}>
-                {action.uuid} : {#if action.params.children && action.params.children.length > 0} {JSON.stringify(action.params.children)} {/if}
+                {action.uuid} : {#if action.params.children && action.params.children.length > 0} {JSON.stringify(action.params.children)} {/if} {action.effect}
               </li>
             {/each}
           </ul> -->
@@ -248,7 +273,9 @@
           <svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M234.7 42.7L197 56.8c-3 1.1-5 4-5 7.2s2 6.1 5 7.2l37.7 14.1L248.8 123c1.1 3 4 5 7.2 5s6.1-2 7.2-5l14.1-37.7L315 71.2c3-1.1 5-4 5-7.2s-2-6.1-5-7.2L277.3 42.7 263.2 5c-1.1-3-4-5-7.2-5s-6.1 2-7.2 5L234.7 42.7zM46.1 395.4c-18.7 18.7-18.7 49.1 0 67.9l34.6 34.6c18.7 18.7 49.1 18.7 67.9 0L529.9 116.5c18.7-18.7 18.7-49.1 0-67.9L495.3 14.1c-18.7-18.7-49.1-18.7-67.9 0L46.1 395.4zM484.6 82.6l-105 105-23.3-23.3 105-105 23.3 23.3zM7.5 117.2C3 118.9 0 123.2 0 128s3 9.1 7.5 10.8L64 160l21.2 56.5c1.7 4.5 6 7.5 10.8 7.5s9.1-3 10.8-7.5L128 160l56.5-21.2c4.5-1.7 7.5-6 7.5-10.8s-3-9.1-7.5-10.8L128 96 106.8 39.5C105.1 35 100.8 32 96 32s-9.1 3-10.8 7.5L64 96 7.5 117.2zm352 256c-4.5 1.7-7.5 6-7.5 10.8s3 9.1 7.5 10.8L416 416l21.2 56.5c1.7 4.5 6 7.5 10.8 7.5s9.1-3 10.8-7.5L480 416l56.5-21.2c4.5-1.7 7.5-6 7.5-10.8s-3-9.1-7.5-10.8L480 352l-21.2-56.5c-1.7-4.5-6-7.5-10.8-7.5s-9.1 3-10.8 7.5L416 352l-56.5 21.2z"/></svg>
         </button>
         <button class="instabutton selected-action-button dont-deselect" id="repeatButton" disabled={!$selectedActionID} on:click={() => repeatSelectedActionAlongPath() }><svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 512 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M0 224c0 17.7 14.3 32 32 32s32-14.3 32-32c0-53 43-96 96-96H320v32c0 12.9 7.8 24.6 19.8 29.6s25.7 2.2 34.9-6.9l64-64c12.5-12.5 12.5-32.8 0-45.3l-64-64c-9.2-9.2-22.9-11.9-34.9-6.9S320 19.1 320 32V64H160C71.6 64 0 135.6 0 224zm512 64c0-17.7-14.3-32-32-32s-32 14.3-32 32c0 53-43 96-96 96H192V352c0-12.9-7.8-24.6-19.8-29.6s-25.7-2.2-34.9 6.9l-64 64c-12.5 12.5-12.5 32.8 0 45.3l64 64c9.2 9.2 22.9 11.9 34.9 6.9s19.8-16.6 19.8-29.6V448H352c88.4 0 160-71.6 160-160z"/></svg> repeat</button>
-        <button class="instabutton selected-action-button dont-deselect" id="redrawButton" disabled={!$selectedActionID} on:click={() => redrawSelectedAction()}><svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M339.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L568.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S517.7-4.4 499.1 9.6L262.4 187.2c-24 18-38.2 46.1-38.4 76.1L339.3 367.1zm-19.6 25.4l-116-104.4C143.9 290.3 96 339.6 96 400c0 3.9 .2 7.8 .6 11.6C98.4 429.1 86.4 448 68.8 448H64c-17.7 0-32 14.3-32 32s14.3 32 32 32H208c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg> re-draw</button>
+        {#if !$drawingLocked}
+          <button class="instabutton selected-action-button dont-deselect" id="redrawButton" disabled={!$selectedActionID} on:click={() => redrawSelectedAction()}><svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M339.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L568.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S517.7-4.4 499.1 9.6L262.4 187.2c-24 18-38.2 46.1-38.4 76.1L339.3 367.1zm-19.6 25.4l-116-104.4C143.9 290.3 96 339.6 96 400c0 3.9 .2 7.8 .6 11.6C98.4 429.1 86.4 448 68.8 448H64c-17.7 0-32 14.3-32 32s14.3 32 32 32H208c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg> re-draw</button>
+        {/if}
         <!-- <button class="instabutton selected-action-button dont-deselect" id="convertButton" disabled={!$selectedActionID} on:click={() => convertSelectedAction()}>find pattern</button> -->
         <!-- <button class="instabutton selected-action-button dont-deselect" id="saveToolButton" disabled={!$selectedActionID} on:click={() => saveTool($selectedActionID)}> <svg xmlns="http://www.w3.org/2000/svg" height="0.9em" viewBox="0 0 448 512">!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.<path d="M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.8 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"/></svg> <svg xmlns="http://www.w3.org/2000/svg" height="1.4em" viewBox="0 0 512 512">!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.<path d="M176 88v40H336V88c0-4.4-3.6-8-8-8H184c-4.4 0-8 3.6-8 8zm-48 40V88c0-30.9 25.1-56 56-56H328c30.9 0 56 25.1 56 56v40h28.1c12.7 0 24.9 5.1 33.9 14.1l51.9 51.9c9 9 14.1 21.2 14.1 33.9V304H384V288c0-17.7-14.3-32-32-32s-32 14.3-32 32v16H192V288c0-17.7-14.3-32-32-32s-32 14.3-32 32v16H0V227.9c0-12.7 5.1-24.9 14.1-33.9l51.9-51.9c9-9 21.2-14.1 33.9-14.1H128zM0 416V336H128v16c0 17.7 14.3 32 32 32s32-14.3 32-32V336H320v16c0 17.7 14.3 32 32 32s32-14.3 32-32V336H512v80c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64z"/></svg>&nbsp;&nbsp;</button> -->
       </div>
@@ -286,8 +313,9 @@
     /* width: calc(min(var(--page-width), var(--page-height))*0.75);
     height: calc(min(var(--page-width), var(--page-height))*0.75); */
     width: calc(var(--page-width)*0.8);
-    height: calc(var(--page-height)*0.8);
+    max-height: calc(var(--page-height)*0.9);
     margin-right: 10%;
+    margin-top: 1vh;
   }
 
   .drawing-area-with-category-toolbar {
@@ -296,7 +324,7 @@
     flex-direction: row;
     width: 100%;
     height: 100%;
-    align-items: flex-start;
+    align-items: center;
     justify-content: center;
   }
 
@@ -305,20 +333,30 @@
     display: flex;
     flex-direction: column;
     width: 85%;
-    height: 100%
+    height: 100%;
     /* overflow: hidden; */
   }
 
   .category-toolbar {
     width: 15%;
-    height: 85%;
+    height: 70%;
+    /* position: relative; */
+    /* top: calc(var(--page-height)*0.15); */
   }
 
   .effect-toolbar {
     /* border: 1px solid blue; */
     /* border: 1px solid black; */
-    height: 15%;
+    height: 6vh;
     /* background-color: lightgray; */
+  }
+
+  .color-bank {
+    position: relative;
+    bottom: 0;
+    margin-top: auto;
+    /* margin-bottom: 10px; */
+    width: 100%;
   }
 
   .drawing-area {
@@ -329,7 +367,9 @@
     width: calc(var(--page-width)*0.7);
     height: calc(var(--page-width)*0.7);
     max-width: 523px;
-    max-height: 523px;
+    /* max-height: 523px; */
+    max-height: calc(var(--page-height)*0.8);
+    margin-top: 3vh;
     /* margin-bottom: 20px; */
     /* box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px; */
     /* box-shadow: rgba(0, 0, 0, 0.07) 0px 1px 2px, rgba(0, 0, 0, 0.07) 0px 2px 4px, rgba(0, 0, 0, 0.07) 0px 4px 8px, rgba(0, 0, 0, 0.07) 0px 8px 16px, rgba(0, 0, 0, 0.07) 0px 16px 32px, rgba(0, 0, 0, 0.07) 0px 32px 64px; */
@@ -399,6 +439,9 @@
   .instabutton:disabled {
     color: gray;
     background-color: #f4f4f4;
+    background-color: buttonface;
+    color: #a0a0a0;
+    fill: #a0a0a0;
   }
 
   .instabutton svg {
@@ -483,9 +526,12 @@
     justify-content: center;
   }
 
-  /* Cursor styles */
-  .point-cursor {
-    cursor: auto;
+  .lock-button {
+    background: none;
+    cursor: pointer;
+    position: absolute;
+    right: 10px;
+    top: 10px;
   }
 
 </style>

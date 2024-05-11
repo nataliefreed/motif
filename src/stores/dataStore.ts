@@ -42,6 +42,10 @@ export const currentlyRenderingActionID = writable('');
 
 export const playSpeed = writable(10);
 
+export const mousePos = writable({x: 0, y: 0});
+
+export const drawingLocked = writable(false);
+
 export const stagedAction = derived(
   [flatActionStore, stagedActionID], 
   ([$flatActionStore, $stagedActionID]) => $flatActionStore[$stagedActionID]
@@ -86,7 +90,8 @@ function buildNestedStructure(flatStore) {
 export function initStores(projectID: string | null) {
   toolStore.set(effectList);
   flatActionStore.set(getFlatActionStore());
-  printNestedListAndCheckIssues(get(flatActionStore));
+
+  // printNestedListAndCheckIssues(get(flatActionStore));
 }
 
 
