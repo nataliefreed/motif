@@ -18,7 +18,7 @@
   }
 
   function toggle() {
-    console.log("toggling");
+    // console.log("toggling");
       isOpen = !isOpen;
   }
 

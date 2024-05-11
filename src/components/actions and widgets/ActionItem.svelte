@@ -24,7 +24,11 @@
   onMount(() => {
     if(action && action.name === 'do each') { //expand do each by default
         isOpen = true;
-    } else {
+    } 
+    // else if(action && action.uuid === $stagedActionID) {
+    //   isOpen = true;
+    // }
+    else {
         isOpen = false;
     }
   });

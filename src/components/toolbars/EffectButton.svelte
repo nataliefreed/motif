@@ -29,7 +29,7 @@
     display: flex;
     /* max-width: 80%; */
     height: 50%;
-    min-width: 15%;
+    min-width: 10%;
     /* padding: 0px 12px; */
     justify-content: center;
     align-items: center;
@@ -40,6 +40,7 @@
     background-size: cover; /* Ensure the image covers the button */
     background-position: center; /* Center the background image */
     font-family: 'FuturaHandwritten';
+    font-size: 0.85em;
   }
 
   .code-button {

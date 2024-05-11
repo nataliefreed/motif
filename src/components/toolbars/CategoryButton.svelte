@@ -24,14 +24,14 @@
   .category-button-container {
     /* border: 1px solid green; */
     box-sizing: border-box;
-    padding: 0 5% 0 25%;
-    width: 100%;
+    padding: 0 5% 0 20%;
+    width: 75%;
   }
   .category-button {
     display: flex;
     justify-content: center;
     align-items: center;
-    border-radius: 20px;
+    border-radius: 5px;
     border: none;
     background-color: transparent;
     cursor: pointer;
@@ -42,16 +42,26 @@
   }
 
   .category-button.active {
-    background-color: #dcdcdc;
+    background-color: #eaeaea;
     /* filter: drop-shadow(0px 0px 10px rgb(169, 169, 169)); */
   }
 
-  .category-button.active img {
+  .category-button:hover img {
     filter: drop-shadow(3px 4px 1px #646464);
+  }
+
+  .category-button.active:hover img {
+    filter: drop-shadow(3px 4px 1px #646464);
+  }
+
+  .category-button.active img {
+    filter: none;
+    /* filter: drop-shadow(3px 4px 1px #646464); */
   }
 
   .category-button img {
     width: 60%;
+    filter: grayscale(100%);
     /* transition: filter 0.3s ease; */
   }
 </style>

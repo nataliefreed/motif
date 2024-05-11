@@ -1,5 +1,5 @@
 <script lang="ts">
-  import ColorPalette from './ColorPalette.svelte';
+  import ColorBank from './ColorBank.svelte';
   import { currentColor, shouldRandomizeColor } from '../../stores/dataStore';
 
   let shouldRandomize: boolean = false;
@@ -11,13 +11,12 @@
   function toggleRandom() {
     shouldRandomize = !$shouldRandomizeColor;
     shouldRandomizeColor.set(shouldRandomize);
-    // console.log($shouldRandomizeColor);
   }
 
 </script>
 
 <div id="effect-settings-panel">
-  <ColorPalette activeColor={$currentColor} on:colorChange={handleColorChange}/>
+  <ColorBank activeColor={$currentColor} on:colorChange={handleColorChange}/>
   <button id="random-color-toggle"
           class:selected={$shouldRandomizeColor}
           on:click={toggleRandom}>
