@@ -3,6 +3,7 @@
   import StringWidget from "../StringWidget.svelte";
   import ListWidget from "../ListWidget.svelte";
   import ChildrenWidget from "../ChildrenWidget.svelte";
+  import NumberWidget from "../NumberWidget.svelte";
 
   export let name = '';
   export let params: any = {};
@@ -27,6 +28,7 @@
 {#if name === 'do each'}
   <StringWidget id='title' value={params.title} />
   <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <span class="toggle-arrow" on:click={toggle}> {isOpen ? '▼' : '▶'}</span>
   {#if isOpen}
     <ListWidget id='children' value={params.children} {depth} on:valueChange={handleValueChange}/>
@@ -34,7 +36,8 @@
 {:else if name === 'along path'}
   <ChildrenWidget id='children' on:miniActionClick={toggle} value={params.children}/>
   <!-- <StringWidget id='title' value={params.title} /> -->
-  along<PathWidget id='path' path={params.path} on:valueChange={handleValueChange}/>
+  along<PathWidget id='path' path={params.path} angle={params.angle} on:valueChange={handleValueChange}/>
+  <NumberWidget id='angle' min={0} max={360} value={params.angle} on:valueChange={handleValueChange}/>°
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <span class="toggle-arrow" on:click={toggle}> {isOpen ? '▼' : '▶'}</span>
   {#if isOpen}

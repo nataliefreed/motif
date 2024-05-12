@@ -20,7 +20,7 @@
   class:selected={$selectedEffect === tool}
   style:background-image={thumbnail ? `url(/assets/effect-thumbnails/${thumbnail})` : ''}
   >
-  {tool.textLabel}
+  <div class="label">{tool.textLabel}</div>
 </button>
 
 
@@ -28,7 +28,7 @@
   .effect-button {
     display: flex;
     /* max-width: 80%; */
-    height: 50%;
+    height: 60%;
     min-width: 10%;
     /* padding: 0px 12px; */
     justify-content: center;
@@ -41,6 +41,12 @@
     background-position: center; /* Center the background image */
     font-family: 'FuturaHandwritten';
     font-size: 0.85em;
+  }
+
+  .label {
+    padding: 2px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 2px;
   }
 
   .code-button {

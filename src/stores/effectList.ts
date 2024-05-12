@@ -72,6 +72,7 @@ export const effectList = [
       nsides: 6,
       radius: 20,
       color: '#9c83e1',
+      angle: 0,
       position: {x: 250, y: 430}
     }
   },
@@ -88,6 +89,7 @@ export const effectList = [
       r1: 20,
       r2: 10,
       color: '#a2d16b',
+      angle: 0,
       position: {x: 250, y: 430}
     }
   },
@@ -105,6 +107,7 @@ export const effectList = [
       d: 20,
       color: '#FF0000',
       position: {x: 250, y: 430},
+      angle: 0,
       progress: 100
     },
   },
@@ -119,6 +122,7 @@ export const effectList = [
     params: {
       size: 40,
       color: '#da6bb1',
+      angle: 0,
       position: {x: 250, y: 430}
     }
   },
@@ -134,6 +138,7 @@ export const effectList = [
       width: 50,  
       height: 30,
       color: '#52bf67',
+      angle: 0,
       position: {x: 250, y: 430}
     }
   },
@@ -149,6 +154,7 @@ export const effectList = [
       width: 40,
       height: 40,
       color: '#62aed2',
+      angle: 0,
       position: {x: 250, y: 430}
     }
   },
@@ -228,6 +234,7 @@ export const effectList = [
           title: "Dot brush",
           children: ['dot'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
+          angle: 0,
           pathSpacing: 15
         }
       },
@@ -265,6 +272,7 @@ export const effectList = [
           title: "Line Brush",
           children: ['line'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
+          angle: 0,
           pathSpacing: 10
         }
       },
@@ -304,6 +312,7 @@ export const effectList = [
           title: "Connected line",
           children: ['line'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
+          angle: 0,
           pathSpacing: 10
         }
       },
@@ -344,6 +353,7 @@ export const effectList = [
           children: ['light_blue_dot', 'dark_blue_dot'],
           color: '#80babd',
           path: [[10, 50]],
+          angle: 0,
           pathSpacing: 10
         }
       },
@@ -393,6 +403,7 @@ export const effectList = [
           title: "mosaic",
           children: ['red_circle', 'orange_triangle', 'gold_rectangle', 'olive_circle', 'green_triangle', 'light_blue_rectangle', 'blue_circle', 'indigo_triangle', 'purple_rectangle', 'violet_circle', 'pink_triangle'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
+          angle: 0,
           color: '#80babd',
           pathSpacing: 25
         }
@@ -506,6 +517,7 @@ export const effectList = [
           title: "hearts",
           children: ['small_heart', 'large_heart'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
+          angle: 0,
           pathSpacing: 15
         }
       },
@@ -555,6 +567,7 @@ export const effectList = [
           title: "stars",
           children: ['pink_star', 'purple_star', 'dark_blue_star', 'blue_star', 'light_blue_star'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
+          angle: 0,
           color: '#80babd',
           pathSpacing: 30
         }

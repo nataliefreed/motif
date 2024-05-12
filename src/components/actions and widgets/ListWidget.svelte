@@ -7,7 +7,7 @@
   import ActionItem from './ActionItem.svelte';
   import { scale, fade, fly } from 'svelte/transition';
   import { deepCopy } from '../../utils/utils';
-  import { selectAction, hoverAction, copyStagedActionToActionStore } from '../action-utils';
+  import { selectAction, hoverAction, copyStagedActionToActionStore, addCurrentEffectAsStagedAction } from '../action-utils';
   import tinycolor from 'tinycolor2';
   import { v4 as uuidv4 } from 'uuid';
     import PathWidget from './PathWidget.svelte';
@@ -261,6 +261,7 @@ function getDynamicStyle(id:string) {
   {#each children.map(checkAction) as action (action.uuid)}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+    <!-- svelte-ignore a11y-mouse-events-have-key-events -->
     <li
       class:selected={$selectedActionID === action.uuid}
       class:staged={$stagedActionID === action.uuid}
@@ -276,12 +277,18 @@ function getDynamicStyle(id:string) {
       in:scale={{ duration: $stagedActionID === action.uuid? 1000 : 500, start: 0.25, opacity: 1 }}
       id={`${action.uuid}`}
     >
+      <span class="drag-handle"></span>
       {#if $stagedActionID !== action.uuid}
-        <span class="drag-handle"></span>
+        <ActionItem {action} {depth} />
+      {:else}
+        <span class="paintbrush">
+          <svg bind:this={stagedIcon} xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M339.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L568.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S517.7-4.4 499.1 9.6L262.4 187.2c-24 18-38.2 46.1-38.4 76.1L339.3 367.1zm-19.6 25.4l-116-104.4C143.9 290.3 96 339.6 96 400c0 3.9 .2 7.8 .6 11.6C98.4 429.1 86.4 448 68.8 448H64c-17.7 0-32 14.3-32 32s14.3 32 32 32H208c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg>
+        </span>
+        Now drawing: {action.textLabel}
       {/if}
-      <ActionItem {action} {depth} />
       <!-- _ _{action.uuid.substr(0, 6)} -->
     </li>
+
   {/each}
 </ol>
 
@@ -344,27 +351,28 @@ function getDynamicStyle(id:string) {
     display: flex;
     align-items: center;
     box-sizing: border-box; /* Include padding and border in element's width and height */
-    border: 1px solid #e2e2e2;
-    border-radius: 10px;
-    box-shadow: rgba(17, 17, 26, 0.1) 0px 1px 0px, rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 48px;
+    border: 1px solid #aaaaaa;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+    /* box-shadow: rgba(17, 17, 26, 0.1) 0px 1px 0px, rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 48px; */
     /* border: none; */
     color: #2c2c2c;
     opacity: 1;
     font-style: normal;
     z-index: 0;
-    margin: 1em 5px 0.7em 10px;
-    padding: 1em;
-    /* padding-left: 3em;  */
+    margin: 0.5em 5px 0.5em 0;
+    padding: 0 1em;
     /* indent a little extra for paintbrush which is larger than index */
-    background-color: #ffffff;
+    padding-left: 2.5em;
+    background-color: #f3f3f3;
     z-index: 1;
   }
 
 
-  .staged::after {
-    /* content: "";
-    position: absolute; */
-    /* left: 3em; */
+  /* .staged::after {
+    content: "";
+    position: absolute;
+    /* left: 3em;
     /* blank area at start for paintbrush */
     /* top: 0.5em;
     right: 0.5em;
@@ -379,7 +387,7 @@ function getDynamicStyle(id:string) {
         );    
     border-radius: 4px;
     z-index: -1; */
-  }
+  /* } */
 
   .hovered.staged::after {
     background-color: #ffffff;
@@ -429,12 +437,12 @@ function getDynamicStyle(id:string) {
     margin-left: 4px;
   }
 
-  /* .paintbrush { */
-    /* position: absolute; */
-    /* left: 0; */
+  .paintbrush {
+    position: absolute;
+    left: 0.2em;
     /* background-color: white; */
-    /* transform: translate(10%, 10%); */
-  /* } */
+    transform: translate(10%, 10%);
+  }
 
   .alpha-style li::before {
     content: counter(list-counter, lower-alpha); /* Alpha numbering */

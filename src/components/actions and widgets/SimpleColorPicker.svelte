@@ -1,6 +1,8 @@
 <script lang="ts">
   import { onMount, createEventDispatcher } from 'svelte';
   import tinycolor from 'tinycolor2';
+  import { pickerPalette } from '../../stores/colorStore';
+  import ActionItem from './ActionItem.svelte';
 
   const dispatch = createEventDispatcher();
 
@@ -38,6 +40,12 @@
     dispatch('valueChange', { value: color.toRgbString() });
   }
 
+  function handleColorClick(color: string) {
+    value = color;
+    updateColorComponents(tinycolor(value));
+    updateColor();
+  }
+
 </script>
 
 <div class="color-picker">
@@ -70,6 +78,17 @@
       </div>
     </div>
 
+    <div id="palette">
+      {#each pickerPalette as color, index}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <div class="color-item"
+          on:click={handleColorClick.bind(null, color)}
+          style="background-color: {color};"
+        >
+        </div>
+      {/each}
+      </div>
 </div>
 
 <style>
@@ -80,6 +99,45 @@
     /* margin-top: 10px; */
     border-radius: 5px;
     padding: 5px;
+  }
+
+  #palette {
+   /* border: 1px solid black; */
+   width: 90%;
+   display: flex;
+   flex-direction: row;
+   gap: 3px;
+   flex-wrap: wrap;
+   /* border: 1px solid lightgray; */
+   border-radius: 5px;
+   padding: 5px;
+   /* background-color: rgb(234, 234, 234); */
+  }
+
+  .color-item {
+    /* border: 0.5px solid lightgray; */
+    box-sizing: border-box;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    -webkit-mask-image: url('/assets/widgets/splotch-alpha-mask.png');
+    mask-image: url('/assets/widgets/splotch-alpha-mask.png');
+    -webkit-mask-size: cover;
+    mask-size: cover;
+    background-color: lightgray;
+    color: black;
+  }
+
+  .color-item:hover {
+    cursor: pointer;
+    box-shadow: 0 0 5px 1px gray;
+    background-color: var(--actual-color);
+    color: var(--label-color);
+    mask-image: none;
   }
 
   .sliders {

@@ -3,10 +3,12 @@
   import { onMount, onDestroy } from 'svelte';
   import { flatActionStore } from '../../stores/dataStore';
   import { getPaths } from '../pathManager';
+  import NumberWidget from './NumberWidget.svelte';
 
   const dispatch = createEventDispatcher();
 
   export let points:[number, number][] = [];
+  export let angle = 0;
   let gridElement:SVGElement | null;
 
   let gridSize = 500;
@@ -18,6 +20,8 @@
 
   let initialMousePos = { x: 0, y: 0 };
   let initialPoints: [number, number][] = [];
+
+  // $: path = getPathData(points);
 
    //hardcoded to test
   let patternPaths: [number, number][][] = [[
@@ -101,9 +105,51 @@
     dispatch('valueChange', { id: 'path', value: points });
   }
 
+  function handleAngleChange(angle) {
+    rotatePath(points, angle);
+    dispatch('valueChange', { id: 'path', value: points });
+  }
+
+  function degreesToRadians(degrees) {
+    return degrees * Math.PI / 180;
+  }
+
+  function getBoundingBoxCenter(points) {
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    points.forEach(point => {
+      minX = Math.min(minX, point[0]);
+      maxX = Math.max(maxX, point[0]);
+      minY = Math.min(minY, point[1]);
+      maxY = Math.max(maxY, point[1]);
+    });
+    return [(minX + maxX) / 2, (minY + maxY) / 2]; // Center of the bounding box
+  }
+
+  function rotatePath(points, angle) {
+    let radians = degreesToRadians(angle);
+    let cos = Math.cos(radians);
+    let sin = Math.sin(radians);
+    let [cx, cy] = getBoundingBoxCenter(points); // Center of bounding box
+    return points.map(point => {
+      let x = point[0] - cx;
+      let y = point[1] - cy;
+      let newX = cos * x - sin * y + cx;
+      let newY = sin * x + cos * y + cy;
+      return [newX, newY]; // New position of the point after rotation
+    });
+  }
+
   // Convert path data to SVG path
   function getPathData(path) {
     return path.map((pt, index) => `${index === 0 ? 'M' : 'L'} ${pt[0]},${pt[1]}`).join(' ');
+  }
+
+  function pointsToPath(points) {
+    let path = `M ${points[0][0]} ${points[0][1]}`;
+    for (let i = 1; i < points.length; i++) {
+      path += ` L ${points[i][0]} ${points[i][1]}`;
+    }
+    return path;
   }
 
   function selectPath(index: number) {
@@ -111,10 +157,15 @@
     dispatch('valueChange', { id: 'path', value: points });
   }
 
+  // function getRotationTransform(angle, cx, cy) {
+  //   return `rotate(${angle}, ${cx}, ${cy})`;
+  // }
+
   const gridLines = Array.from({ length: gridSize / gridSpacing + 1}, (_, i) => i * gridSpacing);
 </script>
 
 <div class="layout-container">
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <svg bind:this={gridElement} class="grid-widget" width="{scaledGridSize}px" height="{scaledGridSize}px" viewBox={`0 0 ${gridSize} ${gridSize}`} on:mousedown={handleMouseDown} on:mousemove={movePoint} on:mouseup={handleMouseUp}>
 
     <defs>
@@ -135,20 +186,30 @@
     <line x1="0" y1="{gridSize}" x2={gridSize} y2={gridSize} stroke="black" stroke-width=3 marker-end="url(#arrowhead)"/>
     <line x1="0" y1={gridSize} x2="0" y2="0" stroke="black" stroke-width=3 marker-end="url(#arrowhead)"/>
 
+    <!-- The path itself -->
     {#each points as point, index}
       {#if index > 0}
         <line x1={points[index - 1][0]} y1={points[index - 1][1]} x2={point[0]} y2={point[1]} stroke="black" />
       {/if}
       <circle cx={point[0]} cy={point[1]} r="5" fill="black"/>
     {/each}
+<!-- 
+    <path d={pointsToPath(points)} 
+          fill="none" stroke="black" stroke-width="2"
+          marker-end="url(#arrowhead)"
+          transform={getRotationTransform(angle, gridSize / 2, gridSize / 2)} /> -->
+
     
   </svg>
+
+  <!-- <div class="toolbar"><button class="svg-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="10px" height="10px">!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.<path d="M256 96c38.4 0 73.7 13.5 101.3 36.1l-32.6 32.6c-4.6 4.6-5.9 11.5-3.5 17.4s8.3 9.9 14.8 9.9H448c8.8 0 16-7.2 16-16V64c0-6.5-3.9-12.3-9.9-14.8s-12.9-1.1-17.4 3.5l-34 34C363.4 52.6 312.1 32 256 32c-10.9 0-21.5 .8-32 2.3V99.2c10.3-2.1 21-3.2 32-3.2zM132.1 154.7l32.6 32.6c4.6 4.6 11.5 5.9 17.4 3.5s9.9-8.3 9.9-14.8V64c0-8.8-7.2-16-16-16H64c-6.5 0-12.3 3.9-14.8 9.9s-1.1 12.9 3.5 17.4l34 34C52.6 148.6 32 199.9 32 256c0 10.9 .8 21.5 2.3 32H99.2c-2.1-10.3-3.2-21-3.2-32c0-38.4 13.5-73.7 36.1-101.3zM477.7 224H412.8c2.1 10.3 3.2 21 3.2 32c0 38.4-13.5 73.7-36.1 101.3l-32.6-32.6c-4.6-4.6-11.5-5.9-17.4-3.5s-9.9 8.3-9.9 14.8V448c0 8.8 7.2 16 16 16H448c6.5 0 12.3-3.9 14.8-9.9s1.1-12.9-3.5-17.4l-34-34C459.4 363.4 480 312.1 480 256c0-10.9-.8-21.5-2.3-32zM256 416c-38.4 0-73.7-13.5-101.3-36.1l32.6-32.6c4.6-4.6 5.9-11.5 3.5-17.4s-8.3-9.9-14.8-9.9H64c-8.8 0-16 7.2-16 16l0 112c0 6.5 3.9 12.3 9.9 14.8s12.9 1.1 17.4-3.5l34-34C148.6 459.4 199.9 480 256 480c10.9 0 21.5-.8 32-2.3V412.8c-10.3 2.1-21 3.2-32 3.2z"/></svg></button></div> -->
 
   <!-- Display stored paths as a grid -->
   <div class="stored-paths">
     {#if storedPaths && storedPaths.length > 0}
     {#each storedPaths as storedPath, index}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <svg
         class="stored-path"
         width="50"
@@ -156,7 +217,7 @@
         viewBox="0 0 540 540"
         on:click={() => selectPath(index)}>
 
-        <path d={getPathData(storedPath)} stroke="lightgray" fill="none" />
+        <!-- <path d={getPathData(storedPath)} stroke="gray" fill="none" /> -->
         {#each storedPath as point, index}
           {#if index > 0}
             <line x1={storedPath[index - 1][0]} y1={storedPath[index - 1][1]} x2={point[0]} y2={point[1]} stroke="black" />
@@ -179,6 +240,11 @@
     align-items: flex-start; /* Aligns children at the top */
   }
 
+  .toolbar {
+    display: flex;
+    flex-direction: column;
+  }
+
   .grid-widget {
     /* Additional styles for the grid widget */
     cursor: crosshair;
@@ -199,6 +265,12 @@
     flex-shrink: 0;
     cursor: pointer;
     border: 1px solid #ccc;
+  }
+
+  .svg-button {
+    background-color: transparent;
+    border: none;
+
   }
 </style>
 

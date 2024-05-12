@@ -69,8 +69,8 @@
   }
 
   function handleClick(event: Event) {
-    dispatch('valueChange', { id, value: savedValue });
-    previewEnd = true;
+    // dispatch('valueChange', { id, value: savedValue });
+    // previewEnd = true;
 
     tippyInstance.show();
   }
@@ -157,6 +157,7 @@
       text-decoration: underline lightgray 2px;
       /* text-decoration: underline inherit 2px; */
       text-underline-offset: 5px;
+      margin: 0;
   }
 
   .number-widget:hover {

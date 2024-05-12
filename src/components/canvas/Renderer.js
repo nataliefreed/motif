@@ -312,15 +312,18 @@ export const renderers = {
       let nsides = Math.abs(params.nsides);
       let x = params.position.x;
       let y = params.position.y;
+      let rotationAngle = p5.radians(params.angle);
       let angle = p.TWO_PI / nsides;
       p.push();
+      p.translate(x, y);
+      p.rotate(rotationAngle);
       p.noStroke();
       p.fill(params.color);
       p.beginShape();
-      for (let a = 0; a < p.TWO_PI; a += angle) {
-          let sx = x + p.cos(a) * params.radius;
-          let sy = y + p.sin(a) * params.radius;
-          p.vertex(sx, sy);
+      for (let a = 0; a < p.TWO_PI; a += angle) { //centered at (0, 0) to make rotation angle work
+        let sx = p.cos(a) * params.radius;
+        let sy = p.sin(a) * params.radius;
+        p.vertex(sx, sy);
       }
       p.endShape(p.CLOSE);
       p.pop();

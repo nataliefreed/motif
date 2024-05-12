@@ -20,7 +20,7 @@
   import { curatedRandomHexColor } from '../utils/color-utils';
   import PlayButton from './PlayButton.svelte';
   import NumberWidget from './actions and widgets/NumberWidget.svelte';
-  import { showSavedColors } from '../stores/colorStore';
+  import { showSavedColors, pickerPalette } from '../stores/colorStore';
 
   let allCategories:string[] = [];
 
@@ -40,53 +40,6 @@
   const lockIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="1em" height="1em"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path fill="rgb(227, 227, 227)" d="M144 144v48H304V144c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192V144C80 64.5 144.5 0 224 0s144 64.5 144 144v48h16c35.3 0 64 28.7 64 64V448c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V256c0-35.3 28.7-64 64-64H80z"/></svg>`;
   const unlockIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="1em" height="1em"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path fill="rgb(227, 227, 227)"d="M144 144c0-44.2 35.8-80 80-80c31.9 0 59.4 18.6 72.3 45.7c7.6 16 26.7 22.8 42.6 15.2s22.8-26.7 15.2-42.6C331 33.7 281.5 0 224 0C144.5 0 80 64.5 80 144v48H64c-35.3 0-64 28.7-64 64V448c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V256c0-35.3-28.7-64-64-64H144V144z"/></svg>`;
 
-  // function randomizeAction() {
-  //   if ($stagedAction) {
-  //     $stagedAction.params = {
-  //       ...$stagedAction.params,
-  //       radius: Math.round(Math.random() * 250 + 5),
-  //       r1: Math.round(Math.random() * 250 + 5),
-  //       r2: Math.round(Math.random() * 250 + 5),
-  //       npoints: Math.round(Math.random() * 10 + 3),
-  //       nsides: Math.round(Math.random() * 10 + 3),
-  //       width: Math.round(Math.random() * 500 + 5),
-  //       height: Math.round(Math.random() * 500 + 5),
-  //       scaleBy: Math.round(Math.random() * 400 + 1),
-  //       size: Math.round(Math.random() * 500 + 5),
-  //       offset: Math.round(Math.random() * 100 + 5),
-  //       rotation: Math.round(Math.random() * 360),
-  //       color: curatedRandomHexColor(),
-  //     };
-  //     $stagedAction.params.children.forEach((child:Action) => {
-  //       child.params = {
-  //         ...child.params,
-  //         radius: Math.round(Math.random() * 10 + 1),
-  //         r1: Math.round(Math.random() * 30 + 1),
-  //         r2: Math.round(Math.random() * 20 + 1),
-  //         npoints: Math.round(Math.random() * 10 + 1),
-  //         nsides: Math.round(Math.random() * 10 + 1),
-  //         width: Math.round(Math.random() * 20 + 1),
-  //         height: Math.round(Math.random() * 20 + 1),
-  //         scaleBy: Math.round(Math.random() * 400 + 1),
-  //         size: Math.round(Math.random() * 20 + 5),
-  //         color: curatedRandomHexColor(),
-  //       };
-  //     });
-  //   }
-  // }
-
-  // function handleBackgroundClick(event:MouseEvent) {
-  //   if(!event || !event.target) return;
-  //   const target = event.target as HTMLElement;
-  //   const tagName = target.tagName.toLowerCase();
-
-  //   if (tagName !== 'button' && tagName !== 'canvas' && tagName !== 'input' && tagName !== 'a') {
-  //     // console.log("click somewhere", event.target);
-  //     saveToHistory("background click");
-  //   }
-  //   event.stopPropagation();
-  // }
-
   function saveTool(id:string) {
     // saveActionAsNewTool($flatActionStore[id]);
     // if($selectedActionID && $actionStore.children) {
@@ -96,6 +49,11 @@
 
   function deselectAction() {
     selectedActionID.set('');
+  }
+
+  function handleColorClick(color: string) {
+    //set staged action color
+
   }
 
   function handleClickOutside(event: MouseEvent) {
@@ -176,6 +134,7 @@
   <Page slot="left">
 
     <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div class="lock-button" on:click={e=>{drawingLocked.set(!$drawingLocked)}}>{@html $drawingLocked?lockIcon:unlockIcon}</div>
 
     <div class="drawing-area-container">
@@ -197,7 +156,11 @@
         </div>
       </div>
 
-      <div class="color-bank"><ColorBank activeColor={$currentColor}/></div>
+      {#if !$drawingLocked}
+        <div class="staged-action"><ActionItem action={$stagedAction} /></div>
+      {/if}
+
+      <div class="color-bank"><ColorBank/></div>
     
       <!-- <EffectSettingsPanel /> -->
     <!-- </div> -->
@@ -238,8 +201,8 @@
       
 
       <div class="right-group">
-        <button class="instabutton" id="exportButton" on:click={exportCodeWithImage}><svg xmlns="http://www.w3.org/2000/svg" height="16" width="12" viewBox="0 0 384 512" style="vertical-align: middle; transform: translateY(-2px);"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M64 0C28.7 0 0 28.7 0 64V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V160H256c-17.7 0-32-14.3-32-32V0H64zM256 0V128H384L256 0zM216 232V334.1l31-31c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-72 72c-9.4 9.4-24.6 9.4-33.9 0l-72-72c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l31 31V232c0-13.3 10.7-24 24-24s24 10.7 24 24z"/></svg></button>
-        <button class="instabutton" id="importButton" on:click={importCodeFromImage}><svg xmlns="http://www.w3.org/2000/svg" height="16" width="12" viewBox="0 0 384 512" style="vertical-align: middle; transform: translateY(-2px);"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M64 0C28.7 0 0 28.7 0 64V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V160H256c-17.7 0-32-14.3-32-32V0H64zM256 0V128H384L256 0zM216 408c0 13.3-10.7 24-24 24s-24-10.7-24-24V305.9l-31 31c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l72-72c9.4-9.4 24.6-9.4 33.9 0l72 72c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0l-31-31V408z"/></svg></button>
+        <button class="instabutton" id="exportButton" on:click={exportCodeWithImage}><svg xmlns="http://www.w3.org/2000/svg" height="20" width="16" viewBox="0 0 384 512" style="vertical-align: middle; transform: translateY(-2px);"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M64 0C28.7 0 0 28.7 0 64V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V160H256c-17.7 0-32-14.3-32-32V0H64zM256 0V128H384L256 0zM216 232V334.1l31-31c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-72 72c-9.4 9.4-24.6 9.4-33.9 0l-72-72c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l31 31V232c0-13.3 10.7-24 24-24s24 10.7 24 24z"/></svg></button>
+        <button class="instabutton" id="importButton" on:click={importCodeFromImage}><svg xmlns="http://www.w3.org/2000/svg" height="20" width="16" viewBox="0 0 384 512" style="vertical-align: middle; transform: translateY(-2px);"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M64 0C28.7 0 0 28.7 0 64V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V160H256c-17.7 0-32-14.3-32-32V0H64zM256 0V128H384L256 0zM216 408c0 13.3-10.7 24-24 24s-24-10.7-24-24V305.9l-31 31c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l72-72c9.4-9.4 24.6-9.4 33.9 0l72 72c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0l-31-31V408z"/></svg></button>
       </div>
     </div>
 
@@ -310,12 +273,13 @@
     /* border: 2px solid blue; */
     display: flex;
     flex-direction: column;
+    justify-content: flex-start;
     /* width: calc(min(var(--page-width), var(--page-height))*0.75);
     height: calc(min(var(--page-width), var(--page-height))*0.75); */
-    width: calc(var(--page-width)*0.8);
+    width: calc(var(--page-width)*0.9);
     max-height: calc(var(--page-height)*0.9);
-    margin-right: 10%;
     margin-top: 1vh;
+    transform: translateX(-5%);
   }
 
   .drawing-area-with-category-toolbar {
@@ -325,7 +289,7 @@
     width: 100%;
     height: 100%;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
   }
 
   .drawing-area-with-effect-toolbar {
@@ -338,7 +302,7 @@
   }
 
   .category-toolbar {
-    width: 15%;
+    width: 12%;
     height: 70%;
     /* position: relative; */
     /* top: calc(var(--page-height)*0.15); */
@@ -364,8 +328,8 @@
     /* display: flex;
     align-items: flex-start;
     justify-content: flex-end; */
-    width: calc(var(--page-width)*0.7);
-    height: calc(var(--page-width)*0.7);
+    width: calc(var(--page-width)*0.8);
+    height: calc(var(--page-width)*0.8);
     max-width: 523px;
     /* max-height: 523px; */
     max-height: calc(var(--page-height)*0.8);
@@ -373,6 +337,15 @@
     /* margin-bottom: 20px; */
     /* box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px; */
     /* box-shadow: rgba(0, 0, 0, 0.07) 0px 1px 2px, rgba(0, 0, 0, 0.07) 0px 2px 4px, rgba(0, 0, 0, 0.07) 0px 4px 8px, rgba(0, 0, 0, 0.07) 0px 8px 16px, rgba(0, 0, 0, 0.07) 0px 16px 32px, rgba(0, 0, 0, 0.07) 0px 32px 64px; */
+  }
+
+  .staged-action {
+    background-color: white;
+    border: 1px solid lightgray;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    box-shadow: rgba(17, 17, 26, 0.1) 0px 1px 0px, rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 48px;
   }
 
   #code-zone {
@@ -408,23 +381,23 @@
     align-items: center;
   }
 
-  .staged-action {
+  /* .staged-action { */
     /* font-style: italic; */
-    display: flex;
+    /* display: flex;
     justify-content: flex-start;
     align-items: center;
     padding: 0 20px;
     border: none;
-    overflow: scroll;
+    overflow: scroll; */
     /* margin-left: 2em; */
     /* width: calc(var(--canvas-width)*0.8); */
     /* padding: 30px;
     box-shadow: 1px 2px 3px 2px gray; */
-  }
+  /* } */
 
   .instabutton {
     padding: 0.5vh 0.5vw;
-    font-size: 0.7vw;
+    font-size: 1vw;
     font-family: 'FuturaHandwritten';
     cursor: pointer;
     border: none;

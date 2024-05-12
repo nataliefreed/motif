@@ -708,6 +708,8 @@ export function copyStagedActionToActionStore() {
   changedActionID.set(newActionRoot);
 
   saveToHistory("add action from staged action end");
+
+  moveStagedActionToEnd();
 }
 
 //move staged action ID back to end of list

@@ -619,7 +619,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
         let stripeWidth = Math.round(mapValue(x, 0, 500, 20, 100));
         updateStagedAction({ stripeWidth: stripeWidth });
       }
-      if('angle' in params) {
+      if('angle' in params && !'path' in params) {
         let angle = Math.round(mapValue(y, 0, 500, 0, 360));
         updateStagedAction({ angle: angle });
       }

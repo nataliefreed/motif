@@ -11,6 +11,7 @@
 
 <div class="category-button-container">
   <button 
+    title={category}
     on:click={handleCategoryClick}
     class="category-button {isActive ? 'active' : ''}"
     >
@@ -24,7 +25,7 @@
   .category-button-container {
     /* border: 1px solid green; */
     box-sizing: border-box;
-    padding: 0 5% 0 20%;
+    padding: 0 5% 0 5%;
     width: 75%;
   }
   .category-button {

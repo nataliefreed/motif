@@ -27,7 +27,7 @@
 .vertical-toolbar {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
   }
 
 </style>

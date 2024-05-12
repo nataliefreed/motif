@@ -28,8 +28,9 @@
   {:else if name === 'polygon'}
     Polygon with 
     <NumberWidget id="nsides" min={3} max={50} value={params.nsides} on:valueChange={handleValueChange}/> sides 
-    and radius 
+    radius 
     <NumberWidget id="radius" min={1} max={600} value={params.radius} on:valueChange={handleValueChange}/>
+    angle <NumberWidget id="angle" min={0} max={360} value={params.angle} on:valueChange={handleValueChange}/><span>°</span>
   {:else if name === 'star'}
     Star with 
     <NumberWidget id="npoints" min={3} max={200} value={params.npoints} on:valueChange={handleValueChange}/> points,
@@ -56,7 +57,7 @@
     , inner:
     <NumberWidget id="inner" min={3} max={params.outer-1} value={params.inner} on:valueChange={handleValueChange}/>
     , pen at:
-    <NumberWidget id="d" min={0} max={100} value={params.d} on:valueChange={handleValueChange}/>%
+    <NumberWidget id="d" min={0} max={100} value={params.d} on:valueChange={handleValueChange}/><span>%</span>
   {:else if name === 'straight line'}
     Line
     {#if !isChildOfAlongPath(uuid)}
@@ -71,6 +72,6 @@
     <CoordinateWidget id="position" value={params.position} on:valueChange={handleValueChange}/>
   {/if}
 
-  in color <ColorWidget id="color" value={params.color} lockedIndex={params.lockedIndex > -1? params.lockedIndex : -1} on:valueChange={handleValueChange}/>
+  in <ColorWidget id="color" value={params.color} lockedIndex={params.lockedIndex > -1? params.lockedIndex : -1} on:valueChange={handleValueChange}/>
 
 {/if}

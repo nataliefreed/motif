@@ -4,7 +4,7 @@
   import { writable } from 'svelte/store';
   import { createEventDispatcher } from "svelte";
 
-  export let activeColor: string;
+  let activeColor: string;
 
   function selectPalette(selectedName: string) {
     if(selectedName && selectedName.length > 0) {
