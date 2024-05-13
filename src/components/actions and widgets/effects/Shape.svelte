@@ -51,6 +51,7 @@
     <NumberWidget id="width" min={3} max={600} value={params.width} on:valueChange={handleValueChange}/> 
     and height 
     <NumberWidget id="height" min={3} max={600} value={params.height} on:valueChange={handleValueChange}/>
+    angle <NumberWidget id="angle" min={0} max={360} value={params.angle} on:valueChange={handleValueChange}/><span>°</span>
   {:else if name === 'spiro'}
     Spiro outer:
     <NumberWidget id="outer" min={3} max={300} value={params.outer} on:valueChange={handleValueChange}/>

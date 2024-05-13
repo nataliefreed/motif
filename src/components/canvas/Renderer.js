@@ -264,10 +264,12 @@ export const renderers = {
       p.push();
       p.noStroke();
       p.fill(params.color);
+      p.translate(x, y);
+      p.rotate(params.angle);
       p.triangle(
-          x + w / 2, y + h / 2,
-          x - w / 2, y + h / 2,
-          x, y - h / 2
+          w / 2, h / 2,
+          - w / 2, h / 2,
+          0, - h / 2
       );
       p.pop();
   },
