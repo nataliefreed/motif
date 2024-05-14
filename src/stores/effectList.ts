@@ -40,6 +40,7 @@ export const effectList = [
     params: {
       size: 40,
       color: '#D55601',
+      angle: 0,
       position: {x: 250, y: 430}
     }
   },
@@ -108,6 +109,7 @@ export const effectList = [
       color: '#FF0000',
       position: {x: 250, y: 430},
       angle: 0,
+      lineWeight: 2,
       progress: 100
     },
   },
@@ -1087,7 +1089,9 @@ export const effectList = [
     params: {
       length: 100,
       width: 100,
-      height: 100
+      height: 100,
+      position: {x: 250, y: 250},
+      color: '#000000'
     }
   },
   {
@@ -1105,6 +1109,18 @@ export const effectList = [
       outfit: '2'
     },
   },
+  // {
+  //   name: 'trace',
+  //   textLabel: 'Trace',
+  //   category: 'stencils',
+  //   tags: 'stencils',
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   thumbnail: 'none.png',
+  //   mouseActionType: 'drag',
+  //   params: {
+  //     threshold: 50
+  //   },
+  // },
   // {
   //   name: 'envelope',
   //   textLabel: 'Envelope',

@@ -205,7 +205,7 @@ export const renderers = {
     p.push();
     // p.translate(x, y);
     p.stroke(spiroColor);
-    p.strokeWeight(2);
+    p.strokeWeight(params.lineWeight);
   
     for (let i = 0; i < path.length - 1; i++) {
       p.line(path[i][0], path[i][1], path[i + 1][0], path[i + 1][1]);
@@ -249,10 +249,12 @@ export const renderers = {
     let y = params.position.y;
     let size = params.size;
     p.push();
+    p.translate(x, y);
+    p.rotate(p5.radians(params.angle));
     p.rectMode(p.CENTER);
     p.noStroke();
     p.fill(params.color);
-    p.rect(x, y, size, size);
+    p.rect(0, 0, size, size);
     p.pop();
   },
 
@@ -280,10 +282,12 @@ export const renderers = {
       let width = params.width;
       let height = params.height;
       p.push();
+      p.translate(x, y);
+      p.rotate(p5.radians(params.angle));
       p.rectMode(p.CENTER);
       p.noStroke();
       p.fill(params.color);
-      p.rect(x, y, width, height);
+      p.rect(0, 0, width, height);
       p.pop();
   },
 
@@ -297,13 +301,15 @@ export const renderers = {
       p.push();
       p.noStroke();
       p.fill(params.color);
+      p.translate(x, y);
+      p.rotate(p5.radians(params.angle));
       p.beginShape();
       for (let a = 0; a < p.TWO_PI; a += angle) {
-          let sx = x + p.cos(a) * r2;
-          let sy = y + p.sin(a) * r2;
+          let sx = p.cos(a) * r2;
+          let sy = p.sin(a) * r2;
           p.vertex(sx, sy);
-          sx = x + p.cos(a + halfAngle) * r1;
-          sy = y + p.sin(a + halfAngle) * r1;
+          sx = p.cos(a + halfAngle) * r1;
+          sy = p.sin(a + halfAngle) * r1;
           p.vertex(sx, sy);
       }
       p.endShape(p.CLOSE);
@@ -336,13 +342,14 @@ export const renderers = {
     let y = params.position.y;
     let size = params.size;
     p.push();
-    p.translate(0, -size/2);
+    p.translate(x, y);
+    p.rotate(p5.radians(params.angle));
     p.noStroke();
     p.fill(params.color);
     p.beginShape();
-    p.vertex(x, y);
-    p.bezierVertex(x - size / 2, y - size / 2, x - size, y + size / 3, x, y + size);
-    p.bezierVertex(x + size, y + size / 3, x + size / 2, y - size / 2, x, y);
+    p.vertex(0, 0);
+    p.bezierVertex(-size / 2, -size / 2, -size, size / 3, 0, size);
+    p.bezierVertex(size, size / 3, size / 2, -size / 2, 0, 0);
     p.endShape(p.CLOSE);
     p.pop();
   }, 
@@ -526,6 +533,16 @@ export const renderers = {
     p.rotate(p.radians(params.angle));
   },
 
+  // 'trace': (p, params, p5) => {
+  //     // preview on hover
+  //   if(p === p5.getHoverCanvas()) {
+  //     p.image(p5.getStaticCanvas(), 0, 0);
+  //   }
+  //   // p.filter(p5.INVERT);
+  //   p.filter(p5.GRAY);
+  //   p.filter(p5.THRESHOLD, 0.5);  
+  // },
+
 
   // 'copy cutout': (p, params, p5) => {
   //   p.push();
@@ -603,10 +620,12 @@ export const renderers = {
     const { length: l, width: w, height: h } = params;
 
     // Calculate centering offsets
-    const offsetX = (p.width - (2 * l + h)) / 2; // symmetrical so no tab calculation
-    const offsetY = (p.height - (2 * l + 2 * w) + 0.2 * h) / 2;
+    // const offsetX = (p.width - (2 * l + h)) / 2; // symmetrical so no tab calculation
+    // const offsetY = (p.height - (2 * l + 2 * w) + 0.2 * h) / 2;
 
-    p.translate(offsetX, offsetY);
+    p.translate(params.position.x, params.position.y);
+
+    // let maskCanvas = p.createGraphics(p.width, p.height)
 
     p.noFill();
     p.stroke(50);
@@ -625,6 +644,8 @@ export const renderers = {
     
     const cut = (r0, c0, r1, c1) => {
       p.stroke(50);
+      p.vertex(r[r0], c[c0]);
+      p.vertex(r[r1], c[c1]);
       p.line(r[r0], c[c0], r[r1], c[c1]);
     }
 
@@ -644,17 +665,22 @@ export const renderers = {
         [0.9, 0.2],
         [1.0, 0.0]
       ]) {
-        p.line(r[r0] + u[0] * prev[0] + v[0] * prev[1],
-          c[c0] + u[1] * prev[0] + v[1] * prev[1],
-          r[r0] + u[0] * du + v[0] * dv,
-          c[c0] + u[1] * du + v[1] * dv
-        );
+        // p.line(r[r0] + u[0] * prev[0] + v[0] * prev[1],
+        //   c[c0] + u[1] * prev[0] + v[1] * prev[1],
+        //   r[r0] + u[0] * du + v[0] * dv,
+        //   c[c0] + u[1] * du + v[1] * dv
+        // );
+        p.vertex(r[r0] + u[0] * prev[0] + v[0] * prev[1],
+             c[c0] + u[1] * prev[0] + v[1] * prev[1]);
+        p.vertex(r[r0] + u[0] * du + v[0] * dv,
+            c[c0] + u[1] * du + v[1] * dv);
         prev = [du, dv];
       }
-      
-      fold(r0, c0, r1, c1);
+    
+      // fold(r0, c0, r1, c1);
     }
-
+    p.fill(params.color);
+    p.beginShape();
     // Proceeds counterclockwise from top left corner
     cut(1, 0, 1, 1);   // Top face's left edge
 
@@ -677,17 +703,20 @@ export const renderers = {
     cut(2, 1, 2, 0);   // Top face's right edge
     tab(2, 0, 1, 0);   // Top face's top edge
 
+    p.endShape(p5.CLOSE);
+
     // Extra folds that aren't for tabs
-    fold(1, 1, 1, 2);  // Back face left fold
-    fold(1, 2, 2, 2);  // Back face bottom fold
-    fold(2, 2, 2, 1);  // Back face right fold
-    fold(2, 1, 1, 1);  // Back face top fold (lid hinge)
-    fold(1, 3, 2, 3);  // Front face to bottom face fold
+    // fold(1, 1, 1, 2);  // Back face left fold
+    // fold(1, 2, 2, 2);  // Back face bottom fold
+    // fold(2, 2, 2, 1);  // Back face right fold
+    // fold(2, 1, 1, 1);  // Back face top fold (lid hinge)
+    // fold(1, 3, 2, 3);  // Front face to bottom face fold
 
     p.pop();
   },
 
   'paper doll': (p, params, p5) => {
+    p.push();
     // Get the color value from params.
     let skinTone = p.color(params.skintone);
     // console.log("skin tone", skinTone);
@@ -766,6 +795,8 @@ export const renderers = {
       outfitCanvas.remove();
       hairstyleCanvas.remove();
       skinToneCanvas.remove();
+
+      p.pop();
     }
   };
 
@@ -898,9 +929,9 @@ function tile(p, params, p5) {
     let snapshot = p5.createGraphics(w, h); // for captured rectangle
     snapshot.image(p5.getStaticCanvas(), 0, 0, w, h, sx, sy, w, h); // w * h rectangle centered at x, y 
 
-    if(p===p5.getHoverCanvas()) {
-      p.tint(255, 100);
-    }
+    // if(p===p5.getHoverCanvas()) {
+    //   p.tint(255, 100);
+    // }
 
     switch (tiling) {
       case 'straight grid':
@@ -1011,6 +1042,7 @@ function scaleRect(p, params, p5) {
   let sx = x - w / 2;
   let sy = y - h / 2;
 
+  p.push();
   p.noFill();
   p.stroke(100);
 
@@ -1024,7 +1056,7 @@ function scaleRect(p, params, p5) {
   let dy = y - scaledHeight / 2;
 
   if(p === p5.getHoverCanvas()) {
-    p.tint(255, 100); // semi-transparent
+    // p.tint(255, 100); // semi-transparent
     p.image(snapshot, dx, dy, scaledWidth, scaledHeight, 0, 0, w, h);
   } else {
     p.image(snapshot, dx, dy, scaledWidth, scaledHeight, 0, 0, w, h);
@@ -1041,6 +1073,7 @@ function scaleRect(p, params, p5) {
     p.rect(x, y, w, h);
     p.pop();
   }
+  p.pop();
 }
 
 export function getSpiroPoints(params) {

@@ -21,6 +21,8 @@ export function exportCodeWithImage() {
 
   // Convert the store to a JSON string
   const jsonString = JSON.stringify(storeWithoutStagedAction);
+  
+  //todo: add saved colors
 
   // Convert canvas to Data URI
   if(canvas) {
@@ -103,6 +105,50 @@ export function removeAction(store: ActionStore, id:string) {
     
     return newStore;
 }
+
+// export function downloadSVG() {
+//   const canvas = document.getElementById('defaultCanvas0') as HTMLCanvasElement;
+
+//   if (canvas) {
+//     canvas.toBlob((blob) => {
+//       if (!blob) {
+//         console.error('Error creating blob from canvas.');
+//         return;
+//       }
+
+//       const reader = new FileReader();
+
+//       reader.onload = (event) => {
+//         if (!event.target) return;
+
+//         const binaryData = new Uint8Array(event.target.result as ArrayBuffer);
+
+//         // Trace the image using Potrace
+//         trace(binaryData, { threshold: 128 }, (err, svg) => {
+//           if (err) {
+//             console.error('Error tracing image:', err);
+//             return;
+//           }
+
+//           // Create a temporary anchor element to trigger download
+//           const svgBlob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+//           const url = URL.createObjectURL(svgBlob);
+//           const a = document.createElement('a');
+//           a.href = url;
+//           a.download = 'trace.svg';
+//           document.body.appendChild(a);
+//           a.click();
+//           document.body.removeChild(a);
+//           URL.revokeObjectURL(url);
+//         });
+//       };
+
+//       reader.readAsArrayBuffer(blob);
+//     }, 'image/png');
+//   }
+// }
+
+
 
 function exportCode() {
   //save action store to file
