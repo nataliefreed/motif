@@ -47,6 +47,7 @@
 		"meta-png": "^1.0.6",
 		"p5-svelte": "^3.1.2",
 		"sortablejs": "^1.15.1",
+		"spectral.js": "^2.0.2",
 		"svelte-awesome": "^3.2.1",
 		"tinycolor2": "^1.6.0",
 		"tippy.js": "^6.3.7",

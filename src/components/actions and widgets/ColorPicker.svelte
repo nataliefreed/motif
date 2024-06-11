@@ -4,12 +4,16 @@
   import ColorPalette from '../toolbars/ColorPalette.svelte';
   import { activePalette, showSavedColors, pickerPalette }  from '../../stores/colorStore';
   import { getReadableColor } from '../../utils/color-utils';
+  import PaintColorMixer from './PaintColorMixer.svelte';
 
   const dispatch = createEventDispatcher();
 
   export let value: string; //initial value
 
   export let selectedColorIndex = -1;
+
+  let modes = ["paint", "RGB", "HSV"];
+  let activeMode = "paint";
 
   let c = tinycolor(value).toRgb();
   let red = c.r;
@@ -71,9 +75,28 @@
     dispatch('lockChange', { lockedIndex: selectedColorIndex });
   }
 
+  function setMode(mode) {
+    activeMode = mode;
+  }
+
 </script>
 
+<div class="top-line">
+  <div>
+    color mode:
+    <select bind:value={activeMode} class="mode-selector">
+      {#each modes as mode}
+        <option value={mode}>{mode}</option>
+      {/each}
+    </select>
+  </div>
+
+  <div class="color-preview" style="background-color:{rgbaString}"></div>
+</div>
+
+<!-- switch based on mode -->
 <div class="color-picker">
+  {#if activeMode === 'RGB'}
   <div class="sliders">
     <div class="slider">
       <label class="color-label" for="red" style="color:red">Red</label>
@@ -92,21 +115,24 @@
       <input type="range" id="blue" min="0" max="255" bind:value={blue} on:input={updateColor} style="--slider-gradient: {gradientBlue};">
     </div>
 
-    <div class="preview">
-      <div class="color-preview" style="background-color:{rgbaString}"></div>
-        <div class="slider preview-slider">
-          <label for="opacity" style="color:black">Opacity</label>
-          <input type="number" min="0" max="100" bind:value={alpha} on:input={updateColor}>
-          <input type="range" id="opacity" min="0" max="1" step="0.01" bind:value={alpha} on:input={updateColor} style="--slider-gradient: {gradientAlpha};">
-        </div>
-      </div>
+    
+    <div class="slider">
+      <label for="opacity" style="color:black">Opacity</label>
+      <input type="number" min="0" max="100" step="0.01" bind:value={alpha} on:input={updateColor}>
+      <input type="range" id="opacity" min="0" max="1" step="0.01" bind:value={alpha} on:input={updateColor} style="--slider-gradient: {gradientAlpha};">
     </div>
-
+  </div>
+  {:else if activeMode === 'HSV'}
+  <div>HSV mode</div>
+  {:else if activeMode === 'paint'}
+    <PaintColorMixer />
+  {/if}
 </div>
 
 <div id="palette">
   {#each pickerPalette as color, index}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div class="color-item"
     on:click={handleColorClick}
     style="background-color: {color};">
@@ -119,6 +145,7 @@
 <div id="saved-palette">
   {#each $activePalette as color, index}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div class="color-item {(selectedColorIndex === index) ? 'selected' : ''}"
     on:click={e => handleSavedPaletteClick(index)}
     style="--actual-color: {color}; --label-color: {getReadableColor(color)};">
@@ -227,13 +254,30 @@
     cursor: pointer;
   }
 
-  .preview {
+  .top-line {
     display: flex;
     flex-direction: row;
-    margin: 8px 0 0 0;
+    margin: 0;
     align-items: center;
-    justify-content: flex-start;
-    gap: 5px;
+    justify-content: space-between; /* Adjusts children to each end */
+  }
+
+.mode-selector {
+  padding: 2px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-family: 'FuturaHandwritten';
+}
+
+  .mode {
+    cursor: pointer;
+    padding: 2px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+
+  .mode.active {
+    background-color: #f0f0f0;
   }
 
   .preview-slider {
@@ -262,8 +306,8 @@
   .color-preview {
     width: 45px;
     height: 45px;
-    transform: translateX(-5px);
-    -webkit-transform: translateX(-5px);
+    /* transform: translateX(-5px);
+    -webkit-transform: translateX(-5px); */
     -webkit-mask-image: url('/assets/widgets/splotch-alpha-mask.png');
     mask-image: url('/assets/widgets/splotch-alpha-mask.png');
     -webkit-mask-size: cover;
