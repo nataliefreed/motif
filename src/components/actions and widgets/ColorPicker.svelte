@@ -48,6 +48,13 @@
     dispatch('valueChange', { value: color.toRgbString() });
   }
 
+  function handleColorChange(event: CustomEvent) {
+    value = event.detail.color;
+    updateColorComponents(tinycolor(value));
+    color = tinycolor({ r: red, g: green, b: blue, a: alpha });
+    updateColor();
+  }
+
   function handleColorClick(event: Event) {
     let target = event.target as HTMLElement;
     let newColor = tinycolor(target.style.backgroundColor);
@@ -122,38 +129,38 @@
       <input type="range" id="opacity" min="0" max="1" step="0.01" bind:value={alpha} on:input={updateColor} style="--slider-gradient: {gradientAlpha};">
     </div>
   </div>
+  <div id="palette">
+    {#each pickerPalette as color, index}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <div class="color-item"
+      on:click={handleColorClick}
+      style="background-color: {color};">
+      </div>
+    {/each}
+  </div>
+  
+  
+  {#if $showSavedColors || selectedColorIndex !== -1}
+  <div id="saved-palette">
+    {#each $activePalette as color, index}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <div class="color-item {(selectedColorIndex === index) ? 'selected' : ''}"
+      on:click={e => handleSavedPaletteClick(index)}
+      style="--actual-color: {color}; --label-color: {getReadableColor(color)};">
+        {index+1}
+      </div>
+    {/each}
+  </div>
+  {/if}
+
   {:else if activeMode === 'HSV'}
   <div>HSV mode</div>
   {:else if activeMode === 'paint'}
-    <PaintColorMixer />
+    <PaintColorMixer initialColor={value} on:save={handleColorChange}/>
   {/if}
 </div>
-
-<div id="palette">
-  {#each pickerPalette as color, index}
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div class="color-item"
-    on:click={handleColorClick}
-    style="background-color: {color};">
-    </div>
-  {/each}
-</div>
-
-
-{#if $showSavedColors || selectedColorIndex !== -1}
-<div id="saved-palette">
-  {#each $activePalette as color, index}
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div class="color-item {(selectedColorIndex === index) ? 'selected' : ''}"
-    on:click={e => handleSavedPaletteClick(index)}
-    style="--actual-color: {color}; --label-color: {getReadableColor(color)};">
-      {index+1}
-    </div>
-  {/each}
-</div>
-{/if}
 
 
 
