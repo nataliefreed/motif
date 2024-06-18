@@ -4,6 +4,8 @@
     import spectral from 'spectral.js';
     import { createEventDispatcher } from 'svelte';
     import tinycolor from 'tinycolor2';
+    import { get } from 'svelte/store';
+    import { paintColors, updatePaintStore } from '../../stores/colorStore';
   
     let colors = {
       red: 0,
@@ -16,13 +18,12 @@
     export let initialColor;
     let mixedColor = initialColor;
     let baseColor = initialColor;
+    colors = toPaintColor(initialColor);
     let intervalId = null;
     let activeButton = null;
     let direction = 'down'; // Direction of droplet animation
 
     const dispatch = createEventDispatcher();
-
-    // $: mixedColor = toPaintColor(initialColor);
   
     function adjustColor(color, increment) {
       if (colors[color] + increment >= 0) {
@@ -30,23 +31,18 @@
       }
       updateMixedColor();
     }
-  
-//     function updateMixedColor() {
-//       mixedColor = mixPaintColors(colors);
-//     }
 
-//     function adjustColor(color, increment) {
-//     if (colors[color] + increment >= 0) {
-//       colors[color] += increment;
-//     }
-//     updateMixedColor();
-//   }
-
-  // get an estimated color in red, yellow, blue, white, black channels. Get as close as possible with red, yellow, blue before adding white or black
-  // function toPaintColor(color) {
-  //   return color;
-  // }
-
+    function toPaintColor(color) {
+      let hex = tinycolor(color).toHexString();
+      let currentStore = get(paintColors);
+      if (currentStore[hex]) {
+        console.log("found in paint store", currentStore[hex]);
+          return { ...currentStore[hex] };
+      }
+      // otherwise, return white
+      let paintColor = { red: 0, yellow: 0, blue: 0, white: 0, black: 0 };
+      return paintColor;
+  }
 
   /* Mixes all the current color values */
   /* this remixes all the colors every time, but at least it doesn't change the order... */ 
@@ -65,6 +61,11 @@
         }
       }
     }
+
+    let hex = tinycolor(newColor).toHexString();
+    updatePaintStore(hex, colors);
+    console.log("updating paint store", hex, colors);
+
     mixedColor = newColor;
   }
 
@@ -102,9 +103,9 @@
 
   function getColor(colorName) {
     switch (colorName) {
-      case 'red': return '#E30022'; //'#ff0000';
+      case 'red': return '#E30022'; //'#9A114F'; //'#ff0000';
       case 'yellow': return '#FFF600'; //'#ffff00';
-      case 'blue': return '#3F00FF'; //'#0000ff';
+      case 'blue': return '#002185';//'#3F00FF'; //'#0000ff';
       case 'white': return '#ffffff';
       case 'black': return '#000000';
       default: return '#ffffff';
@@ -146,7 +147,8 @@
       <div class="color-preview" style="background-color: {tinycolor(mixedColor).toHexString()=='#ffffff'? '#fcfcfc' : mixedColor};"></div>
       <div class="action-buttons">
         <button class="instabutton" on:click={clearColor}>Clear</button>
-        <button class="instabutton" on:click={resetColor}>Reset</button>
+        <button class="instabutton" on:click={saveColor}>Save</button>
+        <!-- <button class="instabutton" on:click={resetColor}>Reset</button> -->
       </div>
     </div>
     <div class="controls">
@@ -164,7 +166,7 @@
       {/each}
     </div>
   </div>
-  <div class="save-container"><input class="color-name" type="text" value="name this color!"><button class="instabutton" on:click={saveColor}>Save</button></div>
+  <!-- <div class="save-container"><input class="color-name" type="text" value="name this color!"><button class="instabutton" on:click={saveColor}>Save</button></div> -->
   
   
   <style>

@@ -12,8 +12,8 @@
 
   export let selectedColorIndex = -1;
 
-  let modes = ["paint", "RGB", "HSV"];
-  let activeMode = "paint";
+  let modes = ["paint", "RGB"];
+  let activeMode = "RGB";
 
   let c = tinycolor(value).toRgb();
   let red = c.r;
@@ -129,19 +129,22 @@
       <input type="range" id="opacity" min="0" max="1" step="0.01" bind:value={alpha} on:input={updateColor} style="--slider-gradient: {gradientAlpha};">
     </div>
   </div>
-  <div id="palette">
-    {#each pickerPalette as color, index}
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div class="color-item"
-      on:click={handleColorClick}
-      style="background-color: {color};">
-      </div>
-    {/each}
-  </div>
+  
+  {#if false}
+    <div id="palette">
+      {#each pickerPalette as color, index}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <div class="color-item"
+        on:click={handleColorClick}
+        style="background-color: {color};">
+        </div>
+      {/each}
+    </div>
+  {/if}
   
   
-  {#if $showSavedColors || selectedColorIndex !== -1}
+  <!-- {#if $showSavedColors || selectedColorIndex !== -1} -->
   <div id="saved-palette">
     {#each $activePalette as color, index}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -153,7 +156,7 @@
       </div>
     {/each}
   </div>
-  {/if}
+  <!-- {/if} -->
 
   {:else if activeMode === 'HSV'}
   <div>HSV mode</div>
@@ -221,12 +224,13 @@
     -webkit-mask-size: cover;
     mask-size: cover;
     background-color: lightgray;
+    background-color: var(--actual-color);
     color: black;
   }
 
   .color-item:hover {
     cursor: pointer;
-    box-shadow: 0 0 5px 1px gray;
+    /* box-shadow: 0 0 5px 1px gray; */
     background-color: var(--actual-color);
     color: var(--label-color);
     mask-image: none;
@@ -244,7 +248,7 @@
   .color-item.selected:hover {
     /* background-color: lightgray; */
     /* color: black; */
-    box-shadow: none;
+    /* box-shadow: none; */
   }
 
   /* .color-label {

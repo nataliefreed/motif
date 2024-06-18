@@ -3,6 +3,7 @@
   import tinycolor from 'tinycolor2';
   import { pickerPalette } from '../../stores/colorStore';
   import ActionItem from './ActionItem.svelte';
+  import PaintColorMixer from './PaintColorMixer.svelte';
 
   const dispatch = createEventDispatcher();
 
@@ -46,11 +47,17 @@
     updateColor();
   }
 
+  function handleColorSave(event: CustomEvent) {
+    value = event.detail.color;
+    updateColorComponents(tinycolor(value));
+    updateColor();
+  }
+
 </script>
 
 <div class="color-picker">
   <!-- <div>{color.toHexString()}</div> -->
-  <div class="sliders">
+  <!-- <div class="sliders">
     <div class="slider">
       <label class="color-label" for="red" style="color:red">Red</label>
       <input class="color-label" type="number" min="0" max="255" bind:value={red} on:input={updateColor} style="color:red">
@@ -76,8 +83,11 @@
           <input type="range" id="opacity" min="0" max="1" step="0.01" bind:value={alpha} on:input={updateColor} style="--slider-gradient: {gradientAlpha};">
         </div>
       </div>
-    </div>
+    </div> -->
 
+    <PaintColorMixer initialColor={value} on:save={handleColorSave}/>
+
+    {#if false}
     <div id="palette">
       {#each pickerPalette as color, index}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -89,6 +99,7 @@
         </div>
       {/each}
       </div>
+    {/if}
 </div>
 
 <style>

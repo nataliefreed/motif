@@ -37,3 +37,24 @@ export function resetPaletteByName(paletteName: string) {
 }
 
 export let showSavedColors = writable(false);
+
+interface PaintColor {
+  red: number;
+  yellow: number;
+  blue: number;
+  white: number;
+  black: number;
+}
+
+type ColorStore = Record<string, PaintColor>;
+
+export const paintColors = writable({});
+
+export function updatePaintStore(hex: string, paintColor: PaintColor): void {
+  paintColors.update((store: ColorStore) => {
+      if (!store[hex]) {
+          store[hex] = paintColor; // Add new color mix to the store
+      }
+      return store;
+  });
+}
