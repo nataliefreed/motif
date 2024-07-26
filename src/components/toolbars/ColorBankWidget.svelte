@@ -63,7 +63,6 @@
 <style>
 
 .color-palette-widget {
-  padding: 0.2vh;
   display: inline-block;
   vertical-align: middle;
   -webkit-mask-image: url('/assets/widgets/splotch-alpha-mask.png');
@@ -73,10 +72,11 @@
   display: flex;
   align-items: center; 
   justify-content: center;
+  margin: auto;
   border-radius: 50%;
   border: 0.5px solid lightgray;
-  width: calc(min(3vh, 3vw));
-  height: calc(min(3vh, 3vw));
+  width: 20px;
+  /* height: 20px; */
 }
 
 .color-palette-widget:hover {
@@ -90,7 +90,8 @@
 }
 
 .color-item-label {
-  font-family: 'FuturaHandwritten';
+  font-family: 'Fandango';
+  user-select: none;
 }
 
 </style>

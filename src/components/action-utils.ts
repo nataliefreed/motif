@@ -886,11 +886,12 @@ export function repeatSelectedActionAlongPath() {
     // If it's not a repeat, create a new "repeat along path" action with the selected action as a child
     let x = selectedAction.params.position ? selectedAction.params.position.x : 0;
     let y = selectedAction.params.position ? selectedAction.params.position.y : 0;
+    let angle = 0;
     let newPath = getRandomGridPath(x, y);
     // let newPath = [[x, y], [x + 20, y + 20]];
 
     // Create a new "repeat along path" action with the selected action as a child
-    let newAlongPath = createAlongPathAction([selected], newPath);
+    let newAlongPath = createAlongPathAction([selected], newPath, angle);
     let added = actionManager.append(newAlongPath);
 
     // Replace the selected action with the new "repeat along path" action
@@ -996,7 +997,7 @@ export function isChildOfAlongPath(id:string) {
 }
 
 
-function createAlongPathAction(children: string[], path: number[][]) {
+function createAlongPathAction(children: string[], path: number[][], angle: number = 0) {
   let action: Action = {
     uuid: uuidv4(),
     name: 'along path',
@@ -1004,9 +1005,10 @@ function createAlongPathAction(children: string[], path: number[][]) {
     category: 'control',
     effect: 'along path',
     params: {
-      title: "Custom Repeat Along Path",
+      title: "",
       children: children,
       path: path,
+      angle: angle
     },
     hidden: false,
   };

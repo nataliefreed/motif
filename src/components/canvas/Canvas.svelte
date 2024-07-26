@@ -8,6 +8,7 @@
   import { curatedRandomHexColor } from '../../utils/color-utils.ts';
   import { turtle } from './Turtle.js';
   import { saveToHistory } from '../../stores/history';
+    import { page } from '$app/stores';
 	
   let x = 55;
 	let y = 55;
@@ -340,7 +341,7 @@ function updateRenderedActions(action, canvas) {
 
   function fadeTempCanvases(alpha) {
     if(!p5) return;
-    p5.background(255);
+    // p5.background(255);
     p5.image(p5.getStaticCanvas(), 0, 0);
     // p5.getDragCanvas().tint(255, alpha);
     // p5.getHoverCanvas().tint(255, alpha);
@@ -362,7 +363,8 @@ function updateRenderedActions(action, canvas) {
 
   function clearTempCanvases() { //don't clear static canvas
     if(p5) {
-      p5.background(255);
+      // p5.background(255);
+      p5.clear();
       p5.getDragCanvas().clear();
       renderedActions.drag = [];
       p5.getHoverCanvas().clear();
@@ -379,7 +381,8 @@ function updateRenderedActions(action, canvas) {
     p5.getDragCanvas().clear();
     p5.getHoverCanvas().clear();
     p5.getStaticCanvas().clear();
-    p5.getStaticCanvas().background(255);
+    // p5.getStaticCanvas().background(255);
+    p5.getStaticCanvas().clear();
 
     renderedActions.static = [];
     renderedActions.drag = [];
@@ -410,7 +413,8 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
 		c.setup = () => {
 			c.createCanvas(500, 500);
       c.fill(100, 0, 100);
-      c.background(255);
+      // c.background(255);
+      c.clear();
       c.noLoop();
       s = c.createGraphics(c.width, c.height);
       t = c.createGraphics(c.width, c.height);
@@ -873,13 +877,6 @@ function disableContextMenu(event) {
 <!-- Pass the target element to the P5 component -->
 
 
-<div id="thumbnailContainer">
-  {#each thumbnails as thumbnail}
-    <img class="canvas-thumbnail" src={thumbnail} />
-  {/each}
-</div>
-
-
 <style>
   .canvasContainer  {
     max-width: 500px;
@@ -887,25 +884,6 @@ function disableContextMenu(event) {
     /* border: 1px solid black; */
     /* box-shadow: 1px 1px 2px 2px gray; */
     cursor: var(--cursor);
-  }
-
-  #thumbnailContainer {
-    position: absolute;
-    right: -700px;
-    top: 110px;
-    gap: 8.5px;
-    display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    z-index: 100;
-  }
-
-  .canvas-thumbnail {
-    width: 1.5em;
-    height: 1.5em;
-    opacity: 80%;
-    /* border: 1px solid black; */
+    background-color: rgba(255, 255, 255, 0.5);
   }
 </style>

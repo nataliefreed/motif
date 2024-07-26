@@ -127,8 +127,9 @@
 <style>
   .path-widget {
     display: inline-block;
-    vertical-align: top;
-    margin: 0 0.5em;
-    background-color: rgb(230, 230, 230);
+    vertical-align: bottom;
+    margin: 0 0.2em 0 0.5em;
+    background-color: rgba(255, 255, 255, 0.6);
+    /* transform: translateY(-0.5em); */
   }
 </style>

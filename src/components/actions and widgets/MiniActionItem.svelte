@@ -90,6 +90,8 @@
         </svg>
       {/if}
     {/if}
+
+
   </span>
 {/if}
 
@@ -97,7 +99,7 @@
 
 svg {
   transform: translateY(2px);
-  margin: 0 1px;
+  margin: 0 -2px;
   cursor: pointer;
 }
 

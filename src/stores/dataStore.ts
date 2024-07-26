@@ -19,8 +19,10 @@ export const toolStore = writable<Effect[]>([]);
 export const myTools = writable<Effect[]>([]);
 export const codeTools = writable<Effect[]>([]);
 
-export const activeCategory = writable('');
 export const selectedEffect = writable<Effect | null>(null);
+export const activeCategory = derived(selectedEffect, $selectedEffect => 
+  $selectedEffect ? $selectedEffect.category : null
+);
 
 export const selectedCodeEffect = writable('point');
 

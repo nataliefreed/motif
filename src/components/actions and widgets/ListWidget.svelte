@@ -252,6 +252,13 @@ function getDynamicStyle(id:string) {
   //       <svg class=addStagedActionButton on:click={e => handleAddButton(e)} xmlns="http://www.w3.org/2000/svg" height="25" width="25" viewBox="0 0 384 512"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M32 448c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c53 0 96-43 96-96l0-306.7 73.4 73.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-128-128c-12.5-12.5-32.8-12.5-45.3 0l-128 128c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L160 109.3 160 416c0 17.7-14.3 32-32 32l-96 0z"/></svg>
   // {/if}
 
+
+  // <!-- {:else} -->
+  //       <!-- <span class="paintbrush"> -->
+  //         <svg bind:this={stagedIcon} xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M339.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L568.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S517.7-4.4 499.1 9.6L262.4 187.2c-24 18-38.2 46.1-38.4 76.1L339.3 367.1zm-19.6 25.4l-116-104.4C143.9 290.3 96 339.6 96 400c0 3.9 .2 7.8 .6 11.6C98.4 429.1 86.4 448 68.8 448H64c-17.7 0-32 14.3-32 32s14.3 32 32 32H208c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg>
+  //       <!-- </span> -->
+  //       <!-- <ActionItem {action} {depth} /> -->
+
 }
 
 </script>
@@ -280,11 +287,7 @@ function getDynamicStyle(id:string) {
       <span class="drag-handle"></span>
       {#if $stagedActionID !== action.uuid}
         <ActionItem {action} {depth} />
-      {:else}
-        <span class="paintbrush">
-          <svg bind:this={stagedIcon} xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M339.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L568.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S517.7-4.4 499.1 9.6L262.4 187.2c-24 18-38.2 46.1-38.4 76.1L339.3 367.1zm-19.6 25.4l-116-104.4C143.9 290.3 96 339.6 96 400c0 3.9 .2 7.8 .6 11.6C98.4 429.1 86.4 448 68.8 448H64c-17.7 0-32 14.3-32 32s14.3 32 32 32H208c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg>
-        </span>
-        Now drawing: {action.textLabel}
+
       {/if}
       <!-- _ _{action.uuid.substr(0, 6)} -->
     </li>
@@ -303,15 +306,15 @@ function getDynamicStyle(id:string) {
     list-style-type: none; /* Remove default list style */
     padding-left: 0em;
     /* margin-left: 1em; */
-    overflow-y: auto;
+    /* overflow-y: auto; */
     /* overflow-x: hidden; */
-    overflow-x: auto;
+    /* overflow-x: auto; */
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-start;
     width: 100%;
-    margin: 0;
+    margin: 0.5em 0;
   }
 
 /* list item */
@@ -319,8 +322,8 @@ function getDynamicStyle(id:string) {
     border: 2px solid transparent; /* Invisible border */
     user-select: none; /* prevent text selection - makes it easier to grab */
     position: relative;
-    padding-left: 2.2em; /* Space for the numbered index */
-    padding-right: 4px; /* makes selection box look nicer */
+    padding-left: 1.5em; /* Space for the numbered index, also affects overall indent level */
+    padding-right: 0.2em; /* makes selection box look nicer */
   }
 
   .selected {
@@ -426,15 +429,15 @@ function getDynamicStyle(id:string) {
     align-items: center; /* Center vertically */
     justify-content: center; /* Center horizontally */
     left: 0; /* Align with the start of the list item */
-    top: 1.1em;
-    width: 1.8em; /* Fixed width for the circle */
-    height: 1.8em; /* Fixed height for the circle */
+    top: 1em;
+    width: 1.7em; /* Fixed width for the circle */
+    height: 1.7em; /* Fixed height for the circle */
     transform: translateY(-50%);
     font-size: 0.8em;
     font-weight: bold;
     z-index: 1;
     align-self: flex-start;
-    margin-left: 4px;
+    margin-left: 0;
   }
 
   .paintbrush {

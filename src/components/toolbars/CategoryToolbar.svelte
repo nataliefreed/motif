@@ -1,33 +1,133 @@
 <script lang="ts">
   import CategoryButton from './CategoryButton.svelte';
-  import { activeCategory } from '../../stores/dataStore';
+  import { activeCategory, toolStore, selectedEffect } from '../../stores/dataStore';
+  import type { Effect } from '../../types/types';
   
   export let categories: string[];
+  let visibleCategory = '';
+
+  function handleCategoryClick(category: string) {
+    //toggle open/closed, unless you click on a different category than the open one, in which case close the open one and open the new one
+    visibleCategory = visibleCategory === category ? '' : category;
+  }
+
+  function handleCategoryMouseover(category: string) {
+    visibleCategory = category;
+  }
+  function handleCategoryMouseout() {
+    // visibleCategory = '';
+  }
+
+  function handleEffectClick(effect: Effect) {
+    selectedEffect.set(effect);
+    visibleCategory = '';
+  }
+
+  function handleActiveEffectClick() {
+    //set visible category to the one that the active effect is in
+    if($selectedEffect) visibleCategory = $selectedEffect.category;
+  }
 
 </script>
 
-<div class="vertical-toolbar">
+<!-- <div>{$activeCategory}</div> -->
+<div class="category-toolbar" on:mouseout={handleCategoryMouseout}>
+  {#if $selectedEffect && $selectedEffect.thumbnail}
+    <button 
+    on:click={handleActiveEffectClick}
+    class="active-effect-button" 
+    style:background-image={`url(/assets/effect-thumbnails/${$selectedEffect.thumbnail})`}>
+      {$selectedEffect.textLabel}
+    </button>
+  {/if}
   {#each categories as category}
-    <CategoryButton category={category} isActive={category === $activeCategory}></CategoryButton>
+    <div class="category-container">
+      <button on:click={() => handleCategoryClick(category)}
+        on:mouseover={() => handleCategoryMouseover(category)}
+        class="category-button" class:selected={$activeCategory === category && visibleCategory === ''}>
+        {category}
+      </button>
+      {#if category === visibleCategory}
+        <div class="effect-toolbar">
+          {#each $toolStore.filter(effect => effect.category === category) as effect}
+            <button
+              on:click={() => handleEffectClick(effect)}
+              class="effect-button"
+              class:selected={$selectedEffect === effect}
+              style:background-image={`url(/assets/effect-thumbnails/${effect.thumbnail})`}
+              >
+              <span class="effect-label">{effect.textLabel}</span>
+            </button>
+          {/each}
+        </div>
+      {/if}
+    </div>
   {/each}
-  <!-- <CategoryButton category="my tools" isActive={"my tools" === $activeCategory}>
-    &nbsp;<svg xmlns="http://www.w3.org/2000/svg" height="16" width="16" viewBox="0 0 512 512">!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.<path d="M176 88v40H336V88c0-4.4-3.6-8-8-8H184c-4.4 0-8 3.6-8 8zm-48 40V88c0-30.9 25.1-56 56-56H328c30.9 0 56 25.1 56 56v40h28.1c12.7 0 24.9 5.1 33.9 14.1l51.9 51.9c9 9 14.1 21.2 14.1 33.9V304H384V288c0-17.7-14.3-32-32-32s-32 14.3-32 32v16H192V288c0-17.7-14.3-32-32-32s-32 14.3-32 32v16H0V227.9c0-12.7 5.1-24.9 14.1-33.9l51.9-51.9c9-9 21.2-14.1 33.9-14.1H128zM0 416V336H128v16c0 17.7 14.3 32 32 32s32-14.3 32-32V336H320v16c0 17.7 14.3 32 32 32s32-14.3 32-32V336H512v80c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64z"/></svg>
-  </CategoryButton> -->
-  <!-- <CategoryButton category="code effects" isActive={"code effects" === currentCategory} /> -->
 </div>
 
 <style>
 
-.horizontal-toolbar {
-  display: flex;
-  flex-direction: row;
-  text-align: center;
-}
-
-.vertical-toolbar {
+.category-toolbar {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .effect-toolbar {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 10px;
+    margin-left: 10px;
+  }
+
+  .category-container {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .category-button {
+    background-color: transparent;
+    cursor: pointer;
+    border: none;
+    font-family: 'Fandango';
+    font-size: 1.1em;
+    color: #5299BB;
+    height: 40px;
+  }
+
+  .category-button.selected {
+    color: #0d76a6;
+  }
+
+  .effect-button, .active-effect-button {
+    background-color: transparent;
+    cursor: pointer;
+    border: none;
+    background-size: cover;
+    background-repeat: no-repeat;
+    height: 40px;
+    font-family: 'Fandango';
+    font-size: 1.1em;
+    text-align: center;
+    border-radius: 5px;
+    /* border: 1px solid black; */
+  }
+
+  .active-effect-button {
+    width: 80%;
+    text-align: center;
+    margin: 0 auto 10px auto;
+  }
+
+  .effect-button.selected {
+    border: 2px solid #d5be0d;
+  }
+
+  .effect-label {
+    text-align: center;
+    /* margin-left: 20px; */
   }
 
 </style>

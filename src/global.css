@@ -1,13 +1,13 @@
 :root {
-  --page-width: 40vw;
-  --page-height: 85vh;
+  --page-width: 50vw;
+  --page-height: 95vh;
   --cover-margin: calc(var(--page-width) * 0.01);
   --cover-gap: calc(var(--page-width) * 0.005);
   --page-inset: calc(var(--page-width) * 0.015);
   --ring-width: calc(var(--page-width) * 0.1);
 
-  --notebook-max-width: 1440px;
-  --notebook-max-height: 85vh;
+  --notebook-max-width: 95vw;
+  --notebook-max-height: 95vh;
   --max-page-width: calc(var(--notebook-max-width)/2 - 2*var(--cover-margin) - 2*var(--page-inset));
   --max-page-height: calc(var(--notebook-max-height) - 2*var(--cover-margin));
   
@@ -49,6 +49,7 @@
       font-size: var(--base-font-size);
       line-height: calc(var(--line-height-multiplier) * 1em);
       font-family: 'FuturaHandwritten';
+      /* font-family: 'Arial'; */
       font-weight: 100;
       background-color: #e9e9e9;
       background-color: #f4f4f4;
@@ -60,6 +61,8 @@
       justify-content: center; /* Horizontally center the child content/containers */
       align-items: center;
       height: 100vh;
+      margin: 0;
+      padding: 0;
     }
   
     @font-face{ 
@@ -67,6 +70,18 @@
         font-style: normal;
         src: url('/assets/FuturaHandwritten.ttf') format('truetype');
     }
+
+    @font-face{ 
+      font-family: 'Vonder Clean';
+      font-style: normal;
+      src: url('/assets/Vonder Clean.ttf') format('truetype');
+  }
+
+  @font-face{ 
+    font-family: 'Fandango';
+    font-style: normal;
+    src: url('/assets/Fandango.otf') format('opentype');
+  }
 
     /* Range slider styling - thank you https://range-input-css.netlify.app/ */
 

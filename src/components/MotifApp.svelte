@@ -21,8 +21,11 @@
   import PlayButton from './PlayButton.svelte';
   import NumberWidget from './actions and widgets/NumberWidget.svelte';
   import { showSavedColors, pickerPalette } from '../stores/colorStore';
+    import CodeToolbar from './toolbars/CodeToolbar.svelte';
+  import ColorPicker from './actions and widgets/ColorPicker.svelte';
 
   let allCategories:string[] = [];
+  let value = '#FFFFFF';
 
   $: if ($selectedActionID) {
     scrollToAction($selectedActionID);
@@ -37,8 +40,8 @@
   $: canUndo = $historyStore.past.length > 0;
   $: canRedo = $historyStore.future.length > 0;
 
-  const lockIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="1em" height="1em"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path fill="rgb(227, 227, 227)" d="M144 144v48H304V144c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192V144C80 64.5 144.5 0 224 0s144 64.5 144 144v48h16c35.3 0 64 28.7 64 64V448c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V256c0-35.3 28.7-64 64-64H80z"/></svg>`;
-  const unlockIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="1em" height="1em"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path fill="rgb(227, 227, 227)"d="M144 144c0-44.2 35.8-80 80-80c31.9 0 59.4 18.6 72.3 45.7c7.6 16 26.7 22.8 42.6 15.2s22.8-26.7 15.2-42.6C331 33.7 281.5 0 224 0C144.5 0 80 64.5 80 144v48H64c-35.3 0-64 28.7-64 64V448c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V256c0-35.3-28.7-64-64-64H144V144z"/></svg>`;
+  const lockIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="1.5em" height="1.5em"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path fill="rgb(227, 227, 227)" d="M144 144v48H304V144c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192V144C80 64.5 144.5 0 224 0s144 64.5 144 144v48h16c35.3 0 64 28.7 64 64V448c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V256c0-35.3 28.7-64 64-64H80z"/></svg>`;
+  const unlockIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="1.5em" height="1.5em"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path fill="rgb(227, 227, 227)"d="M144 144c0-44.2 35.8-80 80-80c31.9 0 59.4 18.6 72.3 45.7c7.6 16 26.7 22.8 42.6 15.2s22.8-26.7 15.2-42.6C331 33.7 281.5 0 224 0C144.5 0 80 64.5 80 144v48H64c-35.3 0-64 28.7-64 64V448c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V256c0-35.3-28.7-64-64-64H144V144z"/></svg>`;
 
   function saveTool(id:string) {
     // saveActionAsNewTool($flatActionStore[id]);
@@ -105,7 +108,6 @@
     toolStore.subscribe(data => {
       if (data && data.length > 0) {
         selectedEffect.set(data[0]); // set the first effect as default
-        activeCategory.set(data[0].category);
       }
 
       allCategories = [...new Set(data.map(tool => tool.category))];
@@ -126,94 +128,150 @@
 
   let drawingArea;
 
+
+      // <button class="instabutton" title="save" id="exportButton" on:click={exportCodeWithImage}>save <svg xmlns="http://www.w3.org/2000/svg" height="20" width="16" viewBox="0 0 384 512" style="vertical-align: middle; transform: translateY(-2px);"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M64 0C28.7 0 0 28.7 0 64V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V160H256c-17.7 0-32-14.3-32-32V0H64zM256 0V128H384L256 0zM216 232V334.1l31-31c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-72 72c-9.4 9.4-24.6 9.4-33.9 0l-72-72c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l31 31V232c0-13.3 10.7-24 24-24s24 10.7 24 24z"/></svg></button>
+      //   <button class="instabutton" title="open" id="importButton" on:click={importCodeFromImage}>open <svg xmlns="http://www.w3.org/2000/svg" height="20" width="16" viewBox="0 0 384 512" style="vertical-align: middle; transform: translateY(-2px);"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M64 0C28.7 0 0 28.7 0 64V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V160H256c-17.7 0-32-14.3-32-32V0H64zM256 0V128H384L256 0zM216 408c0 13.3-10.7 24-24 24s-24-10.7-24-24V305.9l-31 31c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l72-72c9.4-9.4 24.6-9.4 33.9 0l72 72c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0l-31-31V408z"/></svg></button>
+        
+
 </script>
 
 <!-- svelte-ignore missing-declaration -->
-<div id="notebook">
-<Notebook>
-  <Page slot="left">
+
+
+
+  <!-- <div class="left-toolbar-background"></div>
+  <div class="code-toolbar-background"></div> -->
+
+ <!-- <div id="fixed-category-toolbar"><CategoryToolbar categories={$drawingLocked?[]:allCategories} /></div> -->
+
+ <div class="viewport-container">
+  
+  <div class="background"></div> <!-- background -->
+  
+  <div class="grid-paper"></div> <!-- grid-paper -->
+  
+  <div class="container">
+
+    <div class="left-toolbar-background"></div>
+    <div class="code-toolbar-background"></div>
+    <div class="staged-action-background"></div>
+    <div class="header"></div>
 
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div class="lock-button" on:click={e=>{drawingLocked.set(!$drawingLocked)}}>{@html $drawingLocked?lockIcon:unlockIcon}</div>
+    <div class="top-left-corner">
+      <div class="lock-button" on:click={e=>{drawingLocked.set(!$drawingLocked)}}>{@html $drawingLocked?lockIcon:unlockIcon}</div>
+    </div> <!-- top-left-corner -->
 
-    <div class="drawing-area-container">
-      <div class="drawing-area-with-category-toolbar">
-        <div class="category-toolbar"><CategoryToolbar categories={$drawingLocked?[]:allCategories} /></div>
-          <div class="drawing-area-with-effect-toolbar">
-            <div class="drawing-area" bind:this={drawingArea}>
-                {#if $drawingLocked}
-                  <Tooltip element={drawingArea} settings={{trigger:'mouseenter', offset: [0, -200], hideOnClick:false}}>
-                    {#if $drawingLocked}
-                      <div>Drawing is locked! Try changing the code on the right or the saved colors below.</div>
-                    {/if}
-                  </Tooltip>
-                {/if}
-                <Ruler><Canvas/></Ruler>
-              </div>
-              {#if !$drawingLocked}<div class="effect-toolbar"><EffectToolbar/></div>{/if}
-          </div>
-        </div>
+    <div class="above-canvas">
+      <div class="doc-controls">
+        <button class="top-menu-button" title="save" id="exportButton" on:click={exportCodeWithImage}>save</button>
+        <button class="top-menu-button" title="open" id="importButton" on:click={importCodeFromImage}>open</button>
+        <button class="top-menu-button" id="clearAllButton" on:click={clearAllActions}>clear</button>
       </div>
-
-      {#if !$drawingLocked}
-        <div class="staged-action"><ActionItem action={$stagedAction} /></div>
-      {/if}
-
-      <div class="color-bank"><ColorBank/></div>
-    
-      <!-- <EffectSettingsPanel /> -->
-    <!-- </div> -->
-
-  </Page>
-  <Page slot="right">
-    <div class="instabuttons-top">
-      <div class="left-group">
-        
-        <button class="instabutton" id="undoButton" on:click={undo} disabled={!canUndo}>
+      <div class="history-controls">
+        <button class="top-menu-button" id="undoButton" on:click={undo} disabled={!canUndo}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="vertical-align: middle;"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M48.5 224H40c-13.3 0-24-10.7-24-24V72c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2L98.6 96.6c87.6-86.5 228.7-86.2 315.8 1c87.5 87.5 87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3c-62.2-62.2-162.7-62.5-225.3-1L185 183c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8H48.5z"/></svg>
-        </button>
+      </button>
         
-        <button class="instabutton" id="redoButton" on:click={redo} disabled={!canRedo}>
+        <button class="top-menu-button" id="redoButton" on:click={redo} disabled={!canRedo}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="vertical-align: middle;"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M463.5 224H472c13.3 0 24-10.7 24-24V72c0-9.7-5.8-18.5-14.8-22.2s-19.3-1.7-26.2 5.2L413.4 96.6c-87.6-86.5-228.7-86.2-315.8 1c-87.5 87.5-87.5 229.3 0 316.8s229.3 87.5 316.8 0c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0c-62.5 62.5-163.8 62.5-226.3 0s-62.5-163.8 0-226.3c62.2-62.2 162.7-62.5 225.3-1L327 183c-6.9 6.9-8.9 17.2-5.2 26.2s12.5 14.8 22.2 14.8H463.5z"/></svg>
         </button>
-        
-        <button class="instabutton" id="clearAllButton" on:click={clearAllActions}>Clear All</button>
+      </div> <!-- history-controls -->
+    </div> <!-- above canvas -->
       
-      </div>
-      <!-- <button class="instabutton" id="refreshButton" on:click={refresh}><svg xmlns="http://www.w3.org/2000/svg"  height="16" width="16" viewBox="0 0 512 512">!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.<path d="M386.3 160H336c-17.7 0-32 14.3-32 32s14.3 32 32 32H464c17.7 0 32-14.3 32-32V64c0-17.7-14.3-32-32-32s-32 14.3-32 32v51.2L414.4 97.6c-87.5-87.5-229.3-87.5-316.8 0s-87.5 229.3 0 316.8s229.3 87.5 316.8 0c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0c-62.5 62.5-163.8 62.5-226.3 0s-62.5-163.8 0-226.3s163.8-62.5 226.3 0L386.3 160z"/></svg></button> -->
+
+    <div class="above-code">
       <div class="playback-controls">
-        <!-- <button class="instabutton" id="rewindButton" on:click={rewindToBeginning}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" height="16" width="21" style="vertical-align: middle; transform: translateY(-2px);">!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.<path d="M493.6 445c-11.2 5.3-24.5 3.6-34.1-4.4L288 297.7V416c0 12.4-7.2 23.7-18.4 29s-24.5 3.6-34.1-4.4L64 297.7V416c0 17.7-14.3 32-32 32s-32-14.3-32-32V96C0 78.3 14.3 64 32 64s32 14.3 32 32V214.3L235.5 71.4c9.5-7.9 22.8-9.7 34.1-4.4S288 83.6 288 96V214.3L459.5 71.4c9.5-7.9 22.8-9.7 34.1-4.4S512 83.6 512 96V416c0 12.4-7.2 23.7-18.4 29z"/></svg></button> -->
-        <div class ="center-group">
-        <button class="instabutton dont-deselect" id="stepBackwardButton" on:click={stepBackward}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" height="16" width="16" style="vertical-align: middle; transform: translateY(-2px);"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M267.5 440.6c9.5 7.9 22.8 9.7 34.1 4.4s18.4-16.6 18.4-29V96c0-12.4-7.2-23.7-18.4-29s-24.5-3.6-34.1 4.4l-192 160L64 241V96c0-17.7-14.3-32-32-32S0 78.3 0 96V416c0 17.7 14.3 32 32 32s32-14.3 32-32V271l11.5 9.6 192 160z"/></svg></button>
-        
-        <PlayButton />
+        <button class="top-menu-button dont-deselect" id="stepBackwardButton" on:click={stepBackward}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" height="16" width="16" style="vertical-align: middle; transform: translateY(-2px);"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M267.5 440.6c9.5 7.9 22.8 9.7 34.1 4.4s18.4-16.6 18.4-29V96c0-12.4-7.2-23.7-18.4-29s-24.5-3.6-34.1 4.4l-192 160L64 241V96c0-17.7-14.3-32-32-32S0 78.3 0 96V416c0 17.7 14.3 32 32 32s32-14.3 32-32V271l11.5 9.6 192 160z"/></svg></button>
+        <PlayButton />        
+        <button class="top-menu-button dont-deselect" id="stepForwardButton" on:click={stepForward}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" height="16" width="16" style="vertical-align: middle; transform: translateY(-2px);"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M52.5 440.6c-9.5 7.9-22.8 9.7-34.1 4.4S0 428.4 0 416V96C0 83.6 7.2 72.3 18.4 67s24.5-3.6 34.1 4.4l192 160L256 241V96c0-17.7 14.3-32 32-32s32 14.3 32 32V416c0 17.7-14.3 32-32 32s-32-14.3-32-32V271l-11.5 9.6-192 160z"/></svg></button>
+        {#if $firstPlay}<span><NumberWidget id="speed" min={1} max={100} value={10} on:valueChange={handleSpeedChange}/></span>step{#if $playSpeed>1}s{/if} per second{/if}
+      </div> <!-- playback-controls -->
+    </div> <!-- above code -->
 
-        <button class="instabutton dont-deselect" id="stepForwardButton" on:click={stepForward}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" height="16" width="16" style="vertical-align: middle; transform: translateY(-2px);"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M52.5 440.6c-9.5 7.9-22.8 9.7-34.1 4.4S0 428.4 0 416V96C0 83.6 7.2 72.3 18.4 67s24.5-3.6 34.1 4.4l192 160L256 241V96c0-17.7 14.3-32 32-32s32 14.3 32 32V416c0 17.7-14.3 32-32 32s-32-14.3-32-32V271l-11.5 9.6-192 160z"/></svg></button>
-        </div>
-
-        {#if $firstPlay}<div><span><NumberWidget id="speed" min={1} max={100} value={10} on:valueChange={handleSpeedChange}/></span>step{#if $playSpeed>1}s{/if} per second</div>{/if}
-
-        <!-- <button class="instabutton" id="fastForwardButton" on:click={fastForwardToEnd}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" height="16" width="21" style="vertical-align: middle; transform: translateY(-2px);">!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.<path d="M18.4 445c11.2 5.3 24.5 3.6 34.1-4.4L224 297.7V416c0 12.4 7.2 23.7 18.4 29s24.5 3.6 34.1-4.4L448 297.7V416c0 17.7 14.3 32 32 32s32-14.3 32-32V96c0-17.7-14.3-32-32-32s-32 14.3-32 32V214.3L276.5 71.4c-9.5-7.9-22.8-9.7-34.1-4.4S224 83.6 224 96V214.3L52.5 71.4c-9.5-7.9-22.8-9.7-34.1-4.4S0 83.6 0 96V416c0 12.4 7.2 23.7 18.4 29z"/></svg></button> -->
-  
-      </div>
-
-      
-
-      <div class="right-group">
-          <button class="instabutton" title="save" id="exportButton" on:click={exportCodeWithImage}>Save <svg xmlns="http://www.w3.org/2000/svg" height="20" width="16" viewBox="0 0 384 512" style="vertical-align: middle; transform: translateY(-2px);"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M64 0C28.7 0 0 28.7 0 64V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V160H256c-17.7 0-32-14.3-32-32V0H64zM256 0V128H384L256 0zM216 232V334.1l31-31c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-72 72c-9.4 9.4-24.6 9.4-33.9 0l-72-72c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l31 31V232c0-13.3 10.7-24 24-24s24 10.7 24 24z"/></svg></button>
-          <button class="instabutton" title="open" id="importButton" on:click={importCodeFromImage}>Open <svg xmlns="http://www.w3.org/2000/svg" height="20" width="16" viewBox="0 0 384 512" style="vertical-align: middle; transform: translateY(-2px);"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M64 0C28.7 0 0 28.7 0 64V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V160H256c-17.7 0-32-14.3-32-32V0H64zM256 0V128H384L256 0zM216 408c0 13.3-10.7 24-24 24s-24-10.7-24-24V305.9l-31 31c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l72-72c9.4-9.4 24.6-9.4 33.9 0l72 72c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0l-31-31V408z"/></svg></button>
-          <!-- <button class="instabutton" title="save cut outline" id="exportSVG" on:click={downloadSVG}><svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 512 512">!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.<path d="M256 192l-39.5-39.5c4.9-12.6 7.5-26.2 7.5-40.5C224 50.1 173.9 0 112 0S0 50.1 0 112s50.1 112 112 112c14.3 0 27.9-2.7 40.5-7.5L192 256l-39.5 39.5c-12.6-4.9-26.2-7.5-40.5-7.5C50.1 288 0 338.1 0 400s50.1 112 112 112s112-50.1 112-112c0-14.3-2.7-27.9-7.5-40.5L499.2 76.8c7.1-7.1 7.1-18.5 0-25.6c-28.3-28.3-74.1-28.3-102.4 0L256 192zm22.6 150.6L396.8 460.8c28.3 28.3 74.1 28.3 102.4 0c7.1-7.1 7.1-18.5 0-25.6L342.6 278.6l-64 64zM64 112a48 48 0 1 1 96 0 48 48 0 1 1 -96 0zm48 240a48 48 0 1 1 0 96 48 48 0 1 1 0-96z"/></svg></button> -->
-        </div>
+    <div class="left-toolbar">
+      <!-- <div class="current-effect">
+        {#if $selectedEffect}
+            <img class="effect-img" src='/assets/effect-thumbnails/{$selectedEffect.thumbnail}' alt={$selectedEffect.textLabel}>
+        {/if}
+      </div> -->
+      <CategoryToolbar categories={$drawingLocked?[]:allCategories} />
+      <div class="color-bank"><ColorBank/></div>
     </div>
 
-
-    <div id="code-zone">
-      <LinedPaper>
-          <div id="main-list">
-            <ActionItem action={$actionRoot} depth={0}/>
+      <div class="drawing-area-container">
+        <div class="drawing-area" bind:this={drawingArea}>
+            {#if $drawingLocked}
+              <Tooltip element={drawingArea} settings={{trigger:'mouseenter', offset: [0, -200], hideOnClick:false}}>
+                {#if $drawingLocked}
+                  <div>Drawing is locked! Try changing the code on the right or the saved colors below.</div>
+                {/if}
+              </Tooltip>
+            {/if}
+            <Ruler>
+              <Canvas/>
+            </Ruler>
           </div>
-          <!-- -->
+      </div>
+
+    <div class="main-right">
+      <div id="main-list">
+        <ActionItem action={$actionRoot} depth={0}/>
+      </div> <!-- main-list -->
+    </div>  <!-- grid-item -->
+
+    <div class="right-sidebar">
+      <div class="code-toolbar">
+      <button class="selected-action-button dont-deselect" id="deleteButton" disabled={!$selectedActionID} on:click={() => removeSelectedAction()}><svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zm96 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16z"/></svg> delete</button>
+        <button class="selected-action-button dont-deselect" id="remixButton" disabled={!$selectedActionID} on:click={() => remixAction($selectedActionID)}><svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M234.7 42.7L197 56.8c-3 1.1-5 4-5 7.2s2 6.1 5 7.2l37.7 14.1L248.8 123c1.1 3 4 5 7.2 5s6.1-2 7.2-5l14.1-37.7L315 71.2c3-1.1 5-4 5-7.2s-2-6.1-5-7.2L277.3 42.7 263.2 5c-1.1-3-4-5-7.2-5s-6.1 2-7.2 5L234.7 42.7zM46.1 395.4c-18.7 18.7-18.7 49.1 0 67.9l34.6 34.6c18.7 18.7 49.1 18.7 67.9 0L529.9 116.5c18.7-18.7 18.7-49.1 0-67.9L495.3 14.1c-18.7-18.7-49.1-18.7-67.9 0L46.1 395.4zM484.6 82.6l-105 105-23.3-23.3 105-105 23.3 23.3zM7.5 117.2C3 118.9 0 123.2 0 128s3 9.1 7.5 10.8L64 160l21.2 56.5c1.7 4.5 6 7.5 10.8 7.5s9.1-3 10.8-7.5L128 160l56.5-21.2c4.5-1.7 7.5-6 7.5-10.8s-3-9.1-7.5-10.8L128 96 106.8 39.5C105.1 35 100.8 32 96 32s-9.1 3-10.8 7.5L64 96 7.5 117.2zm352 256c-4.5 1.7-7.5 6-7.5 10.8s3 9.1 7.5 10.8L416 416l21.2 56.5c1.7 4.5 6 7.5 10.8 7.5s9.1-3 10.8-7.5L480 416l56.5-21.2c4.5-1.7 7.5-6 7.5-10.8s-3-9.1-7.5-10.8L480 352l-21.2-56.5c-1.7-4.5-6-7.5-10.8-7.5s-9.1 3-10.8 7.5L416 352l-56.5 21.2z"/></svg> remix</button>
+        <button class="selected-action-button dont-deselect" id="duplicateButton" disabled={!$selectedActionID} on:click={() => duplicateAction($selectedActionID)}><svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 512 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M64 464H288c8.8 0 16-7.2 16-16V384h48v64c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V224c0-35.3 28.7-64 64-64h64v48H64c-8.8 0-16 7.2-16 16V448c0 8.8 7.2 16 16 16zM224 304H448c8.8 0 16-7.2 16-16V64c0-8.8-7.2-16-16-16H224c-8.8 0-16 7.2-16 16V288c0 8.8 7.2 16 16 16zm-64-16V64c0-35.3 28.7-64 64-64H448c35.3 0 64 28.7 64 64V288c0 35.3-28.7 64-64 64H224c-35.3 0-64-28.7-64-64z"/></svg>copy</button>
+        <button class="selected-action-button dont-deselect" id="remixDuplicateButton" disabled={!$selectedActionID} on:click={() => remixDuplicate($selectedActionID)}>
+          <svg xmlns="http://www.w3.org/2000/svg" height="0.9em" viewBox="0 0 512 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M64 464H288c8.8 0 16-7.2 16-16V384h48v64c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V224c0-35.3 28.7-64 64-64h64v48H64c-8.8 0-16 7.2-16 16V448c0 8.8 7.2 16 16 16zM224 304H448c8.8 0 16-7.2 16-16V64c0-8.8-7.2-16-16-16H224c-8.8 0-16 7.2-16 16V288c0 8.8 7.2 16 16 16zm-64-16V64c0-35.3 28.7-64 64-64H448c35.3 0 64 28.7 64 64V288c0 35.3-28.7 64-64 64H224c-35.3 0-64-28.7-64-64z"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" height="0.9em" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M234.7 42.7L197 56.8c-3 1.1-5 4-5 7.2s2 6.1 5 7.2l37.7 14.1L248.8 123c1.1 3 4 5 7.2 5s6.1-2 7.2-5l14.1-37.7L315 71.2c3-1.1 5-4 5-7.2s-2-6.1-5-7.2L277.3 42.7 263.2 5c-1.1-3-4-5-7.2-5s-6.1 2-7.2 5L234.7 42.7zM46.1 395.4c-18.7 18.7-18.7 49.1 0 67.9l34.6 34.6c18.7 18.7 49.1 18.7 67.9 0L529.9 116.5c18.7-18.7 18.7-49.1 0-67.9L495.3 14.1c-18.7-18.7-49.1-18.7-67.9 0L46.1 395.4zM484.6 82.6l-105 105-23.3-23.3 105-105 23.3 23.3zM7.5 117.2C3 118.9 0 123.2 0 128s3 9.1 7.5 10.8L64 160l21.2 56.5c1.7 4.5 6 7.5 10.8 7.5s9.1-3 10.8-7.5L128 160l56.5-21.2c4.5-1.7 7.5-6 7.5-10.8s-3-9.1-7.5-10.8L128 96 106.8 39.5C105.1 35 100.8 32 96 32s-9.1 3-10.8 7.5L64 96 7.5 117.2zm352 256c-4.5 1.7-7.5 6-7.5 10.8s3 9.1 7.5 10.8L416 416l21.2 56.5c1.7 4.5 6 7.5 10.8 7.5s9.1-3 10.8-7.5L480 416l56.5-21.2c4.5-1.7 7.5-6 7.5-10.8s-3-9.1-7.5-10.8L480 352l-21.2-56.5c-1.7-4.5-6-7.5-10.8-7.5s-9.1 3-10.8 7.5L416 352l-56.5 21.2z"/></svg>
+          remix a copy
+        </button>
+        <button class="selected-action-button dont-deselect" id="repeatButton" disabled={!$selectedActionID} on:click={() => repeatSelectedActionAlongPath() }><svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 512 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M0 224c0 17.7 14.3 32 32 32s32-14.3 32-32c0-53 43-96 96-96H320v32c0 12.9 7.8 24.6 19.8 29.6s25.7 2.2 34.9-6.9l64-64c12.5-12.5 12.5-32.8 0-45.3l-64-64c-9.2-9.2-22.9-11.9-34.9-6.9S320 19.1 320 32V64H160C71.6 64 0 135.6 0 224zm512 64c0-17.7-14.3-32-32-32s-32 14.3-32 32c0 53-43 96-96 96H192V352c0-12.9-7.8-24.6-19.8-29.6s-25.7-2.2-34.9 6.9l-64 64c-12.5 12.5-12.5 32.8 0 45.3l64 64c9.2 9.2 22.9 11.9 34.9 6.9s19.8-16.6 19.8-29.6V448H352c88.4 0 160-71.6 160-160z"/></svg>repeat</button>
+        {#if !$drawingLocked}
+          <button class="selected-action-button dont-deselect" id="redrawButton" disabled={!$selectedActionID} on:click={() => redrawSelectedAction()}><svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M339.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L568.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S517.7-4.4 499.1 9.6L262.4 187.2c-24 18-38.2 46.1-38.4 76.1L339.3 367.1zm-19.6 25.4l-116-104.4C143.9 290.3 96 339.6 96 400c0 3.9 .2 7.8 .6 11.6C98.4 429.1 86.4 448 68.8 448H64c-17.7 0-32 14.3-32 32s14.3 32 32 32H208c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg>draw again</button>
+        {/if}
+        <!-- <button class="instabutton selected-action-button dont-deselect" id="convertButton" disabled={!$selectedActionID} on:click={() => convertSelectedAction()}>find pattern</button> -->
+        <!-- <button class="instabutton selected-action-button dont-deselect" id="saveToolButton" disabled={!$selectedActionID} on:click={() => saveTool($selectedActionID)}> <svg xmlns="http://www.w3.org/2000/svg" height="0.9em" viewBox="0 0 448 512">!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.<path d="M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.8 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"/></svg> <svg xmlns="http://www.w3.org/2000/svg" height="1.4em" viewBox="0 0 512 512">!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.<path d="M176 88v40H336V88c0-4.4-3.6-8-8-8H184c-4.4 0-8 3.6-8 8zm-48 40V88c0-30.9 25.1-56 56-56H328c30.9 0 56 25.1 56 56v40h28.1c12.7 0 24.9 5.1 33.9 14.1l51.9 51.9c9 9 14.1 21.2 14.1 33.9V304H384V288c0-17.7-14.3-32-32-32s-32 14.3-32 32v16H192V288c0-17.7-14.3-32-32-32s-32 14.3-32 32v16H0V227.9c0-12.7 5.1-24.9 14.1-33.9l51.9-51.9c9-9 21.2-14.1 33.9-14.1H128zM0 416V336H128v16c0 17.7 14.3 32 32 32s32-14.3 32-32V336H320v16c0 17.7 14.3 32 32 32s32-14.3 32-32V336H512v80c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64z"/></svg>&nbsp;&nbsp;</button> -->
+      </div>
+      </div>
+
+    <div class="footer"></div>
+
+    <div class="footer-center">
+      <!-- <div class="effect-settings"> -->
+        {#if !$drawingLocked}
+          <div class="staged-action">
+
+          <ActionItem action={$stagedAction} />
+          
+          </div>
+        {/if}
+        <div class="staged-color-picker">
+          <ColorPicker bind:value={value} />
+          </div>
+        <!-- <EffectSettingsPanel /> -->
+      <!-- </div> -->
+    </div> <!-- staged action container -->
+
+    
+
+  </div> <!-- grid container -->
+</div> <!-- viewport container -->
+
+
+    
+
+    
+  
+    
+          
+
+
+
           <!------------------------------------ debugging ----------------------------------->
           <!-- <br>
 
@@ -226,287 +284,401 @@
             {/each}
           </ul> -->
           <!---------------------------------------------------------------------------------->
-        </LinedPaper>
 
-      <div class="instabuttons-bottom">
-        <button class="instabutton selected-action-button dont-deselect" id="deleteButton" disabled={!$selectedActionID} on:click={() => removeSelectedAction()}><svg xmlns="http://www.w3.org/2000/svg" height="1.4em" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zm96 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16z"/></svg></button>
-        <button class="instabutton selected-action-button dont-deselect" id="remixButton" disabled={!$selectedActionID} on:click={() => remixAction($selectedActionID)}><svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M234.7 42.7L197 56.8c-3 1.1-5 4-5 7.2s2 6.1 5 7.2l37.7 14.1L248.8 123c1.1 3 4 5 7.2 5s6.1-2 7.2-5l14.1-37.7L315 71.2c3-1.1 5-4 5-7.2s-2-6.1-5-7.2L277.3 42.7 263.2 5c-1.1-3-4-5-7.2-5s-6.1 2-7.2 5L234.7 42.7zM46.1 395.4c-18.7 18.7-18.7 49.1 0 67.9l34.6 34.6c18.7 18.7 49.1 18.7 67.9 0L529.9 116.5c18.7-18.7 18.7-49.1 0-67.9L495.3 14.1c-18.7-18.7-49.1-18.7-67.9 0L46.1 395.4zM484.6 82.6l-105 105-23.3-23.3 105-105 23.3 23.3zM7.5 117.2C3 118.9 0 123.2 0 128s3 9.1 7.5 10.8L64 160l21.2 56.5c1.7 4.5 6 7.5 10.8 7.5s9.1-3 10.8-7.5L128 160l56.5-21.2c4.5-1.7 7.5-6 7.5-10.8s-3-9.1-7.5-10.8L128 96 106.8 39.5C105.1 35 100.8 32 96 32s-9.1 3-10.8 7.5L64 96 7.5 117.2zm352 256c-4.5 1.7-7.5 6-7.5 10.8s3 9.1 7.5 10.8L416 416l21.2 56.5c1.7 4.5 6 7.5 10.8 7.5s9.1-3 10.8-7.5L480 416l56.5-21.2c4.5-1.7 7.5-6 7.5-10.8s-3-9.1-7.5-10.8L480 352l-21.2-56.5c-1.7-4.5-6-7.5-10.8-7.5s-9.1 3-10.8 7.5L416 352l-56.5 21.2z"/></svg> remix</button>
-        <button class="instabutton selected-action-button dont-deselect" id="duplicateButton" disabled={!$selectedActionID} on:click={() => duplicateAction($selectedActionID)}><svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 512 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M64 464H288c8.8 0 16-7.2 16-16V384h48v64c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V224c0-35.3 28.7-64 64-64h64v48H64c-8.8 0-16 7.2-16 16V448c0 8.8 7.2 16 16 16zM224 304H448c8.8 0 16-7.2 16-16V64c0-8.8-7.2-16-16-16H224c-8.8 0-16 7.2-16 16V288c0 8.8 7.2 16 16 16zm-64-16V64c0-35.3 28.7-64 64-64H448c35.3 0 64 28.7 64 64V288c0 35.3-28.7 64-64 64H224c-35.3 0-64-28.7-64-64z"/></svg> duplicate</button>
-        <button class="instabutton selected-action-button dont-deselect" id="remixDuplicateButton" disabled={!$selectedActionID} on:click={() => remixDuplicate($selectedActionID)}>
-          <svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 512 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M64 464H288c8.8 0 16-7.2 16-16V384h48v64c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V224c0-35.3 28.7-64 64-64h64v48H64c-8.8 0-16 7.2-16 16V448c0 8.8 7.2 16 16 16zM224 304H448c8.8 0 16-7.2 16-16V64c0-8.8-7.2-16-16-16H224c-8.8 0-16 7.2-16 16V288c0 8.8 7.2 16 16 16zm-64-16V64c0-35.3 28.7-64 64-64H448c35.3 0 64 28.7 64 64V288c0 35.3-28.7 64-64 64H224c-35.3 0-64-28.7-64-64z"/></svg>
-          <svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M234.7 42.7L197 56.8c-3 1.1-5 4-5 7.2s2 6.1 5 7.2l37.7 14.1L248.8 123c1.1 3 4 5 7.2 5s6.1-2 7.2-5l14.1-37.7L315 71.2c3-1.1 5-4 5-7.2s-2-6.1-5-7.2L277.3 42.7 263.2 5c-1.1-3-4-5-7.2-5s-6.1 2-7.2 5L234.7 42.7zM46.1 395.4c-18.7 18.7-18.7 49.1 0 67.9l34.6 34.6c18.7 18.7 49.1 18.7 67.9 0L529.9 116.5c18.7-18.7 18.7-49.1 0-67.9L495.3 14.1c-18.7-18.7-49.1-18.7-67.9 0L46.1 395.4zM484.6 82.6l-105 105-23.3-23.3 105-105 23.3 23.3zM7.5 117.2C3 118.9 0 123.2 0 128s3 9.1 7.5 10.8L64 160l21.2 56.5c1.7 4.5 6 7.5 10.8 7.5s9.1-3 10.8-7.5L128 160l56.5-21.2c4.5-1.7 7.5-6 7.5-10.8s-3-9.1-7.5-10.8L128 96 106.8 39.5C105.1 35 100.8 32 96 32s-9.1 3-10.8 7.5L64 96 7.5 117.2zm352 256c-4.5 1.7-7.5 6-7.5 10.8s3 9.1 7.5 10.8L416 416l21.2 56.5c1.7 4.5 6 7.5 10.8 7.5s9.1-3 10.8-7.5L480 416l56.5-21.2c4.5-1.7 7.5-6 7.5-10.8s-3-9.1-7.5-10.8L480 352l-21.2-56.5c-1.7-4.5-6-7.5-10.8-7.5s-9.1 3-10.8 7.5L416 352l-56.5 21.2z"/></svg>
-        </button>
-        <button class="instabutton selected-action-button dont-deselect" id="repeatButton" disabled={!$selectedActionID} on:click={() => repeatSelectedActionAlongPath() }><svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 512 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M0 224c0 17.7 14.3 32 32 32s32-14.3 32-32c0-53 43-96 96-96H320v32c0 12.9 7.8 24.6 19.8 29.6s25.7 2.2 34.9-6.9l64-64c12.5-12.5 12.5-32.8 0-45.3l-64-64c-9.2-9.2-22.9-11.9-34.9-6.9S320 19.1 320 32V64H160C71.6 64 0 135.6 0 224zm512 64c0-17.7-14.3-32-32-32s-32 14.3-32 32c0 53-43 96-96 96H192V352c0-12.9-7.8-24.6-19.8-29.6s-25.7-2.2-34.9 6.9l-64 64c-12.5 12.5-12.5 32.8 0 45.3l64 64c9.2 9.2 22.9 11.9 34.9 6.9s19.8-16.6 19.8-29.6V448H352c88.4 0 160-71.6 160-160z"/></svg> repeat</button>
-        {#if !$drawingLocked}
-          <button class="instabutton selected-action-button dont-deselect" id="redrawButton" disabled={!$selectedActionID} on:click={() => redrawSelectedAction()}><svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M339.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L568.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S517.7-4.4 499.1 9.6L262.4 187.2c-24 18-38.2 46.1-38.4 76.1L339.3 367.1zm-19.6 25.4l-116-104.4C143.9 290.3 96 339.6 96 400c0 3.9 .2 7.8 .6 11.6C98.4 429.1 86.4 448 68.8 448H64c-17.7 0-32 14.3-32 32s14.3 32 32 32H208c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg> re-draw</button>
-        {/if}
-        <!-- <button class="instabutton selected-action-button dont-deselect" id="convertButton" disabled={!$selectedActionID} on:click={() => convertSelectedAction()}>find pattern</button> -->
-        <!-- <button class="instabutton selected-action-button dont-deselect" id="saveToolButton" disabled={!$selectedActionID} on:click={() => saveTool($selectedActionID)}> <svg xmlns="http://www.w3.org/2000/svg" height="0.9em" viewBox="0 0 448 512">!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.<path d="M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.8 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"/></svg> <svg xmlns="http://www.w3.org/2000/svg" height="1.4em" viewBox="0 0 512 512">!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.<path d="M176 88v40H336V88c0-4.4-3.6-8-8-8H184c-4.4 0-8 3.6-8 8zm-48 40V88c0-30.9 25.1-56 56-56H328c30.9 0 56 25.1 56 56v40h28.1c12.7 0 24.9 5.1 33.9 14.1l51.9 51.9c9 9 14.1 21.2 14.1 33.9V304H384V288c0-17.7-14.3-32-32-32s-32 14.3-32 32v16H192V288c0-17.7-14.3-32-32-32s-32 14.3-32 32v16H0V227.9c0-12.7 5.1-24.9 14.1-33.9l51.9-51.9c9-9 21.2-14.1 33.9-14.1H128zM0 416V336H128v16c0 17.7 14.3 32 32 32s32-14.3 32-32V336H320v16c0 17.7 14.3 32 32 32s32-14.3 32-32V336H512v80c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64z"/></svg>&nbsp;&nbsp;</button> -->
-      </div>
 
-    </div>
+
+
+      
+
+
+
     <!-- debugging <History /> -->
-  </Page>
-
-</Notebook>
 
 
 
-<!-- <div>Canvas Size: {$p5CanvasSize.width} x {$p5CanvasSize.height}</div> -->
 
-</div>
 
-<!-- <Tooltip element='#canvasContainer' cursorFollow={true}>
-  <ActionItem action={$stagedAction} />
-</Tooltip> -->
-
-<!-- <Tooltip element='#notebook' cursorFollow={false}>
-  <ActionItem action={$stagedAction} />
-</Tooltip> -->
 
 <style>
 
   /* * {
-    border: 1px solid red;
+    border: 1px solid blue;
   } */
 
+  :root {
+    --sidebar-width: 50px;
+    --drawing-area-height: 520px;
+  }
+
+  .background {
+    background-image: url('/backgrounds/Cotton.jpg');
+    background-size: cover;
+    min-height: 100vh;
+    min-width: 100vw;
+    position: absolute;
+    top: 0;
+    z-index: -2;
+  }
+
+  .viewport-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+    overflow: clip;
+    position: relative;
+    z-index: 0;
+    /* background-color: transparent; */
+  }
+
+  .grid-paper {
+    width: 100vw;
+    height: 100vh;
+    max-width: 1100px;
+    margin-left: auto;
+    margin-right: auto;
+    overflow: hidden;
+        background-image: linear-gradient(90deg, #A9D6DC 1px, transparent 1px), 
+                      linear-gradient(180deg, #A9D6DC 1px, transparent 1px);
+    background-size: 20px 20px;
+    position: absolute;
+    z-index: -1;
+  }
+
+  .container { /* the main grid container */
+    display: grid;
+    width: 100%;
+    /* max-height: 100vh; */
+    max-width: 1100px;
+    grid-template-columns: var(--sidebar-width) 2fr minmax(auto, 3fr) var(--sidebar-width);
+    grid-template-rows: 40px var(--drawing-area-height) auto;
+    gap: 20px 10px;
+    grid-template-areas: 
+        "header header header header"
+        "left-sidebar main main right-sidebar"
+        "footer footer footer footer";
+  }
+
+  .footer {
+    grid-area: footer;
+    /* background-color: #EEA57C; */
+    /* opacity: 0.5; */
+    position: relative;
+    /* border: 1px solid orange; */
+  }
+
+  .top-left-corner {
+    grid-column: 1;
+    grid-row: 1;
+    display: flex;
+    margin: auto;
+    align-items: center;
+  }
+
+  .above-canvas {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .above-code {
+    grid-column: 3;
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    margin: auto;
+  }
+
   .drawing-area-container {
+    grid-column: 2;
+    grid-row: 2;
     /* border: 2px solid blue; */
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
-    /* width: calc(min(var(--page-width), var(--page-height))*0.75);
-    height: calc(min(var(--page-width), var(--page-height))*0.75); */
-    width: calc(var(--page-width)*0.9);
-    max-height: calc(var(--page-height)*0.9);
-    margin-top: 1vh;
-    transform: translateX(-5%);
+    position: relative;
+    max-height: var(--drawing-area-height);
+    /* justify-content: flex-start; */
   }
 
-  .drawing-area-with-category-toolbar {
-    /* border: 2px solid red; */
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-    height: 100%;
-    align-items: center;
-    justify-content: flex-start;
+  .main-right {
+    grid-column: 3;
+    grid-row: 2;
+    max-height: var(--drawing-area-height);
   }
 
-  .drawing-area-with-effect-toolbar {
-    /* border: 1px solid red; */
+  .header {
+    grid-area: header;
+    /* background-color: #B7D09F; */
+    background-image: url('/backgrounds/55.png');
+    background-size: cover;
+    /* opacity: 0.8; */
+  }
+
+  .left-toolbar-background {
+    grid-row: 1 / span 3;
+    grid-column: 1;
+    background-image: url('/backgrounds/56.png');
+    background-size: var(--sidebar-width) 100vh;
+    background-repeat: no-repeat;
+    /* background-color: #989A4A; */
+    width: var(--sidebar-width);
+    height: 100vh;
+    /* position: absolute;
+    top: 0;
+    left: 0; */
+    opacity: 0.6;
+  }
+
+  .code-toolbar-background {
+    grid-row: 1 / span 3;
+    grid-column: 4;
+    background-image: url('/backgrounds/56.png');
+    background-size: var(--sidebar-width) 100vh;
+    background-repeat: no-repeat;
+    width: var(--sidebar-width);
+    height: 100vh;
+    /* position: absolute;
+    top: 0;
+    right: 0; */
+    opacity: 0.5;
+  }
+
+  .right-sidebar {
+    grid-area: right-sidebar;
+    width: var(--sidebar-width);
+    z-index: 1;
+  }
+
+  .left-toolbar {
+    /* width: 5em;
+    height: 90vh; */
+    /* background-color: #a4a4a4; */
+    grid-row: 2;
+    grid-column: 1;
     display: flex;
     flex-direction: column;
-    width: 85%;
-    height: 100%;
-    /* overflow: hidden; */
+    position: relative;
+    z-index: 2;
   }
 
-  .category-toolbar {
-    width: 12%;
-    height: 70%;
-    /* position: relative; */
-    /* top: calc(var(--page-height)*0.15); */
+  .code-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 2em;
   }
 
-  .effect-toolbar {
-    /* border: 1px solid blue; */
-    /* border: 1px solid black; */
-    height: 6vh;
-    /* background-color: lightgray; */
+  .current-effect {
+    /* background-color: #a4a4a4; */
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    z-index: 1;
+  }
+
+  .effect-img {
+    width: 80%;
+    border-radius: 5px;
+    height: auto;
+    margin: 10% auto;
   }
 
   .color-bank {
     position: relative;
     bottom: 0;
-    margin-top: auto;
+    margin-top: 20px;
     /* margin-bottom: 10px; */
     width: 100%;
   }
 
-  .drawing-area {
-    /* border: 2px solid green; */
-    /* display: flex;
+  .footer-center {
+    /* border: 1px solid red; */
+    grid-column: 2 / span 2;
+    grid-row: 3;
+    position: relative;
+    display: flex;
+    flex-direction: column;
     align-items: flex-start;
-    justify-content: flex-end; */
-    width: calc(var(--page-width)*0.8);
-    height: calc(var(--page-width)*0.8);
-    max-width: 523px;
-    /* max-height: 523px; */
-    max-height: calc(var(--page-height)*0.8);
-    margin-top: 3vh;
-    /* margin-bottom: 20px; */
-    /* box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px; */
-    /* box-shadow: rgba(0, 0, 0, 0.07) 0px 1px 2px, rgba(0, 0, 0, 0.07) 0px 2px 4px, rgba(0, 0, 0, 0.07) 0px 4px 8px, rgba(0, 0, 0, 0.07) 0px 8px 16px, rgba(0, 0, 0, 0.07) 0px 16px 32px, rgba(0, 0, 0, 0.07) 0px 32px 64px; */
+    /* margin: 10px auto; */
+    /* border: 1px solid red; */
+  }
+
+  .staged-action-background {
+    /* border: 1px solid blue; */
+    grid-row: 3;
+    grid-column: 2 / span 2;
+    background-image: url('/backgrounds/117.png');
+    background-size: 100% 120%;
+    background-repeat: no-repeat;
+    opacity: 0.8;
+    margin-top: -10px;
   }
 
   .staged-action {
-    background-color: white;
-    border: 1px solid lightgray;
+    /* border: 1px solid green; */
+    /* background-image: url('/backgrounds/117.png');
+    background-size: cover;
+    background-repeat: no-repeat; */
+    height: auto;
+    /* width: 100%; */
+    /* padding: 20px; */
+    margin: 0 auto;
+    opacity: 1.0;
+    z-index: 1;
+    font-size: 1.1em;
+    overflow-y: scroll;
+    max-height: 300px;
+    /* background-color: white; */
+    /* border: 1px solid lightgray; */
+    /*
     padding: 10px;
     cursor: pointer;
     border-radius: 5px;
-    box-shadow: rgba(17, 17, 26, 0.1) 0px 1px 0px, rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 48px;
+    box-shadow: rgba(17, 17, 26, 0.1) 0px 1px 0px, rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 48px; */
   }
 
-  #code-zone {
-    height: calc(var(--page-height)*0.9);
+  .effect-settings {
+    position: absolute;
+    top: 20%;
+    left: 0;
+  }
+
+  #effect-settings-background {
+    position: relative;
     width: 100%;
+    height: 90%;
+    opacity: 0.6;
+  }
+
+  .bottom-row {
+    /* background-color: #EEA57C; */
+    /* opacity: 0.5; */
+  }
+
+  .bottom-row-test {
+    /* background-color: #EEA57C;
+    opacity: 0.5;
+    position: absolute;
+    width: 62%;
+    height: 270px;
+    bottom: 0; */
+    /* left: 0; */
   }
 
   #main-list {
-    margin-left: calc(var(--adjusted-page-width)*0.05); /* Margin from left edge */
-    margin-bottom: 100px;
+    max-height: var(--drawing-area-height);
+    max-width: 470px;
+    overflow-y: auto;
   }
   /* .code-area {
     margin-top: 30px;
   } */
 
-  #code-toolbar {
-    position: relative;
-    bottom: 50px;
-  }
-
-  .staged-action-container {
-    border: 1px solid black;
-    display: grid;
-    grid-template-columns: auto;
-    grid-template-rows: auto;
-    
-  }
-
-  .staged-action-buttons {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    align-items: center;
-  }
-
-  /* .staged-action { */
-    /* font-style: italic; */
-    /* display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    padding: 0 20px;
-    border: none;
-    overflow: scroll; */
-    /* margin-left: 2em; */
-    /* width: calc(var(--canvas-width)*0.8); */
-    /* padding: 30px;
-    box-shadow: 1px 2px 3px 2px gray; */
-  /* } */
-
-  .instabutton {
-    padding: 0.5vh 0.5vw;
-    font-size: 1vw;
-    font-family: 'FuturaHandwritten';
+  .top-menu-button {
+    /* padding: 0.5vh 0.5vw; */
+    font-size: 30px;
+    font-family: 'Fandango';
     cursor: pointer;
+    /* border: 1px solid black; */
     border: none;
-    border-radius: 5px;
-    color: black;
+    /* border-radius: 5px; */
+    color: rgba(0, 0, 0, 0.9);
+    background-color: transparent;
+    /* border: 1px solid blue; */
+    /* background-color: white; */
+    /* text-shadow: 2px 2px 0px rgb(138, 138, 138); */
+    z-index: 1;
   }
 
-  .instabutton:hover {
-    background-color: #e6e6e6;
+  .top-menu-button:hover {
+    /* background-color: #e6e6e6; */
+    /* color: black; */
+    text-shadow: 2px 5px 0px rgb(138, 138, 138);
   }
 
-  .instabutton:disabled {
+  .top-menu-button:disabled {
     color: gray;
-    background-color: #f4f4f4;
-    background-color: buttonface;
+    /* background-color: #f4f4f4; */
+    /* background-color: buttonface; */
     color: #a0a0a0;
     fill: #a0a0a0;
   }
 
-  .instabutton svg {
+  .top-menu-button svg {
     height: 1em;
     width: auto;
     /* transform: translateY(-2px); */
   }
 
   .selected-action-button {
-    padding: 0 10px;
+    background-color: transparent;
+    cursor: pointer;
+    border: none;
+    font-family: 'Fandango';
+    font-size: 1.1em;
+    color: black;
   }
 
   .selected-action-button:disabled {
-    background-color: buttonface;
-    color: #a0a0a0;
-    fill: #a0a0a0;
-  }
-
-  .icon-button {
-    border: none;
-    font-size: 1.5em;
     background-color: transparent;
-    fill: black;
-    cursor: pointer;
+    color: #858585;
+    fill: #858585;
   }
 
-  .icon-button:hover {
-    fill: rgb(52, 52, 52);
-  }
-
-  .icon-button:active {
-    fill: rgb(115, 115, 115);
-  }
-
-  #deleteButton {
-    /* padding: 8px 10px 3px 10px; */
-    font-size: 1.2em;
-    padding-top: 5px;
-    color: gray;
-  }
-
-  .instabuttons-top { 
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    width: calc(var(--adjusted-page-width)*0.87);
-    margin-left: calc(var(--adjusted-page-width)*0.09);
-    margin-top: 2vh;
-    margin-bottom: 2vh;
-    z-index: 100;
-  }
-
-  .instabuttons-top .left-group,
-  .instabuttons-top .center-group,
-  .instabuttons-top .right-group {
-    display: flex;
-    gap: 0.5vw;
-  }
-
-  .instabuttons-top .left-group {
-      justify-content: flex-start;
-      height: 3vh;
-  }
-
-  .instabuttons-top .center-group {
-      justify-content: center;
-      flex-grow: 1;
-  }
-
-  .instabuttons-top .right-group {
-      height: 3vh;
-      justify-content: flex-end;
-  }
-
-  .instabuttons-bottom {
-    position: absolute;
-    bottom: 30px;
-    display: flex;
-    flex-direction: row;
-    gap: 1vw;
-    left: 5%;
-    right: 5%;
-    justify-content: center;
+  #duplicateButton {
+    /* font-size: 0.9em; */
   }
 
   .lock-button {
     background: none;
     cursor: pointer;
-    position: absolute;
+    /* position: absolute;
     right: 10px;
-    top: 10px;
+    top: 10px; */
+  }
+
+  .staged-color-picker {
+    /* border: 1px solid red; */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid lightgray;
+    background-color: white;
+    padding: 5px;
+    border-radius: 5px;
+  }
+
+  @media (min-width: 1101px) {
+    .container {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .left-toolbar-background {
+        /* Position the left toolbar based on the centered grid width */
+        /* left: calc((100vw - 1100px) / 2); */
+    }
+
+    .code-toolbar-background {
+        /* Position the right toolbar based on the centered grid width */
+        /* right: calc((100vw - 1100px - 40px) / 2); */
+    }
+  }
+
+  @media (min-height: 681px) {
+    .container, .grid-paper {
+        margin-top: 10px;
+    }
+
+    .staged-action {
+      margin: 0.5em auto;
+      font-size: 1.3em;
+    }
   }
 
 </style>

@@ -1,17 +1,23 @@
 <script lang="ts">
   import { activeCategory } from '../../stores/dataStore'
+  import EffectToolbar from './EffectToolbar.svelte';
 
   export let category: string;
   export let isActive: boolean;
 
   function handleCategoryClick() {
-    activeCategory.set(category);
+    // activeCategory.set(category);
+  }
+
+  function handleCategoryHover() {
+    // console.log('hovering over', category);
   }
 </script>
 
 <div class="category-button-container">
   <button 
     title={category}
+    on:mouseover={handleCategoryHover}
     on:click={handleCategoryClick}
     class="category-button {isActive ? 'active' : ''}"
     >
@@ -19,14 +25,15 @@
     <!-- {category} -->
   </button>
 </div>
+<EffectToolbar category={category} />
 
 <style>
 
   .category-button-container {
     /* border: 1px solid green; */
     box-sizing: border-box;
-    padding: 0 5% 0 5%;
-    width: 75%;
+    /* padding: 0 5% 0 5%; */
+    /* width: 75%; */
   }
   .category-button {
     display: flex;
@@ -39,6 +46,8 @@
     padding: 20% 0;
     font-size: 0.8em;
     font-family: 'FuturaHandwritten';
+    width: 50px;
+    height: 50px;
     /* border: 1px solid red; */
   }
 

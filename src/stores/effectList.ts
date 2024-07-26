@@ -311,7 +311,7 @@ export const effectList = [
         category: 'control',
         effect: 'along path',
         params: {
-          title: "Connected line",
+          title: "Connected Line",
           children: ['line'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
           angle: 0,
@@ -351,7 +351,7 @@ export const effectList = [
         category: 'control',
         effect: 'along path',
         params: {
-          title: "Connected line",
+          title: "Pattern Maker",
           children: ['light_blue_dot', 'dark_blue_dot'],
           color: '#80babd',
           path: [[10, 50]],
@@ -402,7 +402,7 @@ export const effectList = [
         category: 'control',
         effect: 'along path',
         params: {
-          title: "mosaic",
+          title: "Mosaic Brush",
           children: ['red_circle', 'orange_triangle', 'gold_rectangle', 'olive_circle', 'green_triangle', 'light_blue_rectangle', 'blue_circle', 'indigo_triangle', 'purple_rectangle', 'violet_circle', 'pink_triangle'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
           angle: 0,
@@ -424,7 +424,7 @@ export const effectList = [
         type: 'effect',
         category: 'shapes',
         effect: 'triangle',
-        params: {color: 'rgb(255, 165, 0)', position: {x: 0, y: 0}, width: 20, height: 20}
+        params: {color: 'rgb(255, 165, 0)', position: {x: 0, y: 0}, width: 20, height: 20, angle: 0}
       },
       'gold_rectangle': {
         uuid: 'gold_rectangle',
@@ -432,7 +432,7 @@ export const effectList = [
         type: 'effect',
         category: 'shapes',
         effect: 'rectangle',
-        params: {color: 'rgb(255, 215, 0)', position: {x: 0, y: 0}, width: 15, height: 22}
+        params: {color: 'rgb(255, 215, 0)', position: {x: 0, y: 0}, width: 15, height: 22, angle: 0}
       },
       'olive_circle': {
         uuid: 'olive_circle',
@@ -448,7 +448,7 @@ export const effectList = [
         type: 'effect',
         category: 'shapes',
         effect: 'triangle',
-        params: {color: 'rgb(0, 128, 0)', position: {x: 0, y: 0}, width: 15, height: 15}
+        params: {color: 'rgb(0, 128, 0)', position: {x: 0, y: 0}, width: 15, height: 15, angle: 0}
       },
       'light_blue_rectangle': {
         uuid: 'light_blue_rectangle',
@@ -456,7 +456,7 @@ export const effectList = [
         type: 'effect',
         category: 'shapes',
         effect: 'rectangle',
-        params: {color: 'rgb(38, 162, 224)', position: {x: 0, y: 0}, width: 8, height: 12}
+        params: {color: 'rgb(38, 162, 224)', position: {x: 0, y: 0}, width: 8, height: 12, angle: 0}
       },
       'blue_circle': {
         uuid: 'blue_circle',
@@ -472,7 +472,7 @@ export const effectList = [
         type: 'effect',
         category: 'shapes',
         effect: 'triangle',
-        params: {color: 'rgb(75, 0, 130)', position: {x: 0, y: 0}, width: 10, height: 10}
+        params: {color: 'rgb(75, 0, 130)', position: {x: 0, y: 0}, width: 10, height: 10, angle: 0}
       },
       'purple_rectangle': {
         uuid: 'purple_rectangle',
@@ -480,7 +480,7 @@ export const effectList = [
         type: 'effect',
         category: 'shapes',
         effect: 'rectangle',
-        params: {color: 'rgb(128, 0, 128)', position: {x: 0, y: 0}, width: 20, height: 30}
+        params: {color: 'rgb(128, 0, 128)', position: {x: 0, y: 0}, width: 20, height: 30, angle: 0}
       },
       'violet_circle': {
         uuid: 'violet_circle',
@@ -496,7 +496,7 @@ export const effectList = [
         type: 'effect',
         category: 'shapes',
         effect: 'triangle',
-        params: {color: 'rgb(255, 192, 203)', position: {x: 0, y: 0}, width: 12, height: 12}
+        params: {color: 'rgb(255, 192, 203)', position: {x: 0, y: 0}, width: 12, height: 12, angle: 0}
       }
     }
   },
@@ -516,7 +516,7 @@ export const effectList = [
         category: 'control',
         effect: 'along path',
         params: {
-          title: "hearts",
+          title: "Heart Brush",
           children: ['small_heart', 'large_heart'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
           angle: 0,
@@ -566,7 +566,7 @@ export const effectList = [
         category: 'control',
         effect: 'along path',
         params: {
-          title: "stars",
+          title: "Star Brush",
           children: ['pink_star', 'purple_star', 'dark_blue_star', 'blue_star', 'light_blue_star'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
           angle: 0,

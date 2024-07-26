@@ -34,8 +34,8 @@
 
 </script>
 <div class="outer-container">
-<details on:toggle={handleToggle}>
-  <summary id="saved-colors-toggle">saved colors</summary>
+<!-- <details on:toggle={handleToggle}>
+  <summary id="saved-colors-toggle"></summary> -->
   <div class="color-bank-container">
 
     <div class="color-palette">
@@ -73,7 +73,7 @@
     </div> -->
     
 </div>
-</details>
+<!-- </details> -->
 </div>
 
 <style>
@@ -81,7 +81,8 @@
   #saved-colors-toggle {
     cursor: pointer;
     color: rgb(40, 40, 40);
-    margin: 0 0.5vw;
+    margin: 10px;
+    font-family: "Fandango";
   }
 
   .button-container {
@@ -91,18 +92,17 @@
   }
 
   .outer-container {
-    border: 1px solid white;
-    box-shadow: 0px 0px 10px #ccc;
+    /* border: 1px solid white;
+    box-shadow: 0px 0px 10px #ccc; */
     width: 100%;
     box-sizing: border-box;
     border-radius: 0 0 10px 10px;
   }
 
   .color-bank-container {
+    width: 100%;
     display: flex;
-    flex-direction: row;
-    gap: 1vw;
-    padding: 0 0.5vw 0.5vw 0.5vw;
+    flex-direction: column;
     align-items: center;
   }
 
@@ -123,7 +123,6 @@
     /* flex-grow: 1; */
     justify-content: flex-start;
     align-items: center;
-    gap: 0.1vw;
     /* width: calc(min(3vh, 3vw)*10); */
   }
 

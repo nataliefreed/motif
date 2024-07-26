@@ -57,6 +57,7 @@
     text-underline-offset: 5px;
     cursor: text;
     font-style: italic;
+    color: #0a3f0c;
   }
 </style>
 

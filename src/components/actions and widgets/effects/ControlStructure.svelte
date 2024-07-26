@@ -34,6 +34,7 @@
     <ListWidget id='children' value={params.children} {depth} on:valueChange={handleValueChange}/>
   {/if}
 {:else if name === 'along path'}
+  <StringWidget id='title' value={params.title} />
   <ChildrenWidget id='children' on:miniActionClick={toggle} value={params.children}/>
   <!-- <StringWidget id='title' value={params.title} /> -->
   along<PathWidget id='path' path={params.path} angle={params.angle} on:valueChange={handleValueChange}/>

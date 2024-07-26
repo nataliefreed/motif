@@ -24,13 +24,13 @@
 
 <style>
   .instabutton {
-    padding: 5px 10px;
-    font-size: 1em;
-    font-family: 'FuturaHandwritten';
+    /* padding: 5px 10px; */
+    font-size: 30px;
     cursor: pointer;
     border: none;
     border-radius: 5px;
     color: black;
+    background-color: transparent;
   }
 
   .button-icon {
