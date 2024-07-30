@@ -204,7 +204,7 @@
             {#if $drawingLocked}
               <Tooltip element={drawingArea} settings={{trigger:'mouseenter', offset: [0, -200], hideOnClick:false}}>
                 {#if $drawingLocked}
-                  <div>Drawing is locked! Try changing the code on the right or the saved colors below.</div>
+                  <div>Drawing is locked! Try changing the code on the right! Unlock to draw again.</div>
                 {/if}
               </Tooltip>
             {/if}
@@ -374,6 +374,7 @@
     display: flex;
     margin: auto;
     align-items: center;
+    z-index: 2;
   }
 
   .above-canvas {

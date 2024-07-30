@@ -1,6 +1,5 @@
 <script lang="ts">
-  import CategoryButton from './CategoryButton.svelte';
-  import { activeCategory, toolStore, selectedEffect } from '../../stores/dataStore';
+  import { activeCategory, toolStore, selectedEffect, drawingLocked } from '../../stores/dataStore';
   import type { Effect } from '../../types/types';
   
   export let categories: string[];
@@ -32,7 +31,7 @@
 
 <!-- <div>{$activeCategory}</div> -->
 <div class="category-toolbar" on:mouseout={handleCategoryMouseout}>
-  {#if $selectedEffect && $selectedEffect.thumbnail}
+  {#if $selectedEffect && $selectedEffect.thumbnail && !$drawingLocked}
     <button 
     on:click={handleActiveEffectClick}
     class="active-effect-button" 
@@ -71,6 +70,7 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    gap: 10px;
   }
 
   .effect-toolbar {
@@ -78,7 +78,10 @@
     flex-direction: row;
     align-items: flex-start;
     gap: 10px;
-    margin-left: 10px;
+    /* margin-left: 10px; */
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 5px;
+    border-radius: 0 5px 5px 0;
   }
 
   .category-container {
@@ -98,7 +101,11 @@
   }
 
   .category-button.selected {
-    color: #0d76a6;
+    background-color: rgba(255, 255, 255, 0.7);
+  }
+
+  .category-button:hover {
+    background-color: rgba(255, 255, 255, 0.5);
   }
 
   .effect-button, .active-effect-button {
