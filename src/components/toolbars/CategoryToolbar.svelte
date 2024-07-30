@@ -31,6 +31,8 @@
 </script>
 
 <!-- <div>{$activeCategory}</div> -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y-mouse-events-have-key-events -->
 <div class="category-toolbar" on:mouseout={handleCategoryMouseout}>
   {#if $selectedEffect && $selectedEffect.thumbnail}
     <button 
@@ -42,10 +44,12 @@
   {/if}
   {#each categories as category}
     <div class="category-container">
+      <!-- svelte-ignore a11y-mouse-events-have-key-events -->
       <button on:click={() => handleCategoryClick(category)}
         on:mouseover={() => handleCategoryMouseover(category)}
         class="category-button" class:selected={$activeCategory === category && visibleCategory === ''}>
-        {category}
+        <img class="category-img" src="/assets/icons/{category}.svg" alt="{category}">
+        <!-- {category} -->
       </button>
       {#if category === visibleCategory}
         <div class="effect-toolbar">
@@ -71,6 +75,7 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    gap: 10px;
   }
 
   .effect-toolbar {
@@ -79,12 +84,15 @@
     align-items: flex-start;
     gap: 10px;
     margin-left: 10px;
+    border: 1px solid blue;
   }
 
   .category-container {
     display: flex;
     flex-direction: row;
     align-items: flex-start;
+    /* margin: auto; */
+    /* border: 1px solid red; */
   }
 
   .category-button {
@@ -94,7 +102,18 @@
     font-family: 'Fandango';
     font-size: 1.1em;
     color: #5299BB;
-    height: 40px;
+    /* height: 40px; */
+    display: flex;
+    flex-direction: column;
+    /* margin: auto; */
+    padding: 5px;
+  }
+
+  .category-img {
+    width: 30px;
+    height: 30px;
+    display: block;
+    margin: auto;
   }
 
   .category-button.selected {
