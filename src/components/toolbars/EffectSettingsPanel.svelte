@@ -1,11 +1,12 @@
 <script lang="ts">
   import ColorBank from './ColorBank.svelte';
-  import { currentColor, shouldRandomizeColor } from '../../stores/dataStore';
+  import { shouldRandomizeColor } from '../../stores/dataStore';
+  import { setCurrentColor, currentColor } from '../../stores/colorStore';
 
   let shouldRandomize: boolean = false;
 
   function handleColorChange(event: CustomEvent) {
-    currentColor.set(event.detail);
+    setCurrentColor(event.detail);
   }
 
   function toggleRandom() {

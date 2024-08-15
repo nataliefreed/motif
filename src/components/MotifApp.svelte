@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { actionStore, toolStore, selectedEffect, activeCategory, stagedAction, stagedActionID, changedActionID, selectedActionID, selectedCodeEffect, currentColor, actionRoot, flatActionStore, playSpeed, renderDelay, isPlaying, firstPlay, drawingLocked } from '../stores/dataStore';
+  import { actionStore, toolStore, selectedEffect, activeCategory, stagedAction, stagedActionID, changedActionID, selectedActionID, selectedCodeEffect, actionRoot, flatActionStore, playSpeed, renderDelay, isPlaying, firstPlay, drawingLocked } from '../stores/dataStore';
   import { exportCodeWithImage, importCodeFromImage } from './export-utils';
   import LinedPaper from './LinedPaper.svelte';
   import ActionItem from './actions and widgets/ActionItem.svelte';
@@ -8,10 +8,7 @@
   import Canvas from './canvas/Canvas.svelte';
   import Ruler from './canvas/Ruler.svelte';
   import ColorBank from './toolbars/ColorBank.svelte';
-  import { scrollToAction, removeSelectedAction, repeatSelectedActionAlongPath, remixAction, duplicateAction, remixDuplicate, redrawSelectedAction, convertSelectedAction, clearAllActions, undo, redo, rewindToBeginning, fastForwardToEnd, stepBackward, stepForward, hideAction, showAction } from './action-utils';
-  import EffectToolbar from './toolbars/EffectToolbar.svelte';
-  import Notebook from './Notebook.svelte';
-  import Page from './Page.svelte';
+  import { scrollToAction, removeSelectedAction, repeatSelectedActionAlongPath, wrapSelectedInGroup, remixAction, duplicateAction, remixDuplicate, redrawSelectedAction, convertSelectedAction, clearAllActions, undo, redo, rewindToBeginning, fastForwardToEnd, stepBackward, stepForward, hideAction, showAction } from './action-utils';
   import Tooltip from './Tooltip.svelte';
   import CategoryToolbar from './toolbars/CategoryToolbar.svelte';
   import { setupKeyboardEvents, removeKeyboardEvents } from './KeyboardEvents';
@@ -20,9 +17,10 @@
   import { curatedRandomHexColor } from '../utils/color-utils';
   import PlayButton from './PlayButton.svelte';
   import NumberWidget from './actions and widgets/NumberWidget.svelte';
-  import { showSavedColors, pickerPalette } from '../stores/colorStore';
-    import CodeToolbar from './toolbars/CodeToolbar.svelte';
+  import { paintColors } from '../stores/colorStore';
   import ColorPicker from './actions and widgets/ColorPicker.svelte';
+  import { scale } from 'svelte/transition';
+  import DebugPaintStore from './DebugPaintStore.svelte';
 
   let allCategories:string[] = [];
   let value = '#FFFFFF';
@@ -164,7 +162,7 @@
 
     <div class="above-canvas">
       <div class="doc-controls">
-        <button class="top-menu-button" title="save" id="exportButton" on:click={exportCodeWithImage}>save</button>
+        <button class="top-menu-button" title="save" id="exportButton" on:click={exportCodeWithImage}>download</button>
         <button class="top-menu-button" title="open" id="importButton" on:click={importCodeFromImage}>open</button>
         <button class="top-menu-button" id="clearAllButton" on:click={clearAllActions}>clear</button>
       </div>
@@ -189,6 +187,7 @@
       </div> <!-- playback-controls -->
     </div> <!-- above code -->
 
+    {#if !$drawingLocked}
     <div class="left-toolbar">
       <!-- <div class="current-effect">
         {#if $selectedEffect}
@@ -198,6 +197,7 @@
       <CategoryToolbar categories={$drawingLocked?[]:allCategories} />
       <div class="color-bank"><ColorBank/></div>
     </div>
+    {/if}
 
       <div class="drawing-area-container">
         <div class="drawing-area" bind:this={drawingArea}>
@@ -231,8 +231,10 @@
           remix a copy
         </button>
         <button class="selected-action-button dont-deselect" id="repeatButton" disabled={!$selectedActionID} on:click={() => repeatSelectedActionAlongPath() }><svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 512 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M0 224c0 17.7 14.3 32 32 32s32-14.3 32-32c0-53 43-96 96-96H320v32c0 12.9 7.8 24.6 19.8 29.6s25.7 2.2 34.9-6.9l64-64c12.5-12.5 12.5-32.8 0-45.3l-64-64c-9.2-9.2-22.9-11.9-34.9-6.9S320 19.1 320 32V64H160C71.6 64 0 135.6 0 224zm512 64c0-17.7-14.3-32-32-32s-32 14.3-32 32c0 53-43 96-96 96H192V352c0-12.9-7.8-24.6-19.8-29.6s-25.7-2.2-34.9 6.9l-64 64c-12.5 12.5-12.5 32.8 0 45.3l64 64c9.2 9.2 22.9 11.9 34.9 6.9s19.8-16.6 19.8-29.6V448H352c88.4 0 160-71.6 160-160z"/></svg>repeat</button>
+        <button class="selected-action-button dont-deselect" id="nameButton" disabled={!$selectedActionID} on:click={() => wrapSelectedInGroup() }><svg xmlns="http://www.w3.org/2000/svg" height="1.1em"viewBox="0 0 640 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M192 128c0-17.7 14.3-32 32-32s32 14.3 32 32l0 7.8c0 27.7-2.4 55.3-7.1 82.5l-84.4 25.3c-40.6 12.2-68.4 49.6-68.4 92l0 71.9c0 40 32.5 72.5 72.5 72.5c26 0 50-13.9 62.9-36.5l13.9-24.3c26.8-47 46.5-97.7 58.4-150.5l94.4-28.3-12.5 37.5c-3.3 9.8-1.6 20.5 4.4 28.8s15.7 13.3 26 13.3l128 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-83.6 0 18-53.9c3.8-11.3 .9-23.8-7.4-32.4s-20.7-11.8-32.2-8.4L316.4 198.1c2.4-20.7 3.6-41.4 3.6-62.3l0-7.8c0-53-43-96-96-96s-96 43-96 96l0 32c0 17.7 14.3 32 32 32s32-14.3 32-32l0-32zm-9.2 177l49-14.7c-10.4 33.8-24.5 66.4-42.1 97.2l-13.9 24.3c-1.5 2.6-4.3 4.3-7.4 4.3c-4.7 0-8.5-3.8-8.5-8.5l0-71.9c0-14.1 9.3-26.6 22.8-30.7zM24 368c-13.3 0-24 10.7-24 24s10.7 24 24 24l40.3 0c-.2-2.8-.3-5.6-.3-8.5L64 368l-40 0zm592 48c13.3 0 24-10.7 24-24s-10.7-24-24-24l-310.1 0c-6.7 16.3-14.2 32.3-22.3 48L616 416z"/></svg>label</button>
+
         {#if !$drawingLocked}
-          <button class="selected-action-button dont-deselect" id="redrawButton" disabled={!$selectedActionID} on:click={() => redrawSelectedAction()}><svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M339.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L568.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S517.7-4.4 499.1 9.6L262.4 187.2c-24 18-38.2 46.1-38.4 76.1L339.3 367.1zm-19.6 25.4l-116-104.4C143.9 290.3 96 339.6 96 400c0 3.9 .2 7.8 .6 11.6C98.4 429.1 86.4 448 68.8 448H64c-17.7 0-32 14.3-32 32s14.3 32 32 32H208c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg>draw again</button>
+          <button class="selected-action-button dont-deselect" id="redrawButton" disabled={!$selectedActionID} on:click={() => redrawSelectedAction()}><svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M339.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L568.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S517.7-4.4 499.1 9.6L262.4 187.2c-24 18-38.2 46.1-38.4 76.1L339.3 367.1zm-19.6 25.4l-116-104.4C143.9 290.3 96 339.6 96 400c0 3.9 .2 7.8 .6 11.6C98.4 429.1 86.4 448 68.8 448H64c-17.7 0-32 14.3-32 32s14.3 32 32 32H208c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg>draw with</button>
         {/if}
         <!-- <button class="instabutton selected-action-button dont-deselect" id="convertButton" disabled={!$selectedActionID} on:click={() => convertSelectedAction()}>find pattern</button> -->
         <!-- <button class="instabutton selected-action-button dont-deselect" id="saveToolButton" disabled={!$selectedActionID} on:click={() => saveTool($selectedActionID)}> <svg xmlns="http://www.w3.org/2000/svg" height="0.9em" viewBox="0 0 448 512">!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.<path d="M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.8 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"/></svg> <svg xmlns="http://www.w3.org/2000/svg" height="1.4em" viewBox="0 0 512 512">!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.<path d="M176 88v40H336V88c0-4.4-3.6-8-8-8H184c-4.4 0-8 3.6-8 8zm-48 40V88c0-30.9 25.1-56 56-56H328c30.9 0 56 25.1 56 56v40h28.1c12.7 0 24.9 5.1 33.9 14.1l51.9 51.9c9 9 14.1 21.2 14.1 33.9V304H384V288c0-17.7-14.3-32-32-32s-32 14.3-32 32v16H192V288c0-17.7-14.3-32-32-32s-32 14.3-32 32v16H0V227.9c0-12.7 5.1-24.9 14.1-33.9l51.9-51.9c9-9 21.2-14.1 33.9-14.1H128zM0 416V336H128v16c0 17.7 14.3 32 32 32s32-14.3 32-32V336H320v16c0 17.7 14.3 32 32 32s32-14.3 32-32V336H512v80c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64z"/></svg>&nbsp;&nbsp;</button> -->
@@ -244,15 +246,18 @@
     <div class="footer-center">
       <!-- <div class="effect-settings"> -->
         {#if !$drawingLocked}
-          <div class="staged-action">
-
-          <ActionItem action={$stagedAction} />
-          
-          </div>
+          {#if $stagedAction}
+            {#key $stagedActionID}
+              <div class="staged-action" in:scale>
+                <ActionItem action={$stagedAction} />
+              </div>
+            {/key}
+            <!-- <DebugPaintStore /> -->
+          {/if}
         {/if}
-        <div class="staged-color-picker">
+        <!-- <div class="staged-color-picker">
           <ColorPicker bind:value={value} />
-          </div>
+          </div> -->
         <!-- <EffectSettingsPanel /> -->
       <!-- </div> -->
     </div> <!-- staged action container -->
@@ -335,7 +340,7 @@
   .grid-paper {
     width: 100vw;
     height: 100vh;
-    max-width: 1100px;
+    max-width: 1300px;
     margin-left: auto;
     margin-right: auto;
     overflow: hidden;
@@ -350,7 +355,7 @@
     display: grid;
     width: 100%;
     /* max-height: 100vh; */
-    max-width: 1100px;
+    max-width: 1300px;
     grid-template-columns: var(--sidebar-width) 2fr minmax(auto, 3fr) var(--sidebar-width);
     grid-template-rows: 40px var(--drawing-area-height) auto;
     gap: 20px 10px;
@@ -384,6 +389,13 @@
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+  }
+
+  .doc-controls {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    margin: 10px;
   }
 
   .above-code {
@@ -469,7 +481,9 @@
   .code-toolbar {
     display: flex;
     flex-direction: column;
-    gap: 2em;
+    justify-content: space-between;
+    height: 90%;
+    /* gap: 1.5em; */
   }
 
   .current-effect {
@@ -572,8 +586,9 @@
 
   #main-list {
     max-height: var(--drawing-area-height);
-    max-width: 470px;
+    max-width: 100%;
     overflow-y: auto;
+    margin: 0;
   }
   /* .code-area {
     margin-top: 30px;
@@ -599,6 +614,12 @@
     /* background-color: #e6e6e6; */
     /* color: black; */
     text-shadow: 2px 5px 0px rgb(138, 138, 138);
+    transform: scale(1.2);
+    transition: transform 0.2s ease-in-out;
+  }
+
+  .top-menu-button:active:not(:disabled) {
+    transform: translateY(2px);
   }
 
   .top-menu-button:disabled {
@@ -621,7 +642,31 @@
     border: none;
     font-family: 'Fandango';
     font-size: 1.1em;
+    height: 100%;
     color: black;
+    border-radius: 50% 50%;
+  }
+
+  .selected-action-button:hover:not(:disabled) {
+    /* background-color: #ffffff57; */
+    /* color: white; */
+    transform: scale(1.2);
+    transition: transform 0.2s ease-in-out;
+    /* text-shadow: 2px 3px 0px rgb(138, 138, 138); */
+  }
+
+  .selected-action-button:hover:not(:disabled) svg {
+    /* fill: white; */
+    transform: scale(1.2);
+    transition: transform 0.2s ease-in-out;
+  }
+
+  .selected-action-button:active:not(:disabled) {
+    /* background-color: #ffffff9d; */
+    /* color: white; */
+    transform: translateY(2px);
+    transition: transform 0.2s ease-in-out;
+    /* text-shadow: 2px 5px 0px rgb(138, 138, 138); */
   }
 
   .selected-action-button:disabled {
@@ -654,11 +699,15 @@
     border-radius: 5px;
   }
 
-  @media (min-width: 1101px) {
+  @media (min-width: 1301px) {
     .container {
         margin-left: auto;
         margin-right: auto;
     }
+
+    #main-list {
+      margin-left: 10px;
+  }
 
     .left-toolbar-background {
         /* Position the left toolbar based on the centered grid width */

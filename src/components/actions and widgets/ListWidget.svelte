@@ -3,7 +3,7 @@
   import type { SortableEvent } from 'sortablejs';
   import Sortable from 'sortablejs';
   import { onMount, createEventDispatcher } from 'svelte';
-  import { selectedActionID, activeIDs, flatActionStore, stagedActionID, currentColor, changedActionID, hoveredActionID } from '../../stores/dataStore';
+  import { selectedActionID, activeIDs, flatActionStore, stagedActionID, changedActionID, hoveredActionID } from '../../stores/dataStore';
   import ActionItem from './ActionItem.svelte';
   import { scale, fade, fly } from 'svelte/transition';
   import { deepCopy } from '../../utils/utils';
@@ -319,11 +319,15 @@ function getDynamicStyle(id:string) {
 
 /* list item */
   li {
-    border: 2px solid transparent; /* Invisible border */
+    box-sizing: border-box;
+    /* border: 1px solid lightgray; */
+    border-radius: 5px;
     user-select: none; /* prevent text selection - makes it easier to grab */
     position: relative;
     padding-left: 1.5em; /* Space for the numbered index, also affects overall indent level */
     padding-right: 0.2em; /* makes selection box look nicer */
+    background-color: #ffffff82;
+    padding: 0.1em 0.2em 0em 1.5em;
   }
 
   .selected {

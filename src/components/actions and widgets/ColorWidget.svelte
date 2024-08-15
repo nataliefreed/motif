@@ -6,6 +6,7 @@
   import Tooltip from '../Tooltip.svelte';
   import { getReadableColor } from '../../utils/color-utils';
   import { activePalette } from '../../stores/colorStore';
+  import SavedColorLabel from './SavedColorLabel.svelte';
 
   export let id = '';
   export let value = '#FFFFFF';
@@ -70,14 +71,14 @@
   class="color-palette-widget {lockedIndex > -1 ? 'locked' : ''}"
   style="background-color: {value}; color: {getReadableColor(value)}; width:{size}em; height:{size}em;"
 >
-  {#if lockedIndex > -1} <span class="color-label">{lockedIndex+1}</span> {/if}
+  {#if lockedIndex > -1}<span class="color-label"><SavedColorLabel id={lockedIndex} color={value} /></span> {/if}
 </span>
 
 {#if colorButton}
   <Tooltip element={colorButton} let:showContent>
     {#if showContent}
       <div class="color-picker">
-        <ColorPicker bind:value={value} bind:selectedColorIndex={lockedIndex} on:valueChange={handleColorChange} on:lockChange={handleLockChange} />
+       <ColorPicker bind:value={value} bind:selectedColorIndex={lockedIndex} on:valueChange={handleColorChange} on:lockChange={handleLockChange} />
     </div>
    {/if}
   </Tooltip>
@@ -92,7 +93,9 @@
     height: 1.7em;
     padding: 0;
     /* border: 2px solid rgba(0,0,0,0.1); */
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     vertical-align: middle;
     transform: translateY(-0.1em);
     -webkit-transform: translateY(-0.1em);
@@ -108,12 +111,8 @@
 }
 
 .color-label {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 0.9em;
-  font-style: normal;
+  transform: translate(-0.05em, -0.05em);
+  -webkit-transform: translate(-0.05em, -0.05em);
 }
 
 .color-palette-widget:hover {

@@ -9,7 +9,7 @@
 
   function restrictInput(event: KeyboardEvent) {
     if (event.key === 'Enter' || event.key === 'Escape') {
-      event.preventDefault(); // Prevent default Enter key behavior
+      event.preventDefault(); // Prevent default Enter and Esc key behavior
       let target = event.target as HTMLElement;
       target.blur(); // Remove focus from the element
       return;
@@ -23,9 +23,10 @@
     }
   }
 
-  $: if(value) {
-    dispatch('valueChange', { id, value: value });
-  }
+  // $: if(value) {
+  //   dispatch('valueChange', { id, value: value });
+  //   console.log('dispatching value change', value);
+  // }
 
   $: if (value.length > 32) {
     value = value.substring(0, 32); // Limit number of characters
@@ -36,8 +37,15 @@
     value = value.replace(/[\.\s]{2,}/g, ' '); // Replace double spaces or periods with a single space
     value = value.replace(/[^a-zA-Z0-9 ]/g, ''); // Ensure content is alphanumeric and spaces only
     if (value.length < 1) {
-      value = 'name this tool';
+      value = 'name';
     }
+  }
+
+  function handleChange() {
+    // console.log('handling change');
+    sanitizeInput();
+    dispatch('valueChange', { id, value: value });
+    console.log('dispatching value change in string widget', value);
   }
 
 </script>
@@ -45,8 +53,8 @@
 <span class="string-widget"
       bind:innerText={value}
       on:keydown={restrictInput}
-      on:blur={sanitizeInput}
-      on:paste={sanitizeInput}
+      on:blur={handleChange}
+      on:paste={handleChange}
       contenteditable="true"
       spellcheck="false">
 </span>

@@ -3,17 +3,16 @@
   import tinycolor from 'tinycolor2';
   import { createEventDispatcher } from 'svelte';
   import SimpleColorPicker from '../actions and widgets/SimpleColorPicker.svelte';
+  import ColorPicker from '../actions and widgets/ColorPicker.svelte';
   import Tooltip from '../Tooltip.svelte';
-  import { getReadableColor } from '../../utils/color-utils';
+  import SavedColorLabel from '../actions and widgets/SavedColorLabel.svelte';
 
   export let color = '#FFFFFF';
-  export let label: number;
+  export let id: number;
 
   const dispatch = createEventDispatcher();
 
   let colorButton: HTMLElement;
-
-  $: textColor = getReadableColor(color);
 
   onMount(() => {
     // colorButton.style.background = tinycolor(value).toHexString();
@@ -21,17 +20,12 @@
 
   let filterStyle = '';
 
-  //todo: somehow this is changing the store value
-
-  function updateColorButton(hexColor: string) {
-    const color = tinycolor(hexColor);
-    const hue = color.toHsv().h;
-    filterStyle = `hue-rotate(${hue}deg)`;
-    // dispatch('valueChange', { id, value: hexColor });
+  function updateColorButton(color: string) {
+    dispatch('valueChange', { id, color });
   }
 
-  function handleClick(event: Event) {
-    // updateColorButton(savedValue);
+  function handleColorClick() {
+    dispatch('clickColor', { id, color });
   }
 
   function handleColorChange(event: CustomEvent) {
@@ -45,16 +39,17 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <span
   bind:this={colorButton}
-  on:click={handleClick}
+  on:click={handleColorClick}
   class="color-palette-widget"
-  style="background-color: {color}; color: {textColor};">
-  <span class="color-item-label">{label}</span>
+  style="background-color: {color};">
+  <SavedColorLabel {id} {color} />
 </span>
 
 {#if colorButton}
-  <Tooltip element={colorButton} let:showContent>
+  <Tooltip element={colorButton} let:showContent settings={{trigger:'dblclick'}}>
     {#if showContent}
-      <SimpleColorPicker bind:value={color} on:valueChange={handleColorChange} />
+      <!-- <SimpleColorPicker value={color} on:valueChange={handleColorChange} /> -->
+      <ColorPicker value={color} on:valueChange={handleColorChange} />
     {/if}
   </Tooltip>
 {/if}
@@ -87,11 +82,6 @@
 
 .color-picker {
   padding: 10px;
-}
-
-.color-item-label {
-  font-family: 'Fandango';
-  user-select: none;
 }
 
 </style>

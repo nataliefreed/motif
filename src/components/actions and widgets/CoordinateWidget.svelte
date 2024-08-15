@@ -136,8 +136,12 @@
 
 <style>
   .coordinate {
-    text-decoration: underline lightgray 2px;
-    text-underline-offset: 5px;
+    /* text-decoration: underline lightgray 2px;
+    text-underline-offset: 5px; */
+    box-sizing: border-box;
+    border: 2px solid lightgray;
+    background-color: #ffffff40;
+    border-radius: 5px;
     cursor: pointer;
   }
 

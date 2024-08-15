@@ -5,6 +5,7 @@
   import { activePalette, showSavedColors, pickerPalette }  from '../../stores/colorStore';
   import { getReadableColor } from '../../utils/color-utils';
   import PaintColorMixer from './PaintColorMixer.svelte';
+  import SavedColorLabel from './SavedColorLabel.svelte';
 
   const dispatch = createEventDispatcher();
 
@@ -30,6 +31,13 @@
   $: gradientGreen = `linear-gradient(to right, rgba(${red}, 0, ${blue}, 1), rgba(${red}, 255, ${blue}, 1))`;
   $: gradientBlue = `linear-gradient(to right, rgba(${red}, ${green}, 0, 1), rgba(${red}, ${green}, 255, 1))`;
   $: gradientAlpha = `linear-gradient(to right, rgba(${red}, ${green}, ${blue}, 0), rgba(${red}, ${green}, ${blue}, 1))`;
+
+  $: alphaPercentage = Math.round(alpha * 100);
+
+  function updateAlphaFromPercentage(event) {
+    alpha = event.target.value / 100;
+    updateColor();
+  }
 
   function updateColorComponents(newColor: tinycolor.Instance) {
     c = newColor.toRgb();
@@ -90,7 +98,7 @@
 
 <div class="top-line">
   <div>
-    color mode:
+    color mixer:
     <select bind:value={activeMode} class="mode-selector">
       {#each modes as mode}
         <option value={mode}>{mode}</option>
@@ -125,12 +133,11 @@
     
     <div class="slider">
       <label for="opacity" style="color:black">Opacity</label>
-      <input type="number" min="0" max="100" step="0.01" bind:value={alpha} on:input={updateColor}>
-      <input type="range" id="opacity" min="0" max="1" step="0.01" bind:value={alpha} on:input={updateColor} style="--slider-gradient: {gradientAlpha};">
+      <input type="number" min="0" max="100" step="1" bind:value={alphaPercentage} on:input={updateAlphaFromPercentage}>%
+      <input type="range" id="opacity" min="0" max="100" step="1" bind:value={alphaPercentage} on:input={updateAlphaFromPercentage} style="--slider-gradient: {gradientAlpha};">
     </div>
   </div>
   
-  {#if false}
     <div id="palette">
       {#each pickerPalette as color, index}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -141,7 +148,6 @@
         </div>
       {/each}
     </div>
-  {/if}
   
   
   <!-- {#if $showSavedColors || selectedColorIndex !== -1} -->
@@ -149,10 +155,10 @@
     {#each $activePalette as color, index}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div class="color-item {(selectedColorIndex === index) ? 'selected' : ''}"
+      <div class="color-item saved-color {(selectedColorIndex === index) ? 'selected' : ''}"
       on:click={e => handleSavedPaletteClick(index)}
-      style="--actual-color: {color}; --label-color: {getReadableColor(color)};">
-        {index+1}
+      style="--actual-color: {color};">
+        <span class="color-label"><SavedColorLabel id={index} color={color} /></span>
       </div>
     {/each}
   </div>
@@ -197,15 +203,15 @@
   }
 
   #palette, #saved-palette {
-   margin: 5px 0;
+   margin: 10px 0 0 0;
    width: 100%;
    display: flex;
    flex-direction: row;
-   gap: 3px;
+   gap: 2px;
    flex-wrap: wrap;
    /* border: 1px solid lightgray; */
    border-radius: 5px;
-   padding: 5px;
+   /* padding: 5px; */
    /* background-color: rgb(234, 234, 234); */
   }
 
@@ -213,8 +219,8 @@
     /* border: 0.5px solid lightgray; */
     box-sizing: border-box;
     border-radius: 50%;
-    width: 25px;
-    height: 25px;
+    width: 23px;
+    height: 23px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -226,6 +232,11 @@
     background-color: lightgray;
     background-color: var(--actual-color);
     color: black;
+  }
+
+  .saved-color {
+    font-size: 1.3em;
+    font-family: 'Fandango';
   }
 
   .color-item:hover {
@@ -265,6 +276,10 @@
     cursor: pointer;
   }
 
+  #opacity {
+    width: 100%;
+  }
+
   .top-line {
     display: flex;
     flex-direction: row;
@@ -273,12 +288,12 @@
     justify-content: space-between; /* Adjusts children to each end */
   }
 
-.mode-selector {
-  padding: 2px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-family: 'FuturaHandwritten';
-}
+  .mode-selector {
+    padding: 2px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: 'FuturaHandwritten';
+  }
 
   .mode {
     cursor: pointer;

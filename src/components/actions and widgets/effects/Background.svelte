@@ -1,6 +1,7 @@
 <script lang="ts">
 	import ColorWidget from "../ColorWidget.svelte";
   import NumberWidget from "../NumberWidget.svelte";
+  import AngleWidget from "../AngleWidget.svelte";
   import CoordinateWidget from "../CoordinateWidget.svelte";
     import { p5CanvasSize } from "../../../stores/canvasStore";
 
@@ -23,12 +24,12 @@
   to 
   <ColorWidget id="color2" value={params.color2} lockedIndex={params.lockedIndex2} on:valueChange={handleValueChange}/>
   at angle 
-  <NumberWidget id="angle" min={0} max={360} value={params.angle} on:valueChange={handleValueChange}/>°
+  <AngleWidget id="angle" min={0} max={360} value={params.angle} on:valueChange={handleValueChange}/>
 {:else if name === 'stripes'}
   Stripes of width 
   <NumberWidget id="stripeWidth" min={1} max={300} value={params.stripeWidth} on:valueChange={handleValueChange}/>
   at angle 
-  <NumberWidget id="angle" min={0} max={360} value={params.angle} on:valueChange={handleValueChange}/>°
+  <AngleWidget id="angle" min={0} max={360} value={params.angle} on:valueChange={handleValueChange}/>
   in color 
   <ColorWidget id="color" value={params.color} lockedIndex={params.lockedIndex} on:valueChange={handleValueChange}/>
 {:else if name === 'speckles'}

@@ -2,7 +2,8 @@
 
   import { createEventDispatcher } from "svelte";
   import { onMount } from 'svelte';
-  import { shouldRandomizeColor, currentColor } from "../../stores/dataStore";
+  import { shouldRandomizeColor } from "../../stores/dataStore";
+  import { currentColor } from "../../stores/colorStore";
 
   // let colors = [
   //   '#FEFEFE','#D7D7D7','#B7B7B7','#636363','#363636','#070707','#EE1B25','#F5661F','#FCF500','#7CC475','#428DCC','#2C3094','#1C1463','#652B92','#300049','#790046',

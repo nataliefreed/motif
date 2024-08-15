@@ -1,14 +1,14 @@
 <script>
   import { addEffectAsStagedAction, moveStagedActionToEnd, compileActionsBefore, compileActionsBeforeStaged, updateStagedAction, updateStagedActionColor, copyStagedActionToActionStore, addCurrentEffectAsStagedAction, compileActions, hideAction, showAction, updateActiveActions, resetSpecialStagedActionParams, stopPlaying, play, pause, scrollToAction } from '../action-utils';
 	import P5 from 'p5-svelte';
-  import { stagedAction, activeIDs, stagedActionID, actionRootID, activeCategory, selectedEffect, currentColor, shouldRandomizeColor, changedActionID, flatActionStore, actionRoot, hoveredActionID, renderRequested, isPlaying, renderDelay, currentlyRenderingActionID, mousePos, drawingLocked } from '../../stores/dataStore';
+  import { stagedAction, activeIDs, stagedActionID, actionRootID, activeCategory, selectedEffect, shouldRandomizeColor, changedActionID, flatActionStore, actionRoot, hoveredActionID, renderRequested, isPlaying, renderDelay, currentlyRenderingActionID, mousePos, drawingLocked } from '../../stores/dataStore';
   import { renderers, loadStencils } from './Renderer.js';
   import { onMount, onDestroy, tick } from 'svelte';
   import { getAntPath, mapValue } from '../../utils/utils.ts';
-  import { curatedRandomHexColor } from '../../utils/color-utils.ts';
   import { turtle } from './Turtle.js';
   import { saveToHistory } from '../../stores/history';
-    import { page } from '$app/stores';
+  import { page } from '$app/stores';
+  import { paintColors, activePalette, currentColor, currentIndexedColor, setCurrentColor, randomizeCurrentColor } from '../../stores/colorStore';
 	
   let x = 55;
 	let y = 55;
@@ -35,11 +35,6 @@
   // whenever renderedActions changes, update activeActions store
   $: updateActiveActions([...renderedActions.static, ...renderedActions.drag, ...renderedActions.hover]);
 
-  function randomizeCurrentColor() {
-    // currentColor.set(tinycolor.random().toHexString());
-    currentColor.set(curatedRandomHexColor());
-  }
-
   function canDraw() {
     return p5 && !$drawingLocked;
   }
@@ -61,12 +56,13 @@
 
     // if selectedEffect changed, update staged action accordingly
     selectedEffect.subscribe(effect => {
+      if($drawingLocked) selectedEffect = '';
       if(!effect) return;
       let params = {};
       // if(effect.tags != "my tools") {
       if($activeCategory === "my tools") {
         shouldRandomizeColor.set(false);
-        currentColor.set(effect.params.color);
+        setCurrentColor(effect.params.color);
       } else {
         updateStagedActionColor($currentColor);
       }
@@ -140,7 +136,7 @@
     // });
 
     currentColor.subscribe(color => {
-      updateStagedActionColor(color);
+      updateStagedActionColor($currentIndexedColor.color, $currentIndexedColor.index);
     });
 
     return () => {
@@ -631,7 +627,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
         updateStagedAction({ end: { x: x, y: y } });
       }
       if('path' in params && !continuousPathStarted) {
-        updateStagedAction({path: getAntPath(path, $stagedAction.params.pathSpacing || 10)}); // calc path spacing
+        updateStagedAction({path: getAntPath(path, $stagedAction.params.pathSpacing)}); // calc path spacing
       }
       if($stagedAction.name === 'bounce' || $stagedAction.name === 'spiro' && 'progress' in params) {
         mousePressedTime = Date.now(); //reset whenever moved
@@ -748,7 +744,7 @@ function handleMouseUp(event) {
     if(!continuousPathStarted) {
       cancelAnimationFrame(animationFrameId);
       if('path' in $stagedAction.params) {
-        updateStagedAction({path: getAntPath(path, $stagedAction.params.pathSpacing || 10)});
+        updateStagedAction({path: getAntPath(path, $stagedAction.params.pathSpacing)});
       }
       if('progress' in stagedAction) {
         updateStagedAction({progress: getProgress()});

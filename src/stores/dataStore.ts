@@ -30,7 +30,6 @@ export const selectedActionID = writable('');
 
 export const hoveredActionID = writable('');
 
-export const currentColor = writable('#000000');
 export const shouldRandomizeColor = writable(true);
 
 export const playheadID = writable('');

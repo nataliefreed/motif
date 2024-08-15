@@ -1,20 +1,14 @@
 <script>
-  import { activeCategory, toolStore, selectedEffect, myTools, codeTools } from '../../stores/dataStore';
+  import { activeCategory, toolStore, selectedEffect } from '../../stores/dataStore';
   import EffectButton from './EffectButton.svelte';
   let tools = [];
   export let category = '';
 
   // when category changed, select a tool in that category
   $: if ($activeCategory) {
-    if($activeCategory === "my tools") {
-     tools = $myTools;
-     selectedEffect.set(tools[tools.length-1]);
-    }
-    else {
-      tools = $toolStore.filter(tool => tool.category === $activeCategory);
-      if (tools.length > 0) {
-        selectedEffect.set(tools[0]);
-      }
+    tools = $toolStore.filter(tool => tool.category === $activeCategory);
+    if (tools.length > 0) {
+      selectedEffect.set(tools[0]);
     }
   }
 
@@ -30,13 +24,6 @@
 
 
 <style>
-
-  .vertical-toolbar {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: start;
-  } 
 
   .horizontal-toolbar {
     display: flex;

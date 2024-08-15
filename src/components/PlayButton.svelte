@@ -26,11 +26,21 @@
   .instabutton {
     /* padding: 5px 10px; */
     font-size: 30px;
+    width: 30px;
     cursor: pointer;
     border: none;
     border-radius: 5px;
     color: black;
     background-color: transparent;
+  }
+
+  .instabutton:hover {
+    transform: scale(1.2);
+    transition: transform 0.2s ease-in-out;
+  }
+
+  .instabutton:active {
+    transform: scale(90%);
   }
 
   .button-icon {

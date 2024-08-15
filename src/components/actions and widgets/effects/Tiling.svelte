@@ -1,5 +1,6 @@
 <script lang="ts">
   import NumberWidget from "../NumberWidget.svelte";
+  import AngleWidget from "../AngleWidget.svelte";
   import CoordinateWidget from "../CoordinateWidget.svelte";
   import ChooserWidget from "../ChooserWidget.svelte";
 
@@ -14,14 +15,14 @@
   
 </script>
 
-<ChooserWidget id="tiling" options={['straight grid', 'brick', 'half drop', 'checkerboard', 'radial']} selected={params.tiling || name} on:valueChange={handleValueChange}/>
-with width 
+<ChooserWidget id="tiling" options={['straight grid', 'brick', 'half drop', 'checkerboard', 'radial', 'mirror']} selected={params.tiling || name} on:valueChange={handleValueChange}/>
 <NumberWidget id="width" min={5} max={600} value={params.width || 100} on:valueChange={handleValueChange}/> 
-and height 
+x
 <NumberWidget id="height" min={5} max={600} value={params.height || (name === 'brick' ? 40 : 100)} on:valueChange={handleValueChange}/>
+rectangle
 {#if name === 'radial'}
-at angle 
-<NumberWidget id="angle" min={0} max={360} value={params.angle || 0} on:valueChange={handleValueChange}/>°
+  at angle 
+  <AngleWidget id="angle" min={0} max={360} value={params.angle || 0} on:valueChange={handleValueChange}/>°
 {/if}
 at 
 <CoordinateWidget id="position" value={params.position || []} on:valueChange={handleValueChange}/>

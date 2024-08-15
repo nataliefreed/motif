@@ -1,6 +1,7 @@
 import type { Action, Effect, ActionStore } from '../types/types';
 import { v4 as uuidv4 } from 'uuid';
-import { actionRootID, activeIDs, actionStore, myTools, toolStore, selectedActionID, selectedEffect, changedActionID, flatActionStore, actionRoot, stagedAction, stagedActionID, currentColor, shouldRandomizeColor, playheadID, hoveredActionID, renderRequested, isPlaying, renderDelay, currentlyRenderingActionID, playSpeed, firstPlay } from '../stores/dataStore'
+import { actionRootID, activeIDs, actionStore, myTools, toolStore, selectedActionID, selectedEffect, changedActionID, flatActionStore, actionRoot, stagedAction, stagedActionID, shouldRandomizeColor, playheadID, hoveredActionID, renderRequested, isPlaying, renderDelay, currentlyRenderingActionID, playSpeed, firstPlay } from '../stores/dataStore'
+import { currentColor } from '../stores/colorStore';
 import { saveToHistory } from '../stores/history';
 import { get } from 'svelte/store';
 import { deepCopy, merge, randomWithinRange, arrayToKeyedObj } from '../utils/utils';
@@ -742,15 +743,17 @@ export function updateStagedAction(params: { [key: string]: any } = {} ) {
   // historyStore.resume();
 }
 
-export function updateStagedActionColor(color:string) {
+export function updateStagedActionColor(color:string, index: number = -1) {
   //look for color in params, including children for along path
   let stagedID = get(stagedActionID);
   if(!stagedID) return;
   let params = get(flatActionStore)[stagedID].params;
   if(!params) return;
 
+  // console.log("updating staged action color", color, index);
+
   if('color' in params) {
-    updateStagedAction({ color: color });
+    updateStagedAction({ color: color, lockedIndex: index});
   }
   else if('children' in params) {
     let children = params.children;
@@ -776,8 +779,10 @@ export function resetSpecialStagedActionParams() {
 
 export function setCurrentEffect(name: string) {
   let effect = get(toolStore).find(tool => tool.name === name);
+  console.log("setting current effect", effect);
   if(!effect) return;
   selectedEffect.set(effect);
+  
 }
 
 let changeOptions = {
@@ -868,6 +873,42 @@ export function wiggleAction(id:string) {
   // previewAction.params.color = changeOptions.color(params.color);
 }
 
+// put action inside a group / do each
+export function wrapSelectedInGroup() {
+  let selected = get(selectedActionID);
+  if(selected.length < 1) return;
+
+  let selectedAction = actionManager.getAction(selected);
+  if (!selectedAction) return;
+
+  let newGroup = createGroupAction([selected]);
+
+  let added = actionManager.append(newGroup);
+
+  // Replace the selected action with the new grouped action
+  actionManager.replaceId(selected, added);
+  selectedActionID.set(added); // Update the selected action ID
+
+  saveToHistory('Group selected action');
+
+}
+
+function createGroupAction(children: string[]) {
+  let action: Action = {
+    uuid: uuidv4(),
+    name: 'do each',
+    type: 'list',
+    category: 'control',
+    effect: 'do each',
+    params: {
+      title: "what is this?",
+      children: children
+    },
+    hidden: false,
+  };
+  return { [action.uuid]: action };
+}
+
 // put action inside a repeat along path
 export function repeatSelectedActionAlongPath() {
   let selected = get(selectedActionID);
@@ -901,6 +942,8 @@ export function repeatSelectedActionAlongPath() {
 
   saveToHistory('Repeat selected action along path');
 }
+
+
 
 function getRandomGridPath(x:number, y:number) {
   let path = [];
@@ -1025,9 +1068,11 @@ export function redrawSelectedAction() {
   let newAction = copyAction(selected);
   let id = getRoot(newAction);
   if(newAction && id && id.length > 0) {
-    setCurrentEffect(get(stagedAction).effect); //TODO: make this work for different types of along path effects
+    debugger;
+    setCurrentEffect(newAction[id].effect);
+
     actionManager.appendChild(newAction, get(actionRoot).uuid);
-    selectedActionID.set('');
+    // selectedActionID.set('');
     actionManager.delete(get(stagedActionID));
     stagedActionID.set(id);
     // console.log("staged action", get(stagedAction));
@@ -1092,9 +1137,11 @@ export function compileActionsBeforeStaged() {
   return compileActionsBefore(get(stagedActionID));
 }
 
+let renderAll = false; //for debugging - set to true to render all actions, not just until staged action
 export function compileActionsBefore(id: string) {
   let actions = compileActions(get(flatActionStore)[get(actionRootID)]);
   if(!actions) return [];
+  if(renderAll) return actions;
   let actionIndex = actions.findIndex(action => action.actionID === id);
   let actionsBefore = actions.slice(0, actionIndex);
   return actionsBefore;
@@ -1119,6 +1166,12 @@ export function compileActions(action: Action, parentID?: string) {
 
   switch (action.effect) {
     case 'do each':
+      actions.push({ // add parent action to the list also, to make sure outer blocks are shown as active 
+        actionID: action.uuid,
+        parentID: parentID,
+        effect: action.effect,
+        params: {}
+      });
       // For each child action, recursively compile its actions
       for (let childID of action.params.children) {
         const childAction = get(flatActionStore)[childID];
@@ -1133,7 +1186,7 @@ export function compileActions(action: Action, parentID?: string) {
           effect: action.effect,
           params: {}
         });
-        if(!action.params.children) return;
+        if(!action.params.children) return actions;
       // If the action has a path, create a compiled action for each point or line segment along the path
         action.params.path.forEach((point: [number, number], index: number) => {
           const childID = action.params.children[index % action.params.children.length];
@@ -1143,7 +1196,7 @@ export function compileActions(action: Action, parentID?: string) {
           // Initialize an empty object for modified parameters
           let modifiedParams = {};
 
-          //TODO: do this recursively: if the child action is a repeat, compile its actions with a relative path, ie. start at the parent point
+          //TODO: do this recursively: if the child action is a repeat, compile its actions with a relative path, ie. start at the parent point. If it is a do each containing children, don't add the point to the do each, only the children
           if ('position' in childAction.params) {
             // If the child action has a position parameter, use the current point
             modifiedParams = {
@@ -1151,8 +1204,16 @@ export function compileActions(action: Action, parentID?: string) {
               position: { x: point[0], y: point[1] }
             };
           } else if ('start' in childAction.params && 'end' in childAction.params) {
+            if (action.params.path.length === 1) { //case where only one point in path, duplicate it for start and end
+              const singlePoint = action.params.path[0];
+              modifiedParams = {
+                  ...childAction.params,
+                  start: { x: singlePoint[0], y: singlePoint[1] },
+                  end: { x: singlePoint[0], y: singlePoint[1] } // Duplicate point for 'end'
+              };
+            }
             // If the child action has start and end parameters, use the current and next points
-            if (index < action.params.path.length - 1) { // Ensure we don't exceed the path array bounds
+            else if (index < action.params.path.length - 1) { // Ensure we don't exceed the path array bounds
               const nextPoint = action.params.path[index + 1];
               modifiedParams = {
                 ...childAction.params,

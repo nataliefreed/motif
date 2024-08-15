@@ -16,9 +16,10 @@
     };
 
     export let initialColor;
-    let mixedColor = initialColor;
-    let baseColor = initialColor;
+    let mixedColor = '#ffffff';
+    let baseColor = '#ffffff';
     colors = toPaintColor(initialColor);
+    updateMixedColor();
     let intervalId = null;
     let activeButton = null;
     let direction = 'down'; // Direction of droplet animation
@@ -32,11 +33,21 @@
       updateMixedColor();
     }
 
+    function hasPaintColor(color) {
+      let hex = tinycolor(color).toHexString();
+      let currentStore = get(paintColors);
+      return currentStore[hex] ? true : false;
+    }
+
+    function isBlankColor(color) {
+      return color.red === 0 && color.yellow === 0 && color.blue === 0 && color.white === 0 && color.black === 0;
+    }
+
     function toPaintColor(color) {
       let hex = tinycolor(color).toHexString();
       let currentStore = get(paintColors);
       if (currentStore[hex]) {
-        console.log("found in paint store", currentStore[hex]);
+        // console.log("found in paint store", currentStore[hex]);
           return { ...currentStore[hex] };
       }
       // otherwise, return white
@@ -64,7 +75,7 @@
 
     let hex = tinycolor(newColor).toHexString();
     updatePaintStore(hex, colors);
-    console.log("updating paint store", hex, colors);
+    // console.log("updating paint store", hex, colors);
 
     mixedColor = newColor;
   }
@@ -144,7 +155,12 @@
       {/each}
     </div>
     <div class="preview-and-buttons">
-      <div class="color-preview" style="background-color: {tinycolor(mixedColor).toHexString()=='#ffffff'? '#fcfcfc' : mixedColor};"></div>
+      
+      <div class="color-preview" style="background-color: {tinycolor(mixedColor).toHexString()=='#ffffff'? '#fcfcfc' : mixedColor};">
+        {#if !hasPaintColor(mixedColor) || isBlankColor(colors)}
+            <div>new color!</div>
+        {/if}
+      </div>
       <div class="action-buttons">
         <button class="instabutton" on:click={clearColor}>Clear</button>
         <button class="instabutton" on:click={saveColor}>Save</button>
@@ -240,7 +256,17 @@
       -webkit-mask-image: url('/assets/widgets/splotch-alpha-mask.png');
       mask-image: url('/assets/widgets/splotch-alpha-mask.png');
       -webkit-mask-size: cover;
-      mask-size: cover;   
+      mask-size: cover;
+      display: flex;
+      align-items: center;
+    }
+
+    .color-preview div {
+      font-family: 'FuturaHandwritten';
+      font-size: 1em;
+      line-height: 0.9em;
+      color: #222;
+      margin: 5px 8px 5px 12px;
     }
 
     .preview-and-buttons {

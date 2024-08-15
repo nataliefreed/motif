@@ -6,6 +6,7 @@ import type { Action } from '../types/types';
 import { deepCopy } from '../utils/utils';
 import { getDescendantIDs, addCurrentEffectAsStagedAction } from './action-utils';
 import type { ActionStore } from '../types/types';
+import { palettes } from '../stores/colorStore';
 
 export function exportCodeWithImage() {
   const canvas = document.getElementById('defaultCanvas0') as HTMLCanvasElement;
@@ -19,17 +20,20 @@ export function exportCodeWithImage() {
   //   return newStore;
   // }, {} as ActionStore);
 
-  // Convert the store to a JSON string
-  const jsonString = JSON.stringify(storeWithoutStagedAction);
   
-  //todo: add saved colors
+  //add saved colors
+  const savedColors = get(palettes)['myPalette'];
+  const exportData = {
+    store: storeWithoutStagedAction,
+    colors: savedColors
+  };
 
   // Convert canvas to Data URI
   if(canvas) {
       const dataURI = canvas.toDataURL('image/png');
 
     try {
-      const modifiedDataURI = addMetadataFromBase64DataURI(dataURI, 'actionStore', jsonString);
+      const modifiedDataURI = addMetadataFromBase64DataURI(dataURI, 'exportData', JSON.stringify(exportData));
 
       // Create a temporary anchor element to trigger download
       const a = document.createElement('a');
@@ -65,13 +69,24 @@ export function importCodeFromImage() {
 
         try {
           const pngUint8Array = new Uint8Array(await file.arrayBuffer());
-          const jsonData = getMetadata(pngUint8Array, 'actionStore');
+          const jsonData = getMetadata(pngUint8Array, 'exportData');
           
           if (jsonData) {
             const data = JSON.parse(jsonData);
+            // console.log('imported data:', data);
             if(data) { drawingLocked.set(true); }; //importing a design locks the drawing to start in parameter setting mode
-            flatActionStore.update(store => { return data; });
-            addCurrentEffectAsStagedAction();
+            if(data.store) {
+              // console.log('imported data:', data.store);
+              flatActionStore.update(store => { return data.store; });
+              addCurrentEffectAsStagedAction();
+            }
+            if (data.colors) {
+              // console.log('imported data:', data.colors);
+              palettes.update(store => {
+                store['myPalette'] = data.colors;
+                return store;
+              });
+            }
           }
         } catch (error) {
           console.error('Error extracting metadata:', error);

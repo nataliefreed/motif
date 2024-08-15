@@ -108,6 +108,7 @@ export function mapValue(value:number, start1:number, stop1:number, start2:numbe
 }
 
 export function getAntPath(frogPath: [number, number][], stepSize: number = 20): [number, number][] {
+  if(stepSize < 1) return frogPath;
   let antPath: [number, number][] = [];
   antPath.push([...frogPath[0]]);
   let remainingDistance = stepSize;

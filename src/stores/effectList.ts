@@ -15,6 +15,7 @@ export const effectList = [
     params: {
       radius: 20,
       color: '#1B54B1',
+      angle: 0,
       position: {x: 250, y: 430}
     },
   },
@@ -219,6 +220,46 @@ export const effectList = [
 
   {
     name: 'along path',
+    textLabel: 'Line Brush',
+    category: 'lines',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'solid_brush.png',
+    mouseActionType: 'drag-path',
+    nestedActions: {
+      'uuid_parent': {
+        uuid: 'uuid_parent',
+        name: 'along path',
+        type: 'list' as const,
+        category: 'control',
+        effect: 'along path',
+        params: {
+          title: "line",
+          children: ['line'],
+          path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
+          angle: 0,
+          pathSpacing: 0
+        }
+      },
+      'line': {
+        uuid: 'line',
+        name: 'straight line',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'straight line',
+        thumbnail: 'straight_line.jpeg',
+        params: {
+          color: '#80baee',
+          start: {x: 0, y: 0},
+          end: {x: 1, y: 1},
+          lineWeight: 5
+        }
+      },
+    }
+  },
+
+  {
+    name: 'along path',
     textLabel: 'Dot brush',
     category: 'lines',
     tags: 'drawing',
@@ -233,7 +274,7 @@ export const effectList = [
         category: 'control',
         effect: 'along path',
         params: { /* note: leaving color out means child colors will be updated */
-          title: "Dot brush",
+          title: "dot",
           children: ['dot'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
           angle: 0,
@@ -250,46 +291,6 @@ export const effectList = [
           radius: 3,
           color: '#80babd',
           position: {x: 0, y: 0}
-        }
-      },
-    }
-  },
-
-  {
-    name: 'along path',
-    textLabel: 'Line Brush',
-    category: 'lines',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'solid_brush.png',
-    mouseActionType: 'drag-path',
-    nestedActions: {
-      'uuid_parent': {
-        uuid: 'uuid_parent',
-        name: 'along path',
-        type: 'list' as const,
-        category: 'control',
-        effect: 'along path',
-        params: {
-          title: "Line Brush",
-          children: ['line'],
-          path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
-          angle: 0,
-          pathSpacing: 10
-        }
-      },
-      'line': {
-        uuid: 'line',
-        name: 'straight line',
-        type: 'effect',
-        category: 'shapes',
-        effect: 'straight line',
-        thumbnail: 'straight_line.jpeg',
-        params: {
-          color: '#80baee',
-          start: {x: 0, y: 0},
-          end: {x: 0, y: 0},
-          lineWeight: 5
         }
       },
     }
@@ -367,6 +368,7 @@ export const effectList = [
         effect: 'circle',
         params: {
           radius: 20,
+          angle: 0,
           color: '#80babd',
           position: {x: 0, y: 0}
         }
@@ -379,6 +381,7 @@ export const effectList = [
         effect: 'circle',
         params: {
           radius: 25,
+          angle: 0,
           color: '#19518a',
           position: {x: 0, y: 0}
         }
@@ -402,7 +405,7 @@ export const effectList = [
         category: 'control',
         effect: 'along path',
         params: {
-          title: "Mosaic Brush",
+          title: "mosaic",
           children: ['red_circle', 'orange_triangle', 'gold_rectangle', 'olive_circle', 'green_triangle', 'light_blue_rectangle', 'blue_circle', 'indigo_triangle', 'purple_rectangle', 'violet_circle', 'pink_triangle'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
           angle: 0,
@@ -516,7 +519,7 @@ export const effectList = [
         category: 'control',
         effect: 'along path',
         params: {
-          title: "Heart Brush",
+          title: "big heart little heart",
           children: ['small_heart', 'large_heart'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
           angle: 0,
@@ -566,7 +569,7 @@ export const effectList = [
         category: 'control',
         effect: 'along path',
         params: {
-          title: "Star Brush",
+          title: "stars",
           children: ['pink_star', 'purple_star', 'dark_blue_star', 'blue_star', 'light_blue_star'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
           angle: 0,
@@ -761,6 +764,21 @@ export const effectList = [
     }
   },
   {
+    name: 'tile',
+    textLabel: 'Mirror',
+    category: 'patterns',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'radial.jpg',
+    mouseActionType: 'drag',
+    params: {
+      tiling: 'mirror',
+      width: 50,
+      height: 50,
+      position: {x: 150, y: 150}
+    }
+  },
+  {
     name: 'filter',
     textLabel: 'Invert',
     category: 'effects',
@@ -851,8 +869,8 @@ export const effectList = [
     params: {
       start: {x:100, y:100},
       end: {x:300, y:300},
-      width: 100,
-      height: 100,
+      w: 100, //don't change when mouse dragging
+      h: 100,
       mode: 'move'
     }
   },

@@ -472,6 +472,7 @@ export const renderers = {
   'straight line': (p, params, p5) => {
     // debugger;
     // if(p !== p5.getHoverCanvas()) {
+
       p.push();
       p.strokeWeight(params.lineWeight);
       p.noFill();
@@ -856,8 +857,8 @@ function moveRectangularRegion(p, params, p5) {
   let startY = params.start.y;
   let endX = params.end.x;
   let endY = params.end.y;
-  let w = 100;
-  let h = 75;
+  let w = params.w;
+  let h = params.h;
   // let w = params.width;
   // let h = params.height;
 
@@ -872,32 +873,44 @@ function moveRectangularRegion(p, params, p5) {
     let snapshot = p5.createGraphics(w, h); // to store captured rectangle
     snapshot.image(p5.getStaticCanvas(), 0, 0, w, h, sx, sy, w, h); // w * h rectangle centered at x, y 
     
-    // empty white space left behind
-    // if(p === p5 || p === p5.getStaticCanvas()) {
-    //   p.erase();
-    // }
-    if(params.mode == 'move') {
-      p.fill(255);
-      p.noStroke();
-      p.rectMode(p.CENTER);
-      p.rect(startX, startY, w, h);
-    }
-    // p.noErase();
-    
     p.image(snapshot, dx, dy, w, h, 0, 0, w, h);
     snapshot.remove();
+    
+    if(p===p5.getStaticCanvas() && params.mode == 'move') {
+      p.erase();
+      p.fill(255);
+      p.rectMode(p5.CENTER);
+      p.rect(startX, startY, w, h);
+      p.noErase();
+    }
   }
 
   if(p===p5.getHoverCanvas() || p===p5.getDragCanvas()) {
     // outline drag region
     p.push();
+
     p.rectMode(p.CENTER);
     p.stroke(0);
     p.noFill();
     if(p===p5.getHoverCanvas()) {
       p.rect(startX, startY, w, h);
-    } else {
+    } else { //drag canvas
+      p.stroke(0);
       p.rect(endX, endY, w, h);
+      
+      // // empty white space left behind
+      if(params.mode == 'move') {
+        // p.erase();
+        // p.fill(255);
+        // p.rect(startX, startY, w, h);
+        // p.noErase();
+
+        p5.rectMode(p5.CENTER);
+        p5.erase();
+        p5.fill(255);
+        p5.rect(startX, startY, w, h);
+        p5.noErase();
+      }
     }
     p.pop();
   }
@@ -948,6 +961,9 @@ function tile(p, params, p5) {
         break;
       case 'radial':
         radial(p, snapshot, w, h, numTiles, numRings);
+        break;
+      case 'mirror':
+        mirror(p, snapshot, sx, sy, w, h);
         break;
       default:
         break;
@@ -1030,6 +1046,70 @@ function radial(p, snapshot, w, h, numTiles, numRings) { //todo: take out numTil
       }
   }
 }
+
+function mirror(p, snapshot, x, y, w, h) {
+  // Center tile (original selected area)
+  p.image(snapshot, x, y, w, h, 0, 0, w, h);
+
+  // Top-left (flip horizontally and vertically)
+  p.push();
+  p.translate(x - w, y - h);
+  p.scale(-1, -1);
+  p.image(snapshot, -w, -h, w, h, 0, 0, w, h);
+  p.pop();
+
+  // Top-center (flip vertically)
+  p.push();
+  p.translate(x, y - h);
+  p.scale(1, -1);
+  p.image(snapshot, 0, -h, w, h, 0, 0, w, h);
+  p.pop();
+
+  // Top-right (flip horizontally and vertically)
+  p.push();
+  p.translate(x + w, y - h);
+  p.scale(-1, -1);
+  p.image(snapshot, -w, -h, w, h, 0, 0, w, h);
+  p.pop();
+
+  // Middle-left (flip horizontally)
+  p.push();
+  p.translate(x - w, y);
+  p.scale(-1, 1);
+  p.image(snapshot, -w, 0, w, h, 0, 0, w, h);
+  p.pop();
+
+  // Middle-right (flip horizontally)
+  p.push();
+  p.translate(x + w, y);
+  p.scale(-1, 1);
+  p.image(snapshot, -w, 0, w, h, 0, 0, w, h);
+  p.pop();
+
+  // Bottom-left (flip horizontally and vertically)
+  p.push();
+  p.translate(x - w, y + h);
+  p.scale(-1, -1);
+  p.image(snapshot, -w, -h, w, h, 0, 0, w, h);
+  p.pop();
+
+  // Bottom-center (flip vertically)
+  p.push();
+  p.translate(x, y + h);
+  p.scale(1, -1);
+  p.image(snapshot, 0, -h, w, h, 0, 0, w, h);
+  p.pop();
+
+  // Bottom-right (flip horizontally and vertically)
+  p.push();
+  p.translate(x + w, y + h);
+  p.scale(-1, -1);
+  p.image(snapshot, -w, -h, w, h, 0, 0, w, h);
+  p.pop();
+}
+
+  
+
 
 function scaleRect(p, params, p5) {
   let x = params.position.x;
