@@ -15,7 +15,7 @@
       return;
     }
 
-    const regex = /^[a-zA-Z0-9 ]+$/; // Regex to allow alphanumeric characters and spaces
+    const regex = /^[a-zA-Z0-9 .,!?'"-]+$/; // Regex to allow alphanumeric characters and spaces
 
     //event.key.length > 1 are control characters
     if (event.key.length === 1 && !regex.test(event.key)) {
@@ -35,9 +35,9 @@
   function sanitizeInput() {
     // console.log('sanitizing input');
     value = value.replace(/[\.\s]{2,}/g, ' '); // Replace double spaces or periods with a single space
-    value = value.replace(/[^a-zA-Z0-9 ]/g, ''); // Ensure content is alphanumeric and spaces only
+    value = value.replace(/[^a-zA-Z0-9 .,!?'"-]/g, ''); // Remove any characters that are not alphanumeric, spaces, or punctuation
     if (value.length < 1) {
-      value = 'name';
+      value = 'what is this?';
     }
   }
 
@@ -66,6 +66,8 @@
     cursor: text;
     font-style: italic;
     color: #0a3f0c;
+    font-family: 'FuturaHandwritten';
+    /* font-family: 'fandango'; */
   }
 </style>
 

@@ -3,11 +3,10 @@
   import tippy, { followCursor } from 'tippy.js';
   import 'tippy.js/dist/tippy.css';
   import 'tippy.js/themes/light-border.css';
+  import { saveToHistory } from '../stores/history';
 
   export let element; // external element to attach the tooltip to
   let showContent = false;
-  // export let onOpen = () => {}; // Callback function prop for when the tooltip opens
-  // export let onClose = () => {}; // Callback function prop for when the tooltip opens
 
   let contentElement;
   let tooltip;
@@ -18,6 +17,15 @@
   }
 
   function reloadTippy() {
+
+    // Create or get a tooltip container to append tooltips to
+    let tooltipContainer = document.getElementById('tooltip-container');
+    if (!tooltipContainer) {
+      tooltipContainer = document.createElement('div');
+      tooltipContainer.id = 'tooltip-container';
+      document.body.appendChild(tooltipContainer);
+    }
+
     // console.log("reloading tippy");
     if(tooltip) tooltip.destroy();
     tooltip = tippy(element, {
@@ -29,7 +37,7 @@
       arrow: true,
       trigger: 'click',
       hideOnClick: true,
-      appendTo: document.body,
+      appendTo: tooltipContainer,
       ...settings,
       onShow(instance) {
         showContent = true;
@@ -47,6 +55,8 @@
         // console.log("tooltip hidden");
       }
     });
+
+    tooltipContainer.addEventListener('mouseleave', handleMouseLeave);
   }
 
   onMount(() => {
@@ -64,7 +74,17 @@
     if (tooltip) {
       tooltip.destroy();
     }
+
+    // Clean up event listener
+    const tooltipContainer = document.getElementById('tooltip-container');
+    if (tooltipContainer) {
+      tooltipContainer.removeEventListener('mouseleave', handleMouseLeave);
+    }
   });
+
+  function handleMouseLeave() {
+    saveToHistory("leaving parameter settings");
+  }
 
 </script>
 

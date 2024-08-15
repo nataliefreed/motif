@@ -17,7 +17,7 @@
   function handleValueChange(event: CustomEvent) {
     const { id, value } = event.detail;
     onUpdate({[id]: value });
-    console.log("handling value change in control structure", id, value);
+    // console.log("handling value change in control structure", id, value);
   }
 
   function toggle() {
@@ -37,7 +37,7 @@
   {/if}
 {:else if name === 'along path'}
   <StringWidget id='title' value={params.title} on:valueChange={handleValueChange}/>
-  [<ChildrenWidget id='children' on:miniActionClick={toggle} value={params.children}/>]
+  <span class="children-widget"><ChildrenWidget id='children' on:miniActionClick={toggle} value={params.children}/></span>
   <!-- <StringWidget id='title' value={params.title} /> -->
   along<PathWidget id='path' path={params.path} angle={params.angle} on:valueChange={handleValueChange}/>
   <AngleWidget id='angle' min={0} max={360} value={params.angle} on:valueChange={handleValueChange}/>
@@ -47,3 +47,11 @@
     <ListWidget id='children' value={params.children} {depth} on:valueChange={handleValueChange}/>
   {/if}
 {/if}
+
+<style>
+
+  .children-widget {
+    margin: 0 0.5em;
+  }
+
+</style>

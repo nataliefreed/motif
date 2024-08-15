@@ -83,15 +83,22 @@
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <span
     class:staged={$stagedActionID === action.uuid}
-    class="action-item-content"
+    class="action-item-outer"
     >
+
       {#if action.category === 'control'}
-          <ControlStructure name={action.name} params={action.params} {isOpen} onUpdate={handleUpdate} depth={depth+1} on:reorder/>
+        <ControlStructure name={action.name} params={action.params} {isOpen} onUpdate={handleUpdate} depth={depth+1} on:reorder/>
       {:else if action.type === 'effect'}
-          {#if action.category === 'backgrounds'}
+        <div class="action-item-inner">
+        {#if action.category !== 'shapes'}
+        <img class="category-img" src="/assets/icons/{action.category}.svg" alt="{action.category}">
+        
+        {/if}
+
+        {#if action.category === 'shapes' || action.effect === 'straight line'}
+          <Shape uuid={action.uuid} name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
+          {:else if action.category === 'backgrounds'}
               <Background name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
-          {:else if action.category === 'shapes'}
-              <Shape uuid={action.uuid} name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
           {:else if action.category === 'effects'}
               <Eggbeater name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
           {:else if action.category === 'patterns'}
@@ -103,7 +110,8 @@
           {:else if action.category === 'move'}
               <Movement name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
           {/if}
-      {/if}
+        </div>
+        {/if}
     </span>
   {/if}
 <style>
@@ -112,8 +120,26 @@
     padding: 0 10px;
   }
 
-  .action-item-content {
-    margin-left: 3px;
+  .category-img {
+    width: 1em;
+    height: 1em;
+    filter: invert(.3);
+  }
+
+  .action-item-outer {
+    display: block;
+    /* display: flex-wrap;
+    flex-direction: row; */
+  }
+
+  .action-item-inner {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    gap: 0 0.5em;
+    justify-content: flex-start;
+    align-items: center;
+    /* margin: 0.5em 0; */
   }
 
 </style>

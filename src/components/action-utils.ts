@@ -125,6 +125,18 @@ class ActionManager {
     return root_uuid;
   }
 
+  // refreshID(original: string) {
+  //   let newID = uuidv4(); 
+  //   this.#modifyActionStore(null, (store) => {
+  //     let action = store[original];
+  //     if(action) {
+  //       action.uuid = newID;
+  //     }
+  //   });
+  //   actionManager.replaceId(original, newID); //in the parent's children array
+  //   return newID;
+  // }
+
   // change out the ID in the parent's children array for another ID - does not modify the action at either ID, just swaps out the parent's reference to it
   // TODO: don't call as separate modification
   replaceId(targetId: string, newId: string) {
@@ -148,6 +160,7 @@ class ActionManager {
   }
 
 // Make a copy of an action, insert after original, delete the original action, return the ID of the copy
+// TODO: does not handle nested actions
 replaceWithCopy(id: string) {
   let action = this.getAction(id);
   if (!action) return null;
@@ -619,6 +632,7 @@ export function addEffectAsStagedAction(effect: Effect, params: { [key: string]:
   if(prevStaged.length > 0) actionManager.delete(prevStaged);
   let uuid = addEffectToActionStoreAsChildOf(effect, params, get(actionRoot).uuid);
   if(uuid) stagedActionID.set(uuid);
+  updateStagedAction({ lastChanged: Date.now() });
   updateStagedActionColor(get(currentColor));
 }
 
@@ -709,6 +723,8 @@ export function copyStagedActionToActionStore() {
   changedActionID.set(newActionRoot);
 
   saveToHistory("add action from staged action end");
+
+  actionManager.updateParams(stagedID, { lastChanged: Date.now() });
 
   moveStagedActionToEnd();
 }
@@ -802,13 +818,23 @@ let changeOptions = {
 }
 
 export function remixDuplicate(id:string) {
+  saveToHistory("duplicate action start");
   let newID = duplicateAction(id);
   if(newID) remixAction(newID);
+  saveToHistory("duplicate action end");
 }
 
 // pick a parameter at random and change it
 export function remixAction(id:string) {
   saveToHistory("remix action start");
+  remixActionWithoutHistory(id);
+  saveToHistory("remix action end");
+}
+
+// function dupl
+
+function remixActionWithoutHistory(id:string) {
+  
   if(!id || ! get(flatActionStore)[id]) return;
 
   let action = get(flatActionStore)[id];
@@ -845,7 +871,6 @@ export function remixAction(id:string) {
   }
   
   actionManager.updateParams(id, newParams);
-  saveToHistory("remix action end");
 }
 
 export function convertSelectedAction() {
@@ -901,7 +926,7 @@ function createGroupAction(children: string[]) {
     category: 'control',
     effect: 'do each',
     params: {
-      title: "what is this?",
+      title: "what does this draw?",
       children: children
     },
     hidden: false,
@@ -1048,7 +1073,7 @@ function createAlongPathAction(children: string[], path: number[][], angle: numb
     category: 'control',
     effect: 'along path',
     params: {
-      title: "",
+      title: "what is this?",
       children: children,
       path: path,
       angle: angle
@@ -1068,7 +1093,6 @@ export function redrawSelectedAction() {
   let newAction = copyAction(selected);
   let id = getRoot(newAction);
   if(newAction && id && id.length > 0) {
-    debugger;
     setCurrentEffect(newAction[id].effect);
 
     actionManager.appendChild(newAction, get(actionRoot).uuid);
@@ -1147,8 +1171,14 @@ export function compileActionsBefore(id: string) {
   return actionsBefore;
 }
 
+
+type OverrideParams = {
+  basePoint?: { x: number, y: number },
+  nextPoint?: { x: number, y: number }|null,
+};
+
 // Recursive function to compile information about actions for rendering
-export function compileActions(action: Action, parentID?: string) {
+export function compileActions(action: Action, parentID?: string, overrides:OverrideParams = {}): CompiledAction[] {
   // Return empty arrays if the action is undefined or null
   if (!action) return [];
 
@@ -1175,7 +1205,7 @@ export function compileActions(action: Action, parentID?: string) {
       // For each child action, recursively compile its actions
       for (let childID of action.params.children) {
         const childAction = get(flatActionStore)[childID];
-        const childActions = compileActions(childAction, action.uuid);
+        const childActions = compileActions(childAction, action.uuid, overrides);
         actions.push(...childActions);
       }
       break;
@@ -1184,60 +1214,38 @@ export function compileActions(action: Action, parentID?: string) {
           actionID: action.uuid,
           parentID: parentID,
           effect: action.effect,
-          params: {}
+          params: {},
         });
-        if(!action.params.children) return actions;
+        // if(!action.params.children) return actions;
       // If the action has a path, create a compiled action for each point or line segment along the path
         action.params.path.forEach((point: [number, number], index: number) => {
           const childID = action.params.children[index % action.params.children.length];
           const childAction = get(flatActionStore)[childID];
           if(!childAction) return;
 
-          // Initialize an empty object for modified parameters
-          let modifiedParams = {};
-
-          //TODO: do this recursively: if the child action is a repeat, compile its actions with a relative path, ie. start at the parent point. If it is a do each containing children, don't add the point to the do each, only the children
-          if ('position' in childAction.params) {
-            // If the child action has a position parameter, use the current point
-            modifiedParams = {
-              ...childAction.params,
-              position: { x: point[0], y: point[1] }
-            };
-          } else if ('start' in childAction.params && 'end' in childAction.params) {
-            if (action.params.path.length === 1) { //case where only one point in path, duplicate it for start and end
-              const singlePoint = action.params.path[0];
-              modifiedParams = {
-                  ...childAction.params,
-                  start: { x: singlePoint[0], y: singlePoint[1] },
-                  end: { x: singlePoint[0], y: singlePoint[1] } // Duplicate point for 'end'
-              };
-            }
-            // If the child action has start and end parameters, use the current and next points
-            else if (index < action.params.path.length - 1) { // Ensure we don't exceed the path array bounds
-              const nextPoint = action.params.path[index + 1];
-              modifiedParams = {
-                ...childAction.params,
-                start: { x: point[0], y: point[1] },
-                end: { x: nextPoint[0], y: nextPoint[1] }
-              };
-            }
-            else {
-              return; //if at last point, don't add another action
-            }
-          } else {
-            // If the child action has neither position nor start/end, use the original parameters
-            modifiedParams = { ...childAction.params };
+          let basePoint = { x: point[0], y: point[1] };
+          let nextPoint;
+          if (action.params.path.length == 1) {
+            nextPoint = basePoint;
+          }
+          else if (index < action.params.path.length - 1) {
+            const src = action.params.path[(index + 1)];
+            nextPoint = { x: src[0], y: src[1] };
+          }
+          else {
+            nextPoint = null;
           }
 
-          // console.log("modified params", modifiedParams);
-          // Push the compiled action with the modified parameters
-          actions.push({
-            actionID: childAction.uuid,
-            indexedID: childAction.uuid + `__${index}`,
-            parentID: action.uuid,
-            effect: childAction.effect,
-            params: modifiedParams
-          });
+          let offset = overrides.basePoint ?? { x: 0, y: 0 };
+          basePoint.x += offset.x;
+          basePoint.y += offset.y;
+          if(nextPoint) {
+            nextPoint.x += offset.x;
+            nextPoint.y += offset.y;
+          }
+          let modifiedOverrides = {...overrides, basePoint, nextPoint};
+
+          actions.push(...compileActions(childAction, action.uuid, modifiedOverrides));
         });
       break;
     case 'repeat':
@@ -1245,18 +1253,54 @@ export function compileActions(action: Action, parentID?: string) {
       for (let i = 0; i < repeatCount; i++) {
         action.params.children.forEach((childID: string) => {
           const childAction = get(flatActionStore)[childID];
-          actions.push(...compileActions(childAction, action.uuid));
+          actions.push(...compileActions(childAction, action.uuid, overrides));
         });
       }
       break;
     default:
-      actions.push({
-        actionID: action.uuid, //the action's unique ID
-        parentID: parentID, //the action it is nested within, eg. do each or repeat
-        effect: action.effect,
-        params: action.params
-      });
+      // Initialize an empty object for modified parameters
+      let modifiedParams = {};
+      let skipAction = false;
+      if(overrides.basePoint) {
+        if ('position' in action.params) {
+          // If the child action has a position parameter, use the current point
+          modifiedParams = {
+            ...action.params,
+            position: overrides.basePoint,
+          }; 
+        } else if ('start' in action.params && 'end' in action.params) {
+          // If the child action has start and end parameters, use the current and next points
+          if (overrides.nextPoint) {
+            modifiedParams = {
+                ...action.params,
+                start: overrides.basePoint,
+                end: overrides.nextPoint,
+            };
+          }
+          else {
+            //if at last point, don't add another action
+            skipAction = true;
+          }
+        }
+      }
+      else {
+        // Use the original parameters
+        modifiedParams = { ...action.params };
+      }
+
+      // console.log("modified params", modifiedParams);
+      // Push the compiled action with the modified parameters
+      if(!skipAction) {
+        actions.push({
+          actionID: action.uuid,
+          indexedID: action.uuid, // TODO: + `__${index}`,
+          parentID: action.uuid,
+          effect: action.effect,
+          params: modifiedParams
+        });
+      }
   }
+  // debugger;
   return actions;
 }
 

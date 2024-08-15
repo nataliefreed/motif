@@ -49,7 +49,7 @@ export const effectList = [
   {
     name: 'straight line',
     textLabel: 'Line',
-    category: 'shapes',
+    category: 'lines',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
     thumbnail: 'straight_line.png',
@@ -220,46 +220,6 @@ export const effectList = [
 
   {
     name: 'along path',
-    textLabel: 'Line Brush',
-    category: 'lines',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'solid_brush.png',
-    mouseActionType: 'drag-path',
-    nestedActions: {
-      'uuid_parent': {
-        uuid: 'uuid_parent',
-        name: 'along path',
-        type: 'list' as const,
-        category: 'control',
-        effect: 'along path',
-        params: {
-          title: "line",
-          children: ['line'],
-          path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
-          angle: 0,
-          pathSpacing: 0
-        }
-      },
-      'line': {
-        uuid: 'line',
-        name: 'straight line',
-        type: 'effect',
-        category: 'shapes',
-        effect: 'straight line',
-        thumbnail: 'straight_line.jpeg',
-        params: {
-          color: '#80baee',
-          start: {x: 0, y: 0},
-          end: {x: 1, y: 1},
-          lineWeight: 5
-        }
-      },
-    }
-  },
-
-  {
-    name: 'along path',
     textLabel: 'Dot brush',
     category: 'lines',
     tags: 'drawing',
@@ -274,7 +234,7 @@ export const effectList = [
         category: 'control',
         effect: 'along path',
         params: { /* note: leaving color out means child colors will be updated */
-          title: "dot",
+          title: "circles",
           children: ['dot'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
           angle: 0,
@@ -298,6 +258,46 @@ export const effectList = [
 
   {
     name: 'along path',
+    textLabel: 'Line Brush',
+    category: 'lines',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'solid_brush.png',
+    mouseActionType: 'drag-path',
+    nestedActions: {
+      'uuid_parent': {
+        uuid: 'uuid_parent',
+        name: 'along path',
+        type: 'list' as const,
+        category: 'control',
+        effect: 'along path',
+        params: {
+          title: "lines",
+          children: ['line'],
+          path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
+          angle: 0,
+          pathSpacing: 0
+        }
+      },
+      'line': {
+        uuid: 'line',
+        name: 'straight line',
+        type: 'effect',
+        category: 'lines',
+        effect: 'straight line',
+        thumbnail: 'straight_line.jpeg',
+        params: {
+          color: '#80baee',
+          start: {x: 0, y: 0},
+          end: {x: 1, y: 1},
+          lineWeight: 5
+        }
+      },
+    }
+  },
+
+  {
+    name: 'along path',
     textLabel: 'Connected Line',
     category: 'lines',
     tags: 'drawing',
@@ -312,7 +312,7 @@ export const effectList = [
         category: 'control',
         effect: 'along path',
         params: {
-          title: "Connected Line",
+          title: "lines",
           children: ['line'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
           angle: 0,
@@ -352,7 +352,7 @@ export const effectList = [
         category: 'control',
         effect: 'along path',
         params: {
-          title: "Pattern Maker",
+          title: "my pattern",
           children: ['light_blue_dot', 'dark_blue_dot'],
           color: '#80babd',
           path: [[10, 50]],

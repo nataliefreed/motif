@@ -98,11 +98,12 @@
     }
   });
 
-  // handles clicking on the drag handle only
+  // handles clicking on the drag area only
   function handleItemClick(event: Event, actionId: string) {
+    // console.log("clicking on item", event.target);
     event.stopPropagation();
     const target = event.target as Element;
-    if(target && target.classList.contains('drag-handle') || target.classList.contains('action-item-content') || target === event.currentTarget) { //if not a widget, select the action
+    if(target && target.classList.contains('drag-handle') || target.classList.contains('action-item-outer') || target.classList.contains('tool-name') || target.classList.contains('action-item-inner') || target.classList.contains('alpha-style') || target === event.currentTarget) { //if not a widget, select the action
         //   console.log("selecting");
       selectAction(actionId);
     }
@@ -118,8 +119,9 @@
       //   hoverAction(actionId);
       // }
       const offsetX = event.offsetX; //mouse relative to target
+      // console.log("mouse over li of action id", actionId, offsetX);
       // if(target && !target.classList.contains('addStagedActionButton') && target.classList.contains('drag-handle') || target.classList.contains('action-item-content') || target === event.currentTarget) { //if not a widget, set the action as hovered
-        if(target && (target.classList.contains('drag-handle') || (offsetX <= 50 && target.classList.contains('action-item-content')))) { //if over drag handle, set the action as hovered
+        if(target && (target.classList.contains('drag-handle') || (offsetX <= 50 && target.classList.contains('action-item-outer')))) { //if over drag handle, set the action as hovered
         hoverAction(actionId);
       }
   }
@@ -286,8 +288,7 @@ function getDynamicStyle(id:string) {
     >
       <span class="drag-handle"></span>
       {#if $stagedActionID !== action.uuid}
-        <ActionItem {action} {depth} />
-
+        <span class="action-item-content"><ActionItem {action} {depth} /></span>
       {/if}
       <!-- _ _{action.uuid.substr(0, 6)} -->
     </li>
@@ -314,32 +315,45 @@ function getDynamicStyle(id:string) {
     justify-content: flex-start;
     align-items: flex-start;
     width: 100%;
-    margin: 0.5em 0;
+    margin: 0.2em;
   }
 
 /* list item */
   li {
     box-sizing: border-box;
-    /* border: 1px solid lightgray; */
-    border-radius: 5px;
     user-select: none; /* prevent text selection - makes it easier to grab */
     position: relative;
-    padding-left: 1.5em; /* Space for the numbered index, also affects overall indent level */
-    padding-right: 0.2em; /* makes selection box look nicer */
-    background-color: #ffffff82;
-    padding: 0.1em 0.2em 0em 1.5em;
+    padding: 0 0 0 0; /* Left: space for the numbered index, also affects overall indent level */
+    display: flex;
+    flex-direction: row;
+  }
+
+  .action-item-content {
+    background-color: #ffffff9b;
+    border: 1px solid lightgray;
+    border-radius: 5px 15px 15px 5px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 0.1em 0.2em 0.1em 0.5em;
   }
 
   .selected {
     box-sizing: border-box; /* Include padding and border in element's width and height */
     border: 2px solid gold;
     background-color: lightyellow;
-    border-radius: 5px;
+    border-radius: 10px;
     /* display: block; */
+  }
+
+  .selected .action-item-content {
+    background-color: lightyellow;
+    border: none;
+    box-shadow: none;
   }
 
   .hovered {
     background-color: #f0f0f0;
+    border-radius: 10px;
   }
 
   .hovered.selected {
@@ -373,6 +387,7 @@ function getDynamicStyle(id:string) {
     padding-left: 2.5em;
     background-color: #f3f3f3;
     z-index: 1;
+    display: none;
   }
 
 
@@ -413,35 +428,35 @@ function getDynamicStyle(id:string) {
     pointer-events: none; /* prevent click events on the index */
     counter-increment: list-counter;
     content: counter(list-counter);
-    color: #aeaeae;
+    /* color: #aeaeae; */
   }
 
   .alpha-style li::before,
   .decimal-style li::before {
-    border: 1px solid #aeaeae;
-    background-color: #ffffff;
-    border-radius: 50%; /* Round border */
-    width: 1.8em; /* Fixed width for the circle */
-    height: 1.8em; /* Fixed height for the circle */
+    /* border: 1px solid #aeaeae; */
+    /* background-color: #ffffff; */
+    /* border-radius: 50%; */
+    /* border-radius: 50% 0 0 50%; */
+    /* width: 1.6em; */
+    /* height: 1.6em; */
+    margin: 0 7px;
+    margin-top: 4px;
+    width: 0.5em;
+    display: flex;
+    align-items: flex-start; /* Center vertically */
+    justify-content: center; /* Center horizontally */
   }
   
-  .alpha-style li::before,
-  .decimal-style li::before,
   .drag-handle {
     position: absolute;
-    display: flex;
-    align-items: center; /* Center vertically */
-    justify-content: center; /* Center horizontally */
-    left: 0; /* Align with the start of the list item */
-    top: 1em;
-    width: 1.7em; /* Fixed width for the circle */
-    height: 1.7em; /* Fixed height for the circle */
-    transform: translateY(-50%);
+    width: 1.5em;
+    height: 2.7em;
+    left: 0;
     font-size: 0.8em;
+    /* border: 1px solid blue; */
+    border-radius: 5px;
     font-weight: bold;
     z-index: 1;
-    align-self: flex-start;
-    margin-left: 0;
   }
 
   .paintbrush {
@@ -451,8 +466,10 @@ function getDynamicStyle(id:string) {
     transform: translate(10%, 10%);
   }
 
-  .alpha-style li::before {
-    content: counter(list-counter, lower-alpha); /* Alpha numbering */
+  .alpha-style li::before {/* Alpha numbering */
+    /* content: counter(list-counter, lower-alpha);  */
+    content: none;
+    
   }
 
   .lastChanged::after {

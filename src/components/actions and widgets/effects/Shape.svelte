@@ -21,37 +21,37 @@
   <ChooserWidget id="shape" options={['ellipse','rectangle','triangle']} selected={params.shape || 'rectangle'} on:valueChange={handleValueChange}/>
 {:else}
   {#if name === 'circle'}
-  <span class="tool-name">Circle</span> of radius 
+  <span class="tool-name">circle</span> of radius 
     <NumberWidget id="radius" min={3} max={600} value={params.radius} on:valueChange={handleValueChange} on:reorder/>
   {:else if name === 'square'}
-    <span class="tool-name">Square</span> of size 
+    <span class="tool-name">square</span> of size 
     <NumberWidget id="size" min={3} max={600} value={params.size} on:valueChange={handleValueChange}/>
   {:else if name === 'polygon'}
     <NumberWidget id="nsides" min={3} max={50} value={params.nsides} on:valueChange={handleValueChange}/>-sided   
-    <span class="tool-name">Polygon</span> of radius 
+    <span class="tool-name">polygon</span> of radius 
     <NumberWidget id="radius" min={1} max={600} value={params.radius} on:valueChange={handleValueChange}/>
   {:else if name === 'star'}
-  <span class="tool-name">Star</span> with 
+  <span class="tool-name">star</span> with 
     <NumberWidget id="npoints" min={3} max={200} value={params.npoints} on:valueChange={handleValueChange}/> points,
     outer 
     <NumberWidget id="r1" min={3} max={600} value={params.r1} on:valueChange={handleValueChange}/>,
     inner 
     <NumberWidget id="r2" min={3} max={600} value={params.r2} on:valueChange={handleValueChange}/>
   {:else if name === 'heart'}
-  <span class="tool-name">Heart</span> of size 
+  <span class="tool-name">heart</span> of size 
     <NumberWidget id="size" min={3} max={600} value={params.size} on:valueChange={handleValueChange}/>
   {:else if name === 'rectangle'}
-  <span class="tool-name">Rectangle</span> of width 
+  <span class="tool-name">rectangle</span> of width 
     <NumberWidget id="width" min={3} max={600} value={params.width} on:valueChange={handleValueChange}/>
     and height 
     <NumberWidget id="height" min={3} max={600} value={params.height} on:valueChange={handleValueChange}/>
   {:else if name === 'triangle'}
-  <span class="tool-name">Triangle</span> of width 
+  <span class="tool-name">triangle</span> of width 
     <NumberWidget id="width" min={3} max={600} value={params.width} on:valueChange={handleValueChange}/> 
     and height 
     <NumberWidget id="height" min={3} max={600} value={params.height} on:valueChange={handleValueChange}/>
   {:else if name === 'spiro'}
-  <span class="tool-name">Spiro</span> outer:
+  <span class="tool-name">spiro</span> outer:
     <NumberWidget id="outer" min={3} max={300} value={params.outer} on:valueChange={handleValueChange}/>
     , inner:
     <NumberWidget id="inner" min={3} max={params.outer-1} value={params.inner} on:valueChange={handleValueChange}/>
@@ -60,7 +60,7 @@
     , pen size:
     <NumberWidget id="lineWeight" value={params.lineWeight || 2} min={1} max={50} on:valueChange={handleValueChange}/>
   {:else if name === 'straight line'}
-  <span class="tool-name">Line</span>
+  <span class="tool-name">line</span>
     {#if !isChildOfAlongPath(uuid)}
       from <CoordinateWidget id="start" value={params.start} on:valueChange={handleValueChange}/>
       to <CoordinateWidget id="end" value={params.end} on:valueChange={handleValueChange}/>
@@ -80,13 +80,3 @@
   {/if}
 
 {/if}
-
-<style>
-  .tool-name {
-    font-weight: bold;
-    color: black;
-    font-family: 'Roboto', sans-serif;
-    font-style: inherit;
-    color: inherit;
-  }
-</style>

@@ -2,8 +2,10 @@
   import CoordinateWidget from "../CoordinateWidget.svelte";
   import ColorWidget from "../ColorWidget.svelte";
   import NumberWidget from "../NumberWidget.svelte";
+  import { isChildOfAlongPath } from "../../action-utils";
 
   export let name = '';
+  export let uuid = '';
   export let params: any = {};
   export let onUpdate: (params: any) => void;
 
@@ -28,3 +30,4 @@
   to <CoordinateWidget id="end" value={params.end} on:valueChange={handleValueChange}/> for time
   <NumberWidget id="progress" value={params.progress} min={0} max={600} on:valueChange={handleValueChange}/>
 {/if}
+

@@ -6,6 +6,7 @@
   import { createEventDispatcher } from "svelte";
   import { setCurrentColor, addPalette, updateColorInPalette } from '../../stores/colorStore';
   import ActionItem from '../actions and widgets/ActionItem.svelte';
+    import { saveToHistory } from '../../stores/history';
 
   let activeColor: string;
   let activeIndex: number;
@@ -17,7 +18,9 @@
   }
 
   function resetCurrentPalette() {
+    saveToHistory("reset palette");
     resetPaletteByName($activePaletteName);
+    saveToHistory("reset palette");
   }
 
   function handleToggle(event: Event) {
@@ -60,10 +63,12 @@
       {/each}
     </div>
 
+
     <div class="button-container">
-      <button class="palette-button" id="resetButton" on:click={resetCurrentPalette}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M512 256c0 .9 0 1.8 0 2.7c-.4 36.5-33.6 61.3-70.1 61.3L344 320c-26.5 0-48 21.5-48 48c0 3.4 .4 6.7 1 9.9c2.1 10.2 6.5 20 10.8 29.9c6.1 13.8 12.1 27.5 12.1 42c0 31.8-21.6 60.7-53.4 62c-3.5 .1-7 .2-10.6 .2C114.6 512 0 397.4 0 256S114.6 0 256 0S512 114.6 512 256zM128 288a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zm0-96a32 32 0 1 0 0-64 32 32 0 1 0 0 64zM288 96a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zm96 96a32 32 0 1 0 0-64 32 32 0 1 0 0 64z"/></svg></button>
-      <button class="palette-button" id="loadButton" on:click={loadPalette}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M288 109.3L288 352c0 17.7-14.3 32-32 32s-32-14.3-32-32l0-242.7-73.4 73.4c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l128-128c12.5-12.5 32.8-12.5 45.3 0l128 128c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L288 109.3zM64 352l128 0c0 35.3 28.7 64 64 64s64-28.7 64-64l128 0c35.3 0 64 28.7 64 64l0 32c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64l0-32c0-35.3 28.7-64 64-64zM432 456a24 24 0 1 0 0-48 24 24 0 1 0 0 48z"/></svg></button>
+      <button class="palette-button" id="resetButton" title="reset" on:click={resetCurrentPalette}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M170.5 51.6L151.5 80l145 0-19-28.4c-1.5-2.2-4-3.6-6.7-3.6l-93.7 0c-2.7 0-5.2 1.3-6.7 3.6zm147-26.6L354.2 80 368 80l48 0 8 0c13.3 0 24 10.7 24 24s-10.7 24-24 24l-8 0 0 304c0 44.2-35.8 80-80 80l-224 0c-44.2 0-80-35.8-80-80l0-304-8 0c-13.3 0-24-10.7-24-24S10.7 80 24 80l8 0 48 0 13.8 0 36.7-55.1C140.9 9.4 158.4 0 177.1 0l93.7 0c18.7 0 36.2 9.4 46.6 24.9zM80 128l0 304c0 17.7 14.3 32 32 32l224 0c17.7 0 32-14.3 32-32l0-304L80 128zm80 64l0 208c0 8.8-7.2 16-16 16s-16-7.2-16-16l0-208c0-8.8 7.2-16 16-16s16 7.2 16 16zm80 0l0 208c0 8.8-7.2 16-16 16s-16-7.2-16-16l0-208c0-8.8 7.2-16 16-16s16 7.2 16 16zm80 0l0 208c0 8.8-7.2 16-16 16s-16-7.2-16-16l0-208c0-8.8 7.2-16 16-16s16 7.2 16 16z"/></svg></button>
+      <!-- <button class="palette-button" id="loadButton" title="load palette" on:click={loadPalette}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.<path d="M288 109.3L288 352c0 17.7-14.3 32-32 32s-32-14.3-32-32l0-242.7-73.4 73.4c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l128-128c12.5-12.5 32.8-12.5 45.3 0l128 128c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L288 109.3zM64 352l128 0c0 35.3 28.7 64 64 64s64-28.7 64-64l128 0c35.3 0 64 28.7 64 64l0 32c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64l0-32c0-35.3 28.7-64 64-64zM432 456a24 24 0 1 0 0-48 24 24 0 1 0 0 48z"/></svg></button> -->
     </div>
+
 <!-- 
     <div class="chooser-container">
       Randomize color while drawing?
@@ -104,28 +109,35 @@
   .button-container {
     display: flex;
     flex-direction: row;
+    justify-content: center;
+    padding: 0;
+    gap: 10px;
   }
 
   .palette-button {
-    margin-top: 10px;
+    margin: 10px 0;
+    padding: 0;
     background-color: transparent;
     border: none;
     cursor: pointer;
-    padding: 5px;
     display: flex;
-    align-items: center;
-    justify-content: center;
     border-radius: 5px;
     transition: background-color 0.2s ease;
+    width: 100%;
   }
 
   .palette-button:hover {
     /* background-color: #f0f0f0; */
   }
 
+  .palette-button:active {
+    transform: translateY(2px);
+  }
+
   .palette-button svg {
     width: 15px;
     height: 15px;
+    margin: 0;
     fill: #000;
     transition: fill 0.2s ease;
   }
@@ -186,10 +198,6 @@
 
   .instabutton:hover {
     background-color: #e6e6e6;
-  }
-
-  #resetButton {
-    margin-right: 1vw;
   }
 
   select {

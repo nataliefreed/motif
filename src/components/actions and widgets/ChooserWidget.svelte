@@ -27,5 +27,6 @@
     border-radius: 0.2rem;
     border: 2px solid #ccc;
     font-family: 'FuturaHandwritten';
+    font-size: inherit;
   }
 </style>

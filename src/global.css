@@ -49,6 +49,8 @@
       font-size: var(--base-font-size);
       line-height: calc(var(--line-height-multiplier) * 1em);
       font-family: 'FuturaHandwritten';
+      /* font-family: 'Courier New', Courier, monospace; */
+      /* font-family: 'Roboto', sans-serif; */
       /* font-family: 'Arial'; */
       font-weight: 100;
       background-color: #e9e9e9;
@@ -63,6 +65,14 @@
       height: 100vh;
       margin: 0;
       padding: 0;
+    }
+
+    .tool-name {
+      font-weight: bold;
+      color: black;
+      font-family: 'Montserrat', sans-serif;
+      font-style: inherit;
+      color: inherit;
     }
   
     @font-face{ 

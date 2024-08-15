@@ -26,7 +26,6 @@
 </script>
 
 <span bind:this={listElement}>
-  [
   {#each children.map(checkAction) as action (action.uuid)}
     {#if action}
       <!-- <ColorWidget id='color' value={action.params.color} /> -->
@@ -37,7 +36,6 @@
       <img src={`/assets/effect-thumbnails/${action.thumbnail}`} alt="{action.name} thumbnail" class="thumbnail">
     {/if} -->
   {/each}
-  ]
 </span>
 
 <style>
