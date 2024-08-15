@@ -56,7 +56,7 @@
 
     // if selectedEffect changed, update staged action accordingly
     selectedEffect.subscribe(effect => {
-      if($drawingLocked) selectedEffect = '';
+      if($drawingLocked) selectedEffect.set('');
       if(!effect) return;
       let params = {};
       // if(effect.tags != "my tools") {
