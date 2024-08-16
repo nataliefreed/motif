@@ -39,10 +39,10 @@
     return p5 && !$drawingLocked;
   }
 
-  $: if($drawingLocked) {
-    p5.getHoverCanvas().clear();
-    p5.getDragCanvas().clear();
-  }
+  // $: if($drawingLocked) {
+  //   p5.getHoverCanvas().clear();
+  //   p5.getDragCanvas().clear();
+  // }
 
   // $: if($stagedActionID === undefined || !flatActionStore[$stagedActionID]) {
   //   addCurrentEffectAsStagedAction();
@@ -56,7 +56,6 @@
 
     // if selectedEffect changed, update staged action accordingly
     selectedEffect.subscribe(effect => {
-      if($drawingLocked) selectedEffect.set('');
       if(!effect) return;
       let params = {};
       // if(effect.tags != "my tools") {
@@ -292,6 +291,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
   let stagedCanvasTimeout;
   let stagedCanvasFade;
   async function renderStagedAction(canvas) {
+    if(!canDraw()) return;
     // console.log("rendering staged action");
     if(!p5) return;
     clearTimeout(stagedCanvasTimeout);

@@ -14,7 +14,7 @@
   --adjusted-page-width: min(var(--page-width), var(--max-page-width));
   --adjusted-page-height: min(var(--page-height), var(--max-page-height));
 
-  --base-font-size: 15px;
+  --base-font-size: 14px;
   --line-height-multiplier: 1.7;
   --line-thickness: 1px;
   --lined-paper-line-height: calc(var(--base-font-size) * var(--line-height-multiplier));

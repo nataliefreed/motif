@@ -103,7 +103,7 @@
     // console.log("clicking on item", event.target);
     event.stopPropagation();
     const target = event.target as Element;
-    if(target && target.classList.contains('drag-handle') || target.classList.contains('action-item-outer') || target.classList.contains('tool-name') || target.classList.contains('action-item-inner') || target.classList.contains('alpha-style') || target === event.currentTarget) { //if not a widget, select the action
+    if(target && target.classList.contains('drag-handle') || target.classList.contains('action-item-outer') || target.classList.contains('tool-name') || target.classList.contains('action-item-inner') || target.classList.contains('alpha-style') || target.classList.contains('category-img') || target === event.currentTarget) { //if not a widget, select the action
         //   console.log("selecting");
       selectAction(actionId);
     }
@@ -442,6 +442,7 @@ function getDynamicStyle(id:string) {
     margin: 0 7px;
     margin-top: 4px;
     width: 0.5em;
+    font-size: 0.8em;
     display: flex;
     align-items: flex-start; /* Center vertically */
     justify-content: center; /* Center horizontally */

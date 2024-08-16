@@ -554,11 +554,24 @@ export function hideSelectedAction() {
 export function selectAction(id:string) {
   if(id && id !== get(actionRootID)) {
     if(id == get(stagedActionID)) {
-      selectedActionID.set(''); //deselect
+      deselect(); //deselect
     } else {
       selectedActionID.set(id);
     }
   }
+  // console.log("selecting action", id);
+}
+
+export function deselect() {
+  selectedActionID.set('');
+  console.log("deselect");
+}
+
+export function selectActionByIndex(index:number) {
+  let actions = getActionsInRunOrder();
+  if(!actions || index >= actions.length) return;
+  selectAction(actions[index]);
+  // console.log("selecting action by index", actions[index]);
 }
 
 export function hoverAction(id:string) {
@@ -614,7 +627,7 @@ export function clearAllActions() {
     } else {
         // If no more elements except first, clear the interval
         clearInterval(interval);
-        selectedActionID.set('');
+        deselect();
         if(newStagedActionRoot) {
           stagedActionID.set(newStagedActionRoot);
           actionManager.appendChild(newStagedAction, get(actionRoot).uuid);
@@ -1073,7 +1086,7 @@ function createAlongPathAction(children: string[], path: number[][], angle: numb
     category: 'control',
     effect: 'along path',
     params: {
-      title: "describe me!",
+      title: "repeated!",
       children: children,
       path: path,
       angle: angle
@@ -1188,11 +1201,6 @@ export function compileActions(action: Action, parentID?: string, overrides:Over
   if ('hidden' in action && action.hidden) {
     return [];
   }
-
-  // //check if it is in the preview action store
-  // if(get(previewAction) != null && action.uuid === get(previewAction).uuid) {
-  //   action = get(previewAction);
-  // }
 
   switch (action.effect) {
     case 'do each':

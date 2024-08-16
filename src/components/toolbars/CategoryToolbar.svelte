@@ -8,6 +8,7 @@
   
   export let categories: string[];
   let visibleCategory = '';
+  export let disabled = false;
 
   function handleCategoryClick(category: string) {
     //toggle open/closed, unless you click on a different category than the open one, in which case close the open one and open the new one
@@ -67,7 +68,8 @@
       <button on:click={() => handleCategoryClick(category)}
         on:mouseover={() => handleCategoryMouseover(category)}
         class="category-button" class:selected={$activeCategory === category}
-        style:background-image="{$activeCategory === category ? `url(/assets/effect-thumbnails/${$selectedEffect.thumbnail})` : ''}">
+        style:background-image="{$activeCategory === category ? `url(/assets/effect-thumbnails/${$selectedEffect.thumbnail})` : ''}"
+        disabled={disabled}>
         <img class="category-img" src="/assets/icons/{category}.svg" alt="{category}">
         <!-- {category} -->
       </button>
@@ -145,8 +147,8 @@
   }
 
   .category-img {
-    width: 30px;
-    height: 30px;
+    width: 26px;
+    height: 26px;
     margin: 5px;
     /* display: block;
     margin: auto; */
@@ -154,6 +156,10 @@
 
   .category-button.selected {
     color: #0d76a6;
+  }
+
+  .category-button::disabled {
+    vislble: hidden;
   }
 
   .effect-button, .active-effect-button {
@@ -167,7 +173,7 @@
     font-size: 1.1em;
     text-align: center;
     border-radius: 5px;
-    height: 40px;
+    height: 36px;
     /* border: 1px solid black; */
   }
 
@@ -204,8 +210,8 @@
   }
 
   .move-effect.selected {
-    border: 2px solid #d5be0d;
-    border-radius: 20%;
+    border: 2px solid #e9c328;
+    border-radius: 20% 20%;
     width: 30px;
   }
 

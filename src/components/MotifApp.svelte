@@ -8,7 +8,7 @@
   import Canvas from './canvas/Canvas.svelte';
   import Ruler from './canvas/Ruler.svelte';
   import ColorBank from './toolbars/ColorBank.svelte';
-  import { scrollToAction, removeSelectedAction, repeatSelectedActionAlongPath, wrapSelectedInGroup, remixAction, duplicateAction, remixDuplicate, redrawSelectedAction, convertSelectedAction, clearAllActions, undo, redo, rewindToBeginning, fastForwardToEnd, stepBackward, stepForward, hideAction, showAction } from './action-utils';
+  import { scrollToAction, removeSelectedAction, repeatSelectedActionAlongPath, wrapSelectedInGroup, remixAction, duplicateAction, remixDuplicate, redrawSelectedAction, convertSelectedAction, clearAllActions, undo, redo, rewindToBeginning, fastForwardToEnd, stepBackward, stepForward, hideAction, showAction, selectAction, selectActionByIndex, deselect } from './action-utils';
   import Tooltip from './Tooltip.svelte';
   import CategoryToolbar from './toolbars/CategoryToolbar.svelte';
   import { setupKeyboardEvents, removeKeyboardEvents } from './KeyboardEvents';
@@ -48,10 +48,6 @@
     // }
   }
 
-  function deselectAction() {
-    selectedActionID.set('');
-  }
-
   function handleColorClick(color: string) {
     //set staged action color
 
@@ -60,7 +56,7 @@
   function handleClickOutside(event: MouseEvent) {
     // console.log("clicked outside", event.target);
 
-    let target = event.target as Node;
+    let target = event.target as Element;
 
     // console.log("hit target", target.nodeName);
 
@@ -72,12 +68,10 @@
 
     // deselect
     if(!$selectedActionID || $selectedActionID.length < 1) return; //if nothing selected
-    if(target.nodeName !== 'BUTTON'
-      && target.nodeName !== 'INPUT'
-      && target.nodeName !== 'CANVAS'
-      && !(target as Element).closest('.action-list-item')
-      && !(event.target as Element).closest('.dont-deselect')) {
-        deselectAction();
+    if(target.closest('.background') ||
+      target.closest('.grid-paper') ||
+      target.closest('.main-right') ) {
+        deselect();
       }
   }
   
@@ -98,6 +92,11 @@
     if($isPlaying) {
       renderDelay.set(1000/$playSpeed);
      }
+  }
+
+  function toggleLock() {
+    drawingLocked.set(!$drawingLocked);
+    selectActionByIndex(1);
   }
 
   onMount(() => {
@@ -146,9 +145,9 @@
   
   <div class="background"></div> <!-- background -->
   
-  <div class="grid-paper"></div> <!-- grid-paper -->
-  
   <div class="container">
+
+    <div class="grid-paper"></div> <!-- grid-paper -->
 
     <div class="left-toolbar-background"></div>
     <div class="code-toolbar-background"></div>
@@ -157,7 +156,7 @@
 
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="top-left-corner">
-      <div class="lock-button" on:click={e=>{drawingLocked.set(!$drawingLocked)}}>{@html $drawingLocked?lockIcon:unlockIcon}</div>
+      <div class="lock-button" on:click={toggleLock}>{@html $drawingLocked?lockIcon:unlockIcon}</div>
     </div> <!-- top-left-corner -->
 
     <div class="above-canvas">
@@ -169,35 +168,36 @@
       <div class="history-controls">
         <button class="top-menu-button" id="undoButton" on:click={undo} disabled={!canUndo}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="vertical-align: middle;"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M48.5 224H40c-13.3 0-24-10.7-24-24V72c0-9.7 5.8-18.5 14.8-22.2s19.3-1.7 26.2 5.2L98.6 96.6c87.6-86.5 228.7-86.2 315.8 1c87.5 87.5 87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3c-62.2-62.2-162.7-62.5-225.3-1L185 183c6.9 6.9 8.9 17.2 5.2 26.2s-12.5 14.8-22.2 14.8H48.5z"/></svg>
-      </button>
+        </button>
         
         <button class="top-menu-button" id="redoButton" on:click={redo} disabled={!canRedo}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="vertical-align: middle;"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M463.5 224H472c13.3 0 24-10.7 24-24V72c0-9.7-5.8-18.5-14.8-22.2s-19.3-1.7-26.2 5.2L413.4 96.6c-87.6-86.5-228.7-86.2-315.8 1c-87.5 87.5-87.5 229.3 0 316.8s229.3 87.5 316.8 0c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0c-62.5 62.5-163.8 62.5-226.3 0s-62.5-163.8 0-226.3c62.2-62.2 162.7-62.5 225.3-1L327 183c-6.9 6.9-8.9 17.2-5.2 26.2s12.5 14.8 22.2 14.8H463.5z"/></svg>
         </button>
       </div> <!-- history-controls -->
-    </div> <!-- above canvas -->
-      
-
-    <div class="above-code">
       <div class="playback-controls">
         <button class="top-menu-button dont-deselect" id="stepBackwardButton" on:click={stepBackward}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" height="16" width="16" style="vertical-align: middle; transform: translateY(-2px);"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M267.5 440.6c9.5 7.9 22.8 9.7 34.1 4.4s18.4-16.6 18.4-29V96c0-12.4-7.2-23.7-18.4-29s-24.5-3.6-34.1 4.4l-192 160L64 241V96c0-17.7-14.3-32-32-32S0 78.3 0 96V416c0 17.7 14.3 32 32 32s32-14.3 32-32V271l11.5 9.6 192 160z"/></svg></button>
         <PlayButton />        
         <button class="top-menu-button dont-deselect" id="stepForwardButton" on:click={stepForward}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" height="16" width="16" style="vertical-align: middle; transform: translateY(-2px);"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M52.5 440.6c-9.5 7.9-22.8 9.7-34.1 4.4S0 428.4 0 416V96C0 83.6 7.2 72.3 18.4 67s24.5-3.6 34.1 4.4l192 160L256 241V96c0-17.7 14.3-32 32-32s32 14.3 32 32V416c0 17.7-14.3 32-32 32s-32-14.3-32-32V271l-11.5 9.6-192 160z"/></svg></button>
         {#if $firstPlay}<span><NumberWidget id="speed" min={1} max={100} value={10} on:valueChange={handleSpeedChange}/></span>step{#if $playSpeed>1}s{/if} per second{/if}
       </div> <!-- playback-controls -->
+    </div> <!-- above canvas -->
+      
+
+    <div class="above-code">
+
     </div> <!-- above code -->
 
-    {#if !$drawingLocked}
     <div class="left-toolbar">
       <!-- <div class="current-effect">
         {#if $selectedEffect}
             <img class="effect-img" src='/assets/effect-thumbnails/{$selectedEffect.thumbnail}' alt={$selectedEffect.textLabel}>
         {/if}
       </div> -->
-      <CategoryToolbar categories={$drawingLocked?[]:allCategories} />
+      {#if !$drawingLocked}
+      <CategoryToolbar categories={allCategories} />
+      {/if}
       <div class="color-bank"><ColorBank/></div>
-    </div>
-    {/if}
+    </div> <!-- left-toolbar -->
 
       <div class="drawing-area-container">
         <div class="drawing-area" bind:this={drawingArea}>
@@ -235,28 +235,28 @@
         <button class="selected-action-button dont-deselect" id="repeatButton" disabled={!$selectedActionID} on:click={() => repeatSelectedActionAlongPath() }><svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 512 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M0 224c0 17.7 14.3 32 32 32s32-14.3 32-32c0-53 43-96 96-96H320v32c0 12.9 7.8 24.6 19.8 29.6s25.7 2.2 34.9-6.9l64-64c12.5-12.5 12.5-32.8 0-45.3l-64-64c-9.2-9.2-22.9-11.9-34.9-6.9S320 19.1 320 32V64H160C71.6 64 0 135.6 0 224zm512 64c0-17.7-14.3-32-32-32s-32 14.3-32 32c0 53-43 96-96 96H192V352c0-12.9-7.8-24.6-19.8-29.6s-25.7-2.2-34.9 6.9l-64 64c-12.5 12.5-12.5 32.8 0 45.3l64 64c9.2 9.2 22.9 11.9 34.9 6.9s19.8-16.6 19.8-29.6V448H352c88.4 0 160-71.6 160-160z"/></svg>random repeat</button>
         <button class="selected-action-button dont-deselect" id="nameButton" disabled={!$selectedActionID} on:click={() => wrapSelectedInGroup() }><svg xmlns="http://www.w3.org/2000/svg" height="1.1em"viewBox="0 0 640 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M192 128c0-17.7 14.3-32 32-32s32 14.3 32 32l0 7.8c0 27.7-2.4 55.3-7.1 82.5l-84.4 25.3c-40.6 12.2-68.4 49.6-68.4 92l0 71.9c0 40 32.5 72.5 72.5 72.5c26 0 50-13.9 62.9-36.5l13.9-24.3c26.8-47 46.5-97.7 58.4-150.5l94.4-28.3-12.5 37.5c-3.3 9.8-1.6 20.5 4.4 28.8s15.7 13.3 26 13.3l128 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-83.6 0 18-53.9c3.8-11.3 .9-23.8-7.4-32.4s-20.7-11.8-32.2-8.4L316.4 198.1c2.4-20.7 3.6-41.4 3.6-62.3l0-7.8c0-53-43-96-96-96s-96 43-96 96l0 32c0 17.7 14.3 32 32 32s32-14.3 32-32l0-32zm-9.2 177l49-14.7c-10.4 33.8-24.5 66.4-42.1 97.2l-13.9 24.3c-1.5 2.6-4.3 4.3-7.4 4.3c-4.7 0-8.5-3.8-8.5-8.5l0-71.9c0-14.1 9.3-26.6 22.8-30.7zM24 368c-13.3 0-24 10.7-24 24s10.7 24 24 24l40.3 0c-.2-2.8-.3-5.6-.3-8.5L64 368l-40 0zm592 48c13.3 0 24-10.7 24-24s-10.7-24-24-24l-310.1 0c-6.7 16.3-14.2 32.3-22.3 48L616 416z"/></svg>label</button>
 
-        {#if !$drawingLocked}
-          <button class="selected-action-button dont-deselect" id="redrawButton" disabled={!$selectedActionID} on:click={() => redrawSelectedAction()}><svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M339.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L568.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S517.7-4.4 499.1 9.6L262.4 187.2c-24 18-38.2 46.1-38.4 76.1L339.3 367.1zm-19.6 25.4l-116-104.4C143.9 290.3 96 339.6 96 400c0 3.9 .2 7.8 .6 11.6C98.4 429.1 86.4 448 68.8 448H64c-17.7 0-32 14.3-32 32s14.3 32 32 32H208c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg>draw with</button>
-        {/if}
+        <button class="selected-action-button dont-deselect" id="redrawButton" disabled={!$selectedActionID || $drawingLocked} on:click={() => redrawSelectedAction()}><svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M339.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L568.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S517.7-4.4 499.1 9.6L262.4 187.2c-24 18-38.2 46.1-38.4 76.1L339.3 367.1zm-19.6 25.4l-116-104.4C143.9 290.3 96 339.6 96 400c0 3.9 .2 7.8 .6 11.6C98.4 429.1 86.4 448 68.8 448H64c-17.7 0-32 14.3-32 32s14.3 32 32 32H208c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg>draw with</button>
         <!-- <button class="instabutton selected-action-button dont-deselect" id="convertButton" disabled={!$selectedActionID} on:click={() => convertSelectedAction()}>find pattern</button> -->
         <!-- <button class="instabutton selected-action-button dont-deselect" id="saveToolButton" disabled={!$selectedActionID} on:click={() => saveTool($selectedActionID)}> <svg xmlns="http://www.w3.org/2000/svg" height="0.9em" viewBox="0 0 448 512">!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.<path d="M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.8 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"/></svg> <svg xmlns="http://www.w3.org/2000/svg" height="1.4em" viewBox="0 0 512 512">!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.<path d="M176 88v40H336V88c0-4.4-3.6-8-8-8H184c-4.4 0-8 3.6-8 8zm-48 40V88c0-30.9 25.1-56 56-56H328c30.9 0 56 25.1 56 56v40h28.1c12.7 0 24.9 5.1 33.9 14.1l51.9 51.9c9 9 14.1 21.2 14.1 33.9V304H384V288c0-17.7-14.3-32-32-32s-32 14.3-32 32v16H192V288c0-17.7-14.3-32-32-32s-32 14.3-32 32v16H0V227.9c0-12.7 5.1-24.9 14.1-33.9l51.9-51.9c9-9 21.2-14.1 33.9-14.1H128zM0 416V336H128v16c0 17.7 14.3 32 32 32s32-14.3 32-32V336H320v16c0 17.7 14.3 32 32 32s32-14.3 32-32V336H512v80c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64z"/></svg>&nbsp;&nbsp;</button> -->
       </div>
       </div>
 
-    <div class="footer"></div>
+    <!-- <div class="footer"></div> -->
 
     <div class="footer-center">
+      <div class="footer-center-wrapper">
       <!-- <div class="effect-settings"> -->
         {#if !$drawingLocked}
           {#if $stagedAction}
             {#key $stagedAction.params.lastChanged}
-              <div class="staged-action" out:fade={{ duration: 300 }} in:scale={{ duration: 700 }}>
+              <div class="staged-action" in:scale={{ duration: 700, delay: 200 }}>
                 <ActionItem action={$stagedAction} />
               </div>
             {/key}
             <!-- <DebugPaintStore /> -->
           {/if}
         {/if}
+        </div>
         <!-- <div class="staged-color-picker">
           <ColorPicker bind:value={value} />
           </div> -->
@@ -314,12 +314,14 @@
 
   :root {
     --sidebar-width: 50px;
+    --menu-bar-width: 40px;
     --drawing-area-height: 520px;
   }
 
   .background {
     background-image: url('/backgrounds/Cotton.jpg');
-    background-size: cover;
+    background-size: 100vw 100vh;
+    background-repeat: no-repeat;
     min-height: 100vh;
     min-width: 100vw;
     position: absolute;
@@ -333,68 +335,78 @@
     align-items: center;
     height: 100vh;
     width: 100vw;
-    overflow: clip;
+    overflow: auto;
     position: relative;
     z-index: 0;
-    /* background-color: transparent; */
+    background-color: transparent;
   }
 
   .grid-paper {
-    width: 100vw;
-    height: 100vh;
-    max-width: 1300px;
-    margin-left: auto;
-    margin-right: auto;
+    grid-row: 2 / span 3;
+    grid-column: 1 / span 4;
+    /* max-width: 1301px; */
+    /* margin-left: auto; */
+    /* margin-right: auto; */
     overflow: hidden;
-        background-image: linear-gradient(90deg, #A9D6DC 1px, transparent 1px), 
+    background-image: linear-gradient(90deg, #A9D6DC 1px, transparent 1px), 
                       linear-gradient(180deg, #A9D6DC 1px, transparent 1px);
     background-size: 20px 20px;
-    position: absolute;
-    z-index: -1;
   }
 
   .container { /* the main grid container */
     display: grid;
     width: 100%;
+    height: 100%;
     /* max-height: 100vh; */
     max-width: 1300px;
     grid-template-columns: var(--sidebar-width) 2fr minmax(auto, 3fr) var(--sidebar-width);
-    grid-template-rows: 40px var(--drawing-area-height) auto;
-    gap: 20px 10px;
+    grid-template-rows: 1fr var(--menu-bar-width) var(--drawing-area-height) auto 3fr;
+    gap: 0 5px; /* handled by media queries */
     grid-template-areas: 
+        " . . . . "
         "header header header header"
         "left-sidebar main main right-sidebar"
-        "footer footer footer footer";
+        "footer footer-center footer-center footer"
+        " . . . . ";
   }
 
   .footer {
-    grid-area: footer;
+    /* grid-area: footer; */
     /* background-color: #EEA57C; */
     /* opacity: 0.5; */
-    position: relative;
+    /* position: relative;
     display: flex;
-    flex-direction: row;
+    flex-direction: row; */
     /* justify-content: center; */
-    align-items: center;
+    /* align-items: center; */
     /* border: 1px solid orange; */
   }
 
   .top-left-corner {
     grid-column: 1;
-    grid-row: 1;
+    grid-row: 2;
     display: flex;
-    margin: auto;
+    /* margin: auto; */
     align-items: center;
+    justify-content: center;
     z-index: 2;
   }
 
   .above-canvas {
-    grid-column: 2;
-    grid-row: 1;
+    grid-column: 2 / span 3;
+    grid-row: 2;
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
+  }
+
+  .above-canvas > * {
+    flex-grow: 1;
+  }
+
+  .above-canvas > *:last-child {
+    flex-grow: 2; /* Adds twice as much space at the end */
   }
 
   .doc-controls {
@@ -404,17 +416,17 @@
     margin: 10px;
   }
 
-  .above-code {
-    grid-column: 3;
-    grid-row: 1;
+  /* .above-code {
+    grid-column: 3 / span 2;
+    grid-row: 2;
     display: flex;
     align-items: center;
     margin: auto;
-  }
+  } */
 
   .drawing-area-container {
     grid-column: 2;
-    grid-row: 2;
+    grid-row: 3;
     /* border: 2px solid blue; */
     display: flex;
     flex-direction: column;
@@ -425,12 +437,25 @@
 
   .main-right {
     grid-column: 3;
-    grid-row: 2;
+    grid-row: 3;
     max-height: var(--drawing-area-height);
+    position: relative;
+    width: 100%;
+    overflow-y: auto;
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  #main-list {
+    max-height: calc(var(--drawing-area-height) - 2vh);
+    max-width: 100%;
+    position: relative;
   }
 
   .header {
     grid-area: header;
+    grid-row: 2;
+    grid-column: 1 / span 4;
     /* background-color: #B7D09F; */
     background-image: url('/backgrounds/55.png');
     background-size: cover;
@@ -438,36 +463,40 @@
   }
 
   .left-toolbar-background {
-    grid-row: 1 / span 3;
+    grid-row: 2 / span 4;
     grid-column: 1;
     background-image: url('/backgrounds/56.png');
-    background-size: var(--sidebar-width) 100vh;
+    background-size: var(--sidebar-width) auto;
     background-repeat: no-repeat;
     /* background-color: #989A4A; */
     width: var(--sidebar-width);
-    height: 100vh;
+    /* height: 100vh; */
     /* position: absolute;
     top: 0;
     left: 0; */
     opacity: 0.6;
+    margin-bottom: 2vh;
   }
 
   .code-toolbar-background {
-    grid-row: 1 / span 3;
+    grid-row: 2 / span 4;
     grid-column: 4;
     background-image: url('/backgrounds/56.png');
-    background-size: var(--sidebar-width) 100vh;
+    background-size: var(--sidebar-width) auto;
     background-repeat: no-repeat;
     width: var(--sidebar-width);
-    height: 100vh;
+    /* height: 100vh; */
     /* position: absolute;
     top: 0;
     right: 0; */
     opacity: 0.5;
+    margin-bottom: 2vh;
   }
 
   .right-sidebar {
     grid-area: right-sidebar;
+    grid-row: 3;
+    grid-column: 4;
     width: var(--sidebar-width);
     z-index: 1;
   }
@@ -476,10 +505,11 @@
     /* width: 5em;
     height: 90vh; */
     /* background-color: #a4a4a4; */
-    grid-row: 2;
+    grid-row: 3;
     grid-column: 1;
     display: flex;
     flex-direction: column;
+    justify-content: flex-start;
     position: relative;
     z-index: 2;
   }
@@ -511,7 +541,7 @@
   .color-bank {
     position: relative;
     bottom: 0;
-    margin-top: 20px;
+    margin-top: 10px;
     /* margin-bottom: 10px; */
     width: 100%;
   }
@@ -519,52 +549,40 @@
   .footer-center {
     /* border: 1px solid red; */
     grid-column: 2 / span 2;
-    grid-row: 3;
+    grid-row: 4;
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    /* padding: 0 30%; */
-    /* margin: 0 auto; */
-    /* margin: 10px auto; */
-    /* border: 1px solid red; */
-  }
-
-  .staged-action-background {
-    /* border: 1px solid blue; */
-    grid-row: 3;
-    grid-column: 2 / span 2;
-    background-image: url('/backgrounds/117.png');
-    background-size: 100% 120%;
-    background-repeat: no-repeat;
-    opacity: 0.8;
-    margin-top: -10px;
+    max-height: --calc(100vh - var(--top-menu-width) - var(--drawing-area-height) - 2vh);
+    width: 100%;
+    overflow-y: auto;
   }
 
   .staged-action {
     /* border: 1px solid green; */
-    /* background-image: url('/backgrounds/117.png');
-    background-size: cover;
-    background-repeat: no-repeat; */
-    position: absolute; /* so it doesn't jump when it's replaced */
+    position: relative;
     top: 0;
-    /* height: 100%; */
-    /* padding: 20px; */
-    /* margin: 0 auto; */
-    margin: 0;
-    opacity: 1.0;
+    left: 0;
+    width: 100%;
     z-index: 1;
-    /* font-size: 1.1em; */
-    overflow-y: scroll;
-    max-height: 300px;
-    /* background-color: white; */
-    /* border: 1px solid lightgray; */
-    /*
-    padding: 10px;
-    cursor: pointer;
-    border-radius: 5px;
-    box-shadow: rgba(17, 17, 26, 0.1) 0px 1px 0px, rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 48px; */
+    min-height: 20px;
+    height: auto;
+    margin-top: 1vh;
+  }
+
+  .staged-action-background {
+    /* border: 1px solid blue; */
+    grid-row: 4 / span 2;
+    grid-column: 1 / span 4;
+    background-image: url('/backgrounds/117.png');
+    background-size: 100% 110%;
+    background-repeat: no-repeat;
+    margin: 0 calc(var(--sidebar-width) / 2);
+    opacity: 0.6;
+    margin-top: -1vh;
+    margin-bottom: 1vh;
   }
 
   .effect-settings {
@@ -594,20 +612,13 @@
     bottom: 0; */
     /* left: 0; */
   }
-
-  #main-list {
-    max-height: var(--drawing-area-height);
-    max-width: 100%;
-    overflow-y: auto;
-    margin: 0;
-  }
   /* .code-area {
     margin-top: 30px;
   } */
 
   .top-menu-button {
     /* padding: 0.5vh 0.5vw; */
-    font-size: 30px;
+    font-size: 2rem;
     font-family: 'Fandango';
     cursor: pointer;
     /* border: 1px solid black; */
@@ -659,7 +670,7 @@
     cursor: pointer;
     border: none;
     font-family: 'Fandango';
-    font-size: 1.1em;
+    font-size: 1.1rem;
     height: 100%;
     color: black;
     border-radius: 50% 50%;
@@ -705,6 +716,7 @@
   .lock-button {
     background: none;
     cursor: pointer;
+    transform: translateY(2px);
     /* position: absolute;
     right: 10px;
     top: 10px; */
@@ -722,15 +734,13 @@
     border-radius: 5px;
   }
 
+
+  /* wider than 1300px */
   @media (min-width: 1301px) {
     .container {
         margin-left: auto;
         margin-right: auto;
     }
-
-    #main-list {
-      margin-left: 10px;
-  }
 
     .left-toolbar-background {
         /* Position the left toolbar based on the centered grid width */
@@ -743,16 +753,31 @@
     }
   }
 
+  /* taller than 680px */
   @media (min-height: 681px) {
-    .container, .grid-paper {
-        margin-top: 10px;
+    .container {
+        row-gap: 20px;
     }
 
     .staged-action {
-      margin: 0.5em auto;
-      font-size: 1.3em;
+      /* margin: 0.5em auto; */
+      font-size: 1.3rem;
+    }
+  }
+
+    /* wider than 680px */
+  @media (min-width: 1101px) {
+    .container {
+        column-gap: 10px;
     }
 
+    .drawing-area-container {
+      margin-left: 20px;
+    }
+
+    #main-list {
+      margin-left: 1vw;
+    }
   }
 
 </style>
