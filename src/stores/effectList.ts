@@ -773,9 +773,24 @@ export const effectList = [
     mouseActionType: 'drag',
     params: {
       tiling: 'mirror',
-      width: 50,
-      height: 50,
-      position: {x: 150, y: 150}
+      width: 250,
+      height: 500,
+      position: {x: 0, y: 0}
+    }
+  },
+  {
+    name: 'tile',
+    textLabel: 'Reflect',
+    category: 'patterns',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'radial.jpg',
+    mouseActionType: 'drag',
+    params: {
+      tiling: 'mirror',
+      width: 150,
+      height: 150,
+      position: {x: 250, y: 250}
     }
   },
   {
