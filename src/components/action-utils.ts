@@ -1073,7 +1073,7 @@ function createAlongPathAction(children: string[], path: number[][], angle: numb
     category: 'control',
     effect: 'along path',
     params: {
-      title: "what is this?",
+      title: "describe me!",
       children: children,
       path: path,
       angle: angle

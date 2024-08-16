@@ -34,9 +34,9 @@
   <ChooserWidget id="filter" options={['invert','threshold', 'gray']} selected={params.filter || 'invert'} on:valueChange={handleValueChange}/>
 {:else if name === 'move cutout'}
   <ChooserWidget id="mode" options={['move','copy']} selected={params.mode || 'move'} on:valueChange={handleValueChange}/>
-  width <NumberWidget id="w" min={1} max={600} value={params.w || 100} on:valueChange={handleValueChange}/> 
-  height <NumberWidget id="h" min={1} max={600} value={params.w || 100} on:valueChange={handleValueChange}/>
-  from
+  <NumberWidget id="w" min={1} max={600} value={params.w || 100} on:valueChange={handleValueChange}/> 
+  x <NumberWidget id="h" min={1} max={600} value={params.w || 100} on:valueChange={handleValueChange}/>
+  cutout from
   <CoordinateWidget id="start" value={params.start || []} on:valueChange={handleValueChange}/>
   to
   <CoordinateWidget id="end" value={params.end || []} on:valueChange={handleValueChange}/>

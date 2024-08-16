@@ -8,3 +8,8 @@
     <DataInitializer />
     <MotifApp initialActions={$actionStore}/>
 </body>
+
+<svelte:head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MOTIF</title>
+</svelte:head>

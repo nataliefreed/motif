@@ -862,6 +862,7 @@ function disableContextMenu(event) {
      on:mousemove={handleMouseMove}
      on:touchstart={(e) => { e.preventDefault(); handleMouseDown(e); }}
      on:touchmove={(e) => { e.preventDefault(); handleMouseMove(e); }}
+     on:touchend={(e) => { e.preventDefault(); handleMouseUp(e); }}
      on:mouseleave={handleMouseLeave}
      on:mouseover={handleMouseOver}
      on:dblclick={handleDoubleClick}

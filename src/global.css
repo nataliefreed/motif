@@ -68,7 +68,7 @@
     }
 
     .tool-name {
-      font-weight: bold;
+      font-weight: 600;
       color: black;
       font-family: 'Montserrat', sans-serif;
       font-style: inherit;

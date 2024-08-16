@@ -11,7 +11,7 @@
 
   function handleCategoryClick(category: string) {
     //toggle open/closed, unless you click on a different category than the open one, in which case close the open one and open the new one
-    // visibleCategory = visibleCategory === category ? '' : category;
+    visibleCategory = visibleCategory === category ? '' : category;
   }
 
   function handleCategoryMouseover(category: string) {
@@ -23,7 +23,7 @@
 
   function handleEffectClick(effect: Effect) {
     selectedEffect.set(effect);
-    // visibleCategory = '';
+    visibleCategory = '';
   }
 
   function handleActiveEffectClick() {
