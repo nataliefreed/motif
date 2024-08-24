@@ -45,7 +45,7 @@
     // console.log('handling change');
     sanitizeInput();
     dispatch('valueChange', { id, value: value });
-    console.log('dispatching value change in string widget', value);
+    // console.log('dispatching value change in string widget', value);
   }
 
 </script>

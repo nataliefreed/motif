@@ -8,6 +8,8 @@
   export let angle:number = 0;
   let cumulativeAngle = 0;
 
+  let size = 3;
+
   let domElement: SVGElement;
 
   const dispatch = createEventDispatcher();
@@ -102,7 +104,7 @@
 
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <!-- svelte-ignore a11y-mouse-events-have-key-events -->
-  <svg bind:this={domElement} class="path-widget" width="1.7em" height="1.7em" viewBox="0 0 540 540" style="border: 1px solid #ddd; max-width: 100%; height: auto;"
+  <svg bind:this={domElement} class="path-widget" width="{size}em" height="{size}em" viewBox="0 0 540 540" style="border: 1px solid #ddd; max-width: 100%; height: auto;"
     on:mouseover={handleMouseOver}
     on:mouseout={handleMouseOut}
   >

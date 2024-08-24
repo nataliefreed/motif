@@ -36,22 +36,43 @@
     <ListWidget id='children' value={params.children} {depth} on:valueChange={handleValueChange}/>
   {/if}
 {:else if name === 'along path'}
-  <StringWidget id='title' value={params.title} on:valueChange={handleValueChange}/>
-  <span class="children-widget"><ChildrenWidget id='children' on:miniActionClick={toggle} value={params.children}/></span>
+<div class="along-path-widget">
+  <div>
+<span class="brush-name-and-preview-widget"><StringWidget id='title' value={params.title} on:valueChange={handleValueChange}/>
+  <ChildrenWidget id='children' on:miniActionClick={toggle} value={params.children}/>
+  <span class="toggle-arrow" on:click={toggle}> {isOpen ? '▼' : '▶'}</span>
+</span>
+
+{#if isOpen}
+<ListWidget id='children' value={params.children} {depth} on:valueChange={handleValueChange}/>
+{/if}
+</div>
+  <div>
   <!-- <StringWidget id='title' value={params.title} /> -->
   along<PathWidget id='path' path={params.path} angle={params.angle} on:valueChange={handleValueChange}/>
-  <AngleWidget id='angle' min={0} max={360} value={params.angle} on:valueChange={handleValueChange}/>
+
+</div>
+  <!-- <AngleWidget id='angle' min={0} max={360} value={params.angle} on:valueChange={handleValueChange}/> -->
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <span class="toggle-arrow" on:click={toggle}> {isOpen ? '▼' : '▶'}</span>
-  {#if isOpen}
-    <ListWidget id='children' value={params.children} {depth} on:valueChange={handleValueChange}/>
-  {/if}
+
+</div>
+  
+
 {/if}
 
 <style>
 
-  .children-widget {
-    margin: 0 0.5em;
+  .along-path-widget {
+    /* display: flex; */
+    /* flex-direction: row; */
+    /* gap: 0.5em; */
+  }
+
+  .brush-name-and-preview-widget {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5em;
+    margin-bottom: 0.2em;
   }
 
 </style>

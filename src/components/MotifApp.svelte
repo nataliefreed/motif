@@ -161,7 +161,7 @@
 
     <div class="above-canvas">
       <div class="doc-controls">
-        <button class="top-menu-button" title="save" id="exportButton" on:click={exportCodeWithImage}>download</button>
+        <button class="top-menu-button" title="save" id="exportButton" on:click={exportCodeWithImage}>save</button>
         <button class="top-menu-button" title="open" id="importButton" on:click={importCodeFromImage}>open</button>
         <button class="top-menu-button" id="clearAllButton" on:click={clearAllActions}>clear</button>
       </div>

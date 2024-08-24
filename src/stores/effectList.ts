@@ -47,6 +47,19 @@ export const effectList = [
   },
 
   {
+    name: 'solid fill', //TODO: rename name and textLabel and also the effect name in actions. dropdown name is button name, name is type of effect (eg. tile which has subtypes in params)
+    textLabel: 'Solid Fill',
+    category: 'backgrounds',
+    tags: 'drawing',
+    cursor: '/assets/cursors/fill-drip-solid.svg',
+    thumbnail: 'solid_fill.jpg',
+    mouseActionType: 'drag',
+    params: {
+      color: '#bbaa00'
+    }
+  },
+
+  {
     name: 'straight line',
     textLabel: 'Line',
     category: 'lines',
@@ -190,18 +203,6 @@ export const effectList = [
       angle: 0
     }
   },
-  {
-    name: 'solid fill', //TODO: rename name and textLabel and also the effect name in actions. dropdown name is button name, name is type of effect (eg. tile which has subtypes in params)
-    textLabel: 'Solid Fill',
-    category: 'backgrounds',
-    tags: 'drawing',
-    cursor: '/assets/cursors/fill-drip-solid.svg',
-    thumbnail: 'solid_fill.jpg',
-    mouseActionType: 'drag',
-    params: {
-      color: '#bbaa00'
-    }
-  },
 
   // {
   //   name: 'along path',
@@ -234,7 +235,7 @@ export const effectList = [
         category: 'control',
         effect: 'along path',
         params: { /* note: leaving color out means child colors will be updated */
-          title: "circles",
+          title: "dot brush",
           children: ['dot'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
           angle: 0,
@@ -272,7 +273,7 @@ export const effectList = [
         category: 'control',
         effect: 'along path',
         params: {
-          title: "lines",
+          title: "line brush",
           children: ['line'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
           angle: 0,
@@ -405,7 +406,7 @@ export const effectList = [
         category: 'control',
         effect: 'along path',
         params: {
-          title: "mosaic",
+          title: "mosaic brush",
           children: ['red_circle', 'orange_triangle', 'gold_rectangle', 'olive_circle', 'green_triangle', 'light_blue_rectangle', 'blue_circle', 'indigo_triangle', 'purple_rectangle', 'violet_circle', 'pink_triangle'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
           angle: 0,
@@ -535,7 +536,8 @@ export const effectList = [
         params: {
           size: 10,
           color: '#f18701',
-          position: {x: 0, y: 0}
+          position: {x: 0, y: 0},
+          angle: 0
         }
       },
       'large_heart': {
@@ -547,7 +549,8 @@ export const effectList = [
         params: {
           size: 16,
           color: '#f35b04',
-          position: {x: 0, y: 0}
+          position: {x: 0, y: 0},
+          angle: 0
         }
       }
     }
@@ -569,7 +572,7 @@ export const effectList = [
         category: 'control',
         effect: 'along path',
         params: {
-          title: "stars",
+          title: "star brush",
           children: ['pink_star', 'purple_star', 'dark_blue_star', 'blue_star', 'light_blue_star'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
           angle: 0,

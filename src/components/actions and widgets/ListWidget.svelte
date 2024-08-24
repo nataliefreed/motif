@@ -7,7 +7,7 @@
   import ActionItem from './ActionItem.svelte';
   import { scale, fade, fly } from 'svelte/transition';
   import { deepCopy } from '../../utils/utils';
-  import { selectAction, hoverAction, copyStagedActionToActionStore, addCurrentEffectAsStagedAction } from '../action-utils';
+  import { selectAction, hoverAction, copyStagedActionToActionStore, addCurrentEffectAsStagedAction, toggleHidden } from '../action-utils';
   import tinycolor from 'tinycolor2';
   import { v4 as uuidv4 } from 'uuid';
     import PathWidget from './PathWidget.svelte';
@@ -62,7 +62,7 @@
     function onAdd(event: SortableEvent) {
       const newIndex = event.newIndex;
 
-      console.log("adding at index", newIndex);
+      // console.log("adding at index", newIndex);
       if(newIndex === undefined) return;
       // update children
       let uuid = event.item.id;
@@ -136,6 +136,10 @@
 
   function handleAddButton(event: Event) {
     copyStagedActionToActionStore();
+  }
+
+  function handleDoubleClick(event: Event, actionId: string) {
+    toggleHidden(actionId);
   }
 
   function checkAction(action) {
@@ -286,7 +290,7 @@ function getDynamicStyle(id:string) {
       in:scale={{ duration: $stagedActionID === action.uuid? 1000 : 500, start: 0.25, opacity: 1 }}
       id={`${action.uuid}`}
     >
-      <span class="drag-handle"></span>
+      <span class="drag-handle" on:dblclick={e => handleDoubleClick(e, action.uuid)}></span>
       {#if $stagedActionID !== action.uuid}
         <span class="action-item-content"><ActionItem {action} {depth} /></span>
       {/if}
@@ -329,6 +333,7 @@ function getDynamicStyle(id:string) {
   }
 
   .action-item-content {
+    box-sizing: border-box;
     background-color: #ffffff9b;
     border: 1px solid lightgray;
     border-radius: 5px 15px 15px 5px;
@@ -337,17 +342,10 @@ function getDynamicStyle(id:string) {
     padding: 0.1em 0.2em 0.1em 0.5em;
   }
 
-  .selected {
-    box-sizing: border-box; /* Include padding and border in element's width and height */
-    border: 2px solid gold;
-    background-color: lightyellow;
-    border-radius: 10px;
-    /* display: block; */
-  }
-
   .selected .action-item-content {
     background-color: lightyellow;
-    border: none;
+    border: 2px solid gold;
+    border-radius: 10px;
     box-shadow: none;
   }
 
@@ -357,7 +355,7 @@ function getDynamicStyle(id:string) {
   }
 
   .hovered.selected {
-    background-color: #fafaa9;
+    /* background-color: #fafaa9; */
   }
 
   .hovered.staged {
@@ -425,7 +423,7 @@ function getDynamicStyle(id:string) {
 
 
   li::before {
-    pointer-events: none; /* prevent click events on the index */
+    pointer-events: none;
     counter-increment: list-counter;
     content: counter(list-counter);
     /* color: #aeaeae; */
@@ -470,7 +468,7 @@ function getDynamicStyle(id:string) {
   .alpha-style li::before {/* Alpha numbering */
     /* content: counter(list-counter, lower-alpha);  */
     content: none;
-    
+    display: none;
   }
 
   .lastChanged::after {
@@ -507,7 +505,9 @@ function getDynamicStyle(id:string) {
   }
 
   .hidden {
-    display: none;
+    /* display: none; */
+    /* transform: scale(0.5); */
+    opacity: 0.4;
   }
 
   .scale-from-left {

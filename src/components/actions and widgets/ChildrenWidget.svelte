@@ -25,12 +25,16 @@
   
 </script>
 
-<span bind:this={listElement}>
+<span bind:this={listElement} class="child-widget">
   {#each children.map(checkAction) as action (action.uuid)}
     {#if action}
       <!-- <ColorWidget id='color' value={action.params.color} /> -->
       <MiniActionItem on:miniActionClick {action} />
     {/if}
+    <!-- {#if children.length === 1}
+      <MiniActionItem on:miniActionClick {action} />
+      <MiniActionItem on:miniActionClick {action} />
+    {/if} -->
     <!-- {action.name} 
     {#if action.thumbnail}
       <img src={`/assets/effect-thumbnails/${action.thumbnail}`} alt="{action.name} thumbnail" class="thumbnail">
@@ -43,6 +47,12 @@
 .thumbnail {
   width: 2em;
   height: 2em;
+}
+
+.child-widget {
+  display: flex;
+  flex-direction: row;
+  gap: 0;
 }
 
 </style>
