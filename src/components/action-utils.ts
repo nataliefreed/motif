@@ -82,6 +82,17 @@ class ActionManager {
     selectAction(selected);
   }
 
+  toggleHidden(id: string) {
+    let action = this.getAction(id);
+    if (!action) return;
+
+    if(action.hidden) {
+      this.show(id);
+    } else {
+      this.hide(id);
+    }
+  }
+
   hide(id: string) {
     if (!id || !get(this.#store)[id]) return;
     this.#modifyActionStore(id, (store) => {
@@ -536,6 +547,11 @@ export function stopPlaying() {
   // actionManager.refresh();
 }
 
+export function toggleHidden(id: string) {
+  actionManager.toggleHidden(id);
+  saveToHistory("hide action");
+}
+
 export function hideAction(id: string) {
   actionManager.hide(id);
   saveToHistory("hide action");
@@ -564,7 +580,7 @@ export function selectAction(id:string) {
 
 export function deselect() {
   selectedActionID.set('');
-  console.log("deselect");
+  // console.log("deselect");
 }
 
 export function selectActionByIndex(index:number) {
@@ -1086,7 +1102,7 @@ function createAlongPathAction(children: string[], path: number[][], angle: numb
     category: 'control',
     effect: 'along path',
     params: {
-      title: "repeated!",
+      title: "a brush without a name",
       children: children,
       path: path,
       angle: angle
@@ -1186,11 +1202,70 @@ export function compileActionsBefore(id: string) {
 
 
 type OverrideParams = {
-  basePoint?: { x: number, y: number },
-  nextPoint?: { x: number, y: number }|null,
+  offset?: { x: number, y: number },
+  nextOffset?: { x: number, y: number }|null,
 };
 
-// Recursive function to compile information about actions for rendering
+function add(point1: { x: number, y: number }, point2: { x: number, y: number }) {
+  return { 
+    x: point1.x + point2.x, 
+    y: point1.y + point2.y 
+  };
+}
+
+function subtract(point1: { x: number, y: number }, point2: { x: number, y: number }) {
+  return { 
+    x: point1.x - point2.x, 
+    y: point1.y - point2.y 
+  };
+}
+
+function getOrigin(action: Action): { x: number; y: number } | null {
+
+  switch(action.effect) {
+    case 'along path':
+      // console.log("along path, getting origin", action.params.path[0]);
+      return { 
+        x: action.params.path[0][0],
+        y: action.params.path[0][1] 
+      };
+    // iterate over children, call get origin param on each child until something returned
+    case 'do each':
+      let children = action.params.children;
+      if (children.length > 0) {
+        for (let i = 0; i < children.length; i++) {
+          let childAction = get(flatActionStore)[children[i]];
+          let origin = getOrigin(childAction);
+          if (origin !== null) {
+            // console.log("found origin in child", origin);
+            return origin;
+          }
+        }
+      }
+      break;
+      
+      // otherwise, does it have a path widget / location?
+      default:
+        // debugger;
+        if(action.params.path) {
+          // console.log("there's a path here", action.params.path[0]);
+          return {
+            x: action.params.path[0][0],
+            y: action.params.path[0][1]
+          };
+        }
+        else if('position' in action.params) {
+          // console.log("position found", action.params.position);
+          return { ...action.params.position };
+        } else if('start' in action.params && 'end' in action.params) {
+          return { ...action.params.start };
+        }
+        break;
+    }
+  return null;
+}
+
+// Recursively compile information about actions for rendering
 export function compileActions(action: Action, parentID?: string, overrides:OverrideParams = {}): CompiledAction[] {
   // Return empty arrays if the action is undefined or null
   if (!action) return [];
@@ -1217,6 +1292,7 @@ export function compileActions(action: Action, parentID?: string, overrides:Over
         actions.push(...childActions);
       }
       break;
+      
     case 'along path':
         actions.push({ // add parent action to the list also, to make sure outer blocks are shown as active 
           actionID: action.uuid,
@@ -1224,38 +1300,69 @@ export function compileActions(action: Action, parentID?: string, overrides:Over
           effect: action.effect,
           params: {},
         });
-        // if(!action.params.children) return actions;
+
+        // We want basePoint for the first action in the path to be the basePoint passed in in overrides
+        // override.basePoint = offset + path[0]
+        // offset = override.basePoint - path[0]
+        // for each point in the path add offset
+
+        //for each child action, after the params are modified, getOrigin should return the path point
+
+          // let firstPoint = action.params.path[0];
+          // let offset = { x: 0, y: 0 };
+
+        // override.basePoint = offset + path[0]
+        // so offset = override.basePoint - path[0]
+          
+
+
+
+
       // If the action has a path, create a compiled action for each point or line segment along the path
         action.params.path.forEach((point: [number, number], index: number) => {
+          // Determine the child ID based on the current index and wrap around if necessary
           const childID = action.params.children[index % action.params.children.length];
+          // Retrieve the corresponding action
           const childAction = get(flatActionStore)[childID];
           if(!childAction) return;
 
+          let childOrigin = getOrigin(childAction) ?? { x: 0, y: 0 };
+          // console.log(index, "retrieved child origin", getOrigin(childAction));
+          
+          let offset = subtract(overrides.offset?? {x: 0, y: 0}, childOrigin);
+
+          // Initialize basePoint with the current point's coordinates
           let basePoint = { x: point[0], y: point[1] };
           let nextPoint;
+          // If there's only one point in the path, use the same point as nextPoint
           if (action.params.path.length == 1) {
             nextPoint = basePoint;
           }
+          // If not the last point, set nextPoint to the coordinates of the next point in the path
           else if (index < action.params.path.length - 1) {
             const src = action.params.path[(index + 1)];
             nextPoint = { x: src[0], y: src[1] };
           }
+          // If it's the last point, set nextPoint to null
           else {
             nextPoint = null;
           }
-
-          let offset = overrides.basePoint ?? { x: 0, y: 0 };
-          basePoint.x += offset.x;
-          basePoint.y += offset.y;
+          
+          basePoint = add(basePoint, offset);
           if(nextPoint) {
-            nextPoint.x += offset.x;
-            nextPoint.y += offset.y;
+            nextPoint = add(nextPoint, offset);
           }
-          let modifiedOverrides = {...overrides, basePoint, nextPoint};
 
+          // Merge the basePoint and nextPoint with the existing overrides
+          let modifiedOverrides = {...overrides, offset: basePoint, nextOffset: nextPoint};
+
+          // console.log("index", index, "offset", offset, "basePoint", basePoint, "nextPoint", nextPoint);
+
+          // Compile the actions for the child action with the modified overrides
           actions.push(...compileActions(childAction, action.uuid, modifiedOverrides));
         });
       break;
+
     case 'repeat':
       const repeatCount = action.params.count || 1;
       for (let i = 0; i < repeatCount; i++) {
@@ -1269,20 +1376,20 @@ export function compileActions(action: Action, parentID?: string, overrides:Over
       // Initialize an empty object for modified parameters
       let modifiedParams = {};
       let skipAction = false;
-      if(overrides.basePoint) {
+      if(overrides.offset) {
         if ('position' in action.params) {
           // If the child action has a position parameter, use the current point
           modifiedParams = {
             ...action.params,
-            position: overrides.basePoint,
+            position: add(action.params.position, overrides.offset),
           }; 
         } else if ('start' in action.params && 'end' in action.params) {
           // If the child action has start and end parameters, use the current and next points
-          if (overrides.nextPoint) {
+          if (overrides.nextOffset) {
             modifiedParams = {
                 ...action.params,
-                start: overrides.basePoint,
-                end: overrides.nextPoint,
+                start: add(action.params.start, overrides.offset),
+                end: add(action.params.end, overrides.nextOffset),
             };
           }
           else {
