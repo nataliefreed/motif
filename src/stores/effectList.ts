@@ -15,7 +15,6 @@ export const effectList = [
     params: {
       radius: 20,
       color: '#1B54B1',
-      angle: 0,
       position: {x: 250, y: 430}
     },
   },
