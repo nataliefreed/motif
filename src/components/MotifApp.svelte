@@ -342,7 +342,7 @@
   }
 
   .grid-paper {
-    grid-row: 2 / span 3;
+    grid-row: 2 / span 4;
     grid-column: 1 / span 4;
     /* max-width: 1301px; */
     /* margin-left: auto; */
@@ -570,6 +570,14 @@
     min-height: 20px;
     height: auto;
     margin-top: 1vh;
+    box-sizing: border-box;
+    background-color: #ffffff9b;
+    border: 1px solid lightgray;
+    border-radius: 5px 15px 15px 5px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 0.1em 0.2em 0.1em 0.5em;
+    margin-bottom: 2px;
   }
 
   .staged-action-background {
