@@ -293,7 +293,6 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
   async function renderStagedAction(canvas) {
     if(!canDraw()) return;
     // console.log("rendering staged action");
-    if(!p5) return;
     clearTimeout(stagedCanvasTimeout);
     clearInterval(stagedCanvasFade);
     let actions = compileActions($flatActionStore[$stagedActionID]);
@@ -735,7 +734,15 @@ mouseup
 function handleMouseUp(event) {
   if(!canDraw()) { return; }
   if (p5 && isDragging) {
-    isDragging = false;
+    endDragging();
+
+    // Once the mouse is released, remove global listener
+    document.removeEventListener('mouseup', globalMouseUp);
+  }
+}
+
+function endDragging() {
+  isDragging = false;
     x = Math.round(p5.mouseX);
     y = Math.round(p5.mouseY);
 
@@ -756,10 +763,11 @@ function handleMouseUp(event) {
         updateStagedAction({path: path});
       }
     }
+}
 
-    // Once the mouse is released, remove global listener
-    document.removeEventListener('mouseup', globalMouseUp);
-  }
+function handleTouchEnd(event) {
+  if(!canDraw()) { return; }
+  endDragging();
 }
 
 function globalMouseUp(event) {
@@ -860,9 +868,9 @@ function disableContextMenu(event) {
      on:mousedown={handleMouseDown} 
      on:mouseup={handleMouseUp} 
      on:mousemove={handleMouseMove}
-     on:touchstart={(e) => { e.preventDefault(); handleMouseDown(e); }}
+     on:touchstart={(e) => { handleMouseDown(e); }}
      on:touchmove={(e) => { e.preventDefault(); handleMouseMove(e); }}
-     on:touchend={(e) => { e.preventDefault(); handleMouseUp(e); }}
+     on:touchend={handleTouchEnd}
      on:mouseleave={handleMouseLeave}
      on:mouseover={handleMouseOver}
      on:dblclick={handleDoubleClick}
