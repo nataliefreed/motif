@@ -63,16 +63,36 @@
 <style>
 
   .along-path-widget {
-    /* display: flex; */
-    /* flex-direction: row; */
-    /* gap: 0.5em; */
-  }
-
-  .brush-name-and-preview-widget {
+    /* border: 1px solid red; */
     display: flex;
     flex-direction: row;
     gap: 0.5em;
-    margin-bottom: 0.2em;
+  }
+
+  .brush-definition {
+    /* border: 1px solid blue; */
+    /* display: flex;
+    flex-direction: column;
+    align-items: center; */
+  }
+
+  .along-path {
+    /* border: 1px solid green; */
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: flex-end;
+    gap: 0.5em;
+  }
+
+  .brush-name-and-preview-widget {
+    /* border: 1px solid purple; */
+    display: flex;
+    flex-direction: row;
+    gap: 0.5em;
+    /* margin-bottom: 0.2em; */
+    align-items: center;
+    /* justify-content: center; */
   }
 
 </style>
