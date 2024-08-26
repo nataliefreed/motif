@@ -5,6 +5,7 @@
   import { onMount, onDestroy, beforeUpdate } from 'svelte';
   import { createEventDispatcher } from 'svelte';
   import { selectedCodeEffect } from '../../stores/dataStore';
+  import Tooltip from '../Tooltip.svelte';
 
   const dispatch = createEventDispatcher();
 
@@ -24,55 +25,12 @@
   //   value = max;
   // }
 
-  $: if(numberWidget) {
-    reloadTippy();
-  }
-
   $: displayValue = Math.round(value);
 
   $: cursorStyle = ($selectedCodeEffect === null || $selectedCodeEffect === 'point') ? 'pointer' : '';
 
-  function reloadTippy() {
-    if(tippyInstance) tippyInstance.destroy();
-    tippyInstance = tippy(numberWidget, {
-      content: sliderContainer,
-      theme: 'light-border',
-      interactive: true,
-      allowHTML: true,
-      arrow: true,
-      placement: 'bottom',
-      trigger: 'manual',
-      hideOnClick: true,
-      appendTo: document.body,
-      onMount(instance) {
-        sliderContainer.style.display = 'block';
-    },
-      onHide(instance) {
-        sliderContainer.style.display = 'none';
-      }
-    });
-  }
-
-  onMount(() => {
-    // console.log("mounting number widget");
-    // Initialize the Tippy instance with the actual DOM element
-    reloadTippy();
-  });
-
-  onDestroy(() => {
-    // console.log("unmounting number widget");
-    if(tippyInstance) tippyInstance.destroy();
-  });
-
   function updateValue(event: Event) {
     value = +sliderElement.value; //+ is string to number
-  }
-
-  function handleClick(event: Event) {
-    // dispatch('valueChange', { id, value: savedValue });
-    // previewEnd = true;
-
-    tippyInstance.show();
   }
 
     let previewEnd = false;
@@ -96,8 +54,13 @@
     input.select();
   }
 
+  //triggers when number input is changed either by typing or up/down buttons
   function handleChange(event: Event) {
-    // const target = event.target as HTMLInputElement;
+    const target = event.target as HTMLInputElement;
+    let newValue = +target.value;
+    if(newValue > min && newValue < max) {
+      dispatch('valueChange', { id, value: newValue });
+    }
     // value = +target.value; // Update the local value but don't dispatch yet
   }
 
@@ -120,31 +83,36 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <span class="number-widget"
       bind:this={numberWidget}
-      on:click={handleClick}
       style="cursor: {cursorStyle};">
   {displayValue}
 </span>
 
-<div bind:this={sliderContainer} class="slider-container not-deselect" style="display: none;">
+{#if numberWidget}
+  <Tooltip element={numberWidget} let:showContent>
+    {#if showContent}
+      <div bind:this={sliderContainer} class="slider-container">
 
-  <input type="number"
-  class="numberbox-for-slider" 
-  bind:value={value} 
-  min={min} 
-  max={max}
-  on:focus={handleFocus}
-  on:input={handleChange}
-  on:change={handleFinalChange}/>
+        <input type="number"
+        class="numberbox-for-slider" 
+        bind:value={value} 
+        min={min} 
+        max={max}
+        on:focus={handleFocus}
+        on:input={handleChange}
+        on:change={handleFinalChange}/>
 
-  <input type="range"
-  class="slider-for-numberbox" 
-  bind:value={value} 
-  min={min} 
-  max={max}
-  bind:this={sliderElement}
-  on:input={handleFinalChange}/>
+        <input type="range"
+        class="slider-for-numberbox" 
+        bind:value={value} 
+        min={min} 
+        max={max}
+        bind:this={sliderElement}
+        on:input={handleFinalChange}/>
 
-</div>
+      </div>
+    {/if}
+  </Tooltip>
+{/if}
 
 <style>
   .slider-container {

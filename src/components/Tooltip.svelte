@@ -12,9 +12,9 @@
   let tooltip;
   export let settings = {};
 
-  $: if(element) {
-    reloadTippy(); //re-link to new content - todo: clean this up
-  }
+  // $: if(element) {
+    // reloadTippy(); //re-link to new content - todo: clean this up
+  // }
 
   function reloadTippy() {
 
@@ -26,7 +26,7 @@
       document.body.appendChild(tooltipContainer);
     }
 
-    // console.log("reloading tippy");
+    // console.log("loading tippy");
     if(tooltip) tooltip.destroy();
     tooltip = tippy(element, {
       plugins: [followCursor],
@@ -44,6 +44,7 @@
         // console.log("tooltip showing");
       },
       onMount(instance) {
+        tooltipContainer.addEventListener('mouseleave', handleMouseLeave);
         // showContent = true;
         // contentElement.style.display = 'block';
 
@@ -52,11 +53,10 @@
       onHide(instance) {
         // contentElement.style.display = 'none';
         showContent = false;
+        removeMouseLeaveListener();
         // console.log("tooltip hidden");
       }
     });
-
-    tooltipContainer.addEventListener('mouseleave', handleMouseLeave);
   }
 
   onMount(() => {
@@ -76,14 +76,19 @@
     }
 
     // Clean up event listener
+    removeMouseLeaveListener();
+    
+  });
+
+  function removeMouseLeaveListener() {
     const tooltipContainer = document.getElementById('tooltip-container');
     if (tooltipContainer) {
       tooltipContainer.removeEventListener('mouseleave', handleMouseLeave);
     }
-  });
+  }
 
   function handleMouseLeave() {
-    saveToHistory("leaving parameter settings");
+    saveToHistory("mouse leaving parameter settings");
   }
 
 </script>
