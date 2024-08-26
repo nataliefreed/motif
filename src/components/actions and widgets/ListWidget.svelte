@@ -38,7 +38,7 @@
       onUpdate: onReorder,
       onAdd: onAdd,
       onRemove: onRemove,
-      // onEnd: onDropEnd,
+      onSort: onSort,
       animation: 150,
       filter: '.filtered',
       draggable: '.draggable'
@@ -60,6 +60,7 @@
     // }
 
     function onAdd(event: SortableEvent) {
+      // console.log("adding", event);
       const newIndex = event.newIndex;
 
       // console.log("adding at index", newIndex);
@@ -72,7 +73,13 @@
       dispatch('valueChange', { id, value: newArray });
     }
 
+    function onSort(event: SortableEvent) {
+      //TODO: check if actual reorder happened
+      dispatch('saveChange', { description: 'reordered actions' });
+    }
+
     function onRemove(event: SortableEvent) {
+      // console.log("removing", event);
       let newValue = value.filter(uuid => uuid !== event.item.id);
       // update children
       // console.log("removing", event.item.id);
@@ -80,6 +87,7 @@
     }
 
     function onReorder(event: SortableEvent) {
+      // console.log("reordering", event);
       if(event.to !== event.from) return; // make sure we are still in the same list
       const oldIndex = event.oldIndex;
       const newIndex = event.newIndex;
@@ -89,6 +97,10 @@
       dispatch('valueChange', { id, value: newValue });
       // console.log("reordered", newValue);
     }
+
+    // function onDropEnd(event: SortableEvent) {
+    //   console.log("dropped", event);
+    // }
 
     function reorderItems(array:string[], oldIndex:number, newIndex:number) {
       const newArray = deepCopy(array);

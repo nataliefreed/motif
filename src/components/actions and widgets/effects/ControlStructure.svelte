@@ -33,26 +33,28 @@
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <span class="toggle-arrow" on:click={toggle}> {isOpen ? '▼' : '▶'}</span>
   {#if isOpen}
-    <ListWidget id='children' value={params.children} {depth} on:valueChange={handleValueChange}/>
+    <ListWidget id='children' value={params.children} {depth} on:valueChange={handleValueChange} on:saveChange/>
   {/if}
+
+
 {:else if name === 'along path'}
 <div class="along-path-widget">
-  <div>
+  <div class="brush-definition">
 <span class="brush-name-and-preview-widget"><StringWidget id='title' value={params.title} on:valueChange={handleValueChange}/>
   <ChildrenWidget id='children' on:miniActionClick={toggle} value={params.children}/>
   <span class="toggle-arrow" on:click={toggle}> {isOpen ? '▼' : '▶'}</span>
 </span>
 
 {#if isOpen}
-<ListWidget id='children' value={params.children} {depth} on:valueChange={handleValueChange}/>
+<ListWidget id='children' value={params.children} {depth} on:valueChange={handleValueChange} on:saveChange/>
 {/if}
 </div>
-  <div>
+  <div class="along-path">
   <!-- <StringWidget id='title' value={params.title} /> -->
   along<PathWidget id='path' path={params.path} angle={params.angle} on:valueChange={handleValueChange}/>
 
 </div>
-  <!-- <AngleWidget id='angle' min={0} max={360} value={params.angle} on:valueChange={handleValueChange}/> -->
+  <AngleWidget id='angle' min={0} max={360} value={params.angle} on:valueChange={handleValueChange}/>
   <!-- svelte-ignore a11y-click-events-have-key-events -->
 
 </div>

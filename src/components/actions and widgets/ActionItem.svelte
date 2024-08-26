@@ -12,6 +12,7 @@
   import { onMount, createEventDispatcher } from 'svelte';
   import { deepCopy } from '../../utils/utils';
   import { updateActionParams, selectAction } from '../action-utils';
+  import { saveToHistory } from '../../stores/history';
 
   export let action: Action | null;
   export let depth = 0;
@@ -40,13 +41,19 @@
   // on added, params are { children: [...] }
   // on removed, params are { children: [...] }
 
-  // parameter updates bubble up to here
-  // sends param changes to the action store
+  // callback passed to child components to update the action store
+  // potentially could be a dispatch passed along instead
+  // valueChange -> handleValueChange -> calls onUpdate, each component knows how to do this
   function handleUpdate(updatedParams: any, save: boolean = false) {
     if(action) {
       updateActionParams(action.uuid, updatedParams, save);
-      // console.log("updating params", updatedParams);
+      // console.log("updating params", action.uuid, updatedParams);
     }
+  }
+
+  function handleSaveChange(event: CustomEvent) {
+    const { description } = event.detail;
+    saveToHistory(description);
   }
 
   function getActionThumbnail() {
@@ -87,7 +94,7 @@
     >
 
       {#if action.category === 'control'}
-        <ControlStructure name={action.name} params={action.params} {isOpen} onUpdate={handleUpdate} depth={depth+1} on:reorder/>
+        <ControlStructure name={action.name} params={action.params} {isOpen} onUpdate={handleUpdate} depth={depth+1} on:saveChange={handleSaveChange}/>
       {:else if action.type === 'effect'}
         <div class="action-item-inner">
         {#if action.category !== 'shapes'}
@@ -96,19 +103,19 @@
         {/if}
 
         {#if action.category === 'shapes' || action.effect === 'straight line'}
-          <Shape uuid={action.uuid} name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
+          <Shape uuid={action.uuid} name={action.effect} params={action.params} onUpdate={handleUpdate} on:saveChange />
           {:else if action.category === 'backgrounds'}
-              <Background name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
+              <Background name={action.effect} params={action.params} onUpdate={handleUpdate} on:saveChange />
           {:else if action.category === 'effects'}
-              <Eggbeater name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
+              <Eggbeater name={action.effect} params={action.params} onUpdate={handleUpdate} on:saveChange/>
           {:else if action.category === 'patterns'}
-              <Tiling name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
+              <Tiling name={action.effect} params={action.params} onUpdate={handleUpdate} on:saveChange />
           {:else if action.category === 'stencils'}
-              <Stencil name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
+              <Stencil name={action.effect} params={action.params} onUpdate={handleUpdate} on:saveChange />
           {:else if action.category === 'brushes'}
-              <Brush name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
+              <Brush name={action.effect} params={action.params} onUpdate={handleUpdate} on:saveChange />
           {:else if action.category === 'move'}
-              <Movement name={action.effect} params={action.params} onUpdate={handleUpdate} on:reorder/>
+              <Movement name={action.effect} params={action.params} onUpdate={handleUpdate} on:saveChange />
           {/if}
         </div>
         {/if}
