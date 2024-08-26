@@ -27,7 +27,7 @@
     <span class="tool-name">square</span> of size 
     <NumberWidget id="size" min={3} max={600} value={params.size} on:valueChange={handleValueChange}/>
   {:else if name === 'polygon'}
-    <NumberWidget id="nsides" min={3} max={50} value={params.nsides} on:valueChange={handleValueChange}/>-sided   
+    <NumberWidget id="nsides" min={3} max={50} value={params.nsides} on:valueChange={handleValueChange}/>sided   
     <span class="tool-name">polygon</span> of radius 
     <NumberWidget id="radius" min={1} max={600} value={params.radius} on:valueChange={handleValueChange}/>
   {:else if name === 'star'}
