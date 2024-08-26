@@ -26,8 +26,8 @@
     value = +sliderElement.value; //+ is string to number
   }
 
-    let previewEnd = false;
-    let savedValue = value;
+  let previewEnd = false;
+  let savedValue = value;
     function handleMouseOver(event: Event) {
     savedValue = value;
     let newValue = value+10;
@@ -35,7 +35,7 @@
     dispatch('valueChange', { id, value: newValue });
   }
 
-  function handleMouseOut(event: Event) {
+  function endPreview(event: Event) {
     if(!previewEnd) {
       dispatch('valueChange', { id, value: savedValue });
       previewEnd = true;
@@ -80,7 +80,11 @@
   {displayValue}°
 </span> -->
 
-<span class="angle-widget" bind:this={angleWidget}>
+<span class="angle-widget" 
+  bind:this={angleWidget}
+  on:mouseover={handleMouseOver}
+  on:mouseout={endPreview}
+>
   
   <svg class="arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" style="transform: {arrowRotation};"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path fill="#8f8f8f" d="M318 177.5c3.8-8.8 2-19-4.6-26l-136-144C172.9 2.7 166.6 0 160 0s-12.9 2.7-17.4 7.5l-136 144c-6.6 7-8.4 17.2-4.6 26S14.4 192 24 192l72 0 0 288c0 17.7 14.3 32 32 32l64 0c17.7 0 32-14.3 32-32l0-288 72 0c9.6 0 18.2-5.7 22-14.5z"/></svg>
   <span class="angle-value">{displayValue}°</span>

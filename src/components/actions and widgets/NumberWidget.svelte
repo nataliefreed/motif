@@ -33,20 +33,36 @@
     value = +sliderElement.value; //+ is string to number
   }
 
-    let previewEnd = false;
-    let savedValue = value;
-    function handleMouseOver(event: Event) {
+  let previewEnd = true;
+  let savedValue = value;
+  let timeoutId: NodeJS.Timeout | undefined;
+
+  function handleMouseOver(event: Event) {
     savedValue = value;
     let newValue = value+10;
     previewEnd = false;
     dispatch('valueChange', { id, value: newValue });
+
+    // if (timeoutId !== undefined) {
+    //   clearTimeout(timeoutId);
+    // }
+
+    // timeoutId = setTimeout(() => {
+    //   previewEnd = true;
+    //   dispatch('valueChange', { id, value: savedValue });
+    // }, 300);
+
   }
 
-  function handleMouseOut(event: Event) {
+  function endPreview(event: Event) {
     if(!previewEnd) {
       dispatch('valueChange', { id, value: savedValue });
       previewEnd = true;
     }
+    // if (timeoutId !== undefined) {
+    //   clearTimeout(timeoutId);
+    //   timeoutId = undefined;
+    // }
   }
 
   function handleFocus(event: FocusEvent) {
@@ -58,10 +74,10 @@
   function handleChange(event: Event) {
     const target = event.target as HTMLInputElement;
     let newValue = +target.value;
-    if(newValue > min && newValue < max) {
+    //dispatch only if within allowed range, otherwise let the user finish typing!
+    if(newValue >= min && newValue <= max) {
       dispatch('valueChange', { id, value: newValue });
     }
-    // value = +target.value; // Update the local value but don't dispatch yet
   }
 
   function handleFinalChange(event: Event) {
@@ -83,6 +99,9 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <span class="number-widget"
       bind:this={numberWidget}
+      on:mouseover={handleMouseOver}
+      on:mouseout={endPreview}
+      on:click={endPreview}
       style="cursor: {cursorStyle};">
   {displayValue}
 </span>

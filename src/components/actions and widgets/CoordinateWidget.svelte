@@ -25,19 +25,6 @@
     points = [[x, value.y]];
   }
 
-  function handleXChange(event: CustomEvent) {
-    // console.log("dispatching x event ", event.detail.value);
-    x = event.detail.value; // Update local x
-    dispatchValueChange();
-  }
-
-  function handleYChange(event: CustomEvent) {
-    // console.log("dispatching y event ", event.detail);
-    displayY = event.detail.value;
-    const actualY = maxY - displayY; // unflip for storage
-    dispatchValueChange(actualY);
-  }
-
   function dispatchValueChange(actualY = maxY - displayY) {
     dispatch('valueChange', { id, value: { x, y: actualY } });
   }
@@ -75,13 +62,14 @@
     }
   }
 
-  let savedValue = points;
   let previewEnd = true;
-  let oscillateID: number;
+  let savedValue = value;
+  // let oscillateID: number;
   function handleMouseOver(event: Event) {
     // console.log("mouse over");
-    // savedValue = points;
-    // previewEnd = false;
+    savedValue = value;
+    updateValue([[value.x, value.y - 10]]);
+    previewEnd = false;
     // const startTime = Date.now();
     // oscillateID = setInterval(() => {
     //   const elapsedTime = Date.now() - startTime;
@@ -97,10 +85,10 @@
   function handleMouseLeave(event: Event) {
     //console.log("returning to saved value!");
     // clearInterval(oscillateID);
-    // if(!previewEnd) {
-    //   updateValue(savedValue);
-    //   previewEnd = true;
-    // }
+    if(!previewEnd) {
+      updateValue([[savedValue.x, savedValue.y]]);
+      previewEnd = true;
+    }
   }
   
 </script>
@@ -111,26 +99,28 @@
 <NumberWidget id="y" min={0} max={600} value={displayY} on:valueChange={handleYChange}/>) -->
 </span>
 {#if domElement}
-  <Tooltip element={domElement}>
-    <div class="grid-with-numberBoxes">
-      <GridWidget {points} on:valueChange={handlePointsChange}/>
-      <div class="number-box-container">
-        <div>
-          x = <input type="number"
-          bind:value={value.x}
-          on:input={handleXChangeFromNumberbox}
-          min={0} 
-          max={500}/>
-        </div>
-        <div>
-          y = <input type="number"
-            value={displayY}
-            on:input={handleYChangeFromNumberbox}
+  <Tooltip element={domElement} let:showContent>
+    {#if showContent}
+      <div class="grid-with-numberBoxes">
+        <GridWidget {points} on:valueChange={handlePointsChange}/>
+        <div class="number-box-container">
+          <div>
+            x = <input type="number"
+            bind:value={value.x}
+            on:input={handleXChangeFromNumberbox}
             min={0} 
             max={500}/>
+          </div>
+          <div>
+            y = <input type="number"
+              value={displayY}
+              on:input={handleYChangeFromNumberbox}
+              min={0} 
+              max={500}/>
+          </div>
         </div>
       </div>
-    </div>
+    {/if}
   </Tooltip>
 {/if}
 

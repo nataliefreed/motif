@@ -23,14 +23,12 @@
     // console.log("locked index at mount", lockedIndex);
   });
 
-  let previewEnd = false;
-
-  let filterStyle = '';
+  // let filterStyle = '';
 
   function updateColorButton(hexColor: string) {
     const color = tinycolor(hexColor);
-    const hue = color.toHsv().h;
-    filterStyle = `hue-rotate(${hue}deg)`;
+    // const hue = color.toHsv().h;
+    // filterStyle = `hue-rotate(${hue}deg)`;
     dispatch('valueChange', { id, value: hexColor });
   }
 
@@ -39,6 +37,23 @@
     value = randomColor.toHexString();
     updateColorButton(value);
     previewEnd = true;
+  }
+
+  let previewEnd = false;
+  let savedValue = value;
+  
+  function handleMouseEnter() {
+    savedValue = value;
+    let newValue = tinycolor(value).lighten(20).toHexString();
+    previewEnd = false;
+    dispatch('valueChange', { id, value: newValue });
+  }
+
+  function endPreview() {
+    if(!previewEnd) {
+      dispatch('valueChange', { id, value: savedValue });
+      previewEnd = true;
+    }
   }
 
   function handleColorChange(event: CustomEvent) {
@@ -69,6 +84,9 @@
   bind:this={colorButton}
   id={id}
   class="color-palette-widget {lockedIndex > -1 ? 'locked' : ''}"
+  on:mouseenter={handleMouseEnter}
+  on:mouseleave={endPreview}
+  on:click={endPreview}
   style="background-color: {value}; color: {getReadableColor(value)}; width:{size}em; height:{size}em;"
 >
   {#if lockedIndex > -1}<span class="color-label"><SavedColorLabel id={lockedIndex} color={value} /></span> {/if}
