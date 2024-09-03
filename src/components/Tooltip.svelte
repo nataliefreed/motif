@@ -12,9 +12,9 @@
   let tooltip;
   export let settings = {};
 
-  // $: if(element) {
-    // reloadTippy(); //re-link to new content - todo: clean this up
-  // }
+  $: if(element) {
+    reloadTippy(); //re-link to new content - todo: clean this up
+  }
 
   function reloadTippy() {
 
