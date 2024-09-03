@@ -110,12 +110,11 @@
     }
   });
 
-  // handles clicking on the drag area only
   function handleItemClick(event: Event, actionId: string) {
     // console.log("clicking on item", event.target);
     event.stopPropagation();
     const target = event.target as Element;
-    if(target && target.classList.contains('drag-handle') || target.classList.contains('action-item-outer') || target.classList.contains('along-path') || target.classList.contains('tool-name') || target.classList.contains('action-item-inner') || target.classList.contains('alpha-style') || target.classList.contains('category-img') || target === event.currentTarget) { //if not a widget, select the action
+    if(target && target.classList.contains('drag-handle') || target.classList.contains('action-item-outer') || target.classList.contains('along-path') || target.classList.contains('along-path-widget') || target.classList.contains('brush-name-and-preview-widget') || target.classList.contains('tool-name') || target.classList.contains('action-item-inner') || target.classList.contains('alpha-style') || target.classList.contains('category-img') || target === event.currentTarget) { //if not a widget, select the action
         //   console.log("selecting");
       selectAction(actionId);
     }
@@ -133,7 +132,7 @@
       const offsetX = event.offsetX; //mouse relative to target
       // console.log("mouse over li of action id", actionId, offsetX);
       // if(target && !target.classList.contains('addStagedActionButton') && target.classList.contains('drag-handle') || target.classList.contains('action-item-content') || target === event.currentTarget) { //if not a widget, set the action as hovered
-        if(target && (target.classList.contains('drag-handle') || target.classList.contains('along-path') || (offsetX <= 50 && target.classList.contains('action-item-outer')))) { //if over drag handle, set the action as hovered
+        if(target && (target.classList.contains('drag-handle') || target.classList.contains('along-path') || target.classList.contains('along-path-widget') || (offsetX <= 50 && target.classList.contains('action-item-outer')))) { //if over drag handle, set the action as hovered
         hoverAction(actionId);
       }
   }

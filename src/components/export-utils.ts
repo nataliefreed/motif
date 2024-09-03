@@ -74,7 +74,7 @@ export function importCodeFromImage() {
           if (jsonData) {
             const data = JSON.parse(jsonData);
             // console.log('imported data:', data);
-            if(data) { drawingLocked.set(true); }; //importing a design locks the drawing to start in parameter setting mode
+            if(data) { drawingLocked.set(false); }; //importing a design can be set to start in parameter setting mode
             if(data.store) {
               // console.log('imported data:', data.store);
               flatActionStore.update(store => { return data.store; });

@@ -8,10 +8,9 @@
   import ControlStructure from './effects/ControlStructure.svelte';
   import Shape from './effects/Shape.svelte';
   import Movement from './effects/Movement.svelte';
-  import { selectedActionID, selectedCodeEffect, changedActionID, flatActionStore, stagedActionID } from '../../stores/dataStore';
+  import { stagedActionID } from '../../stores/dataStore';
   import { onMount, createEventDispatcher } from 'svelte';
-  import { deepCopy } from '../../utils/utils';
-  import { updateActionParams, selectAction } from '../action-utils';
+  import { updateActionParams, selectAction, actionToEffect } from '../action-utils';
   import { saveToHistory } from '../../stores/history';
 
   export let action: Action | null;

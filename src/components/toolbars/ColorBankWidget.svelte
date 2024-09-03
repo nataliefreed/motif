@@ -49,7 +49,7 @@
   <Tooltip element={colorButton} let:showContent settings={{trigger:'dblclick'}}>
     {#if showContent}
       <!-- <SimpleColorPicker value={color} on:valueChange={handleColorChange} /> -->
-      <ColorPicker value={color} on:valueChange={handleColorChange} />
+      <ColorPicker value={color} showSavedColors={false} on:valueChange={handleColorChange} />
     {/if}
   </Tooltip>
 {/if}

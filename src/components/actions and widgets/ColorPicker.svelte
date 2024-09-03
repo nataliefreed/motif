@@ -2,7 +2,7 @@
   import { onMount, createEventDispatcher, tick } from 'svelte';
   import tinycolor from 'tinycolor2';
   import ColorPalette from '../toolbars/ColorPalette.svelte';
-  import { activePalette, showSavedColors, pickerPalette }  from '../../stores/colorStore';
+  import { activePalette, pickerPalette }  from '../../stores/colorStore';
   import { getReadableColor } from '../../utils/color-utils';
   import PaintColorMixer from './PaintColorMixer.svelte';
   import SavedColorLabel from './SavedColorLabel.svelte';
@@ -12,6 +12,8 @@
   export let value: string; //initial value
 
   export let selectedColorIndex = -1;
+
+  export let showSavedColors = true;
 
   let modes = ["paint", "RGB"];
   let activeMode = "RGB";
@@ -151,18 +153,19 @@
   
   
   <!-- {#if $showSavedColors || selectedColorIndex !== -1} -->
-  <div id="saved-palette">
-    {#each $activePalette as color, index}
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div class="color-item saved-color {(selectedColorIndex === index) ? 'selected' : ''}"
-      on:click={e => handleSavedPaletteClick(index)}
-      style="--actual-color: {color};">
-        <span class="color-label"><SavedColorLabel id={index} color={color} /></span>
-      </div>
-    {/each}
-  </div>
-  <!-- {/if} -->
+  {#if showSavedColors}
+    <div id="saved-palette">
+      {#each $activePalette as color, index}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <div class="color-item saved-color {(selectedColorIndex === index) ? 'selected' : ''}"
+        on:click={e => handleSavedPaletteClick(index)}
+        style="--actual-color: {color};">
+          <span class="color-label"><SavedColorLabel id={index} color={color} /></span>
+        </div>
+      {/each}
+    </div>
+  {/if}
 
   {:else if activeMode === 'HSV'}
   <div>HSV mode</div>

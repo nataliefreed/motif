@@ -25,24 +25,30 @@
   
 </script>
 
+{#if children.length > 0}
 <span bind:this={listElement} class="child-widget">
-  {#each children.map(checkAction) as action (action.uuid)}
-    {#if action}
-      <!-- <ColorWidget id='color' value={action.params.color} /> -->
-      <MiniActionItem on:miniActionClick {action} />
-    {/if}
-    <!-- {#if children.length === 1}
-      <MiniActionItem on:miniActionClick {action} />
-      <MiniActionItem on:miniActionClick {action} />
-    {/if} -->
-    <!-- {action.name} 
-    {#if action.thumbnail}
-      <img src={`/assets/effect-thumbnails/${action.thumbnail}`} alt="{action.name} thumbnail" class="thumbnail">
-    {/if} -->
+  {#each Array(Math.ceil(3/children.length)) as _}
+    <div class="iteration">
+    {#each children.map(checkAction) as action (action.uuid)}
+      {#if action}
+        <!-- <ColorWidget id='color' value={action.params.color} /> -->
+        <MiniActionItem on:miniActionClick {action} />
+      {/if}
+      <!-- {action.name} 
+      {#if action.thumbnail}
+        <img src={`/assets/effect-thumbnails/${action.thumbnail}`} alt="{action.name} thumbnail" class="thumbnail">
+      {/if} -->
+    {/each}
+  </div>
   {/each}
 </span>
+{/if}
 
 <style>
+
+/* .iteration {
+  margin-right: 0.5em;
+} */
 
 .thumbnail {
   width: 2em;

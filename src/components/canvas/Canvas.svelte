@@ -225,7 +225,10 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       const action = actionQueue[currentActionIndex];
       // console.log("rendering action", action.actionID, action.effect, action.params);
       // console.log("which is action", currentActionIndex + 1, "of", actionQueue.length);
-      let delay = action.indexedID || action.effect === 'along path'? $renderDelay / 30 : $renderDelay;
+      // this used to use indexedID - basically we want to know if parent is alongPath
+      // let delay = action.parentEffect === 'along path'? $renderDelay / 30 : $renderDelay;
+      let delay = $renderDelay;
+      // let delay = $renderDelay;
       if(action.effect === 'clear') { delay = 0; }
       await renderAction(action, p5.getStaticCanvas(), delay);
       currentActionIndex++;
@@ -253,9 +256,9 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
           // console.log("rendering", action.actionID, "with delay of", delay);
           setTimeout(() => {
               if($isPlaying) {
+                scrollToAction(action.actionID);
                 renderFunction(canvas, action.params, p5, turtle);
                 p5.image(canvas, 0, 0);
-                scrollToAction(action.actionID);
                 updateRenderedActions(action, canvas); // Update the active actions
               }
               resolve();
@@ -873,7 +876,7 @@ function disableContextMenu(event) {
      on:mouseup={handleMouseUp} 
      on:mousemove={handleMouseMove}
      on:touchstart={(e) => { handleMouseDown(e); }}
-     on:touchmove={(e) => { e.preventDefault(); handleMouseMove(e); }}
+     on:touchmove={(e) => { handleMouseMove(e); }}
      on:touchend={handleTouchEnd}
      on:mouseleave={handleMouseLeave}
      on:mouseover={handleMouseOver}

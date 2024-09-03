@@ -11,7 +11,6 @@ export const flatActionStore = writable<{ [key: string]: Action }>({});
 
 export const activeIDs = writable<string[]>([]);
 
-// export const stagedAction = writable<Action | null>(null);
 export const stagedActionID = writable('');
 export const changedActionID = writable('');
 
