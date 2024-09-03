@@ -680,7 +680,7 @@ export const renderers = {
     
       // fold(r0, c0, r1, c1);
     }
-    p.fill(params.color);
+    // p.fill(params.color);
     p.beginShape();
     // Proceeds counterclockwise from top left corner
     cut(1, 0, 1, 1);   // Top face's left edge
@@ -707,11 +707,11 @@ export const renderers = {
     p.endShape(p5.CLOSE);
 
     // Extra folds that aren't for tabs
-    // fold(1, 1, 1, 2);  // Back face left fold
-    // fold(1, 2, 2, 2);  // Back face bottom fold
-    // fold(2, 2, 2, 1);  // Back face right fold
-    // fold(2, 1, 1, 1);  // Back face top fold (lid hinge)
-    // fold(1, 3, 2, 3);  // Front face to bottom face fold
+    fold(1, 1, 1, 2);  // Back face left fold
+    fold(1, 2, 2, 2);  // Back face bottom fold
+    fold(2, 2, 2, 1);  // Back face right fold
+    fold(2, 1, 1, 1);  // Back face top fold (lid hinge)
+    fold(1, 3, 2, 3);  // Front face to bottom face fold
 
     p.pop();
   },
@@ -960,7 +960,7 @@ function tile(p, params, p5) {
         checkerboard(p, snapshot, w, h);
         break;
       case 'radial':
-        radial(p, snapshot, w, h, numTiles, numRings);
+        radial(p, snapshot, w, h, numTiles, numRings, x, y);
         break;
       case 'mirror':
         mirror(p, snapshot, sx, sy, w, h);
@@ -1028,24 +1028,52 @@ function checkerboard(p, snapshot, w, h) {
   }
 }
 
-function radial(p, snapshot, w, h, numTiles, numRings) { //todo: take out numTiles param OR make it controllable
-  let centerX = p.width / 2;
-  let centerY = p.height / 2;
+// function radial(p, snapshot, w, h, numTiles, numRings) {
+//   let centerX = p.width / 2;
+//   let centerY = p.height / 2;
 
+//   for (let ring = 0; ring < numRings; ring++) {
+//       // Calculate circumference for the current ring
+//       let radius = (ring + 1) * 1.5 * h;
+//       let circumference = 2 * Math.PI * radius;
+//       let numTiles = Math.floor(circumference / w);
+
+//       for (let i = 0; i < numTiles; i++) {
+//           let angle = (i / numTiles) * 2 * Math.PI;
+//           let dx = centerX + radius * Math.cos(angle) - w / 2;
+//           let dy = centerY + radius * Math.sin(angle) - h / 2;
+//           p.image(snapshot, dx, dy, w, h, 0, 0, w, h);
+//       }
+//   }
+// }
+
+function radial(p, snapshot, w, h, numTiles, numRings, centerX, centerY) {
   for (let ring = 0; ring < numRings; ring++) {
-      // Calculate circumference for the current ring
-      let radius = (ring + 1) * 1.5 * h;
-      let circumference = 2 * Math.PI * radius;
-      let numTiles = Math.floor(circumference / w);
+    // Calculate the radius and circumference for the current ring
+    let radius = (ring + 1) * 1 * h;
+    let circumference = 2 * Math.PI * radius;
+    let numTiles = Math.floor(circumference / w);
 
-      for (let i = 0; i < numTiles; i++) {
-          let angle = (i / numTiles) * 2 * Math.PI;
-          let dx = centerX + radius * Math.cos(angle) - w / 2;
-          let dy = centerY + radius * Math.sin(angle) - h / 2;
-          p.image(snapshot, dx, dy, w, h, 0, 0, w, h);
-      }
+    for (let i = 0; i < numTiles; i++) {
+      let angle = (i / numTiles) * 2 * Math.PI;
+      let dx = centerX + radius * Math.cos(angle) - w / 2;
+      let dy = centerY + radius * Math.sin(angle) - h / 2;
+
+      // Save the current transformation state
+      p.push();
+      // Move to the tile's position and rotate
+      p.translate(dx + w / 2, dy + h / 2);
+      p.rotate(angle + ring * 0.1); // Adjust rotation amount as needed
+      // Draw the image, centered on the translation point
+      p.image(snapshot, -w / 2, -h / 2, w, h, 0, 0, w, h);
+      // Restore the original transformation state
+      p.pop();
+    }
   }
 }
+
+
+
 
 function mirror(p, snapshot, x, y, w, h) {
   // Center tile (original selected area)

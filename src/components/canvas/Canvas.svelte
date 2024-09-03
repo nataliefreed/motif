@@ -609,7 +609,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
         let radius = Math.round(Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2))) + 1;
         updateStagedAction({ size: radius*2 });
       }
-      if('width' in params) {
+      if('height' in params) {
         let width = Math.abs(x - startX)*2 + 15; //not zero on first click
         let height = Math.abs(y - startY)*2 + 15;
         updateStagedAction({ width: width, height: height});
@@ -621,6 +621,10 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       if('angle' in params && $stagedAction.effect != "along path" && $stagedAction.effect != "heart" && $stagedAction.effect != "rectangle" && $stagedAction.effect != "triangle") {
         let angle = Math.round(mapValue(y, 0, 500, 0, 360));
         updateStagedAction({ angle: angle });
+      }
+      if('offset' in params) {
+        let offset = Math.round(mapValue(x, 0, 500, 10, 100));
+        updateStagedAction({ offset: offset });
       }
       if('end' in params) {
         updateStagedAction({ end: { x: x, y: y } });

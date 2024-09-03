@@ -23,7 +23,7 @@
   width <NumberWidget id="width" min={20} value={params.width || 120} on:valueChange={handleValueChange}/>, 
   height <NumberWidget id="height" min={20} value={params.height || 120} on:valueChange={handleValueChange}/>
   at <CoordinateWidget id="position" value={params.position} on:valueChange={handleValueChange}/>
-  in <ColorWidget id="color" value={params.color} on:valueChange={handleValueChange}/>
+  <!-- in <ColorWidget id="color" value={params.color} on:valueChange={handleValueChange}/> -->
 {:else if name === 'paper doll'}
 <span class="tool-name">paper doll</span> with skin tone 
   <ColorWidget id="skintone" value={params.skintone} on:valueChange={handleValueChange}/>

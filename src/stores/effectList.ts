@@ -312,7 +312,7 @@ export const effectList = [
         category: 'control',
         effect: 'along path',
         params: {
-          title: "lines",
+          title: "line brush",
           children: ['line'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
           angle: 0,
@@ -750,7 +750,7 @@ export const effectList = [
   },
   {
     name: 'tile',
-    textLabel: 'Radial Pattern',
+    textLabel: 'Radial',
     category: 'patterns',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -780,21 +780,21 @@ export const effectList = [
       position: {x: 0, y: 0}
     }
   },
-  {
-    name: 'tile',
-    textLabel: 'Reflect',
-    category: 'patterns',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'radial.jpg',
-    mouseActionType: 'drag',
-    params: {
-      tiling: 'mirror',
-      width: 150,
-      height: 150,
-      position: {x: 250, y: 250}
-    }
-  },
+  // {
+  //   name: 'tile',
+  //   textLabel: 'Reflect',
+  //   category: 'patterns',
+  //   tags: 'drawing',
+  //   cursor: './assets/cursors/star-solid.svg',
+  //   thumbnail: 'radial.jpg',
+  //   mouseActionType: 'drag',
+  //   params: {
+  //     tiling: 'mirror',
+  //     width: 150,
+  //     height: 150,
+  //     position: {x: 250, y: 250}
+  //   }
+  // },
   {
     name: 'filter',
     textLabel: 'Invert',
@@ -1126,7 +1126,7 @@ export const effectList = [
       width: 100,
       height: 100,
       position: {x: 250, y: 250},
-      color: '#000000'
+      // color: '#000000'
     }
   },
   {
