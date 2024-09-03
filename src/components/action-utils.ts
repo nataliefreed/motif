@@ -414,15 +414,15 @@ const actionManager = new ActionManager();
    that the user expects to be able to undo. Don't save if it doesn't do anything.
 */
 
-export async function scrollToAction(id: string) {
+export async function scrollToAction(id: string, scrollBehavior: ScrollBehavior = 'smooth') {
   await tick(); // Wait for the DOM to update with the new item
   const element = document.getElementById(`${id}`);
   // console.log("scrolling to element:", element);
   if (element) {
     element.scrollIntoView({
-      behavior: 'smooth',
-      block: 'center', // align the bottom of the new item with the center of the viewport
-      inline: 'nearest' // keep the horizontal alignment as it is
+      behavior: scrollBehavior,
+      block: 'center',
+      inline: 'nearest'
     });
   }
 }
@@ -456,6 +456,7 @@ export function fastForwardToEnd() {
 }
 
 export function stepForward() {
+  isPlaying.set(false);
   let stagedID = get(stagedActionID);
   if (!stagedID) return;
 
@@ -474,12 +475,15 @@ export function stepForward() {
   if(index < numSibs - 1) {
     actionManager.insertAfter(stagedID, nextSib);
   }
+
+  scrollToAction(nextSib);
   // else {
   //   actionManager.insertBefore(stagedID, nextSib); // if it is at the end, move to the beginning
   // }
 }
 
 export function stepBackward() {
+  isPlaying.set(false);
   let stagedID = get(stagedActionID);
   if(!stagedID) return;
 
@@ -494,11 +498,15 @@ export function stepBackward() {
   // selectedActionID.set(prevSib);
   actionManager.detach(stagedID);
   actionManager.insertBefore(stagedID, prevSib);
+  let prevPrevSib = sibs[prevIndex < 0 ? numSibs - 2 : prevIndex - 1];
+  if(prevPrevSib) { scrollToAction(prevPrevSib); }
+  else { scrollToAction(prevSib); }
 }
 
 // let playInterval: Timeout | null = null;
 
 let firstPlayDone = false;
+
 export function play() {
   if(firstPlayDone) {
     firstPlay.set(true);
@@ -507,8 +515,23 @@ export function play() {
     firstPlayDone = true;
   }
   moveStagedActionToEnd();
-  isPlaying.set(true);
-  renderDelay.set(1000/get(playSpeed));
+  scrollToTop();
+  
+  setTimeout(() => {
+    renderDelay.set(1000/get(playSpeed));
+    isPlaying.set(true); 
+    renderRequested.set(true);
+    }, 500); //wait a second for scroll to top before starting
+  // console.log("render delay", get(renderDelay));
+}
+
+function scrollToTop() {
+  const list = document.querySelector('.main-right');
+  if(list == null) return;
+  list.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
 }
 
 export function pause() {
@@ -676,6 +699,7 @@ export function addCurrentEffectAsStagedAction() {
 export function updateActionParams(uuid:string, params:any, save = false) {
   if (!uuid) return;
 
+  // Note: this does not save to undo/redo history, this needs to be handled by user-level events
   actionManager.updateParams(uuid, params);
 
   // if (save) {
@@ -873,12 +897,16 @@ function remixActionWithoutHistory(id:string) {
 
   if(action.effect === 'along path') {
     //remix the path by wiggling each point a bit
-    let newPath = changeOptions.path(params.path);
-    newParams.path = newPath;
+    // let newPath = changeOptions.path(params.path);
+    // newParams.path = newPath;
     //todo: change the items in the children array
+    if(params.children.length < 1) return;
+    let child = params.children[Math.floor(Math.random() * params.children.length)];
+    remixAction(child);
   }
   else if(action.effect === 'do each') {
     // pick a random child and remix it
+    if(params.children.length < 1) return;
     let child = params.children[Math.floor(Math.random() * params.children.length)];
     remixAction(child); // how do we get this update to actionStore?
   }
@@ -972,13 +1000,14 @@ export function repeatSelectedActionAlongPath() {
   if (!selectedAction) return;
 
   // Check if the selected action is already a repeat along path
-  if (selectedAction.effect === 'along path') {
+  // if (selectedAction.effect === 'along path') {
     // If it is, add another point along the path
     // let lastPoint = selectedAction.params.path[selectedAction.params.path.length - 1];
     // selectedAction.params.path.push([lastPoint[0] + 20, lastPoint[1] + 20]);
     // actionManager.updateParams(selected, { path: selectedAction.params.path });
-  } else { //todo: make sure it's not a child of an along path
-    // If it's not a repeat, create a new "repeat along path" action with the selected action as a child
+  // } else { //todo: make sure it's not a child of an along path
+
+    // Create a new "repeat along path" action with the selected action as a child
     let x = selectedAction.params.position ? selectedAction.params.position.x : 0;
     let y = selectedAction.params.position ? selectedAction.params.position.y : 0;
     let angle = 0;
@@ -992,7 +1021,7 @@ export function repeatSelectedActionAlongPath() {
     // Replace the selected action with the new "repeat along path" action
     actionManager.replaceId(selected, added);
     selectedActionID.set(added); // Update the selected action ID
-  }
+  // }
 
   saveToHistory('Repeat selected action along path');
 }
@@ -1149,6 +1178,7 @@ type CompiledAction = {
   actionID: string;
   indexedID?: string; // action id with loop index appended
   parentID?: string; // parent control structure id eg. do each or repeat
+  parentEffect?: string; // parent control structure effect
   effect: string;
   params: { [key: string]: any };
 };
@@ -1313,50 +1343,49 @@ export function compileActions(action: Action, parentID?: string, overrides:Over
 
         // override.basePoint = offset + path[0]
         // so offset = override.basePoint - path[0]
-          
 
-
-
-
-      // If the action has a path, create a compiled action for each point or line segment along the path
+        // If the action has a path, create a compiled action for each point or line segment along the path
         action.params.path.forEach((point: [number, number], index: number) => {
           // Determine the child ID based on the current index and wrap around if necessary
           const childID = action.params.children[index % action.params.children.length];
           // Retrieve the corresponding action
           const childAction = get(flatActionStore)[childID];
           if(!childAction) return;
-
           let childOrigin = getOrigin(childAction) ?? { x: 0, y: 0 };
           // console.log(index, "retrieved child origin", getOrigin(childAction));
           
-          let offset = subtract(overrides.offset?? {x: 0, y: 0}, childOrigin);
+          let childOffset = subtract(overrides.offset?? {x: 0, y: 0}, childOrigin);
+          let nextOffset = null;
 
-          // Initialize basePoint with the current point's coordinates
-          let basePoint = { x: point[0], y: point[1] };
+          // Initialize currPoint with the current point's coordinates
+          let currPoint = { x: point[0], y: point[1] };
           let nextPoint;
+
           // If there's only one point in the path, use the same point as nextPoint
           if (action.params.path.length == 1) {
-            nextPoint = basePoint;
+            nextPoint = currPoint;
           }
           // If not the last point, set nextPoint to the coordinates of the next point in the path
           else if (index < action.params.path.length - 1) {
-            const src = action.params.path[(index + 1)];
-            nextPoint = { x: src[0], y: src[1] };
+            nextPoint = { x: action.params.path[(index + 1)][0], y: action.params.path[(index + 1)][1] };
+            // debugger;
           }
           // If it's the last point, set nextPoint to null
           else {
             nextPoint = null;
           }
-          
-          basePoint = add(basePoint, offset);
+
+          let currOffset = add(currPoint, childOffset);
           if(nextPoint) {
-            nextPoint = add(nextPoint, offset);
+            nextOffset = add(nextPoint, childOffset);
           }
+          
+          // if(nextPoint && overrides.nextOffset) {
+          //   nextPoint = add(nextPoint, overrides.nextOffset);
+          // }
 
           // Merge the basePoint and nextPoint with the existing overrides
-          let modifiedOverrides = {...overrides, offset: basePoint, nextOffset: nextPoint};
-
-          // console.log("index", index, "offset", offset, "basePoint", basePoint, "nextPoint", nextPoint);
+          let modifiedOverrides = {...overrides, offset: currOffset, nextOffset: nextOffset};
 
           // Compile the actions for the child action with the modified overrides
           actions.push(...compileActions(childAction, action.uuid, modifiedOverrides));
@@ -1374,33 +1403,25 @@ export function compileActions(action: Action, parentID?: string, overrides:Over
       break;
     default:
       // Initialize an empty object for modified parameters
-      let modifiedParams = {};
+      let modifiedParams = {...action.params};
       let skipAction = false;
+
       if(overrides.offset) {
         if ('position' in action.params) {
           // If the child action has a position parameter, use the current point
-          modifiedParams = {
-            ...action.params,
-            position: add(action.params.position, overrides.offset),
-          }; 
+          modifiedParams.position = add(action.params.position, overrides.offset);
+           // If the child action has start and end parameters, use the current and next points
         } else if ('start' in action.params && 'end' in action.params) {
-          // If the child action has start and end parameters, use the current and next points
-          if (overrides.nextOffset) {
-            modifiedParams = {
-                ...action.params,
-                start: add(action.params.start, overrides.offset),
-                end: add(action.params.end, overrides.nextOffset),
-            };
-          }
-          else {
-            //if at last point, don't add another action
+          if(overrides.nextOffset !== null && overrides.nextOffset !== undefined) {
+            // debugger;
+            modifiedParams.start = add(action.params.start, overrides.offset);
+            // WARNING: The end is computed by adding the next offset to the start not the end
+            //   this is because we want the end to be at start of next action
+            modifiedParams.end = add(action.params.start, overrides.nextOffset);
+          } else {
             skipAction = true;
           }
         }
-      }
-      else {
-        // Use the original parameters
-        modifiedParams = { ...action.params };
       }
 
       // console.log("modified params", modifiedParams);
@@ -1408,8 +1429,9 @@ export function compileActions(action: Action, parentID?: string, overrides:Over
       if(!skipAction) {
         actions.push({
           actionID: action.uuid,
-          indexedID: action.uuid, // TODO: + `__${index}`,
+          // indexedID: action.uuid, // TODO: + `__${index}`,
           parentID: action.uuid,
+          // parentEffect: action.effect,
           effect: action.effect,
           params: modifiedParams
         });
@@ -1418,7 +1440,6 @@ export function compileActions(action: Action, parentID?: string, overrides:Over
   // debugger;
   return actions;
 }
-
 
 
 // //recursive function to get info about all actions to render
@@ -1569,7 +1590,7 @@ function effectToActions(effect: Effect, params: { [key: string]: any } = {}) {
 
 // if action has children, put them into nestedActions form
 // todo: it would be better to just have actions and effects be the same type!
-function actionToEffect(actions: ActionStore) {
+export function actionToEffect(actions: ActionStore) {
   if (!actions || Object.keys(actions).length === 0) return;
 
   const parentUuids = Object.keys(actions).filter(uuid => {
