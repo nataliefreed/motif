@@ -75,7 +75,11 @@
         <img class="category-img" src="/assets/icons/{category}.svg" alt="{category}">
         <!-- {category} -->
       </button>
+      {:else}
+        <img class="category-img" src="/assets/icons/{category}.svg" alt="{category}">
       {/if}
+
+
 
       {#if category === visibleCategory || effectMode}
         <div
@@ -173,10 +177,11 @@
   }
 
   .category-button::disabled {
-    vislble: hidden;
+    visibility: hidden;
   }
 
   .effect-button, .active-effect-button {
+    box-sizing: border-box;
     background-color: transparent;
     cursor: pointer;
     border: none;
@@ -189,6 +194,9 @@
     border-radius: 5px;
     height: 36px;
     /* border: 1px solid black; */
+
+    /* opacity: 0.8;
+    transition: opacity 0.3s ease; */
   }
 
   .active-effect-button {
@@ -207,11 +215,13 @@
   }
 
   .effect-button.selected {
-    border: 2px solid #d5be0d;
+    border: 4px dashed #000000;
+    /* opacity: 1; */
   }
 
   .effect-button:hover {
-    border: 2px solid #d5be0d;
+    border: 4px dashed #000000;
+    /* opacity: 1; */
   }
 
 
@@ -224,7 +234,7 @@
   }
 
   .move-effect.selected {
-    border: 2px solid #e9c328;
+    border: 4px dashed #d59100;
     border-radius: 20% 20%;
     width: 30px;
   }

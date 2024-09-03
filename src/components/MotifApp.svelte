@@ -411,14 +411,14 @@
     /* max-height: 100vh; */
     max-width: 1300px;
     grid-template-columns: var(--sidebar-width) 2fr minmax(auto, 3fr) var(--sidebar-width);
-    grid-template-rows: 1fr var(--menu-bar-width) var(--drawing-area-height) auto 3fr;
+    grid-template-rows: 0.5fr var(--menu-bar-width) var(--drawing-area-height) 3fr auto;
     gap: 0 5px; /* handled by media queries */
-    grid-template-areas: 
+    /* grid-template-areas: 
         " . . . . "
         "header header header header"
         "left-sidebar main main right-sidebar"
         "footer footer-center footer-center footer"
-        " . . . . ";
+        " . . . . "; */
   }
 
   .container.drawingonly {
@@ -507,7 +507,7 @@
   }
 
   .effect-buttons-in-code-area {
-    margin-top: 1em;
+    margin: 1em 0 2em 0;
   }
 
   .main-right {
@@ -643,10 +643,9 @@
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    height: --calc(100vh - var(--top-menu-width) - var(--drawing-area-height) - 2vh);
-    /* max-height: --calc(100vh - var(--top-menu-width) - var(--drawing-area-height) - 2vh); */
     width: 100%;
     overflow-y: auto;
+    padding: 1em 0;
   }
 
   .staged-action {
@@ -656,8 +655,7 @@
     left: 0;
     width: 100%;
     z-index: 1;
-    height: auto;
-    margin-top: 1vh;
+    /* margin-top: 1vh; */
     box-sizing: border-box;
     background-color: #ffffff9b;
     border: 1px solid lightgray;
@@ -852,6 +850,7 @@
     font-size: 1.2em;
     color: rgb(47, 47, 47);
     height: auto;
+    margin: -1.2em 0 0 0;
   }
 
   #toggleCodeButton:hover {
