@@ -9,6 +9,7 @@
   export let categories: string[];
   let visibleCategory = '';
   export let disabled = false;
+  export let effectMode = false;
 
   function handleCategoryClick(category: string) {
     //toggle open/closed, unless you click on a different category than the open one, in which case close the open one and open the new one
@@ -52,7 +53,7 @@
     </button>
   {/if} -->
   
-  {#if moveEffect}
+  {#if moveEffect && !effectMode}
     <button
       class="move-effect effect-button"
       on:click={() => handleEffectClick(moveEffect)}
@@ -65,6 +66,7 @@
   {#each categories as category}
     <div class="category-container" on:mouseleave={handleCategoryMouseleave}>
       <!-- svelte-ignore a11y-mouse-events-have-key-events -->
+      {#if !effectMode}
       <button on:click={() => handleCategoryClick(category)}
         on:mouseover={() => handleCategoryMouseover(category)}
         class="category-button" class:selected={$activeCategory === category}
@@ -73,8 +75,13 @@
         <img class="category-img" src="/assets/icons/{category}.svg" alt="{category}">
         <!-- {category} -->
       </button>
-      {#if category === visibleCategory}
-        <div class="effect-toolbar" transition:slide="{{ delay: 0, duration: 300, easing: cubicInOut, axis: 'x' }}">
+      {/if}
+
+      {#if category === visibleCategory || effectMode}
+        <div
+          class="effect-toolbar"
+          class:no-background={effectMode}
+          transition:slide="{{ delay: 0, duration: 300, easing: cubicInOut, axis: 'x' }}">
           {#each $toolStore.filter(effect => effect.category === category) as effect}
             <button
               on:click={() => handleEffectClick(effect)}
@@ -86,6 +93,9 @@
             </button>
           {/each}
         </div>
+        <!-- {#if effectMode}
+          <div class="category-name">{category}</div>
+        {/if} -->
       {/if}
     </div>
   {/each}
@@ -109,6 +119,10 @@
     background-color: rgba(255, 255, 255, 0.7);
     padding: 5px;
     border-radius: 0 5px 5px 0;
+  }
+
+  .effect-toolbar.no-background {
+    background-color: transparent;
   }
 
   .category-container {

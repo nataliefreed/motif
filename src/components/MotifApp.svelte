@@ -24,9 +24,16 @@
 
   let allCategories:string[] = [];
   let value = '#FFFFFF';
+  let showCode = false;
+
+  let drawingAreaWidth = 520;
 
   $: if ($selectedActionID) {
     scrollToAction($selectedActionID);
+  }
+
+  $: if($drawingLocked) {
+    showCode = true;
   }
 
   // $: if($drawingLocked) {
@@ -70,7 +77,9 @@
     if(!$selectedActionID || $selectedActionID.length < 1) return; //if nothing selected
     if(target.closest('.background') ||
       target.closest('.grid-paper') ||
-      target.closest('.main-right') ) {
+      target.closest('.main-right') &&
+      !target.closest('.dont-deselect')
+    ) {
         deselect();
       }
   }
@@ -97,6 +106,12 @@
   function toggleLock() {
     drawingLocked.set(!$drawingLocked);
     selectActionByIndex(1);
+  }
+
+  function handleEffectClick(effectName: string) {
+    let effect = $toolStore.find(e => e.name === effectName);
+    if(!effect) return;
+    selectedEffect.set(effect);
   }
 
   onMount(() => {
@@ -156,7 +171,7 @@
 
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="top-left-corner">
-      <div class="lock-button" on:click={toggleLock}>{@html $drawingLocked?lockIcon:unlockIcon}</div>
+      <!-- <div class="lock-button" on:click={toggleLock}>{@html $drawingLocked?lockIcon:unlockIcon}</div> -->
     </div> <!-- top-left-corner -->
 
     <div class="above-canvas">
@@ -178,7 +193,8 @@
         <button class="top-menu-button dont-deselect" id="stepBackwardButton" on:click={stepBackward}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" height="16" width="16" style="vertical-align: middle; transform: translateY(-2px);"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M267.5 440.6c9.5 7.9 22.8 9.7 34.1 4.4s18.4-16.6 18.4-29V96c0-12.4-7.2-23.7-18.4-29s-24.5-3.6-34.1 4.4l-192 160L64 241V96c0-17.7-14.3-32-32-32S0 78.3 0 96V416c0 17.7 14.3 32 32 32s32-14.3 32-32V271l11.5 9.6 192 160z"/></svg></button>
         <PlayButton />        
         <button class="top-menu-button dont-deselect" id="stepForwardButton" on:click={stepForward}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" height="16" width="16" style="vertical-align: middle; transform: translateY(-2px);"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M52.5 440.6c-9.5 7.9-22.8 9.7-34.1 4.4S0 428.4 0 416V96C0 83.6 7.2 72.3 18.4 67s24.5-3.6 34.1 4.4l192 160L256 241V96c0-17.7 14.3-32 32-32s32 14.3 32 32V416c0 17.7-14.3 32-32 32s-32-14.3-32-32V271l-11.5 9.6-192 160z"/></svg></button>
-        {#if $firstPlay}<span><NumberWidget id="speed" min={1} max={100} value={10} on:valueChange={handleSpeedChange}/></span>step{#if $playSpeed>1}s{/if} per second{/if}
+        {#if $firstPlay}<span><NumberWidget id="speed" min={1} max={50} value={5} on:valueChange={handleSpeedChange}/></span>step{#if $playSpeed>1}s{/if} per second{/if}
+        <!-- <input type="number" id="speed" min={1} max={100} value={10} on:input={handleSpeedChange}/>steps per second -->
       </div> <!-- playback-controls -->
     </div> <!-- above canvas -->
       
@@ -193,9 +209,9 @@
             <img class="effect-img" src='/assets/effect-thumbnails/{$selectedEffect.thumbnail}' alt={$selectedEffect.textLabel}>
         {/if}
       </div> -->
-      {#if !$drawingLocked}
-      <CategoryToolbar categories={allCategories} />
-      {/if}
+      <!-- {#if !$drawingLocked} -->
+      <CategoryToolbar categories={allCategories} effectMode={false}/>
+      <!-- {/if} -->
       <div class="color-bank"><ColorBank/></div>
     </div> <!-- left-toolbar -->
 
@@ -203,9 +219,9 @@
         <div class="drawing-area" bind:this={drawingArea}>
             {#if $drawingLocked}
               <Tooltip element={drawingArea} settings={{trigger:'mouseenter', offset: [0, -200], hideOnClick:false}}>
-                {#if $drawingLocked}
-                  <div>Drawing is locked! Try changing the code on the right! Unlock to draw again.</div>
-                {/if}
+                <!-- {#if $drawingLocked}
+                  <div class="lock-button" on:click={toggleLock}>{@html $drawingLocked?lockIcon:unlockIcon}</div>
+                {/if} -->
               </Tooltip>
             {/if}
             <Ruler>
@@ -214,14 +230,49 @@
           </div>
       </div>
 
+    <div class="right-container">
+      {#if !showCode}
+        <div class="effect-buttons-in-code-area">
+          <CategoryToolbar categories={allCategories} effectMode={!showCode}/>
+        </div>
+      {/if}
+
+      <button class="selected-action-button dont-deselect" id="toggleCodeButton" on:click={()=>{showCode=!showCode;}}>{showCode ? '↓ show buttons ↓' : '↑	  more space please  ↑'}</button>
+
+
     <div class="main-right">
+      <!-- {#if !showCode} -->
+      <!-- {/if} -->
       <div id="main-list">
-        <ActionItem action={$actionRoot} depth={0}/>
+          <ActionItem action={$actionRoot} depth={0}/>
+        
+        <!-- <div class="effect-buttons-in-design">
+        {#each $actionRoot.params.children as childID}
+        
+          <button
+              on:click={() => handleEffectClick($flatActionStore[childID].effect)}
+              class="effect-button"
+              class:selected={$selectedEffect && $selectedEffect.name === $flatActionStore[childID].effect}
+              style:background-image={`url(/assets/effect-thumbnails/${$flatActionStore[childID].thumbnail})`}
+              >
+              <span class="effect-label">{$flatActionStore[childID].effect}</span>
+          </button>
+        
+        {/each}
+      </div> -->
+          <!-- <div class="last-action dont-deselect"><ActionItem action={$flatActionStore[$selectedActionID]}/></div> -->
+        
+        
       </div> <!-- main-list -->
-    </div>  <!-- grid-item -->
+    </div>  <!-- main-right -->
+  </div>  <!-- right-container -->
+
+    <div class="top-right-corner">
+      <!-- <button class="selected-action-button dont-deselect" id="toggleCodeButton" on:click={()=>{showCode=!showCode;}}>{showCode ? 'show buttons' : 'hide buttons'}</button> -->
+    </div> <!-- top-right-corner -->
 
     <div class="right-sidebar">
-      <div class="code-toolbar">
+      <div class="code-toolbar">  
       <button class="selected-action-button dont-deselect" id="deleteButton" disabled={!$selectedActionID} on:click={() => removeSelectedAction()}><svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zm96 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16z"/></svg> delete</button>
         <button class="selected-action-button dont-deselect" id="remixButton" disabled={!$selectedActionID} on:click={() => remixAction($selectedActionID)}><svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M234.7 42.7L197 56.8c-3 1.1-5 4-5 7.2s2 6.1 5 7.2l37.7 14.1L248.8 123c1.1 3 4 5 7.2 5s6.1-2 7.2-5l14.1-37.7L315 71.2c3-1.1 5-4 5-7.2s-2-6.1-5-7.2L277.3 42.7 263.2 5c-1.1-3-4-5-7.2-5s-6.1 2-7.2 5L234.7 42.7zM46.1 395.4c-18.7 18.7-18.7 49.1 0 67.9l34.6 34.6c18.7 18.7 49.1 18.7 67.9 0L529.9 116.5c18.7-18.7 18.7-49.1 0-67.9L495.3 14.1c-18.7-18.7-49.1-18.7-67.9 0L46.1 395.4zM484.6 82.6l-105 105-23.3-23.3 105-105 23.3 23.3zM7.5 117.2C3 118.9 0 123.2 0 128s3 9.1 7.5 10.8L64 160l21.2 56.5c1.7 4.5 6 7.5 10.8 7.5s9.1-3 10.8-7.5L128 160l56.5-21.2c4.5-1.7 7.5-6 7.5-10.8s-3-9.1-7.5-10.8L128 96 106.8 39.5C105.1 35 100.8 32 96 32s-9.1 3-10.8 7.5L64 96 7.5 117.2zm352 256c-4.5 1.7-7.5 6-7.5 10.8s3 9.1 7.5 10.8L416 416l21.2 56.5c1.7 4.5 6 7.5 10.8 7.5s9.1-3 10.8-7.5L480 416l56.5-21.2c4.5-1.7 7.5-6 7.5-10.8s-3-9.1-7.5-10.8L480 352l-21.2-56.5c-1.7-4.5-6-7.5-10.8-7.5s-9.1 3-10.8 7.5L416 352l-56.5 21.2z"/></svg> remix</button>
         <button class="selected-action-button dont-deselect" id="duplicateButton" disabled={!$selectedActionID} on:click={() => duplicateAction($selectedActionID)}><svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 512 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M64 464H288c8.8 0 16-7.2 16-16V384h48v64c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V224c0-35.3 28.7-64 64-64h64v48H64c-8.8 0-16 7.2-16 16V448c0 8.8 7.2 16 16 16zM224 304H448c8.8 0 16-7.2 16-16V64c0-8.8-7.2-16-16-16H224c-8.8 0-16 7.2-16 16V288c0 8.8 7.2 16 16 16zm-64-16V64c0-35.3 28.7-64 64-64H448c35.3 0 64 28.7 64 64V288c0 35.3-28.7 64-64 64H224c-35.3 0-64-28.7-64-64z"/></svg>copy</button>
@@ -238,8 +289,8 @@
         <button class="selected-action-button dont-deselect" id="redrawButton" disabled={!$selectedActionID || $drawingLocked} on:click={() => redrawSelectedAction()}><svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M339.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L568.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S517.7-4.4 499.1 9.6L262.4 187.2c-24 18-38.2 46.1-38.4 76.1L339.3 367.1zm-19.6 25.4l-116-104.4C143.9 290.3 96 339.6 96 400c0 3.9 .2 7.8 .6 11.6C98.4 429.1 86.4 448 68.8 448H64c-17.7 0-32 14.3-32 32s14.3 32 32 32H208c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg>draw with</button>
         <!-- <button class="instabutton selected-action-button dont-deselect" id="convertButton" disabled={!$selectedActionID} on:click={() => convertSelectedAction()}>find pattern</button> -->
         <!-- <button class="instabutton selected-action-button dont-deselect" id="saveToolButton" disabled={!$selectedActionID} on:click={() => saveTool($selectedActionID)}> <svg xmlns="http://www.w3.org/2000/svg" height="0.9em" viewBox="0 0 448 512">!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.<path d="M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.8 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"/></svg> <svg xmlns="http://www.w3.org/2000/svg" height="1.4em" viewBox="0 0 512 512">!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.<path d="M176 88v40H336V88c0-4.4-3.6-8-8-8H184c-4.4 0-8 3.6-8 8zm-48 40V88c0-30.9 25.1-56 56-56H328c30.9 0 56 25.1 56 56v40h28.1c12.7 0 24.9 5.1 33.9 14.1l51.9 51.9c9 9 14.1 21.2 14.1 33.9V304H384V288c0-17.7-14.3-32-32-32s-32 14.3-32 32v16H192V288c0-17.7-14.3-32-32-32s-32 14.3-32 32v16H0V227.9c0-12.7 5.1-24.9 14.1-33.9l51.9-51.9c9-9 21.2-14.1 33.9-14.1H128zM0 416V336H128v16c0 17.7 14.3 32 32 32s32-14.3 32-32V336H320v16c0 17.7 14.3 32 32 32s32-14.3 32-32V336H512v80c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64z"/></svg>&nbsp;&nbsp;</button> -->
-      </div>
-      </div>
+    </div>
+      </div> <!-- right-sidebar -->
 
     <!-- <div class="footer"></div> -->
 
@@ -249,12 +300,14 @@
         {#if !$drawingLocked}
           {#if $stagedAction}
             {#key $stagedAction.params.lastChanged}
-              <div class="staged-action" in:scale={{ duration: 700, delay: 200 }}>
+              <div class="staged-action" in:scale={{ duration: 500, delay: 100 }}>
                 <ActionItem action={$stagedAction} />
               </div>
             {/key}
             <!-- <DebugPaintStore /> -->
           {/if}
+        <!-- {:else}
+          <div class="lock-button staged-lock" on:click={toggleLock}>{@html $drawingLocked?lockIcon:unlockIcon}</div> -->
         {/if}
         </div>
         <!-- <div class="staged-color-picker">
@@ -263,8 +316,6 @@
         <!-- <EffectSettingsPanel /> -->
       <!-- </div> -->
     </div> <!-- staged action container -->
-
-    
 
   </div> <!-- grid container -->
 </div> <!-- viewport container -->
@@ -370,6 +421,11 @@
         " . . . . ";
   }
 
+  .container.drawingonly {
+    /* width: 70%; */
+    grid-template-columns: var(--sidebar-width) 2fr 0 var(--sidebar-width);
+  }
+
   .footer {
     /* grid-area: footer; */
     /* background-color: #EEA57C; */
@@ -416,6 +472,12 @@
     margin: 10px;
   }
 
+  .effect-buttons-in-design {
+    display: flex;
+    flex-direction: column;
+    gap: 1em 0.5em;
+  }
+
   /* .above-code {
     grid-column: 3 / span 2;
     grid-row: 2;
@@ -435,6 +497,19 @@
     /* justify-content: flex-start; */
   }
 
+  .right-container {
+    grid-column: 3;
+    grid-row: 3;
+    display: flex;
+    flex-direction: column;
+    /* gap: 3em; */
+    max-height: var(--drawing-area-height);
+  }
+
+  .effect-buttons-in-code-area {
+    margin-top: 1em;
+  }
+
   .main-right {
     grid-column: 3;
     grid-row: 3;
@@ -444,6 +519,9 @@
     overflow-y: auto;
     display: flex;
     justify-content: flex-start;
+    flex-direction: column;
+    /* border: 1px solid lightgray;
+    background-color: rgba(255, 255, 255, 0.8); */
   }
 
   #main-list {
@@ -491,6 +569,16 @@
     right: 0; */
     opacity: 0.5;
     margin-bottom: 2vh;
+  }
+
+  .top-right-corner {
+    grid-column: 4;
+    grid-row: 2;
+    display: flex;
+    /* margin: auto; */
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
   }
 
   .right-sidebar {
@@ -555,7 +643,8 @@
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    max-height: --calc(100vh - var(--top-menu-width) - var(--drawing-area-height) - 2vh);
+    height: --calc(100vh - var(--top-menu-width) - var(--drawing-area-height) - 2vh);
+    /* max-height: --calc(100vh - var(--top-menu-width) - var(--drawing-area-height) - 2vh); */
     width: 100%;
     overflow-y: auto;
   }
@@ -567,7 +656,6 @@
     left: 0;
     width: 100%;
     z-index: 1;
-    min-height: 20px;
     height: auto;
     margin-top: 1vh;
     box-sizing: border-box;
@@ -577,7 +665,7 @@
     border-radius: 10px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     padding: 0.1em 0.2em 0.1em 0.5em;
-    margin-bottom: 2px;
+    /* margin-bottom: 2px; */
   }
 
   .staged-action-background {
@@ -604,6 +692,17 @@
     width: 100%;
     height: 90%;
     opacity: 0.6;
+  }
+
+  .last-action {
+    box-sizing: border-box;
+    background-color: #ffffff9b;
+    border: 1px solid lightgray;
+    border-radius: 5px 15px 15px 5px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 0.1em 0.2em 0.1em 0.5em;
+    margin-bottom: 2px;
   }
 
   .bottom-row {
@@ -730,6 +829,11 @@
     top: 10px; */
   }
 
+  .staged-lock {
+    margin: 0.8em auto;
+    transform: none;
+  }
+
   .staged-color-picker {
     /* border: 1px solid red; */
     display: flex;
@@ -740,6 +844,21 @@
     background-color: white;
     padding: 5px;
     border-radius: 5px;
+  }
+
+  #toggleCodeButton {
+    align-self: flex-end;
+    border-radius: 5px;
+    font-size: 1.2em;
+    color: rgb(47, 47, 47);
+    height: auto;
+  }
+
+  #toggleCodeButton:hover {
+    color: rgb(23, 23, 23);
+    transform: scale(1.05);
+    transition: transform 0.2s ease-in-out;
+
   }
 
 
