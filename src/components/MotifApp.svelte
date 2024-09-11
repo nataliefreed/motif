@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { actionStore, toolStore, selectedEffect, activeCategory, stagedAction, stagedActionID, changedActionID, selectedActionID, selectedCodeEffect, actionRoot, flatActionStore, playSpeed, renderDelay, isPlaying, firstPlay, drawingLocked } from '../stores/dataStore';
+  import { actionStore, toolStore, selectedEffect, activeCategory, stagedAction, stagedActionID, changedActionID, selectedActionID, selectedCodeEffect, actionRoot, flatActionStore, playSpeed, renderDelay, isPlaying, firstPlay, drawingLocked, shouldRandomizeColor } from '../stores/dataStore';
   import { exportCodeWithImage, importCodeFromImage } from './export-utils';
   import LinedPaper from './LinedPaper.svelte';
   import ActionItem from './actions and widgets/ActionItem.svelte';
@@ -104,6 +104,10 @@
   function toggleLock() {
     drawingLocked.set(!$drawingLocked);
     selectActionByIndex(1);
+  }
+
+  function toggleRandomizeColor() {
+    shouldRandomizeColor.set(!$shouldRandomizeColor);
   }
 
   function handleEffectClick(effectName: string) {
@@ -264,7 +268,21 @@
         <!-- <button class="instabutton selected-action-button dont-deselect" id="saveToolButton" disabled={!$selectedActionID} on:click={() => saveTool($selectedActionID)}> <svg xmlns="http://www.w3.org/2000/svg" height="0.9em" viewBox="0 0 448 512">!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.<path d="M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.8 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"/></svg> <svg xmlns="http://www.w3.org/2000/svg" height="1.4em" viewBox="0 0 512 512">!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.<path d="M176 88v40H336V88c0-4.4-3.6-8-8-8H184c-4.4 0-8 3.6-8 8zm-48 40V88c0-30.9 25.1-56 56-56H328c30.9 0 56 25.1 56 56v40h28.1c12.7 0 24.9 5.1 33.9 14.1l51.9 51.9c9 9 14.1 21.2 14.1 33.9V304H384V288c0-17.7-14.3-32-32-32s-32 14.3-32 32v16H192V288c0-17.7-14.3-32-32-32s-32 14.3-32 32v16H0V227.9c0-12.7 5.1-24.9 14.1-33.9l51.9-51.9c9-9 21.2-14.1 33.9-14.1H128zM0 416V336H128v16c0 17.7 14.3 32 32 32s32-14.3 32-32V336H320v16c0 17.7 14.3 32 32 32s32-14.3 32-32V336H512v80c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64z"/></svg>&nbsp;&nbsp;</button> -->
         
       </div> <!-- code-toolbar -->
-      <div class="color-bank"><ColorBank/></div>
+      <div class="color-bank">
+        <ColorBank/>
+        
+          <div class="toggle-with-label">
+            <label class="toggle-switch">
+              <input
+                type="checkbox"
+                class="toggle dont-deselect"
+                bind:checked={$shouldRandomizeColor}
+              >
+              <span class="slider round"></span>
+            </label>
+            change colors
+          </div>
+        </div>
       </div> <!-- right-sidebar -->
 
     <!-- <div class="footer"></div> -->
@@ -293,7 +311,7 @@
         <!-- <div class="staged-color-picker">
           <ColorPicker bind:value={value} />
           </div> -->
-        <!-- <EffectSettingsPanel /> -->
+        
       <!-- </div> -->
     </div> <!-- staged action container -->
 
@@ -620,7 +638,33 @@
   .color-bank {
     width: 100%;
     margin-top: 1em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1em;
     /* margin-bottom: 3vh; */
+  }
+
+  #random-color-toggle  {
+    border: none;
+    /* background-color: rgb(195, 195, 195); */
+    border-radius: 2px;
+    /* height: 30px; */
+    padding: 5px;
+    background-color: transparent;
+  }
+
+ #random-color-toggle svg {
+    fill: gray;
+    border: none;
+    background-color: transparent;
+  }
+
+  #random-color-toggle.selected svg {
+    fill: black;
+    border: none;
+    background-color: transparent;
   }
 
   .footer-center {
@@ -814,6 +858,23 @@
     user-select: none; /* Standard */
   }
 
+  .toggle-with-label {
+    font-family: 'Fandango';
+    font-size: 1.1rem;
+    line-height: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    align-items: center;
+    gap: 2px;
+    color: black;
+
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard */
+  }
+
   .selected-action-button:hover:not(:disabled) {
     /* background-color: #ffffff57; */
     /* color: white; */
@@ -932,6 +993,74 @@
     #main-list {
       margin-left: 1vw;
     }
+  }
+
+
+
+
+  /* For the toggle slider button */
+  /* The switch - the box around the slider */
+  .toggle-switch {
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 36px;
+    height: 20px;
+  }
+
+  /* Hide default HTML checkbox */
+  .toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  /* The slider */
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+
+  input:checked + .slider {
+    background-color: #35b448;
+  }
+
+  input:focus + .slider {
+    box-shadow: 0 0 1px #35b448;
+  }
+
+  input:checked + .slider:before {
+    -webkit-transform: translateX(16px);
+    -ms-transform: translateX(16px);
+    transform: translateX(16px);
+  }
+
+  /* Rounded sliders */
+  .slider.round {
+    border-radius: 36px;
+  }
+
+  .slider.round:before {
+    border-radius: 50%;
   }
 
 </style>
