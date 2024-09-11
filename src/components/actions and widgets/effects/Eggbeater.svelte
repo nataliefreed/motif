@@ -35,7 +35,7 @@
 {:else if name === 'move cutout'}
   <ChooserWidget id="mode" options={['move','copy']} selected={params.mode || 'move'} on:valueChange={handleValueChange}/>
   <NumberWidget id="w" min={1} max={600} value={params.w || 100} on:valueChange={handleValueChange}/> 
-  x <NumberWidget id="h" min={1} max={600} value={params.w || 100} on:valueChange={handleValueChange}/>
+  x <NumberWidget id="h" min={1} max={600} value={params.h || 100} on:valueChange={handleValueChange}/>
   cutout from
   <CoordinateWidget id="start" value={params.start || []} on:valueChange={handleValueChange}/>
   to
