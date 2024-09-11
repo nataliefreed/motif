@@ -478,9 +478,9 @@ function getDynamicStyle(id:string) {
   }
 
   .alpha-style li::before {/* Alpha numbering */
-    /* content: counter(list-counter, lower-alpha);  */
-    content: none;
-    display: none;
+    content: counter(list-counter, decimal); 
+    /* content: none;
+    display: none; */
   }
 
   .lastChanged::after {
