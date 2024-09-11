@@ -20,6 +20,7 @@
 
   let filterStyle = '';
 
+  // notify the color bank!
   function updateColorButton(color: string) {
     dispatch('valueChange', { id, color });
   }
@@ -29,6 +30,7 @@
   }
 
   function handleColorChange(event: CustomEvent) {
+    // console.log("palette color just changed in color picker in color bank widget");
     color = event.detail.value;
     updateColorButton(color);
   }

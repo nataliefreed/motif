@@ -32,9 +32,11 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <span class="toggle-arrow" on:click={toggle}> {isOpen ? '▼' : '▶'}</span>
-  {#if isOpen}
+  <!-- {#if isOpen} -->
+  <div hidden={!isOpen}>
     <ListWidget id='children' value={params.children} {depth} on:valueChange={handleValueChange} on:saveChange/>
-  {/if}
+  </div>
+  <!-- {/if} -->
   <!-- <AngleWidget id='angle' min={0} max={360} value={params.angle} on:valueChange={handleValueChange}/> -->
 
 
@@ -51,9 +53,11 @@
     <span class="toggle-arrow" on:click={toggle}> {isOpen ? '▼' : '▶'}</span>
       <ChildrenWidget id='children' on:miniActionClick={toggle} value={params.children}/>
   </div>
-      {#if isOpen}
-        <ListWidget id='children' value={params.children} {depth} on:valueChange={handleValueChange} on:saveChange/>
-      {/if}
+      <!-- {#if isOpen} -->
+        <div hidden={!isOpen}>
+          <ListWidget id='children' value={params.children} {depth} on:valueChange={handleValueChange} on:saveChange/>
+        </div>
+      <!-- {/if} -->
 
   </div>
 

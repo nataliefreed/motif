@@ -1,7 +1,7 @@
 import type { Action, Effect, ActionStore } from '../types/types';
 import { v4 as uuidv4 } from 'uuid';
 import { actionRootID, activeIDs, actionStore, myTools, toolStore, selectedActionID, selectedEffect, changedActionID, flatActionStore, actionRoot, stagedAction, stagedActionID, shouldRandomizeColor, playheadID, hoveredActionID, renderRequested, isPlaying, renderDelay, currentlyRenderingActionID, playSpeed, firstPlay } from '../stores/dataStore'
-import { currentColor } from '../stores/colorStore';
+import { currentColor, currentIndexedColor, randomColorFromPalette } from '../stores/colorStore';
 import { saveToHistory } from '../stores/history';
 import { get } from 'svelte/store';
 import { deepCopy, merge, randomWithinRange, arrayToKeyedObj } from '../utils/utils';
@@ -685,7 +685,7 @@ export function addEffectAsStagedAction(effect: Effect, params: { [key: string]:
   let uuid = addEffectToActionStoreAsChildOf(effect, params, get(actionRoot).uuid);
   if(uuid) stagedActionID.set(uuid);
   updateStagedAction({ lastChanged: Date.now() });
-  updateStagedActionColor(get(currentColor));
+  updateStagedActionColor(get(currentIndexedColor).color, get(currentIndexedColor).index);
 }
 
 export function addCurrentEffectAsStagedAction() {
@@ -829,7 +829,7 @@ export function updateStagedActionColor(color:string, index: number = -1) {
     for(let childID of children) {
       let child = get(flatActionStore)[childID];
       if('color' in child.params) {
-        actionManager.updateParams(childID, { color: color });
+        actionManager.updateParams(childID, { color: color, lockedIndex: index});
         // make color a little different for the next child
         color = tinycolor(color).darken(30).toHexString();
       }
@@ -848,14 +848,14 @@ export function resetSpecialStagedActionParams() {
 
 export function setCurrentEffect(name: string) {
   let effect = get(toolStore).find(tool => tool.name === name);
-  console.log("setting current effect", effect);
+  // console.log("setting current effect", effect);
   if(!effect) return;
   selectedEffect.set(effect);
   
 }
 
 let changeOptions = {
-  'color': (value:string) => { return curatedRandomHexColor() },
+  'color': (value:string) => { return curatedRandomHexColor(); },
   'radius': (value:number) => { return randomWithinRange(value, 5, 300, 20) },
   'r1': (value:number) => randomWithinRange(value, 5, 300, 20),
   'r2': (value:number) => randomWithinRange(value, 5, 200, 20),
@@ -884,8 +884,6 @@ export function remixAction(id:string) {
   saveToHistory("remix action end");
 }
 
-// function dupl
-
 function remixActionWithoutHistory(id:string) {
   
   if(!id || ! get(flatActionStore)[id]) return;
@@ -913,7 +911,14 @@ function remixActionWithoutHistory(id:string) {
   else {
     // always change color if it exists
     if ('color' in params) {
-      newParams.color = changeOptions.color(params.color);
+      if('lockedIndex' in params) {
+        let indexedColor = randomColorFromPalette();
+        newParams.lockedIndex = indexedColor.lockedIndex;
+        newParams.color = indexedColor.color;
+      }
+      else {
+        newParams.color = changeOptions.color(params.color); //right now doesn't use existing color
+      }
     }
     // then change whichever of these exist: radius, r1, r2, npoints, nsides, path, width, height, angle, outer, inner
     Object.keys(changeOptions).forEach(key => {

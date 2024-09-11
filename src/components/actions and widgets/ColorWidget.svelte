@@ -71,6 +71,8 @@
     }
   }
 
+  // this is currently what updates the colors when a palette color is changed
+  // it relies on nested list items being hidden, not unmounted (see ControlStructure)
   $: if(lockedIndex > -1) {
     value = $activePalette[lockedIndex];
     updateColorButton(value);

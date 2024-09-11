@@ -2,7 +2,7 @@
   import { addEffectAsStagedAction, moveStagedActionToEnd, compileActionsBefore, compileActionsBeforeStaged, updateStagedAction, updateStagedActionColor, copyStagedActionToActionStore, addCurrentEffectAsStagedAction, compileActions, hideAction, showAction, updateActiveActions, resetSpecialStagedActionParams, stopPlaying, play, pause, scrollToAction } from '../action-utils';
 	import P5 from 'p5-svelte';
   import { stagedAction, activeIDs, stagedActionID, actionRootID, activeCategory, selectedEffect, shouldRandomizeColor, changedActionID, flatActionStore, actionRoot, hoveredActionID, renderRequested, isPlaying, renderDelay, currentlyRenderingActionID, mousePos, drawingLocked } from '../../stores/dataStore';
-  import { renderers, loadStencils } from './Renderer.js';
+  import { renderers, loadStencils, loadFonts } from './Renderer.js';
   import { onMount, onDestroy, tick } from 'svelte';
   import { getAntPath, mapValue } from '../../utils/utils.ts';
   import { turtle } from './Turtle.js';
@@ -60,10 +60,10 @@
       let params = {};
       // if(effect.tags != "my tools") {
       if($activeCategory === "my tools") {
-        shouldRandomizeColor.set(false);
-        setCurrentColor(effect.params.color);
+        // shouldRandomizeColor.set(false);
+        // setCurrentColor(effect.params.color);
       } else {
-        updateStagedActionColor($currentColor);
+        updateStagedActionColor($currentIndexedColor.color, $currentIndexedColor.index);
       }
         // params.color2 = tinyColor($currentColor).rotate(180).toHexString();
       // }
@@ -81,7 +81,7 @@
       }
       else if($changedActionID === $stagedActionID && !mouseOverCanvas){
         clearTempCanvases();
-        renderStagedAction(p5.getHoverCanvas());
+        // renderStagedAction(p5.getHoverCanvas());
       }
     });
 

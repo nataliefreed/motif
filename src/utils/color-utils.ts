@@ -5,7 +5,7 @@ export function curatedRandomHexColor() {
 	const h = Math.random() * 360;
 	const s = randomBetween(80, 100);
 	const l = randomBetween(50, 70);
-	const alpha = randomBetween(0.6, 1);
+	const alpha = randomBetween(0.7, 0.9);
 	let color = tinycolor({h: h, s: s, l: l, a: alpha});
 	return color.toHex8String();
 }

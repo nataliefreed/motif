@@ -76,8 +76,8 @@ export function addPalette(name: string, palette: string[]) {
 
 export function updateColorInPalette(index: number, color: string, paletteName: string=get(activePaletteName)) {
   palettes.update(store => {
-    console.log('original color', store[paletteName][index]);
-    console.log('updateColorInPalette', index, color, paletteName);
+    // console.log('original color', store[paletteName][index]);
+    // console.log('updateColorInPalette', index, color, paletteName);
     store[paletteName][index] = color;
     return store;
   });
@@ -184,11 +184,16 @@ function getColor(colorName: string) {
   }
 }
 
+export function randomColorFromPalette() {
+  let randomIndex = Math.floor(Math.random() * get(activePalette).length);
+  return { color: get(activePalette)[randomIndex], lockedIndex: randomIndex };
+}
+
 export function randomizeCurrentColor() {
   //a nice hex color with possible translucency
-  setCurrentColor(curatedRandomHexColor());
+  // setCurrentColor(curatedRandomHexColor());
 
   //a random color from the active palette
-  // let randomIndex = Math.floor(Math.random() * get(activePalette).length);
-  // setCurrentColor(get(activePalette)[randomIndex], randomIndex); 
+  let randomIndex = Math.floor(Math.random() * get(activePalette).length);
+  setCurrentColor(get(activePalette)[randomIndex], randomIndex); 
 }

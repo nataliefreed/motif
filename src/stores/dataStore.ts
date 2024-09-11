@@ -3,6 +3,7 @@ import type { Action, Effect } from '../types/types';
 import { effectList } from '../stores/effectList.js';
 import { v4 as uuidv4 } from 'uuid';
 import tinycolor from 'tinycolor2';
+import { currentColor, randomizeCurrentColor } from './colorStore';
 import { curatedRandomHexColor } from '../utils/color-utils';
 
 export const actionStore = writable<Action>({name:"default", type:'list', category:'none', children:[], uuid:""});
