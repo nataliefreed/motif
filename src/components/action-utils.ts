@@ -28,14 +28,26 @@ class ActionManager {
   }
 
   // Update the parameters of an action in the store by its ID
-  updateParams(id: string, params: { [key: string]: any }) {
+  updateParams(id: string, params: { [key: string]: any | ((currentValue: any) => any) }) {
     this.#modifyActionStore(id, (store) => {
       const action = store[id];
       if (action) {
-        action.params = { ...action.params, ...params };
+        // Update each parameter individually
+        for (const [key, value] of Object.entries(params)) {
+          if (typeof value === "function") {
+            // If function provided, update based on the current value
+            if (key in action.params) {
+              action.params[key] = value(action.params[key]);
+            }
+          } else {
+            // Otherwise, directly set the new value
+            action.params[key] = value;
+          }
+        }
       }
     });
   }
+  
 
   // Detach an action from its parent list by its ID
   detach(id: string) {
@@ -696,7 +708,7 @@ export function addCurrentEffectAsStagedAction() {
 }
 
 // bubbled up by UI widgets
-export function updateActionParams(uuid:string, params:any, save = false) {
+export function updateActionParams(uuid:string, params: { [key: string]: any | ((currentValue: any) => any) }) {
   if (!uuid) return;
 
   // Note: this does not save to undo/redo history, this needs to be handled by user-level events
@@ -810,6 +822,12 @@ export function updateStagedAction(params: { [key: string]: any } = {} ) {
   // historyStore.pause();
   updateActionParams(get(stagedActionID), params);
   // historyStore.resume();
+}
+
+export function updateSelectedAction(params: { [key: string]: any | ((currentValue: any) => any) }) {
+  let id = get(selectedActionID);
+  if(!id) return;
+  updateActionParams(id, params);
 }
 
 export function updateStagedActionColor(color:string, index: number = -1) {
