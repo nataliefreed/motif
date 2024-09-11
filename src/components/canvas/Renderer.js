@@ -267,7 +267,7 @@ export const renderers = {
       p.noStroke();
       p.fill(params.color);
       p.translate(x, y);
-      p.rotate(params.angle);
+      p.rotate(p5.radians(params.angle));
       p.triangle(
           w / 2, h / 2,
           - w / 2, h / 2,
