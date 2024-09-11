@@ -76,8 +76,8 @@ export function addPalette(name: string, palette: string[]) {
 
 export function updateColorInPalette(index: number, color: string, paletteName: string=get(activePaletteName)) {
   palettes.update(store => {
-    console.log('original color', store[paletteName][index]);
-    console.log('updateColorInPalette', index, color, paletteName);
+    // console.log('original color', store[paletteName][index]);
+    // console.log('updateColorInPalette', index, color, paletteName);
     store[paletteName][index] = color;
     return store;
   });
