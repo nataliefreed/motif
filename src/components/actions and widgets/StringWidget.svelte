@@ -4,6 +4,7 @@
   export let id = '';
   export let value: string = '';
   let stringWidget: HTMLElement;
+  export let showQuotes = false;
 
   const dispatch = createEventDispatcher();
 
@@ -50,14 +51,32 @@
 
 </script>
 
-<span class="string-widget"
+<!-- note: with the wrapper div using flex layout, moves arrow to new line
+ this works for quotes for the text effect, but would need to be adjusted for other strings -->
+
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+  {#if showQuotes}
+  <div class="string-wrapper">
+    "<span class="string-widget"
       bind:innerText={value}
       on:keydown={restrictInput}
       on:blur={handleChange}
       on:paste={handleChange}
       contenteditable="true"
       spellcheck="false">
-</span>
+      </span>"
+    </div>
+  {:else}
+    <span class="string-widget"
+      bind:innerText={value}
+      on:keydown={restrictInput}
+      on:blur={handleChange}
+      on:paste={handleChange}
+      contenteditable="true"
+      spellcheck="false">
+    </span>
+  {/if}
+  
 
 <style>
   .string-widget {
@@ -68,6 +87,11 @@
     color: #0a3f0c;
     font-family: 'FuturaHandwritten';
     /* font-family: 'fandango'; */
+  }
+
+  .string-wrapper {
+    display: flex;
+    flex-direction: row;
   }
 </style>
 

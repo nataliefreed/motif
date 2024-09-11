@@ -52,7 +52,7 @@
     and height 
     <NumberWidget id="height" min={3} max={600} value={params.height} on:valueChange={handleValueChange}/>
   {:else if name === 'text'}
-    <StringWidget id='text' value={params.text} on:valueChange={handleValueChange}/>
+    <StringWidget id='text' showQuotes={true} value={params.text} on:valueChange={handleValueChange}/>
     in size
     <NumberWidget id="size" min={5} max={600} value={params.size} on:valueChange={handleValueChange}/> 
   {:else if name === 'spiro'}
