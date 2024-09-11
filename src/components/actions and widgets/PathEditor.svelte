@@ -51,12 +51,14 @@
 
   onMount(() => {
     window.addEventListener('mouseup', globalMouseUp);
+    dispatch('start');
     // console.log("PathEditor mounted");
     storedPaths = [...patternPaths, ...getPaths()];
   });
 
   onDestroy(() => {
     window.removeEventListener('mouseup', globalMouseUp);
+    dispatch('end');
     // console.log("PathEditor destroyed");
   });
 
