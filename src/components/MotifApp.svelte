@@ -244,7 +244,7 @@
       <!-- {#if !showCode} -->
       <!-- {/if} -->
       <div id="main-list">
-          <ActionItem action={$actionRoot} depth={0}/>
+          <ActionItem action={$actionRoot} isOpen={true} depth={0}/>
         
         <!-- <div class="effect-buttons-in-design">
         {#each $actionRoot.params.children as childID}
@@ -301,7 +301,7 @@
           {#if $stagedAction}
             {#key $stagedAction.params.lastChanged}
               <div class="staged-action" in:scale={{ duration: 500, delay: 100 }}>
-                <ActionItem action={$stagedAction} />
+                <ActionItem isOpen={true} action={$stagedAction} />
               </div>
             {/key}
             <!-- <DebugPaintStore /> -->
@@ -887,7 +887,7 @@
 
     .staged-action {
       /* margin: 0.5em auto; */
-      font-size: 1.3rem;
+      font-size: 1.1rem;
     }
   }
 
