@@ -93,6 +93,12 @@
     src: url('/assets/Fandango.otf') format('opentype');
   }
 
+  .prevent-select {
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard */
+  }
+
     /* Range slider styling - thank you https://range-input-css.netlify.app/ */
 
     /*********** Baseline, reset styles ***********/

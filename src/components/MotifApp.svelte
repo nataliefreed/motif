@@ -24,7 +24,6 @@
 
   let allCategories:string[] = [];
   let value = '#FFFFFF';
-  let showCode = false;
 
   let drawingAreaWidth = 520;
 
@@ -33,7 +32,6 @@
   }
 
   $: if($drawingLocked) {
-    showCode = true;
   }
 
   // $: if($drawingLocked) {
@@ -167,6 +165,7 @@
     <div class="left-toolbar-background"></div>
     <div class="code-toolbar-background"></div>
     <div class="staged-action-background"></div>
+    <div class="effect-buttons-bottom-background"></div>
     <div class="header"></div>
 
     <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -204,6 +203,7 @@
     </div> <!-- above code -->
 
     <div class="left-toolbar">
+      
       <!-- <div class="current-effect">
         {#if $selectedEffect}
             <img class="effect-img" src='/assets/effect-thumbnails/{$selectedEffect.thumbnail}' alt={$selectedEffect.textLabel}>
@@ -212,7 +212,7 @@
       <!-- {#if !$drawingLocked} -->
       <CategoryToolbar categories={allCategories} effectMode={false}/>
       <!-- {/if} -->
-      <div class="color-bank"><ColorBank/></div>
+      
     </div> <!-- left-toolbar -->
 
       <div class="drawing-area-container">
@@ -231,37 +231,10 @@
       </div>
 
     <div class="right-container">
-      {#if !showCode}
-        <div class="effect-buttons-in-code-area">
-          <CategoryToolbar categories={allCategories} effectMode={!showCode}/>
-        </div>
-      {/if}
-
-      <button class="selected-action-button dont-deselect" id="toggleCodeButton" on:click={()=>{showCode=!showCode;}}>{showCode ? '↓ show buttons ↓' : '↑	  more space please  ↑'}</button>
-
 
     <div class="main-right">
-      <!-- {#if !showCode} -->
-      <!-- {/if} -->
       <div id="main-list">
           <ActionItem action={$actionRoot} depth={0}/>
-        
-        <!-- <div class="effect-buttons-in-design">
-        {#each $actionRoot.params.children as childID}
-        
-          <button
-              on:click={() => handleEffectClick($flatActionStore[childID].effect)}
-              class="effect-button"
-              class:selected={$selectedEffect && $selectedEffect.name === $flatActionStore[childID].effect}
-              style:background-image={`url(/assets/effect-thumbnails/${$flatActionStore[childID].thumbnail})`}
-              >
-              <span class="effect-label">{$flatActionStore[childID].effect}</span>
-          </button>
-        
-        {/each}
-      </div> -->
-          <!-- <div class="last-action dont-deselect"><ActionItem action={$flatActionStore[$selectedActionID]}/></div> -->
-        
         
       </div> <!-- main-list -->
     </div>  <!-- main-right -->
@@ -286,16 +259,23 @@
         <button class="selected-action-button dont-deselect" id="repeatButton" disabled={!$selectedActionID} on:click={() => repeatSelectedActionAlongPath() }><svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 512 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M0 224c0 17.7 14.3 32 32 32s32-14.3 32-32c0-53 43-96 96-96H320v32c0 12.9 7.8 24.6 19.8 29.6s25.7 2.2 34.9-6.9l64-64c12.5-12.5 12.5-32.8 0-45.3l-64-64c-9.2-9.2-22.9-11.9-34.9-6.9S320 19.1 320 32V64H160C71.6 64 0 135.6 0 224zm512 64c0-17.7-14.3-32-32-32s-32 14.3-32 32c0 53-43 96-96 96H192V352c0-12.9-7.8-24.6-19.8-29.6s-25.7-2.2-34.9 6.9l-64 64c-12.5 12.5-12.5 32.8 0 45.3l64 64c9.2 9.2 22.9 11.9 34.9 6.9s19.8-16.6 19.8-29.6V448H352c88.4 0 160-71.6 160-160z"/></svg>random repeat</button>
         <button class="selected-action-button dont-deselect" id="nameButton" disabled={!$selectedActionID} on:click={() => wrapSelectedInGroup() }><svg xmlns="http://www.w3.org/2000/svg" height="1.1em"viewBox="0 0 640 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M192 128c0-17.7 14.3-32 32-32s32 14.3 32 32l0 7.8c0 27.7-2.4 55.3-7.1 82.5l-84.4 25.3c-40.6 12.2-68.4 49.6-68.4 92l0 71.9c0 40 32.5 72.5 72.5 72.5c26 0 50-13.9 62.9-36.5l13.9-24.3c26.8-47 46.5-97.7 58.4-150.5l94.4-28.3-12.5 37.5c-3.3 9.8-1.6 20.5 4.4 28.8s15.7 13.3 26 13.3l128 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-83.6 0 18-53.9c3.8-11.3 .9-23.8-7.4-32.4s-20.7-11.8-32.2-8.4L316.4 198.1c2.4-20.7 3.6-41.4 3.6-62.3l0-7.8c0-53-43-96-96-96s-96 43-96 96l0 32c0 17.7 14.3 32 32 32s32-14.3 32-32l0-32zm-9.2 177l49-14.7c-10.4 33.8-24.5 66.4-42.1 97.2l-13.9 24.3c-1.5 2.6-4.3 4.3-7.4 4.3c-4.7 0-8.5-3.8-8.5-8.5l0-71.9c0-14.1 9.3-26.6 22.8-30.7zM24 368c-13.3 0-24 10.7-24 24s10.7 24 24 24l40.3 0c-.2-2.8-.3-5.6-.3-8.5L64 368l-40 0zm592 48c13.3 0 24-10.7 24-24s-10.7-24-24-24l-310.1 0c-6.7 16.3-14.2 32.3-22.3 48L616 416z"/></svg>label</button>
 
-        <button class="selected-action-button dont-deselect" id="redrawButton" disabled={!$selectedActionID || $drawingLocked} on:click={() => redrawSelectedAction()}><svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M339.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L568.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S517.7-4.4 499.1 9.6L262.4 187.2c-24 18-38.2 46.1-38.4 76.1L339.3 367.1zm-19.6 25.4l-116-104.4C143.9 290.3 96 339.6 96 400c0 3.9 .2 7.8 .6 11.6C98.4 429.1 86.4 448 68.8 448H64c-17.7 0-32 14.3-32 32s14.3 32 32 32H208c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg>draw with</button>
+        <button class="selected-action-button dont-deselect" id="redrawButton" disabled={!$selectedActionID || $drawingLocked} on:click={() => redrawSelectedAction()}><svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M339.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L568.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S517.7-4.4 499.1 9.6L262.4 187.2c-24 18-38.2 46.1-38.4 76.1L339.3 367.1zm-19.6 25.4l-116-104.4C143.9 290.3 96 339.6 96 400c0 3.9 .2 7.8 .6 11.6C98.4 429.1 86.4 448 68.8 448H64c-17.7 0-32 14.3-32 32s14.3 32 32 32H208c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg>draw</button>
         <!-- <button class="instabutton selected-action-button dont-deselect" id="convertButton" disabled={!$selectedActionID} on:click={() => convertSelectedAction()}>find pattern</button> -->
         <!-- <button class="instabutton selected-action-button dont-deselect" id="saveToolButton" disabled={!$selectedActionID} on:click={() => saveTool($selectedActionID)}> <svg xmlns="http://www.w3.org/2000/svg" height="0.9em" viewBox="0 0 448 512">!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.<path d="M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.8 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"/></svg> <svg xmlns="http://www.w3.org/2000/svg" height="1.4em" viewBox="0 0 512 512">!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.<path d="M176 88v40H336V88c0-4.4-3.6-8-8-8H184c-4.4 0-8 3.6-8 8zm-48 40V88c0-30.9 25.1-56 56-56H328c30.9 0 56 25.1 56 56v40h28.1c12.7 0 24.9 5.1 33.9 14.1l51.9 51.9c9 9 14.1 21.2 14.1 33.9V304H384V288c0-17.7-14.3-32-32-32s-32 14.3-32 32v16H192V288c0-17.7-14.3-32-32-32s-32 14.3-32 32v16H0V227.9c0-12.7 5.1-24.9 14.1-33.9l51.9-51.9c9-9 21.2-14.1 33.9-14.1H128zM0 416V336H128v16c0 17.7 14.3 32 32 32s32-14.3 32-32V336H320v16c0 17.7 14.3 32 32 32s32-14.3 32-32V336H512v80c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64z"/></svg>&nbsp;&nbsp;</button> -->
-    </div>
+        
+      </div> <!-- code-toolbar -->
+      <div class="color-bank"><ColorBank/></div>
       </div> <!-- right-sidebar -->
 
     <!-- <div class="footer"></div> -->
 
-    <div class="footer-center">
-      <div class="footer-center-wrapper">
+    <!-- <div class="footer-center"> -->
+      <div class="effect-buttons-bottom">
+        {#if $activeCategory }
+          <CategoryToolbar categories={[$activeCategory]} effectMode={true}/>
+        {/if}
+      </div>
+      <div class="staged-action-wrapper">
       <!-- <div class="effect-settings"> -->
         {#if !$drawingLocked}
           {#if $stagedAction}
@@ -309,7 +289,7 @@
         <!-- {:else}
           <div class="lock-button staged-lock" on:click={toggleLock}>{@html $drawingLocked?lockIcon:unlockIcon}</div> -->
         {/if}
-        </div>
+        <!-- </div> -->
         <!-- <div class="staged-color-picker">
           <ColorPicker bind:value={value} />
           </div> -->
@@ -360,7 +340,7 @@
 <style>
 
   /* * {
-    border: 1px solid blue;
+    outline: 1px solid red;
   } */
 
   :root {
@@ -528,6 +508,10 @@
     max-height: calc(var(--drawing-area-height) - 2vh);
     max-width: 100%;
     position: relative;
+
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard */
   }
 
   .header {
@@ -582,10 +566,15 @@
   }
 
   .right-sidebar {
-    grid-area: right-sidebar;
-    grid-row: 3;
+    /* grid-area: right-sidebar; */
+    /* border: 1px solid green; */
+    grid-row: 3 / span 2;
     grid-column: 4;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     width: var(--sidebar-width);
+    height: 80%;
     z-index: 1;
   }
 
@@ -597,16 +586,18 @@
     grid-column: 1;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
-    position: relative;
+    align-items: center;
+    justify-content: center;
     z-index: 2;
   }
 
   .code-toolbar {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    height: 90%;
+    justify-content: flex-start;
+    gap: 1em;
+    /* gap: 3vh; */
+    /* height: 90%; */
     /* gap: 1.5em; */
   }
 
@@ -627,11 +618,9 @@
   }
 
   .color-bank {
-    position: relative;
-    bottom: 0;
-    margin-top: 10px;
-    /* margin-bottom: 10px; */
     width: 100%;
+    margin-top: 1em;
+    /* margin-bottom: 3vh; */
   }
 
   .footer-center {
@@ -640,42 +629,71 @@
     grid-row: 4;
     position: relative;
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    flex-direction: row;
+    align-items: flex-start;
     justify-content: flex-start;
     width: 100%;
     overflow-y: auto;
     padding: 1em 0;
   }
 
-  .staged-action {
+  .effect-buttons-bottom {
+    grid-row: 4;
+    grid-column: 2;
     /* border: 1px solid green; */
+    width: var(--drawing-area-height);
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+
+  /* 'rgb(146,190,186)','rgb(159,200,198)','rgb(80,145,173)','rgb(117,173,200)','rgb(116,174,200)','rgb(102,166,195)','rgb(110,169,196)','rgb(67,110,66)','rgb(100,161,188)','rgb(75,116,72)','rgb(155,158,79)','rgb(148,149,68)','rgb(147,149,67)','rgb(159,161,87)' */
+  .effect-buttons-bottom-background {
+    grid-row: 4;
+    grid-column: 1 / span 4;
+    height: var(--sidebar-width);
+    background-color:rgba(146, 190 , 186, 0.5);
+  }
+
+  .staged-action-wrapper {
+    /* border: 1px solid blue; */
+    grid-row: 4;
+    grid-column: 3;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    overflow-y: auto;
+    padding: 0 1em;
+  }
+
+  .staged-action {
     position: relative;
-    top: 0;
+    top: 8px;
     left: 0;
-    width: 100%;
+    /* width: 100%; */
     z-index: 1;
-    /* margin-top: 1vh; */
     box-sizing: border-box;
     background-color: #ffffff9b;
     border: 1px solid lightgray;
     border-radius: 5px 15px 15px 5px;
     border-radius: 10px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    padding: 0.1em 0.2em 0.1em 0.5em;
+    padding: 0.1em 0.2em 0.1em 0em;
     /* margin-bottom: 2px; */
   }
 
   .staged-action-background {
     /* border: 1px solid blue; */
     grid-row: 4 / span 2;
-    grid-column: 1 / span 4;
+    grid-column: 3 / span 2;
     background-image: url('/backgrounds/117.png');
     background-size: 100% 110%;
     background-repeat: no-repeat;
-    margin: 0 calc(var(--sidebar-width) / 2);
-    opacity: 0.6;
-    margin-top: -1vh;
+    margin: 0 calc(var(--sidebar-width) / 2) 0 0;
+    opacity: 0.7;
+    margin-top: -3vh;
+    margin-left: -1vw;
     margin-bottom: 1vh;
   }
 
@@ -735,6 +753,10 @@
     /* background-color: white; */
     /* text-shadow: 2px 2px 0px rgb(138, 138, 138); */
     z-index: 1;
+
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard */
   }
 
   .top-menu-button:hover {
@@ -761,6 +783,9 @@
     height: 1em;
     width: auto;
     /* transform: translateY(-2px); */
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard */
   }
 
   .remix-duplicate-icon {
@@ -776,14 +801,17 @@
     border: none;
     font-family: 'Fandango';
     font-size: 1.1rem;
-    height: 100%;
+    /* height: 100%; */
     color: black;
     border-radius: 50% 50%;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
-    gap: 5px;
+
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard */
   }
 
   .selected-action-button:hover:not(:disabled) {
@@ -887,7 +915,7 @@
 
     .staged-action {
       /* margin: 0.5em auto; */
-      font-size: 1.3rem;
+      /* font-size: 1.3rem; */
     }
   }
 

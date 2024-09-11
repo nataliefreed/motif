@@ -12,8 +12,10 @@
   export let effectMode = false;
 
   function handleCategoryClick(category: string) {
-    //toggle open/closed, unless you click on a different category than the open one, in which case close the open one and open the new one
-    visibleCategory = visibleCategory === category ? '' : category;
+    const firstToolInCategory = $toolStore.find(tool => tool.category === category);
+    if(!firstToolInCategory) return;
+    selectedEffect.set(firstToolInCategory);
+    visibleCategory = '';
   }
 
   function handleCategoryMouseover(category: string) {
@@ -37,6 +39,8 @@
   onMount(() => {
     moveEffect = $toolStore.find(tool => tool.name === "move cutout");
   });
+
+  // on:mouseover={() => handleCategoryMouseover(category)}
 
 </script>
 
@@ -68,7 +72,7 @@
       <!-- svelte-ignore a11y-mouse-events-have-key-events -->
       {#if !effectMode}
       <button on:click={() => handleCategoryClick(category)}
-        on:mouseover={() => handleCategoryMouseover(category)}
+        
         class="category-button" class:selected={$activeCategory === category}
         style:background-image="{$activeCategory === category ? `url(/assets/effect-thumbnails/${$selectedEffect.thumbnail})` : ''}"
         disabled={disabled}>
@@ -76,7 +80,7 @@
         <!-- {category} -->
       </button>
       {:else}
-        <img class="category-img" src="/assets/icons/{category}.svg" alt="{category}">
+        <!-- <img class="category-img" src="/assets/icons/{category}.svg" alt="{category}"> -->
       {/if}
 
 
@@ -141,6 +145,7 @@
   }
 
   .category-button {
+    /* box-sizing: border-box; */
     background-color: transparent;
     cursor: pointer;
     border: none;
@@ -153,6 +158,10 @@
     /* margin: auto; */
     background-image: none;
     padding: 5px;
+
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard */
   }
 
   .category-button:hover {
@@ -165,11 +174,15 @@
   }
 
   .category-img {
-    width: 26px;
-    height: 26px;
+    width: 28px;
+    height: 28px;
     margin: 5px;
     /* display: block;
     margin: auto; */
+  }
+
+  .category-img:hover {
+    transform: scale(1.1);
   }
 
   .category-button.selected {
@@ -181,7 +194,7 @@
   }
 
   .effect-button, .active-effect-button {
-    box-sizing: border-box;
+    /* box-sizing: border-box; */
     background-color: transparent;
     cursor: pointer;
     border: none;
@@ -192,8 +205,11 @@
     font-size: 1.1em;
     text-align: center;
     border-radius: 5px;
-    height: 36px;
-    /* border: 1px solid black; */
+    height: 38px;
+
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard */
 
     /* opacity: 0.8;
     transition: opacity 0.3s ease; */
@@ -215,12 +231,13 @@
   }
 
   .effect-button.selected {
-    border: 4px dashed #000000;
+    outline: 4px dashed #000000;
     /* opacity: 1; */
   }
 
   .effect-button:hover {
-    border: 4px dashed #000000;
+    /* outline: 4px dashed #000000; */
+    transform: scale(1.2);
     /* opacity: 1; */
   }
 
@@ -229,12 +246,13 @@
     /* border: 2px solid #d5be0d; */
     /* border-radius: 50%; */
     border: none;
+    outline: none;
     width: 26px;
     /* width: 34px; */
   }
 
   .move-effect.selected {
-    border: 4px dashed #d59100;
+    outline: 4px dashed #d59100;
     border-radius: 20% 20%;
     width: 30px;
   }
