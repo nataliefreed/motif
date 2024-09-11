@@ -1,4 +1,4 @@
-import { addCurrentEffectAsStagedAction, addEffectToActionStore, copyStagedActionToActionStore, removeSelectedAction, setCurrentEffect, undo } from "./action-utils";
+import { addCurrentEffectAsStagedAction, addEffectToActionStore, copyStagedActionToActionStore, removeSelectedAction, setCurrentEffect, undo, updateSelectedAction } from "./action-utils";
 import { toolStore, selectedActionID, selectedEffect } from "../stores/dataStore";
 import { historyStore } from "../stores/history";
 import { get } from "svelte/store";
@@ -20,7 +20,7 @@ function keydownHandler(event: KeyboardEvent) {
     case 'r':
       // get a random effect
       let effectList: Effect[] = get(toolStore);
-      effectList = effectList.filter(effect => effect.category !== 'stencils');
+      effectList = effectList.filter(effect => effect.category !== 'stencils' && effect.category !== 'backgrounds');
       if(effectList.length > 0) {
         let randomEffect = effectList[Math.floor(Math.random() * effectList.length)];
         addEffectToActionStore(randomEffect, {});
@@ -40,18 +40,38 @@ function keydownHandler(event: KeyboardEvent) {
     case 's':
       copyStagedActionToActionStore();
       break;
-    case 'left': 
-      
-      break; 
-    case 'right':
-
-      break; 
-    case 'up':
-
-      break; 
-    case 'down':
-           
-      break; 
+    case 'ArrowLeft':
+      updateSelectedAction({
+        position: (current) => ({
+          ...current,
+          x: current.x - 1,
+        }),
+      });
+      break;
+    case 'ArrowRight':
+      updateSelectedAction({
+        position: (current) => ({
+          ...current,
+          x: current.x + 1,
+        }),
+      });
+      break;
+    case 'ArrowUp':
+      updateSelectedAction({
+        position: (current) => ({
+          ...current,
+          y: current.y - 1,
+        }),
+      });
+      break;
+    case 'ArrowDown':
+      updateSelectedAction({
+        position: (current) => ({
+          ...current,
+          y: current.y + 1,
+        }), 
+      });
+      break;
   }
 }
 
