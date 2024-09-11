@@ -496,6 +496,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     if(p5) {
       waitForCanvases().then(() => {
         loadStencils(p5);
+        loadFonts(p5);
         console.log("p5 instance created");
         renderActionsUntilStaged();
         console.log("initial render");
@@ -621,12 +622,12 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
         let stripeWidth = Math.round(mapValue(x, 0, 500, 20, 100));
         updateStagedAction({ stripeWidth: stripeWidth });
       }
-      if('angle' in params && $stagedAction.effect != "along path" && $stagedAction.effect != "heart" && $stagedAction.effect != "rectangle" && $stagedAction.effect != "triangle") {
+      if('angle' in params && $stagedAction.effect != "along path" && $stagedAction.effect != "heart" && $stagedAction.effect != "rectangle" && $stagedAction.effect != "triangle" && $stagedAction.effect != "text") {
         let angle = Math.round(mapValue(y, 0, 500, 0, 360));
         updateStagedAction({ angle: angle });
       }
       if('offset' in params) {
-        let offset = Math.round(mapValue(x, 0, 500, 10, 100));
+        let offset = Math.round(mapValue(y, 0, 500, 10, 100));
         updateStagedAction({ offset: offset });
       }
       if('end' in params) {

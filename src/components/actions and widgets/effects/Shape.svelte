@@ -4,6 +4,7 @@
   import AngleWidget from "../AngleWidget.svelte";
   import CoordinateWidget from "../CoordinateWidget.svelte";
   import ChooserWidget from "../ChooserWidget.svelte";
+  import StringWidget from "../StringWidget.svelte";
   import { isChildOfAlongPath } from "../../action-utils";
 
   export let name = '';
@@ -50,6 +51,10 @@
     <NumberWidget id="width" min={3} max={600} value={params.width} on:valueChange={handleValueChange}/> 
     and height 
     <NumberWidget id="height" min={3} max={600} value={params.height} on:valueChange={handleValueChange}/>
+  {:else if name === 'text'}
+    <StringWidget id='text' value={params.text} on:valueChange={handleValueChange}/>
+    in size
+    <NumberWidget id="size" min={5} max={600} value={params.size} on:valueChange={handleValueChange}/> 
   {:else if name === 'spiro'}
   <span class="tool-name">spiro</span> outer:
     <NumberWidget id="outer" min={3} max={300} value={params.outer} on:valueChange={handleValueChange}/>

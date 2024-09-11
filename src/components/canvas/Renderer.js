@@ -3,6 +3,7 @@ import { flatActionStore, playheadID, stagedActionID } from '../../stores/dataSt
 import { filter } from 'lodash';
 let paperdolls = null;
 import { noise } from '../../utils/noise.js'
+let font = null;
 
 // export const unroll = {
 //     // do each
@@ -231,6 +232,20 @@ export const renderers = {
         break;
       default: break;
     }
+    p.pop();
+  },
+
+  'text': (p, params, p5) => {
+    let x = params.position.x;
+    let y = params.position.y;
+    p.textSize(params.size+4);
+    p.textFont('Arial Rounded MT Bold, Gill Sans, Verdana, sans-serif');
+    p.push();
+    p.noStroke();
+    p.fill(params.color);
+    p.translate(x, y);
+    p.rotate(p5.radians(params.angle));
+    p.text(params.text, 0, 0);
     p.pop();
   },
   
@@ -800,6 +815,10 @@ export const renderers = {
       p.pop();
     }
   };
+
+export function loadFonts(p) {
+  font = p.loadFont('/assets/Fandango.otf');
+}
 
 export function loadStencils(p) {
   paperdolls = { // paper doll stencils

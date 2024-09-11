@@ -174,6 +174,22 @@ export const effectList = [
     }
   },
   {
+    name: 'text',
+    textLabel: 'text',
+    category: 'shapes',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'text.png',
+    mouseActionType: 'drag',
+    params: {
+      text: 'A',
+      size: 40,
+      color: '#62aed2',
+      angle: 0,
+      position: {x: 250, y: 430}
+    }
+  },
+  {
     name: 'stripes',
     textLabel: 'Stripes',
     category: 'backgrounds',
