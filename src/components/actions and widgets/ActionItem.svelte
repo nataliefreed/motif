@@ -15,7 +15,7 @@
 
   export let action: Action | null;
   export let depth = 0;
-  let isOpen = false;
+  export let isOpen = false;
 
   let animate = false;
 
@@ -28,9 +28,9 @@
     // else if(action && action.uuid === $stagedActionID) {
     //   isOpen = true;
     // }
-    else {
-        isOpen = false;
-    }
+    // else {
+    //     isOpen = false;
+    // }
   });
 
   // function toggle() {
