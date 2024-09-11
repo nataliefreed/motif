@@ -132,7 +132,7 @@
       const offsetX = event.offsetX; //mouse relative to target
       // console.log("mouse over li of action id", actionId, offsetX);
       // if(target && !target.classList.contains('addStagedActionButton') && target.classList.contains('drag-handle') || target.classList.contains('action-item-content') || target === event.currentTarget) { //if not a widget, set the action as hovered
-        if(target && (target.classList.contains('drag-handle') || target.classList.contains('along-path') || target.classList.contains('along-path-widget') || (offsetX <= 50 && target.classList.contains('action-item-outer')))) { //if over drag handle, set the action as hovered
+        if(target && target.classList.contains('drag-handle')) { //if over drag handle, set the action as hovered
         hoverAction(actionId);
       }
   }
