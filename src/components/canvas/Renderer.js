@@ -408,7 +408,7 @@ export const renderers = {
       p.image(p5.getStaticCanvas(), 0, 0); //so that hover canvas has something to shift
     }
 
-    let lineHeight = params.height;
+    let lineHeight = params.stripeWidth;
     let offset = params.offset;
     if(params.orientation === "horizontal") {
       for(let i = 0; i < p.height / lineHeight; i++) {

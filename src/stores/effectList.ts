@@ -887,7 +887,7 @@ export const effectList = [
     mouseActionType: 'drag',
     params: {
       orientation: 'vertical',
-      height: 50,
+      stripeWidth: 50,
       offset: 20
     }
   },
