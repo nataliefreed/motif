@@ -3,7 +3,7 @@
   import type { SortableEvent } from 'sortablejs';
   import Sortable from 'sortablejs';
   import { onMount, createEventDispatcher } from 'svelte';
-  import { selectedActionID, activeIDs, flatActionStore, stagedActionID, changedActionID, hoveredActionID } from '../../stores/dataStore';
+  import { selectedActionID, activeIDs, flatActionStore, stagedActionID, changedActionID, hoveredActionID, stagedAction } from '../../stores/dataStore';
   import ActionItem from './ActionItem.svelte';
   import { scale, fade, fly } from 'svelte/transition';
   import { deepCopy } from '../../utils/utils';
@@ -114,7 +114,7 @@
     // console.log("clicking on item", event.target);
     event.stopPropagation();
     const target = event.target as Element;
-    if(target && target.classList.contains('drag-handle') || target.classList.contains('action-item-outer') || target.classList.contains('along-path') || target.classList.contains('along-path-widget') || target.classList.contains('brush-name-and-preview-widget') || target.classList.contains('tool-name') || target.classList.contains('action-item-inner') || target.classList.contains('alpha-style') || target.classList.contains('category-img') || target === event.currentTarget) { //if not a widget, select the action
+    if(target && target.classList.contains('drag-handle') || target.classList.contains('action-item-outer') || target.classList.contains('along-path') || target.classList.contains('along-path-widget') || target.classList.contains('brush-name-and-preview-widget') || target.classList.contains('tool-name') || target.classList.contains('action-item-inner') || target.classList.contains('alpha-style') || target.classList.contains('category-img') || target.classList.contains('arrow-and-definition') || target.classList.contains('action-item-content') || target === event.currentTarget) { //if not a widget, select the action
         //   console.log("selecting");
       selectAction(actionId);
     }
@@ -277,6 +277,9 @@ function getDynamicStyle(id:string) {
   //       <!-- <ActionItem {action} {depth} /> -->
 
 }
+// paintbrush
+// <svg xmlns="http://www.w3.org/2000/svg" height="1.1em" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M339.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L568.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S517.7-4.4 499.1 9.6L262.4 187.2c-24 18-38.2 46.1-38.4 76.1L339.3 367.1zm-19.6 25.4l-116-104.4C143.9 290.3 96 339.6 96 400c0 3.9 .2 7.8 .6 11.6C98.4 429.1 86.4 448 68.8 448H64c-17.7 0-32 14.3-32 32s14.3 32 32 32H208c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg>
+
 
 </script>
 
@@ -301,9 +304,16 @@ function getDynamicStyle(id:string) {
       in:scale={{ duration: $stagedActionID === action.uuid? 1000 : 500, start: 0.25, opacity: 1 }}
       id={`${action.uuid}`}
     >
-      <span class="drag-handle" on:dblclick={e => handleDoubleClick(e, action.uuid)}></span>
       {#if $stagedActionID !== action.uuid}
+      <span class="drag-handle" on:dblclick={e => handleDoubleClick(e, action.uuid)}></span>
         <span class="action-item-content" class:no-angle-widget={!('angle' in action.params)}><ActionItem {action} {depth} /></span>
+      {:else}
+      {#key $stagedAction.params.lastChanged}
+        <div class="staged-item" out:fly={{ y: 100, duration: 100, delay: 0 }} in:scale={{ duration: 400, delay: 400 }}></div>
+      {/key}
+        <!-- &#8674;&#8674;&#8674;&#8674;&#8674; -->
+      
+      
       {/if}
       <!-- _ _{action.uuid.substr(0, 6)} -->
     </li>
@@ -380,24 +390,49 @@ function getDynamicStyle(id:string) {
 
   .staged {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
+    justify-content: flex-start;
     box-sizing: border-box; /* Include padding and border in element's width and height */
-    border: 1px solid #aaaaaa;
     border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+    /* border: 1px solid #aaaaaa; */
+    /*
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);  */
     /* box-shadow: rgba(17, 17, 26, 0.1) 0px 1px 0px, rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 48px; */
     /* border: none; */
-    color: #2c2c2c;
-    opacity: 1;
-    font-style: normal;
+    /* color: #2c2c2c
+    opacity: 1; */
+    /* font-style: normal;
     z-index: 0;
-    margin: 0.5em 5px 0.5em 0;
-    padding: 0 1em;
+    margin: 0.5em 5px 0.5em 0; */
+    
+    /* padding: 0 1em; */
     /* indent a little extra for paintbrush which is larger than index */
-    padding-left: 2.5em;
-    background-color: #f3f3f3;
+    /* padding-left: 2.5em; */
+    /* background-color: #f3f3f3; */
     z-index: 1;
-    display: none;
+    /* display: none; */
+  }
+
+  .staged svg {
+    /* fill: white; */
+  }
+
+  .staged-item {
+    /* border: none; */
+    position: relative;
+    background-color: transparent;
+    border: 2px dashed rgb(139, 139, 139);
+    /* outline: 2px solid white; */
+    border-radius: 5px;
+    height: 0.8em;
+    width: 60px;
+    margin: 0.3em 1em;
+    box-shadow: none;
+    left: 0;
+    /* color: rgb(139, 139, 139);
+    font-style: normal;
+    font-size: 2em; */
   }
 
 
@@ -499,6 +534,7 @@ function getDynamicStyle(id:string) {
     counter-increment: none;
     content: '';
     background-color: transparent;
+    margin: 0;
   }
 
   .pin {
@@ -519,7 +555,7 @@ function getDynamicStyle(id:string) {
   .hidden {
     /* display: none; */
     /* transform: scale(0.5); */
-    opacity: 0.4;
+    opacity: 0.3;
   }
 
   .scale-from-left {
