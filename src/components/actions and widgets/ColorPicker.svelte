@@ -15,62 +15,156 @@
 
   export let showSavedColors = true;
 
-  let modes = ["paint", "RGB"];
-  let activeMode = "RGB";
+  let modes = ["paint", "RGB", "HSL"];
+  let activeMode = "HSL";
 
-  let c = tinycolor(value).toRgb();
-  let red = c.r;
-  let green = c.g;
-  let blue = c.b;
-  let alpha = c.a;
+  // initial color values
+  let red = tinycolor(value).toRgb().r;
+  let green = tinycolor(value).toRgb().g;
+  let blue = tinycolor(value).toRgb().b;
+  let alpha = tinycolor(value).toRgb().a;
 
-  $: color = tinycolor({ r: red, g: green, b: blue, a: alpha });
-  $: value = rgbaString;
+  let hue = tinycolor(value).toHsv().h;
+  let saturationPercentage = tinycolor(value).toHsv().s*100;
+  let lightnessPercentage = tinycolor(value).toHsl().l*100;
 
-  $: rgbaString = color.toRgbString();
-  $: rgbString = tinycolor(rgbaString).setAlpha(1).toRgbString();
+  // update when values bound to sliders change
+  // $: rgbcolor = tinycolor({ r: red, g: green, b: blue, a: alpha });
+  // $: hsvcolor = tinycolor({ h: hue, s: saturationPercentage/100, v: lightnessPercentage/100, a: alpha });
+  // $: value = rgbaString;
+
+  // $: rgbaString = color.toRgbString();
+  // $: rgbString = tinycolor(rgbaString).setAlpha(1).toRgbString();
+
+  // RGB Gradients
   $: gradientRed = `linear-gradient(to right, rgba(0, ${green}, ${blue}, 1), rgba(255, ${green}, ${blue}, 1))`;
   $: gradientGreen = `linear-gradient(to right, rgba(${red}, 0, ${blue}, 1), rgba(${red}, 255, ${blue}, 1))`;
   $: gradientBlue = `linear-gradient(to right, rgba(${red}, ${green}, 0, 1), rgba(${red}, ${green}, 255, 1))`;
+
   $: gradientAlpha = `linear-gradient(to right, rgba(${red}, ${green}, ${blue}, 0), rgba(${red}, ${green}, ${blue}, 1))`;
+
+  // HSB Gradients
+  $: gradientHue = 'linear-gradient(to right, red, yellow, lime, cyan, blue, magenta, red)';
+  $: gradientSaturation = `linear-gradient(to right, hsl(${hue}, 0%, ${Math.round(lightnessPercentage)}%), hsl(${hue}, 100%, ${Math.round(lightnessPercentage)}%))`;
+  $: gradientLightness = `linear-gradient(to right, hsl(${hue}, ${Math.round(saturationPercentage)}%, 0%), hsl(${hue}, ${Math.round(saturationPercentage)}%, 50%), hsl(${hue}, ${Math.round(saturationPercentage)}%, 100%))`;
+
+  // $: console.log(`Hue: ${hue}, Saturation: ${saturationPercentage}%, Lightness: ${lightnessPercentage}%`);
 
   $: alphaPercentage = Math.round(alpha * 100);
 
-  function updateAlphaFromPercentage(event) {
-    alpha = event.target.value / 100;
-    updateColor();
+  // $: saturationPercentage = Math.round(saturation * 100);
+  // $: lightnessPercentage = Math.round(lightness * 100);
+
+  function updateAlphaFromPercentage(event: Event) {
+    if(!event || !event.target) return;
+    let target = event.target as HTMLInputElement;
+    alpha = +target.value / 100;
+    if(activeMode == 'RGB') {
+      dispatchRGB();
+    } else {
+      dispatchHSL();
+    }
   }
 
+  // update sliders when new color comes in
   function updateColorComponents(newColor: tinycolor.Instance) {
-    c = newColor.toRgb();
-    red = c.r;
-    green = c.g;
-    blue = c.b;
-    alpha = c.a;
+    // console.log("incoming string color", newColor);
+    updateRGBComponents(newColor);
+    if(activeMode === 'HSL') {
+      updateHSLComponents(newColor);
+    }
+    // console.log("updating sliders with incoming value", hue, saturationPercentage, lightnessPercentage);
+  }
+
+  function updateRGBComponents(newColor: tinycolor.Instanc) {
+      const rgb = tinycolor(newColor).toRgb();
+      red = rgb.r;
+      green = rgb.g;
+      blue = rgb.b;
+      alpha = rgb.a;
+  }
+
+  function updateHSLComponents(newColor: tinycolor.Instanc) {
+      const hsl = tinycolor(newColor).toHsl();
+      hue = Math.round(hsl.h);
+      saturationPercentage = Math.round(hsl.s * 100);
+      lightnessPercentage = Math.round(hsl.l * 100);
+      alpha = hsl.a;
+  }
+
+  // dispatch color change
+  function dispatchRGB() {
+    unlockColor();
+    let newColor = tinycolor({ r: red, g: green, b: blue, a: alpha });
+    unlockAndDispatch(newColor);
+  }
+
+  // all this wackiness because tinycolor sets hue and saturation to 0 if lightness is 0, etc. - need a different way of parsing colors back out
+  function dispatchHue() {
+    // if(lightnessPercentage < 1) {
+    //   lightnessPercentage = 1;
+    // }
+    // else if(lightnessPercentage > 99) {
+    //   lightnessPercentage = 99;
+    // }
+    // if(saturationPercentage < 1) {
+    //   saturationPercentage = 1;
+    // }
+    dispatchHSL();
+  }
+
+  function dispatchSaturation() {
+    // if(lightnessPercentage < 1) {
+    //   lightnessPercentage = 1;
+    // }
+    // else if(lightnessPercentage > 99) {
+    //   lightnessPercentage = 99;
+    // }
+    dispatchHSL();
+  }
+
+  function dispatchLightness() {
+    dispatchHSL();
+  }
+
+  function dispatchHSL() {
+
+    let newColor = tinycolor({ h: +hue, s: +saturationPercentage/100.0, l: +lightnessPercentage/100.0, a: alpha });
+    // console.log("sending out new color", hue, saturationPercentage, lightnessPercentage);
+    // unlockAndDispatch(`hsla(${hue}, ${saturationPercentage}%, ${lightnessPercentage}%, ${alpha})`);
+    unlockAndDispatch(tinycolor(newColor));
+  }
+
+  function dispatchPaint(event: CustomEvent) {
+    value = event.detail.color;
+    unlockAndDispatch(tinycolor(value));
+  }
+
+  function unlockAndDispatch(color: tinycolor.Instance) {
+    let newColor = tinycolor(color).toString();
+    unlockColor();
+    dispatch('valueChange', { value: newColor });
+  }
+
+  function unlockColor() {
+    selectedColorIndex = -1;
+    dispatch('lockChange', { lockedIndex: selectedColorIndex });
   }
 
   onMount(() => {
     updateColorComponents(tinycolor(value));
   });
 
-  function updateColor() {
-    unlockColor();
-    dispatch('valueChange', { value: color.toRgbString() });
-  }
-
-  function handleColorChange(event: CustomEvent) {
-    value = event.detail.color;
+  function handleModeChange() {
     updateColorComponents(tinycolor(value));
-    color = tinycolor({ r: red, g: green, b: blue, a: alpha });
-    updateColor();
   }
 
+  // clicked a color in the palette
   function handleColorClick(event: Event) {
     let target = event.target as HTMLElement;
-    let newColor = tinycolor(target.style.backgroundColor);
-    updateColorComponents(newColor);
-    color = tinycolor({ r: red, g: green, b: blue, a: alpha });
-    updateColor();
+    let newColor = target.style.backgroundColor;
+    unlockAndDispatch(tinycolor(newColor));
+    updateColorComponents(tinycolor(newColor));
   }
 
   function handleSavedPaletteClick(index: number) {
@@ -87,12 +181,7 @@
     }
   }
 
-  function unlockColor() {
-    selectedColorIndex = -1;
-    dispatch('lockChange', { lockedIndex: selectedColorIndex });
-  }
-
-  function setMode(mode) {
+  function setMode(mode: string) {
     activeMode = mode;
   }
 
@@ -101,14 +190,15 @@
 <div class="top-line">
   <div>
     color mixer:
-    <select bind:value={activeMode} class="mode-selector">
+    <select bind:value={activeMode} class="mode-selector"
+      on:change={handleModeChange}>
       {#each modes as mode}
         <option value={mode}>{mode}</option>
       {/each}
     </select>
   </div>
 
-  <div class="color-preview" style="background-color:{rgbaString}"></div>
+  <div class="color-preview" style="background-color:{value}"></div>
 </div>
 
 <!-- switch based on mode -->
@@ -117,62 +207,98 @@
   <div class="sliders">
     <div class="slider">
       <label class="color-label" for="red" style="color:red">Red</label>
-      <input class="color-label" type="number" min="0" max="255" bind:value={red} on:input={updateColor} style="color:red">
-      <input class="color-label" type="range" id="red" min="0" max="255" bind:value={red} on:input={updateColor} style="--slider-gradient: {gradientRed};">
+      <input class="color-label" type="number" min="0" max="255" bind:value={red} on:input={dispatchRGB} style="color:red">
+      <input class="color-label" type="range" id="red" min="0" max="255" bind:value={red} on:input={dispatchRGB} style="--slider-gradient: {gradientRed};">
     </div>
     <div class="slider">
       <label for="green" style="color:green">Green</label>
-      <input type="number" min="0" max="255" bind:value={green} on:input={updateColor} style="color:green">
-      <input type="range" id="green" min="0" max="255" bind:value={green} on:input={updateColor} style="--slider-gradient: {gradientGreen};">
+      <input type="number" min="0" max="255" bind:value={green} on:input={dispatchRGB} style="color:green">
+      <input type="range" id="green" min="0" max="255" bind:value={green} on:input={dispatchRGB} style="--slider-gradient: {gradientGreen};">
       
     </div>
     <div class="slider">
       <label for="blue" style="color:blue">Blue</label>
-      <input type="number" min="0" max="255" bind:value={blue} on:input={updateColor} style="color:blue">
-      <input type="range" id="blue" min="0" max="255" bind:value={blue} on:input={updateColor} style="--slider-gradient: {gradientBlue};">
+      <input type="number" min="0" max="255" bind:value={blue} on:input={dispatchRGB} style="color:blue">
+      <input type="range" id="blue" min="0" max="255" bind:value={blue} on:input={dispatchRGB} style="--slider-gradient: {gradientBlue};">
     </div>
 
     
-    <div class="slider">
+  <div class="slider">
       <label for="opacity" style="color:black">Opacity</label>
       <input type="number" min="0" max="100" step="1" bind:value={alphaPercentage} on:input={updateAlphaFromPercentage}>%
       <input type="range" id="opacity" min="0" max="100" step="1" bind:value={alphaPercentage} on:input={updateAlphaFromPercentage} style="--slider-gradient: {gradientAlpha};">
     </div>
   </div>
-  
-    <div id="palette">
-      {#each pickerPalette as color, index}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <div class="color-item"
-        on:click={handleColorClick}
-        style="background-color: {color};">
+
+    {:else if activeMode === 'HSL'}
+      <div class="sliders">
+        <div class="slider">
+          <!-- <label class="color-label" for="hue" style="color:hsl({hue}, 100%, 50%)">Hue</label> -->
+          <input class="color-label" type="number" min="0" max="360" step="1" bind:value={hue} on:input={dispatchHSL} style="color:hsl(${hue}, 100%, 50%)">
+          <input type="range" id="hue" min="0" max="360" step="1" bind:value={hue} on:input={dispatchHue} style="--slider-gradient: {gradientHue};">
         </div>
-      {/each}
-    </div>
-  
-  
-  <!-- {#if $showSavedColors || selectedColorIndex !== -1} -->
-  {#if showSavedColors}
-    <div id="saved-palette">
-      {#each $activePalette as color, index}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <div class="color-item saved-color {(selectedColorIndex === index) ? 'selected' : ''}"
-        on:click={e => handleSavedPaletteClick(index)}
-        style="--actual-color: {color};">
-          <span class="color-label"><SavedColorLabel id={index} color={color} /></span>
+        <div class="slider">
+          <!-- <label for="saturation" style="color:hsl({hue}, 50%, 50%)">Saturation</label> -->
+          <input type="number" min="0" max="100" step="1" bind:value={saturationPercentage} on:input={dispatchHSL} style="color:hsl(${hue}, 50%, 50%)">
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <span class="color-blob left" on:click={() => { saturationPercentage = 0; }} style="background-color:gray"></span>
+          <input type="range" id="saturation" min="0" max="100" step="1" bind:value={saturationPercentage} on:input={dispatchSaturation} style="--slider-gradient: {gradientSaturation};">
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <span class="color-blob right" on:click={() => { saturationPercentage = 100; }} style="background-color:hsl({Math.round(hue)}, 100%, {Math.round(lightnessPercentage)}%);"></span>
         </div>
-      {/each}
-    </div>
+        <div class="slider">
+          <!-- <label for="lightness" style="color:hsl(${Math.round(hue)}, ${saturation*100}%, 50%)">Lightness</label> -->
+          <input type="number" min="0" max="100" step="1" bind:value={lightnessPercentage} on:input={dispatchHSL} style="color:hsl(${hue}, ${Math.round(saturationPercentage)}%, 50%)">
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <span class="color-blob left" on:click={() => { lightnessPercentage = 0; }} style="background-color:black"></span>
+          <input type="range" id="lightness" min="0" max="100" step="1" bind:value={lightnessPercentage} on:input={dispatchLightness} style="--slider-gradient: {gradientLightness};">
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <span class="color-blob right" on:click={() => { lightnessPercentage = 100; }} style="background-color:white; border: 1px solid lightgray; box-sizing: border-box;"></span>
+        </div>
+
+
+        <div class="slider">
+          <label for="opacity" style="color:black">Opacity</label>
+          <input type="number" min="0" max="100" step="1" bind:value={alphaPercentage} on:input={updateAlphaFromPercentage}>%
+          <input type="range" id="opacity" min="0" max="100" step="1" bind:value={alphaPercentage} on:input={updateAlphaFromPercentage} style="--slider-gradient: {gradientAlpha};">
+        </div>
+      </div>
+    
+    {:else if activeMode === 'paint'}
+      <PaintColorMixer initialColor={value} on:save={dispatchPaint}/>
+    {/if}
+  
+  
+    {#if activeMode !== 'paint'}
+      <div id="palette">
+        {#each pickerPalette as color, index}
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <!-- svelte-ignore a11y-no-static-element-interactions -->
+          <div class="color-item"
+          on:click={handleColorClick}
+          style="background-color: {color}; border: {tinycolor(color).getLuminance() > 0.9 ? '3px solid lightgray' : 'none'};">
+          </div>
+        {/each}
+      </div>
+    
+    <!-- {#if $showSavedColors || selectedColorIndex !== -1} -->
+    {#if showSavedColors}
+      <div id="saved-palette">
+        {#each $activePalette as color, index}
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <!-- svelte-ignore a11y-no-static-element-interactions -->
+          <div class="color-item saved-color {(selectedColorIndex === index) ? 'selected' : ''}"
+          on:click={e => handleSavedPaletteClick(index)}
+          style="--actual-color: {color}; border: {tinycolor(color).getLuminance() > 0.9 ? '3px solid lightgray' : 'none'};">
+            <span class="color-label"><SavedColorLabel id={index} color={color} /></span>
+          </div>
+        {/each}
+      </div>
+    {/if}
   {/if}
 
-  {:else if activeMode === 'HSV'}
-  <div>HSV mode</div>
-  {:else if activeMode === 'paint'}
-    <PaintColorMixer initialColor={value} on:save={handleColorChange}/>
-  {/if}
 </div>
+
 
 
 
@@ -203,6 +329,19 @@
     display: flex;
     flex-direction: row;
     align-items: center;
+  }
+
+  .color-blob {
+    width: 18px;
+    height: 18px;
+  }
+
+  .color-blob.left {
+    border-radius: 5px 0 0 5px;
+  }
+
+  .color-blob.right {
+    border-radius: 0 5px 5px 0;
   }
 
   #palette, #saved-palette {
@@ -281,6 +420,10 @@
 
   #opacity {
     width: 100%;
+  }
+
+  #hue {
+    width: 240px;
   }
 
   .top-line {
