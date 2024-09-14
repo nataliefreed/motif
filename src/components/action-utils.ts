@@ -1,7 +1,7 @@
 import type { Action, Effect, ActionStore } from '../types/types';
 import { v4 as uuidv4 } from 'uuid';
 import { actionRootID, activeIDs, actionStore, myTools, toolStore, selectedActionID, selectedEffect, changedActionID, flatActionStore, actionRoot, stagedAction, stagedActionID, shouldRandomizeColor, playheadID, hoveredActionID, renderRequested, isPlaying, renderDelay, currentlyRenderingActionID, playSpeed, firstPlay } from '../stores/dataStore'
-import { currentColor, currentIndexedColor, randomColorFromPalette } from '../stores/colorStore';
+import { currentColor, currentIndexedColor, randomColorFromPalette, activePalette, replaceActivePalette } from '../stores/colorStore';
 import { saveToHistory } from '../stores/history';
 import { get } from 'svelte/store';
 import { deepCopy, merge, randomWithinRange, arrayToKeyedObj } from '../utils/utils';
@@ -366,6 +366,7 @@ replaceWithCopy(id: string) {
     this.#modifyActionStore(null, (store) => {
       Object.assign(store, undoState.actionStore);
     });
+    replaceActivePalette(undoState.colorPalette);
     stagedActionID.set(undoState.stagedActionID);
   }
 
@@ -376,11 +377,36 @@ replaceWithCopy(id: string) {
     this.#modifyActionStore(null, (store: ActionStore) => {
       Object.assign(store, redoState.actionStore);
     });
+    replaceActivePalette(redoState.colorPalette);
   }
 
   refresh() {
     // update store to trigger re-render
     this.#modifyActionStore(null, (store) => store);
+  }
+
+  clearAllFrom(id:string) {
+    if(!id) return;
+    this.#modifyActionStore(id, (store) => {
+
+      // Collect all IDs to delete (the action itself and its descendants)
+      let idsToDelete = getDescendantIDs(store, id);
+      // Take the action itself out of the list
+      idsToDelete = idsToDelete.filter(actionId => actionId !== id);
+      // Take out the staged action
+      idsToDelete = idsToDelete.filter(actionId => actionId !== get(stagedActionID));
+
+      // Remove all references to these IDs in other actions' children arrays
+      for (let actionId in store) {
+        const action = store[actionId];
+        if (action.params.children) {
+          action.params.children = action.params.children.filter(childId => !idsToDelete.includes(childId));
+        }
+      }
+
+      // Delete the actions themselves
+      idsToDelete.forEach(actionId => delete store[actionId]);
+    });
   }
 
   // Pass in a function to change the store
@@ -647,8 +673,14 @@ export function removeSelectedAction() {
   // if deleted, select new selection
 }
 
-// gradually clear actions from bottom to top
 export function clearAllActions() {
+  saveToHistory("clear all actions start");
+  actionManager.clearAllFrom(get(actionRootID));
+  saveToHistory("clear all actions end");
+}
+
+// gradually clear actions from bottom to top
+export function clearAllActionsGradually() {
   saveToHistory("clear all actions start");
 
   let actions = getActionsInRunOrder(); //IDs
@@ -779,7 +811,9 @@ export function copyStagedActionToActionStore() {
 
   // saveToHistory("add action from staged action start");
 
+  // add to action store without assigning to parent
   actionManager.append(newActions);
+  // insert ID of an action into parent's children array before specified sibling
   actionManager.insertBefore(newActionRoot, stagedID);
   selectAction(newActionRoot);
 
@@ -791,7 +825,7 @@ export function copyStagedActionToActionStore() {
 
   actionManager.updateParams(stagedID, { lastChanged: Date.now() });
 
-  moveStagedActionToEnd();
+  // moveStagedActionToEnd();
 }
 
 //move staged action ID back to end of list
@@ -839,17 +873,24 @@ export function updateStagedActionColor(color:string, index: number = -1) {
 
   // console.log("updating staged action color", color, index);
 
+  const activePaletteLength = get(activePalette).length;
   if('color' in params) {
     updateStagedAction({ color: color, lockedIndex: index});
   }
-  else if('children' in params) {
+  else if('children' in params) { //if it's an along path action without a parent color
     let children = params.children;
     for(let childID of children) {
       let child = get(flatActionStore)[childID];
       if('color' in child.params) {
         actionManager.updateParams(childID, { color: color, lockedIndex: index});
-        // make color a little different for the next child
-        color = tinycolor(color).darken(30).toHexString();
+        if(index >= 0 && index < activePaletteLength) {
+          //increment index
+          index = (index + 1) % activePaletteLength;
+        }
+        else {
+          // make color a little different for the next child
+          color = tinycolor(color).darken(10).toHexString();
+        }
       }
     }
   }
@@ -1002,7 +1043,7 @@ function createGroupAction(children: string[]) {
   let action: Action = {
     uuid: uuidv4(),
     name: 'do each',
-    type: 'list',
+    type: 'list' as const,
     category: 'control',
     effect: 'do each',
     params: {
@@ -1138,11 +1179,20 @@ function explode(action: Action) {
 
 export function isChildOfAlongPath(id:string) {
   let parent = Object.values(get(flatActionStore))
-                     .find(action => action.type === 'list' && action.params.children && action.params.children.includes(id));
-  if(parent && parent.effect === 'along path') {
+                     .find(action => action.type === 'list' && action.effect === 'along path' && action.params.children && action.params.children.includes(id));
+  if(parent) {
     return true;
   }
   return false;
+}
+
+export function isChildOfDoEach(id:string) {
+  let parent = Object.values(get(flatActionStore))
+                    .find(action => action.type === 'list' && action.effect === 'do each' && action.params.children && action.params.children.includes(id));
+  if(parent) {
+    return true;
+  }
+  return false
 }
 
 
@@ -1150,7 +1200,7 @@ function createAlongPathAction(children: string[], path: number[][], angle: numb
   let action: Action = {
     uuid: uuidv4(),
     name: 'along path',
-    type: 'list',
+    type: 'list' as const,
     category: 'control',
     effect: 'along path',
     params: {
@@ -1278,10 +1328,12 @@ function getOrigin(action: Action): { x: number; y: number } | null {
   switch(action.effect) {
     case 'along path':
       // console.log("along path, getting origin", action.params.path[0]);
-      return { 
-        x: action.params.path[0][0],
-        y: action.params.path[0][1] 
-      };
+      if(action.params.path.length > 0 && action.params.path[0].length > 1) {
+        return { 
+          x: action.params.path[0][0],
+          y: action.params.path[0][1] 
+        };
+      }
     // iterate over children, call get origin param on each child until something returned
     case 'do each':
       let children = action.params.children;
