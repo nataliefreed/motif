@@ -2,6 +2,7 @@ import { writable, get } from 'svelte/store';
 import type { Action, ActionStore } from '../types/types';
 import { flatActionStore, stagedActionID } from '../stores/dataStore';
 import { deepCopy } from '../utils/utils';
+import { activePalette } from '../stores/colorStore';
 
 import deepEqual from 'deep-equal';
 
@@ -9,6 +10,7 @@ type Storable = {
   note: string;
   actionStore: ActionStore;
   stagedActionID: string; // uuid
+  colorPalette: string[];
 };
 
 // Initialize the history store
@@ -125,7 +127,12 @@ function differentOtherThanStagedAction(oldState: Storable, newState: Storable):
   let oldWithoutStaged = Object.values(oldState.actionStore).filter(action => action.uuid !== oldState.stagedActionID);
   let newWithoutStaged = Object.values(newState.actionStore).filter(action => action.uuid !== newState.stagedActionID);
 
-  return !deepEqual(oldWithoutStaged, newWithoutStaged);
+  const actionsChanged = !deepEqual(oldWithoutStaged, newWithoutStaged);
+  const colorPaletteChanged = !deepEqual(oldState.colorPalette, newState.colorPalette);
+
+  return (actionsChanged || colorPaletteChanged);
+
+  // return { "actionsChanged": actionsChanged, "colorPaletteChanged": colorPaletteChanged};
 }
 
 export function saveToHistory(note: string) {
@@ -140,6 +147,7 @@ function copyCurrentState(note:string): Storable {
   return deepCopy({
     note: note,
     actionStore: get(flatActionStore),
-    stagedActionID: get(stagedActionID)
+    stagedActionID: get(stagedActionID),
+    colorPalette: get(activePalette),
   });
 }

@@ -4,7 +4,7 @@ import spectral from 'spectral.js';
 import tinyColor from 'tinycolor2';
 import { curatedRandomHexColor } from '../utils/color-utils';
 
-interface Palette {
+export interface Palette {
   [name: string]: string[];
 }
 
@@ -79,6 +79,13 @@ export function updateColorInPalette(index: number, color: string, paletteName: 
     // console.log('original color', store[paletteName][index]);
     // console.log('updateColorInPalette', index, color, paletteName);
     store[paletteName][index] = color;
+    return store;
+  });
+}
+
+export function replaceActivePalette(newPalette: string[]) {
+  palettes.update(store => {
+    store[get(activePaletteName)] = [...newPalette];
     return store;
   });
 }
