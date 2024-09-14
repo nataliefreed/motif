@@ -67,7 +67,7 @@
 
     // if(target.nodeName !== 'BUTTON'
     //   && target.nodeName !== 'INPUT'
-    //   && target.nodeName !== 'CANVAS') {
+    //   && target.nodeName !== 'CANVAS') {f
     //     saveToHistory("outside click");
     // }
 
@@ -142,10 +142,29 @@
 
   let drawingArea;
 
+  let mouseOverCanvas = false;
+  function handleMouseEnterCanvas() {
+    deselect();
+    mouseOverCanvas = true;
+  }
+
+  function handleMouseLeaveCanvas() {
+    mouseOverCanvas = false;
+  }
+
+  // <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 576 512" style="fill: {mouseOverCanvas? 'black':'gray'}"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M339.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L568.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S517.7-4.4 499.1 9.6L262.4 187.2c-24 18-38.2 46.1-38.4 76.1L339.3 367.1zm-19.6 25.4l-116-104.4C143.9 290.3 96 339.6 96 400c0 3.9 .2 7.8 .6 11.6C98.4 429.1 86.4 448 68.8 448H64c-17.7 0-32 14.3-32 32s14.3 32 32 32H208c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg>
+
+
 
       // <button class="instabutton" title="save" id="exportButton" on:click={exportCodeWithImage}>save <svg xmlns="http://www.w3.org/2000/svg" height="20" width="16" viewBox="0 0 384 512" style="vertical-align: middle; transform: translateY(-2px);"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M64 0C28.7 0 0 28.7 0 64V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V160H256c-17.7 0-32-14.3-32-32V0H64zM256 0V128H384L256 0zM216 232V334.1l31-31c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-72 72c-9.4 9.4-24.6 9.4-33.9 0l-72-72c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l31 31V232c0-13.3 10.7-24 24-24s24 10.7 24 24z"/></svg></button>
       //   <button class="instabutton" title="open" id="importButton" on:click={importCodeFromImage}>open <svg xmlns="http://www.w3.org/2000/svg" height="20" width="16" viewBox="0 0 384 512" style="vertical-align: middle; transform: translateY(-2px);"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M64 0C28.7 0 0 28.7 0 64V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V160H256c-17.7 0-32-14.3-32-32V0H64zM256 0V128H384L256 0zM216 408c0 13.3-10.7 24-24 24s-24-10.7-24-24V305.9l-31 31c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l72-72c9.4-9.4 24.6-9.4 33.9 0l72 72c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0l-31-31V408z"/></svg></button>
         
+// move drawing cursor around
+// style="transform: translateX({$mousePos.x/100}px"
+// <!-- style="transform: translateX({blinkPos}px)" -->
+
+// let blinkPos = 0;
+//   $: if($mousePos) blinkPos = (blinkPos + 0.5) % 5;
 
 </script>
 
@@ -220,7 +239,9 @@
     </div> <!-- left-toolbar -->
 
       <div class="drawing-area-container">
-        <div class="drawing-area" bind:this={drawingArea}>
+        <div class="drawing-area" bind:this={drawingArea}
+            on:mouseenter={handleMouseEnterCanvas}
+            on:mouseleave={handleMouseLeaveCanvas}>
             {#if $drawingLocked}
               <Tooltip element={drawingArea} settings={{trigger:'mouseenter', offset: [0, -200], hideOnClick:false}}>
                 <!-- {#if $drawingLocked}
@@ -238,7 +259,7 @@
 
     <div class="main-right">
       <div id="main-list">
-          <ActionItem action={$actionRoot} depth={0}/>
+          <ActionItem action={$actionRoot} isOpen={true} depth={0}/>
         
       </div> <!-- main-list -->
     </div>  <!-- main-right -->
@@ -280,7 +301,7 @@
               >
               <span class="slider round"></span>
             </label>
-            change colors
+            switch colors
           </div>
         </div>
       </div> <!-- right-sidebar -->
@@ -294,15 +315,17 @@
         {/if}
       </div>
       <div class="staged-action-wrapper">
-      <!-- <div class="effect-settings"> -->
         {#if !$drawingLocked}
           {#if $stagedAction}
-            {#key $stagedAction.params.lastChanged}
-              <div class="staged-action" in:scale={{ duration: 500, delay: 100 }}>
-                <ActionItem action={$stagedAction} />
-              </div>
-            {/key}
-            <!-- <DebugPaintStore /> -->
+              {#key $stagedAction.params.lastChanged}
+                <div class="staged-action"
+                class:selected={mouseOverCanvas}
+                in:scale={{ duration: 500, delay: 100 }}>
+                  <ActionItem isOpen={true} action={$stagedAction} />
+                </div>
+              {/key}
+              <!-- <DebugPaintStore /> -->
+              
           {/if}
         <!-- {:else}
           <div class="lock-button staged-lock" on:click={toggleLock}>{@html $drawingLocked?lockIcon:unlockIcon}</div> -->
@@ -361,10 +384,15 @@
     outline: 1px solid red;
   } */
 
+  /* * {
+    font-size: 12px;
+  } */
+
   :root {
     --sidebar-width: 50px;
     --menu-bar-width: 40px;
     --drawing-area-height: 520px;
+    --bottom-toolbar-color: rgb(170, 202, 200);
   }
 
   .background {
@@ -391,8 +419,8 @@
   }
 
   .grid-paper {
-    grid-row: 2 / span 4;
-    grid-column: 1 / span 4;
+    grid-row: 2 / span 3;
+    grid-column: 1 / span 2;
     /* max-width: 1301px; */
     /* margin-left: auto; */
     /* margin-right: auto; */
@@ -400,6 +428,7 @@
     background-image: linear-gradient(90deg, #A9D6DC 1px, transparent 1px), 
                       linear-gradient(180deg, #A9D6DC 1px, transparent 1px);
     background-size: 20px 20px;
+    height: calc(var(--drawing-area-height) + 2 * var(--menu-bar-width));
   }
 
   .container { /* the main grid container */
@@ -409,8 +438,8 @@
     /* max-height: 100vh; */
     max-width: 1300px;
     grid-template-columns: var(--sidebar-width) 2fr minmax(auto, 3fr) var(--sidebar-width);
-    grid-template-rows: 0.5fr var(--menu-bar-width) var(--drawing-area-height) 3fr auto;
-    gap: 0 5px; /* handled by media queries */
+    grid-template-rows: 0 var(--menu-bar-width) var(--drawing-area-height) var(--sidebar-width) 3fr auto;
+    /* gap: 0 5px; */
     /* grid-template-areas: 
         " . . . . "
         "header header header header"
@@ -468,6 +497,7 @@
     flex-direction: row;
     gap: 10px;
     margin: 10px;
+    margin-left: 20px;
   }
 
   .effect-buttons-in-design {
@@ -492,6 +522,7 @@
     flex-direction: column;
     position: relative;
     max-height: var(--drawing-area-height);
+    margin-right: 10px;
     /* justify-content: flex-start; */
   }
 
@@ -543,7 +574,7 @@
   }
 
   .left-toolbar-background {
-    grid-row: 2 / span 4;
+    grid-row: 2 / span 3;
     grid-column: 1;
     background-image: url('/backgrounds/56.png');
     background-size: var(--sidebar-width) auto;
@@ -555,11 +586,12 @@
     top: 0;
     left: 0; */
     opacity: 0.6;
-    margin-bottom: 2vh;
+    height: 100%;
+    /* margin-bottom: 2vh; */
   }
 
   .code-toolbar-background {
-    grid-row: 2 / span 4;
+    grid-row: 2 / span 3;
     grid-column: 4;
     background-image: url('/backgrounds/56.png');
     background-size: var(--sidebar-width) auto;
@@ -569,8 +601,9 @@
     /* position: absolute;
     top: 0;
     right: 0; */
-    opacity: 0.5;
-    margin-bottom: 2vh;
+    opacity: 0.6;
+    height: 100%;
+    /* margin-bottom: 2vh; */
   }
 
   .top-right-corner {
@@ -592,7 +625,7 @@
     flex-direction: column;
     justify-content: space-between;
     width: var(--sidebar-width);
-    height: 80%;
+    height: 100%;
     z-index: 1;
   }
 
@@ -612,9 +645,11 @@
   .code-toolbar {
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
-    gap: 1em;
-    /* gap: 3vh; */
+    justify-content: space-around;
+    align-items: center;
+    height: 100%;
+    padding-bottom: 4vh;
+        /* gap: 3vh; */
     /* height: 90%; */
     /* gap: 1.5em; */
   }
@@ -637,13 +672,12 @@
 
   .color-bank {
     width: 100%;
-    margin-top: 1em;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 1em;
-    /* margin-bottom: 3vh; */
+    justify-content: flex-end;
+    gap: 0.5em;
+    margin-bottom: 0.2em;
   }
 
   #random-color-toggle  {
@@ -696,49 +730,78 @@
   .effect-buttons-bottom-background {
     grid-row: 4;
     grid-column: 1 / span 4;
-    height: var(--sidebar-width);
-    background-color:rgba(146, 190 , 186, 0.5);
+    height: calc(var(--sidebar-width));
+    background-color: var(--bottom-toolbar-color);
   }
 
   .staged-action-wrapper {
     /* border: 1px solid blue; */
-    grid-row: 4;
+    position: relative;
+    grid-row: 3 / span 3;
     grid-column: 3;
     display: flex;
     flex-direction: row;
     align-items: flex-start;
+    justify-content: flex-start;
     overflow-y: auto;
-    padding: 0 1em;
+    max-height: 300px;
+    padding: 0 1em 0 1em;
+    margin-top: calc(var(--drawing-area-height) - 10px);
+    /* background-color:rgba(146, 190 , 186, 0.7); */
+    /* border: 1px solid black; */
+    /* background-image: url('/backgrounds/117.png');
+    background-size: 110% 110%; */
+    /* background-color: rgba(255, 255, 255, 0.7); */
+    /* border-radius: 10px; */
+    /* margin-top: -100px; */
+  }
+
+  .staged-action-wrapper svg {
+    /* fill: rgba(255, 255, 255, 1); */
+    fill: black;
+    height: calc(var(--sidebar-width)*0.4);
+    margin: 1em 0.7em 0.8em 0.5em;
+    transition: transform 0.1s ease;
   }
 
   .staged-action {
     position: relative;
-    top: 8px;
+    top: 10px;
     left: 0;
     /* width: 100%; */
     z-index: 1;
     box-sizing: border-box;
-    background-color: #ffffff9b;
-    border: 1px solid lightgray;
-    border-radius: 5px 15px 15px 5px;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    /* background-color: #ffffff9b; */
+    background-color: white;
+    outline: 3px dashed rgb(139, 139, 139);
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1), /* double outline */
+      0 0 0 10px var(--bottom-toolbar-color);
+    
     padding: 0.1em 0.2em 0.1em 0em;
+    /* width: 100%; */
     /* margin-bottom: 2px; */
+  }
+
+  .staged-action.selected {
+    outline: 4px dashed rgb(24, 24, 24);
+    background-color: white;
+    /* box-shadow: none; */
   }
 
   .staged-action-background {
     /* border: 1px solid blue; */
     grid-row: 4 / span 2;
-    grid-column: 3 / span 2;
+    grid-column: 3 / span 3;
     background-image: url('/backgrounds/117.png');
     background-size: 100% 110%;
     background-repeat: no-repeat;
-    margin: 0 calc(var(--sidebar-width) / 2) 0 0;
+    /* margin: 0 calc(var(--sidebar-width) / 2) 0 0; */
     opacity: 0.7;
     margin-top: -3vh;
     margin-left: -1vw;
     margin-bottom: 1vh;
+    visibility: hidden;
   }
 
   .effect-settings {
@@ -844,7 +907,7 @@
     cursor: pointer;
     border: none;
     font-family: 'Fandango';
-    font-size: 1.1rem;
+    font-size: 0.9rem;
     /* height: 100%; */
     color: black;
     border-radius: 50% 50%;
@@ -860,8 +923,8 @@
 
   .toggle-with-label {
     font-family: 'Fandango';
-    font-size: 1.1rem;
-    line-height: 1rem;
+    font-size: 0.9rem;
+    line-height: 0.8rem;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -968,31 +1031,79 @@
     }
   }
 
-  /* taller than 680px */
-  @media (min-height: 681px) {
+  /* taller than 700px */
+  @media (min-height: 701px) {
     .container {
         row-gap: 20px;
+        grid-template-rows: 0.5fr var(--menu-bar-width) var(--drawing-area-height) var(--sidebar-width) 3fr auto;
+        font-size: var(--base-font-size);
+    }
+
+    .staged-action-wrapper {
+      margin-top: calc((var(--drawing-area-height, 0) + 10px));
+    }
+
+    #main-list {
+      max-height: calc(var(--drawing-area-height) + 10px);
     }
 
     .staged-action {
       /* margin: 0.5em auto; */
       /* font-size: 1.3rem; */
+      
+    }
+
+    .code-toolbar {
+      gap: 1em;
+    }
+
+    .color-bank {
+      font-size: 1em;
+      gap: 1em;
+    }
+
+    .selected-action-button {
+      font-size: 1rem;
+    }
+
+    .toggle-with-label {
+      font-size: 1.1em;
+      line-height: 1em;
     }
   }
 
-    /* wider than 680px */
+    /* wider than 1100px */
   @media (min-width: 1101px) {
     .container {
-        column-gap: 10px;
+        /* column-gap: 10px; */
     }
 
     .drawing-area-container {
       margin-left: 20px;
+      padding-right: 11px;
     }
 
     #main-list {
       margin-left: 1vw;
     }
+
+    /* shorter than 600 px */
+    @media (max-height: 600px) {
+      .staged-action-wrapper {
+        grid-row: 3 / span 3;
+        margin-top: calc(var(--drawing-area-height) - 100px);
+        background-color: var(--bottom-toolbar-color);
+        border-radius: 10px;
+        padding: 0 0.7em;
+      }
+
+      #main-list {
+        max-height: calc(var(--drawing-area-height) - 100px);
+      }
+
+
+    }
+
   }
 
 

@@ -26,7 +26,7 @@
 </script>
 
 {#if name === 'bounce'}
-  Bounce from <CoordinateWidget id="start" value={params.start} on:valueChange={handleValueChange}/>
+  bounce from <CoordinateWidget id="start" value={params.start} on:valueChange={handleValueChange}/>
   to <CoordinateWidget id="end" value={params.end} on:valueChange={handleValueChange}/> for time
   <NumberWidget id="progress" value={params.progress} min={0} max={600} on:valueChange={handleValueChange}/>
 {/if}

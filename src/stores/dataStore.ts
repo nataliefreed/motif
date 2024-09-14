@@ -124,7 +124,7 @@ function getFlatActionStore() {
       type: 'list' as const,
       category: 'control',
       params: {
-        title: 'My Design',
+        title: 'How To Make My Design',
         // children: ['uuid_2', 'uuid_3', 'uuid_5', 'uuid_8', 'uuid_10']
         children: ['uuid_2']
       },
