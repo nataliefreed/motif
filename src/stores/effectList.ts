@@ -275,7 +275,7 @@ export const effectList = [
   {
     name: 'along path',
     textLabel: 'Line Brush',
-    category: 'lines',
+    category: 'brushes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
     thumbnail: 'solid_brush.png',
@@ -328,7 +328,7 @@ export const effectList = [
         category: 'control',
         effect: 'along path',
         params: {
-          title: "line brush",
+          title: "connected line",
           children: ['line'],
           path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
           angle: 0,
@@ -369,11 +369,25 @@ export const effectList = [
         effect: 'along path',
         params: {
           title: "my pattern",
-          children: ['light_blue_dot', 'dark_blue_dot'],
+          children: ['circle_and_dot', 'triangle'],
           color: '#80babd',
           path: [[10, 50]],
           angle: 0,
           pathSpacing: 10
+        }
+      },
+      'circle_and_dot': {
+        uuid: 'uuid_parent',
+        name: 'do each',
+        type: 'list' as const,
+        category: 'control',
+        effect: 'do each',
+        params: {
+          title: "circle and dot",
+          children: ['light_blue_dot', 'dark_blue_dot'],
+          path: [[0, 500], [5, 5]],
+          position: {x: 0, y: 0},
+          angle: 0
         }
       },
       'light_blue_dot': {
@@ -383,10 +397,10 @@ export const effectList = [
         category: 'shapes',
         effect: 'circle',
         params: {
-          radius: 20,
+          radius: 10,
           angle: 0,
           color: '#80babd',
-          position: {x: 0, y: 0}
+          position: {x: 0, y: 500}
         }
       },
       'dark_blue_dot': {
@@ -396,11 +410,19 @@ export const effectList = [
         category: 'shapes',
         effect: 'circle',
         params: {
-          radius: 25,
+          radius: 5,
           angle: 0,
           color: '#19518a',
-          position: {x: 0, y: 0}
+          position: {x: 5, y: 490}
         }
+      },
+      'triangle': {
+        uuid: 'triangle',
+        name: 'triangle',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'triangle',
+        params: {color: 'rgb(255, 165, 0)', position: {x: 0, y: 0}, width: 20, height: 20, angle: 0}
       }
     }
   },
@@ -549,7 +571,7 @@ export const effectList = [
         category: 'shapes',
         effect: 'heart',
         params: {
-          size: 10,
+          size: 30,
           color: '#f18701',
           position: {x: 0, y: 0},
           angle: 0
@@ -562,7 +584,7 @@ export const effectList = [
         category: 'shapes',
         effect: 'heart',
         params: {
-          size: 16,
+          size: 20,
           color: '#f35b04',
           position: {x: 0, y: 0},
           angle: 0
@@ -601,7 +623,7 @@ export const effectList = [
         type: 'effect',
         category: 'shapes',
         effect: 'star',
-        params: {color: '#F72585', position: {x: 0, y: 0}, r1: 10, r2: 7, npoints: 5}
+        params: {color: '#F72585', position: {x: 0, y: 0}, r1: 10, r2: 7, npoints: 5, angle: 0}
       },
       'purple_star': {
         uuid: 'purple_star',
@@ -609,7 +631,7 @@ export const effectList = [
         type: 'effect',
         category: 'shapes',
         effect: 'star',
-        params: {color: '#7209B7', position: {x: 0, y: 0}, r1: 12, r2: 6, npoints: 7}
+        params: {color: '#7209B7', position: {x: 0, y: 0}, r1: 12, r2: 6, npoints: 7, angle: 0}
       },
       'dark_blue_star': {
         uuid: 'dark_blue_star',
@@ -617,7 +639,7 @@ export const effectList = [
         type: 'effect',
         category: 'shapes',
         effect: 'star',
-        params: {color: '#3A0CA3', position: {x: 0, y: 0}, r1: 12, r2: 5, npoints: 15}
+        params: {color: '#3A0CA3', position: {x: 0, y: 0}, r1: 12, r2: 5, npoints: 15, angle: 0}
       },
       'blue_star': {
         uuid: 'blue_star',
@@ -625,7 +647,7 @@ export const effectList = [
         type: 'effect',
         category: 'shapes',
         effect: 'star',
-        params: {color: '#4361EE', position: {x: 0, y: 0}, r1: 10, r2: 4, npoints: 4}
+        params: {color: '#4361EE', position: {x: 0, y: 0}, r1: 10, r2: 4, npoints: 4, angle: 0}
       },
       'light_blue_star': {
         uuid: 'light_blue_star',
@@ -633,7 +655,74 @@ export const effectList = [
         type: 'effect',
         category: 'shapes',
         effect: 'star',
-        params: {color: '#4CC9F0', position: {x: 0, y: 0}, r1: 11, r2: 3, npoints: 15}
+        params: {color: '#4CC9F0', position: {x: 0, y: 0}, r1: 11, r2: 3, npoints: 15, angle: 0}
+      }
+    }
+  },
+
+  {
+    name: 'along path',
+    textLabel: 'Letter Brush',
+    category: 'brushes',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'letter_brush.png',
+    mouseActionType: 'drag-path',
+    nestedActions: {
+      'uuid_parent': {
+        uuid: 'uuid_parent',
+        name: 'along path',
+        type: 'list',
+        category: 'control',
+        effect: 'along path',
+        params: {
+          title: "letter brush",
+          children: ['a', 'b', 'c', 'd', 'e'],
+          path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
+          angle: 0,
+          color: '#80babd',
+          pathSpacing: 30
+        }
+      },
+      'a': {
+        uuid: 'a',
+        name: 'text',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'text',
+        params: {text: 'a', color: '#F72585', lockedIndex: 4, position: {x: 0, y: 0}, size: 16, angle: 20}
+      },
+      'b': {
+        uuid: 'b',
+        name: 'text',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'text',
+        params: {text: 'b', color: '#F72585', lockedIndex: 5, position: {x: 0, y: 0}, size: 12, angle: 50}
+      },
+      'c': {
+        uuid: 'b',
+        name: 'text',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'text',
+        params: {text: 'c', color: '#F72585', lockedIndex: 6, position: {x: 0, y: 0}, size: 8, angle: 10}
+      },
+      'd': {
+        uuid: 'c',
+        name: 'text',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'text',
+        params: {text: 'd', color: '#F72585', lockedIndex: 7, position: {x: 0, y: 0}, size: 20, angle: -20}
+      },
+      'e': {
+        uuid: 'd',
+        name: 'text',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'text',
+        params: {text: 'e', color: '#F72585', lockedIndex: 8, position: {x: 0, y: 0}, size: 10, angle: 110}
       }
     }
   },
@@ -641,7 +730,7 @@ export const effectList = [
   {
     name: 'bounce',
     textLabel: 'Rainbow Bounce',
-    category: 'brushes',
+    category: 'lines',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
     thumbnail: 'bounce.png',
@@ -665,6 +754,74 @@ export const effectList = [
       color: '#bbaa00',
       progress: 5,
       position: [0, 0]
+    }
+  },
+
+  {
+    name: 'along path',
+    textLabel: 'Multi Stripe',
+    category: 'backgrounds',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'stripe_brush.png',
+    mouseActionType: 'drag-path',
+    nestedActions: {
+      'uuid_parent': {
+        uuid: 'uuid_parent',
+        name: 'along path',
+        type: 'list',
+        category: 'control',
+        effect: 'along path',
+        params: {
+          title: "stripe stripe stripe",
+          children: ['stripe1', 'stripe2', 'stripe3'],
+          path: [[10, 50],[30, 50],[50, 50],[70, 50],[90, 50],[110,50],[130,50],[150,50]],
+          angle: 0,
+          pathSpacing: 15
+        }
+      },
+      'stripe1': {
+        uuid: 'stripe1',
+        name: 'rectangle',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'rectangle',
+        params: {
+          height: 500,
+          width: 20,
+          color: '#f18701',
+          position: {x: 0, y: 0},
+          angle: 0
+        }
+      },
+      'stripe2': {
+        uuid: 'stripe2',
+        name: 'rectangle',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'rectangle',
+        params: {
+          height: 500,
+          width: 40,
+          color: '#f18701',
+          position: {x: 0, y: 0},
+          angle: 0
+        }
+      },
+      'stripe3': {
+        uuid: 'stripe3',
+        name: 'rectangle',
+        type: 'effect',
+        category: 'shapes',
+        effect: 'rectangle',
+        params: {
+          height: 500,
+          width: 8,
+          color: '#f18701',
+          position: {x: 0, y: 0},
+          angle: 0
+        }
+      },
     }
   },
 
@@ -791,8 +948,8 @@ export const effectList = [
     mouseActionType: 'drag',
     params: {
       tiling: 'mirror',
-      width: 250,
-      height: 500,
+      width: 200,
+      height: 200,
       position: {x: 0, y: 0}
     }
   },

@@ -21,17 +21,17 @@
 
   const dispatch = createEventDispatcher();
 
-  onMount(() => {
-    if(action && action.name === 'do each') { //expand do each by default
-        isOpen = true;
-    } 
+  // onMount(() => {
+  //   if(action && action.name === 'do each') { //expand do each by default
+  //       isOpen = true;
+  //   } 
     // else if(action && action.uuid === $stagedActionID) {
     //   isOpen = true;
     // }
     // else {
     //     isOpen = false;
     // }
-  });
+  // });
 
   // function toggle() {
   //     isOpen = !isOpen;
@@ -111,7 +111,7 @@
               <Tiling name={action.effect} params={action.params} onUpdate={handleUpdate} on:saveChange />
           {:else if action.category === 'stencils'}
               <Stencil name={action.effect} params={action.params} onUpdate={handleUpdate} on:saveChange />
-          {:else if action.category === 'brushes'}
+          {:else if action.category === 'brushes' || action.effect === 'bounce'}
               <Brush name={action.effect} params={action.params} onUpdate={handleUpdate} on:saveChange />
           {:else if action.category === 'move'}
               <Movement name={action.effect} params={action.params} onUpdate={handleUpdate} on:saveChange />

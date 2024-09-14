@@ -73,10 +73,10 @@
         </svg>
       {:else if action.name === 'rectangle'}
         {@const aspectRatio = action.params.width / action.params.height}
-        {@const rectWidth = aspectRatio >= 1 ? size : size * aspectRatio}
-        {@const rectHeight = aspectRatio >= 1 ? size / aspectRatio : size}
+        {@const rectWidth = Math.max(aspectRatio >= 1 ? size : size * aspectRatio, 4)}
+        {@const rectHeight = Math.max(aspectRatio >= 1 ? size / aspectRatio : size, 4)}
         {@const rectX = (size - rectWidth) / 2}
-        <svg width="{size}" height="{size}" xmlns="http://www.w3.org/2000/svg">
+        <svg width="{rectWidth+size/2}" height="{size}" xmlns="http://www.w3.org/2000/svg">
           <rect x="{rectX}" width="{rectWidth}" height="{rectHeight}" fill="{action.params.color}" />
         </svg>
       {:else if action.name === 'triangle'}
@@ -115,8 +115,6 @@
       {/each}
       </svg>
     {/if}
-
-
   </span>
 {/if}
 
