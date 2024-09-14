@@ -80,18 +80,25 @@
 
 <style>
   .string-widget {
-    text-decoration: underline lightgray 2px;
+    text-decoration: underline rgb(183, 183, 183) 2px;
     text-underline-offset: 5px;
+
     cursor: text;
     font-style: italic;
-    color: #0a3f0c;
+    color: #3c3c3c;
     font-family: 'FuturaHandwritten';
     /* font-family: 'fandango'; */
+  }
+
+  :global(.inactive) .string-widget {
+    color: rgba(0, 0, 0, 0.5);
+    font-style: italic;
   }
 
   .string-wrapper {
     display: flex;
     flex-direction: row;
+    font-style: italic;
   }
 </style>
 
