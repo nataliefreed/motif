@@ -424,9 +424,9 @@ function getDynamicStyle(id:string) {
     background-color: transparent;
     border: 2px dashed rgb(139, 139, 139);
     /* outline: 2px solid white; */
-    border-radius: 5px;
-    height: 0.8em;
-    width: 60px;
+    border-radius: 8px;
+    height: 1.4em;
+    width: 110px;
     margin: 0.3em 1em;
     box-shadow: none;
     left: 0;
