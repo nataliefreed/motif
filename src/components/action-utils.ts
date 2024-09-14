@@ -393,8 +393,9 @@ replaceWithCopy(id: string) {
       let idsToDelete = getDescendantIDs(store, id);
       // Take the action itself out of the list
       idsToDelete = idsToDelete.filter(actionId => actionId !== id);
-      // Take out the staged action
-      idsToDelete = idsToDelete.filter(actionId => actionId !== get(stagedActionID));
+      // Take out the staged action and its children
+      let stagedActionAndChildren = getDescendantIDs(store, get(stagedActionID));
+      idsToDelete = idsToDelete.filter(actionId => !stagedActionAndChildren.includes(actionId));
 
       // Remove all references to these IDs in other actions' children arrays
       for (let actionId in store) {
