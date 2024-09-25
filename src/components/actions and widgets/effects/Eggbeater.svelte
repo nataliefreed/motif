@@ -26,7 +26,7 @@
 {:else if name === 'shift'}
   <ChooserWidget id="orientation" options={['vertical','horizontal']} selected={params.orientation || 'vertical'} on:valueChange={handleValueChange}/>
   <span class="tool-name">shift</span> with width 
-  <NumberWidget id="stripeWidth" min={1} max={600} value={params.height || 50} on:valueChange={handleValueChange}/> 
+  <NumberWidget id="stripeWidth" min={1} max={600} value={params.stripeWidth || 50} on:valueChange={handleValueChange}/> 
   and offset 
   <NumberWidget id="offset" min={1} max={600} value={params.offset || 20} on:valueChange={handleValueChange}/>
 {:else if name === 'filter'}
