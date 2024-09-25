@@ -239,7 +239,12 @@ export const renderers = {
     let x = params.position.x;
     let y = params.position.y;
     p.textSize(params.size+4);
-    p.textFont('Arial Rounded MT Bold, Gill Sans, Verdana, sans-serif');
+    if(font) {
+      p.textFont(font);
+    } else {
+      p.textFont('sans-serif');
+    }
+    p.textAlign(p.RIGHT, p.BASELINE);
     p.push();
     p.noStroke();
     p.fill(params.color);
@@ -817,7 +822,7 @@ export const renderers = {
   };
 
 export function loadFonts(p) {
-  font = p.loadFont('/assets/Fandango.otf');
+  font = p.loadFont('/assets/arialroundedmtbold.ttf');
 }
 
 export function loadStencils(p) {
