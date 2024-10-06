@@ -103,6 +103,19 @@
         <svg width="{size}" height="{size}" xmlns="http://www.w3.org/2000/svg">
           <line x1="{0}" y1="{size/2}" x2="{size}" y2="{size/2}" stroke="{action.params.color}" stroke-width="3" />
         </svg>
+      {:else if action.name === 'text'}
+        <svg width="{size}" height="{size}" xmlns="http://www.w3.org/2000/svg">
+          <text
+            x="50%"
+            y="50%"
+            font-size="{size*0.9}"
+            fill="{action.params.color}"
+            dominant-baseline="middle"
+            text-anchor="middle"
+            font-family="'Arial Rounded MT Bold', sans-serif">
+            {action.params.text}
+          </text>
+        </svg>
       {/if}
     {:else if action.name == 'along path'}
       <svg width="{size}" height="{size}" viewBox="0 0 540 540" style="margin-right:{size/4}">
@@ -114,6 +127,8 @@
         <circle cx={point[0]} cy={point[1]} r="20" fill="black" />
       {/each}
       </svg>
+    {:else if action.name === 'do each'}
+      <span class="mini-title">{action.params.title}</span>
     {/if}
   </span>
 {/if}
@@ -124,6 +139,19 @@ svg {
   transform: translateY(2px);
   /* margin: 0 -2px; */
   cursor: pointer;
+}
+
+.mini-title {
+  display: inline-block;
+  font-size: 0.5em;
+  font-family: 'FuturaHandwritten';
+  margin-left: 0.5em;
+  margin-right: 0.5em;
+  line-height: 1em;
+  text-align: center;
+  font-style: italic;
+  max-width: 25px;
+  max-height: 1.5em;
 }
 
 </style>

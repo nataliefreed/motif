@@ -424,6 +424,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
 		};
 
     c.getStaticCanvas = () => {
+      if(!p5) return;
       if(!s) {
         s = c.createGraphics(c.width, c.height);
       }
@@ -431,6 +432,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     };
 
     c.getDragCanvas = () => {
+      if(!p5) return;
       if(!t) {
         t = c.createGraphics(c.width, c.height);
       }
@@ -438,6 +440,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     };
 
     c.getHoverCanvas = () => {
+      if(!p5) return;
       if(!h) {
         h = c.createGraphics(c.width, c.height);
       }
@@ -445,6 +448,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     };
 
     c.getThumbnailCanvas = () => {
+      if(!p5) return;
       if(!a) {
         a = c.createGraphics(thumbnailSize, thumbnailSize);
       }
@@ -452,6 +456,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     }
 
     c.getCachedCanvas = () => {
+      if(!p5) return;
       if(!cached) {
         cached = c.createGraphics(c.width, c.height);
       }
@@ -591,44 +596,48 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       let params = $stagedAction.params;
 
       // set params based on dragging
-      if('radius' in params) {
-        let radius = Math.round(Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2))) + 1;
-        updateStagedAction({ radius: radius });
-      }
-      if('r1' in params) {
-        let radius = Math.round(Math.abs(y - startY)) + 1;
-        let r2 = Math.round(radius/2);
-        updateStagedAction({ r1: radius, r2: r2 });
-      }
-      if('outer' in params) { // spiro
-        let outer = Math.round(Math.abs(y - startY)) + 30;
-        let d = Math.round(mapValue(x, 0, 500, 0, 100));
-        updateStagedAction({ outer: outer, d: d });
-      }
-      if('npoints' in params) {
-        let npoints = Math.round(Math.abs(x - startX)) + 1;
-        updateStagedAction({ npoints: npoints });
-      }
-      if('size' in params) {
-        let radius = Math.round(Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2))) + 1;
-        updateStagedAction({ size: radius*2 });
-      }
-      if('height' in params) {
-        let width = Math.abs(x - startX)*2 + 15; //not zero on first click
-        let height = Math.abs(y - startY)*2 + 15;
-        updateStagedAction({ width: width, height: height});
-      }
-      if('stripeWidth' in params) {
-        let stripeWidth = Math.round(mapValue(x, 0, 500, 20, 100));
-        updateStagedAction({ stripeWidth: stripeWidth });
-      }
-      if('angle' in params && $stagedAction.effect != "along path" && $stagedAction.effect != "heart" && $stagedAction.effect != "rectangle" && $stagedAction.effect != "triangle" && $stagedAction.effect != "text") {
-        let angle = Math.round(mapValue(y, 0, 500, 0, 360));
-        updateStagedAction({ angle: angle });
-      }
-      if('offset' in params) {
-        let offset = Math.round(mapValue(y, 0, 500, 10, 100));
-        updateStagedAction({ offset: offset });
+
+      let distance = Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2));
+      if(distance > 5) {
+        if('radius' in params) {
+          let radius = Math.round(distance);
+          updateStagedAction({ radius: radius });
+        }
+        if('r1' in params) {
+          let radius = Math.round(Math.abs(y - startY)) + 1;
+          let r2 = Math.round(radius/2);
+          updateStagedAction({ r1: radius, r2: r2 });
+        }
+        if('outer' in params) { // spiro
+          let outer = Math.round(Math.abs(y - startY)) + 30;
+          let d = Math.round(mapValue(x, 0, 500, 0, 100));
+          updateStagedAction({ outer: outer, d: d });
+        }
+        if('npoints' in params) {
+          let npoints = Math.round(Math.abs(x - startX)) + 1;
+          updateStagedAction({ npoints: npoints });
+        }
+        if('size' in params) {
+          let radius = Math.round(distance);
+          updateStagedAction({ size: radius*2 });
+        }
+        if('height' in params) {
+          let width = Math.abs(x - startX)*2 + 15; //not zero on first click
+          let height = Math.abs(y - startY)*2 + 15;
+          updateStagedAction({ width: width, height: height});
+        }
+        if('stripeWidth' in params) {
+          let stripeWidth = Math.round(mapValue(x, 0, 500, 20, 100));
+          updateStagedAction({ stripeWidth: stripeWidth });
+        }
+        if('angle' in params && $stagedAction.effect != "along path" && $stagedAction.effect != "heart" && $stagedAction.effect != "rectangle" && $stagedAction.effect != "triangle" && $stagedAction.effect != "text") {
+          let angle = Math.round(mapValue(y, 0, 500, 0, 360));
+          updateStagedAction({ angle: angle });
+        }
+        if('offset' in params) {
+          let offset = Math.round(mapValue(y, 0, 500, 10, 100));
+          updateStagedAction({ offset: offset });
+        }
       }
       if('end' in params) {
         updateStagedAction({ end: { x: x, y: y } });

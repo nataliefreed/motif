@@ -38,7 +38,7 @@
     value = value.replace(/[\.\s]{2,}/g, ' '); // Replace double spaces or periods with a single space
     value = value.replace(/[^a-zA-Z0-9 .,!?'"-]/g, ''); // Remove any characters that are not alphanumeric, spaces, or punctuation
     if (value.length < 1) {
-      value = 'what is this?';
+      value = ' ';
     }
   }
 
@@ -60,6 +60,7 @@
     "<span class="string-widget"
       bind:innerText={value}
       on:keydown={restrictInput}
+      on:input={handleChange}
       on:blur={handleChange}
       on:paste={handleChange}
       contenteditable="true"
@@ -70,6 +71,7 @@
     <span class="string-widget"
       bind:innerText={value}
       on:keydown={restrictInput}
+      on:input={handleChange}
       on:blur={handleChange}
       on:paste={handleChange}
       contenteditable="true"
