@@ -35,8 +35,8 @@
 
   function sanitizeInput() {
     // console.log('sanitizing input');
-    value = value.replace(/[\.\s]{2,}/g, ' '); // Replace double spaces or periods with a single space
-    value = value.replace(/[^a-zA-Z0-9 .,!?'"-]/g, ''); // Remove any characters that are not alphanumeric, spaces, or punctuation
+    // value = value.replace(/[\.\s]{2,}/g, ' '); // Replace double spaces or periods with a single space
+    // value = value.replace(/[^a-zA-Z0-9 .,!?'"-]/g, ''); // Remove any characters that are not alphanumeric, spaces, or punctuation
     if (value.length < 1) {
       value = ' ';
     }
