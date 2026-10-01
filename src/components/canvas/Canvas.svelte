@@ -638,6 +638,9 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
           let offset = Math.round(mapValue(y, 0, 500, 10, 100));
           updateStagedAction({ offset: offset });
         }
+        if('columns' in params) { // patterns: drag sideways for more columns, down for more rows
+          updateStagedAction({ columns: 1 + Math.floor(Math.abs(x - startX) / 25), rows: 1 + Math.floor(Math.abs(y - startY) / 25) });
+        }
       }
       if('end' in params) {
         updateStagedAction({ end: { x: x, y: y } });

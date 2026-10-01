@@ -945,68 +945,54 @@ function rotateRegion(p, params, p5) {
   let angle = params.angle;
 }
 
-// Tile
-function tile(p, params, p5) {  
+// One reusable buffer for the shrunk copy of the canvas that patterns repeat. Making and removing a
+// p5 graphics buffer for every repeat doesn't work: in p5 1.11, removing one throws before it is cleaned up.
+let shrunkCanvasBuffer, shrunkCanvasOwner;
+function shrunkCanvas(p5, w, h) {
+  if (shrunkCanvasOwner !== p5) {
+    shrunkCanvasBuffer = p5.createGraphics(p5.width, p5.height);
+    shrunkCanvasOwner = p5;
+  }
+  shrunkCanvasBuffer.clear();
+  shrunkCanvasBuffer.image(p5.getStaticCanvas(), 0, 0, w, h); // in the top-left w x h, where the layouts read it
+  return shrunkCanvasBuffer;
+}
+
+// Tile: the whole canvas, shrunk into one cell of a grid `columns` wide and `rows` high, then laid out
+// in that grid in one of several ways. (Patterns saved before this kept the size of a piece of the canvas
+// instead; they become the grid that size makes.)
+function tile(p, params, p5) {
+  const columns = params.columns ?? Math.max(1, Math.round(p.width / params.width));
+  const rows = params.rows ?? Math.max(1, Math.round(p.height / params.height));
+  const w = p.width / columns;
+  const h = p.height / rows;
+
+  const snapshot = shrunkCanvas(p5, w, h);
+
   p.push();
-  let x = params.position.x;
-  let y = params.position.y;
-  let w = params.width;
-  let h = params.height;
-  let tiling = params.tiling;
-  let numTiles = params.numTiles || p.map(x, 0, p.width, 1, 5);
-  let numRings = params.numRings || p.map(x, 0, p.width, 1, 5);
-
-  let sx = x - w / 2;
-  let sy = y - h / 2;
-
-  p.noFill();
-  p.stroke(100);
-
-  // else {
-    let snapshot = p5.createGraphics(w, h); // for captured rectangle
-    snapshot.image(p5.getStaticCanvas(), 0, 0, w, h, sx, sy, w, h); // w * h rectangle centered at x, y 
-
-    // if(p===p5.getHoverCanvas()) {
-    //   p.tint(255, 100);
-    // }
-
-    switch (tiling) {
-      case 'straight grid':
-        straightGrid(p, snapshot, w, h);
-        break;
-      case 'brick':
-        brick(p, snapshot, w, h);
-        break;
-      case 'half drop':
-        halfDrop(p, snapshot, w, h);
-        break;
-      case 'checkerboard':
-        checkerboard(p, snapshot, w, h);
-        break;
-      case 'radial':
-        radial(p, snapshot, w, h, numTiles, numRings, x, y);
-        break;
-      case 'mirror':
-        mirror(p, snapshot, sx, sy, w, h);
-        break;
-      default:
-        break;
-    }
-
-    if(p===p5.getHoverCanvas() || p===p5.getDragCanvas()) {
-      p.push();
-
-      p.rectMode(p.CENTER);
-      p.imageMode(p.CENTER);
-      p.image(snapshot, x, y, w, h, 0, 0, w, h);
-      p.stroke(100);
-      p.noFill();
-      p.rect(x, y, w, h);
-      p.pop();
-    }
-
-    snapshot.remove();
-    p.pop();
+  switch (params.tiling) {
+    case 'straight grid':
+      straightGrid(p, snapshot, w, h);
+      break;
+    case 'brick':
+      brick(p, snapshot, w, h);
+      break;
+    case 'half drop':
+      halfDrop(p, snapshot, w, h);
+      break;
+    case 'checkerboard':
+      checkerboard(p, snapshot, w, h);
+      break;
+    case 'radial': // rings around the middle, as many as it takes to reach the corners
+      radial(p, snapshot, w, h, Math.ceil(Math.hypot(p.width, p.height) / 2 / h), p.width / 2, p.height / 2);
+      break;
+    case 'mirror':
+      mirrorGrid(p, snapshot, w, h);
+      break;
+    default:
+      break;
+  }
+  p.pop();
 }
 
 function straightGrid(p, snapshot, w, h) {
@@ -1040,13 +1026,12 @@ function halfDrop(p, snapshot, w, h) {
   }
 }
 
+// copies in every other cell; cells are counted, since w and h need not be whole numbers
 function checkerboard(p, snapshot, w, h) {
-  for (let dy = 0; dy < p.height; dy += h) {
-    let isEvenRow = dy / h % 2 === 0;
-    for (let dx = 0; dx < p.width; dx += w) {
-      let isEvenColumn = dx / w % 2 === 0;
-      if (isEvenRow !== isEvenColumn) {
-        p.image(snapshot, dx, dy, w, h, 0, 0, w, h);
+  for (let row = 0; row * h < p.height - 0.5; row++) {
+    for (let column = 0; column * w < p.width - 0.5; column++) {
+      if ((row + column) % 2 === 1) {
+        p.image(snapshot, column * w, row * h, w, h, 0, 0, w, h);
       }
     }
   }
@@ -1071,7 +1056,7 @@ function checkerboard(p, snapshot, w, h) {
 //   }
 // }
 
-function radial(p, snapshot, w, h, numTiles, numRings, centerX, centerY) {
+function radial(p, snapshot, w, h, numRings, centerX, centerY) {
   for (let ring = 0; ring < numRings; ring++) {
     // Calculate the radius and circumference for the current ring
     let radius = (ring + 1) * 1 * h;
@@ -1099,65 +1084,19 @@ function radial(p, snapshot, w, h, numTiles, numRings, centerX, centerY) {
 
 
 
-function mirror(p, snapshot, x, y, w, h) {
-  // Center tile (original selected area)
-  p.image(snapshot, x, y, w, h, 0, 0, w, h);
-
-  // Top-left (flip horizontally and vertically)
-  p.push();
-  p.translate(x - w, y - h);
-  p.scale(-1, -1);
-  p.image(snapshot, -w, -h, w, h, 0, 0, w, h);
-  p.pop();
-
-  // Top-center (flip vertically)
-  p.push();
-  p.translate(x, y - h);
-  p.scale(1, -1);
-  p.image(snapshot, 0, -h, w, h, 0, 0, w, h);
-  p.pop();
-
-  // Top-right (flip horizontally and vertically)
-  p.push();
-  p.translate(x + w, y - h);
-  p.scale(-1, -1);
-  p.image(snapshot, -w, -h, w, h, 0, 0, w, h);
-  p.pop();
-
-  // Middle-left (flip horizontally)
-  p.push();
-  p.translate(x - w, y);
-  p.scale(-1, 1);
-  p.image(snapshot, -w, 0, w, h, 0, 0, w, h);
-  p.pop();
-
-  // Middle-right (flip horizontally)
-  p.push();
-  p.translate(x + w, y);
-  p.scale(-1, 1);
-  p.image(snapshot, -w, 0, w, h, 0, 0, w, h);
-  p.pop();
-
-  // Bottom-left (flip horizontally and vertically)
-  p.push();
-  p.translate(x - w, y + h);
-  p.scale(-1, -1);
-  p.image(snapshot, -w, -h, w, h, 0, 0, w, h);
-  p.pop();
-
-  // Bottom-center (flip vertically)
-  p.push();
-  p.translate(x, y + h);
-  p.scale(1, -1);
-  p.image(snapshot, 0, -h, w, h, 0, 0, w, h);
-  p.pop();
-
-  // Bottom-right (flip horizontally and vertically)
-  p.push();
-  p.translate(x + w, y + h);
-  p.scale(-1, -1);
-  p.image(snapshot, -w, -h, w, h, 0, 0, w, h);
-  p.pop();
+// a grid where every other column is flipped sideways and every other row upside down,
+// so each copy is the mirror image of its neighbors
+function mirrorGrid(p, snapshot, w, h) {
+  for (let row = 0; row * h < p.height - 0.5; row++) {
+    for (let column = 0; column * w < p.width - 0.5; column++) {
+      const flipX = column % 2 === 1, flipY = row % 2 === 1;
+      p.push();
+      p.translate(column * w + (flipX ? w : 0), row * h + (flipY ? h : 0));
+      p.scale(flipX ? -1 : 1, flipY ? -1 : 1);
+      p.image(snapshot, 0, 0, w, h, 0, 0, w, h);
+      p.pop();
+    }
+  }
 }
 
   

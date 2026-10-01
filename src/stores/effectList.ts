@@ -871,9 +871,8 @@ export const effectList = [
     mouseActionType: 'drag',
     params: {
       tiling: 'straight grid',
-      width: 100,
-      height: 100,
-      position: {x: 150, y: 150}
+      columns: 4,
+      rows: 4
     }
   },
   {
@@ -886,9 +885,8 @@ export const effectList = [
     mouseActionType: 'single-click',
     params: {
       tiling: 'brick',
-      width: 100,
-      height: 40,
-      position: {x: 150, y: 150}
+      columns: 4,
+      rows: 4
     }
   },
   {
@@ -901,9 +899,8 @@ export const effectList = [
     mouseActionType: 'single-click',
     params: {
       tiling: 'half drop',
-      width: 150,
-      height: 250,
-      position: {x: 150, y: 150}
+      columns: 4,
+      rows: 4
     }
   },
   {
@@ -916,9 +913,8 @@ export const effectList = [
     mouseActionType: 'single-click',
     params: {
       tiling: 'checkerboard',
-      width: 50,
-      height: 50,
-      position: {x: 150, y: 150}
+      columns: 4,
+      rows: 4
     }
   },
   {
@@ -931,11 +927,8 @@ export const effectList = [
     mouseActionType: 'drag',
     params: {
       tiling: 'radial',
-      width: 50,
-      height: 50,
-      numTiles: 5,
-      numRings: 3,
-      position: {x: 150, y: 150}
+      columns: 6,
+      rows: 6
     }
   },
   {
@@ -948,9 +941,8 @@ export const effectList = [
     mouseActionType: 'drag',
     params: {
       tiling: 'mirror',
-      width: 200,
-      height: 200,
-      position: {x: 0, y: 0}
+      columns: 2,
+      rows: 2
     }
   },
   // {
