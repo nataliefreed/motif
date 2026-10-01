@@ -3,8 +3,7 @@ import type { Action, Effect } from '../types/types';
 import { effectList } from '../stores/effectList.js';
 import { v4 as uuidv4 } from 'uuid';
 import tinycolor from 'tinycolor2';
-import { currentColor, randomizeCurrentColor } from './colorStore';
-import { curatedRandomHexColor } from '../utils/color-utils';
+import { currentColor, randomizeCurrentColor, randomColorFromPalette } from './colorStore';
 
 export const actionStore = writable<Action>({name:"default", type:'list', category:'none', children:[], uuid:""});
 // object storing actions by UUID
@@ -136,9 +135,7 @@ function getFlatActionStore() {
       type: 'effect' as const,
       category: 'backgrounds',
       effect: 'solid fill',
-      params: {
-        color: curatedRandomHexColor()
-      },
+      params: randomColorFromPalette(), // a palette letter, so it changes with the palette
       hidden: false
     },
   //   'uuid_3': {

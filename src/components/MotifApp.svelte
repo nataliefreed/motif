@@ -20,7 +20,7 @@
   import { curatedRandomHexColor } from '../utils/color-utils';
   import PlayButton from './PlayButton.svelte';
   import NumberWidget from './actions and widgets/NumberWidget.svelte';
-  import { paintColors } from '../stores/colorStore';
+  import { paintColors, usePaletteColors, setUsePaletteColors } from '../stores/colorStore';
   import ColorPicker from './actions and widgets/ColorPicker.svelte';
   import { scale, fade } from 'svelte/transition';
   import DebugPaintStore from './DebugPaintStore.svelte';
@@ -311,23 +311,27 @@
     <!-- <div class="footer"></div> -->
 
     <!-- <div class="footer-center"> -->
-      <div class="bottom-left-corner">
-        <div class="toggle-with-label" use:help={{ text: $t.help.randomColors, placement: 'top' }}>
-          <label class="toggle-switch">
-            <input
-              type="checkbox"
-              class="toggle dont-deselect"
-              bind:checked={$shouldRandomizeColor}
-            >
-            <span class="slider round"></span>
-          </label>
-          {$t.randomColors}
-        </div>
-      </div>
       <div class="effect-buttons-bottom" use:shrinkToFit={[$activeCategory, $language]}>
         {#if $activeCategory }
           <CategoryToolbar categories={[$activeCategory]} effectMode={true}/>
         {/if}
+      </div>
+      <div class="color-switches">
+        <label class="switch-with-label" use:help={{ text: $t.help.randomColors, placement: 'bottom' }}>
+          <span class="toggle-switch">
+            <input type="checkbox" class="toggle dont-deselect" bind:checked={$shouldRandomizeColor}>
+            <span class="slider round"></span>
+          </span>
+          {$t.randomColors}
+        </label>
+        <label class="switch-with-label" use:help={{ text: $t.help.paletteColors, placement: 'bottom' }}>
+          <span class="toggle-switch">
+            <input type="checkbox" class="toggle dont-deselect"
+              checked={$usePaletteColors} on:change={event => setUsePaletteColors(event.currentTarget.checked)}>
+            <span class="slider round"></span>
+          </span>
+          {$t.paletteColors}
+        </label>
       </div>
       <div class="staged-action-wrapper">
         {#if !$drawingLocked}
@@ -759,18 +763,20 @@
     padding: 1em 0;
   }
 
-  .bottom-left-corner {
-    grid-row: 4;
-    grid-column: 1;
+  /* the brush color switches, in a row under the tool buttons */
+  .color-switches {
+    grid-row: 5;
+    grid-column: 2;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    align-items: flex-start;
+    gap: 1.5em;
+    padding: 4px 0 0 12px;
     z-index: 1;
   }
 
-  .bottom-left-corner .toggle-with-label {
-    gap: 0;
-    line-height: 0.85em; /* switch and two lines of label in one toolbar-sized square */
+  .color-switches .toggle-switch {
+    display: inline-block;
+    flex-shrink: 0;
   }
 
   .effect-buttons-bottom {
@@ -979,16 +985,14 @@
     user-select: none; /* Standard */
   }
 
-  .toggle-with-label {
+  .switch-with-label {
     font-family: 'Fandango';
-    font-size: 0.9rem;
-    line-height: 0.8rem;
+    font-size: 1.1rem;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    text-align: center;
     align-items: center;
-    gap: 2px;
+    gap: 6px;
+    white-space: nowrap;
+    cursor: pointer;
     color: black;
 
     -webkit-user-select: none; /* Safari */
@@ -1124,9 +1128,12 @@
       font-size: 1rem;
     }
 
-    .toggle-with-label {
-      font-size: 1.1em;
-      line-height: 1em;
+    .switch-with-label {
+      font-size: 1.3em;
+    }
+
+    .color-switches {
+      margin-top: -14px; /* sit close under the tool buttons, inside the row gap */
     }
   }
 

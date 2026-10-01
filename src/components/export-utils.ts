@@ -7,7 +7,7 @@ import { deepCopy } from '../utils/utils';
 import { getDescendantIDs, addCurrentEffectAsStagedAction } from './action-utils';
 import type { ActionStore } from '../types/types';
 import { palettes } from '../stores/colorStore';
-import { mostCommonColors } from '../utils/color-utils';
+import { distinctColors, withShades } from '../utils/color-utils';
 import { t } from '../i18n';
 
 export function exportCodeWithImage() {
@@ -242,8 +242,9 @@ export function exportPalette(colors: string[]) {
   downloadDataURI(canvas.toDataURL('image/png'), `${get(t).files.palette}.png`);
 }
 
-// Asks for any picture and passes on its most common colors, one for each palette letter,
-// or calls `noColors` if it can't be read or has no visible pixels.
+// Asks for any picture and passes on the colors that stand out in it, one for each palette letter
+// (with lighter and darker versions of them if the picture has fewer), or calls `noColors` if it
+// can't be read or has no visible pixels.
 export function importPalette(paletteSize: number, useColors: (colors: string[]) => void, noColors: () => void) {
   const input = document.createElement('input');
   input.type = 'file';
@@ -259,8 +260,8 @@ export function importPalette(paletteSize: number, useColors: (colors: string[])
       canvas.height = Math.max(1, Math.round(image.height * scale));
       const g = canvas.getContext('2d')!;
       g.drawImage(image, 0, 0, canvas.width, canvas.height);
-      const colors = mostCommonColors(g.getImageData(0, 0, canvas.width, canvas.height).data, paletteSize);
-      if (colors.length > 0) useColors(colors);
+      const colors = distinctColors(g.getImageData(0, 0, canvas.width, canvas.height).data, paletteSize);
+      if (colors.length > 0) useColors(withShades(colors, paletteSize));
       else noColors();
     } catch {
       noColors(); // not a picture the browser can read

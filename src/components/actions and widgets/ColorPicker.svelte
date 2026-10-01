@@ -16,8 +16,10 @@
 
   export let showSavedColors = true;
 
+  export let paletteLetter = -1; // the palette color being edited (0 is a), shown on the preview
+
   let modes = ["paint", "RGB", "HSL"];
-  let activeMode = "HSL";
+  let activeMode = "RGB";
 
   // initial color values
   let red = tinycolor(value).toRgb().r;
@@ -199,7 +201,7 @@
     </select>
   </div>
 
-  <div class="color-preview" style="background-color:{value}"></div>
+  <div class="color-preview" style="background-color:{value}">{#if paletteLetter >= 0}<span class="preview-letter"><SavedColorLabel id={paletteLetter} color={value} /></span>{/if}</div>
 </div>
 
 <!-- switch based on mode -->
@@ -479,6 +481,9 @@
   .color-preview {
     width: 45px;
     height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     /* transform: translateX(-5px);
     -webkit-transform: translateX(-5px); */
     -webkit-mask-image: url('/assets/widgets/splotch-alpha-mask.png');
@@ -486,6 +491,10 @@
     -webkit-mask-size: cover;
     mask-size: cover;
 }
+
+  .preview-letter {
+    font-size: 1.6em;
+  }
 
   input[type='number'] {
       margin: 0 5px;

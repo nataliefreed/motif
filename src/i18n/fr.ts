@@ -23,6 +23,7 @@ export const fr: Messages = {
     draw: 'dessiner',
   },
 
+  paletteColors: 'couleurs de la palette',
   randomColors: 'couleurs surprise',
 
   categories: {
@@ -154,6 +155,7 @@ export const fr: Messages = {
     presets: {
       starting: 'couleurs de départ',
       pastel: 'arc-en-ciel pastel',
+      neon: 'néon pop',
       blocks: 'blocs',
       denim: 'denim',
     },
@@ -211,10 +213,11 @@ export const fr: Messages = {
     draw: 'Transforme l’étape sélectionnée en pinceau, pour pouvoir en dessiner encore',
     selectFirst: '\nCommence par cliquer sur une étape de la recette pour la sélectionner',
 
-    palette: 'Voici les couleurs de ta palette. Clique sur une couleur pour dessiner avec.\nDouble-clique sur une couleur pour la changer. Toutes les étapes qui utilisent cette lettre changent aussi',
+    palette: 'Voici les couleurs de ta palette. Clique sur une couleur pour dessiner avec et pour la changer.\nToutes les étapes qui utilisent cette lettre changent aussi',
     paletteMenu: 'Choisis une nouvelle palette de couleurs ou enregistre et ouvre la tienne. Tout ce que tu as dessiné avec une couleur à lettre change aussi',
     savePalette: 'Enregistre tes couleurs comme une image, pour les réutiliser ou les partager',
-    openPalette: 'Utilise les couleurs les plus fréquentes de n’importe quelle image',
-    randomColors: 'Quand c’est activé, ton pinceau prend une nouvelle couleur au hasard chaque fois que tu dessines',
+    openPalette: 'Crée une palette de couleurs à partir d’une image',
+    paletteColors: 'Quand c’est activé, ton pinceau utilise les couleurs à lettre de ta palette',
+    randomColors: 'Quand c’est activé, ton pinceau change de couleur chaque fois que tu dessines. Avec les couleurs de la palette activées, il choisit une nouvelle lettre de ta palette',
   },
 };

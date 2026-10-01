@@ -26,6 +26,7 @@ export const en = {
     draw: 'draw',
   },
 
+  paletteColors: 'palette colors',
   randomColors: 'surprise colors',
 
   // tool categories, keyed by the `category` of tools in stores/effectList.ts
@@ -166,6 +167,7 @@ export const en = {
     presets: {
       starting: 'starting colors',
       pastel: 'pastel rainbow',
+      neon: 'neon pop',
       blocks: 'blocks',
       denim: 'denim',
     },
@@ -230,11 +232,12 @@ export const en = {
     selectFirst: '\nStart by clicking a step in the recipe to select it',
 
     // colors
-    palette: 'These are your color scheme colors. Click one to draw with it.\nDouble-click a color to change it. Every step that uses that letter changes too',
+    palette: 'These are your color scheme colors. Click one to draw with it and to change it.\nEvery step that uses that letter changes too',
     paletteMenu: 'Pick a new set of colors for your palette or save and open your own. Everything drawn with a lettered color changes too',
     savePalette: 'Save your colors as a picture, so you can use them again or share them',
-    openPalette: 'Use the most common colors from any picture',
-    randomColors: 'When this is on, your brush gets a new random color every time you draw',
+    openPalette: 'Make a color palette from an image',
+    paletteColors: 'When this is on, your brush uses the lettered colors from your palette',
+    randomColors: 'When this is on, your brush gets a new color every time you draw. With palette colors on, it picks a new letter from your palette',
   },
 };
 

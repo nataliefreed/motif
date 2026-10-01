@@ -6,6 +6,7 @@
   import ColorPicker from '../actions and widgets/ColorPicker.svelte';
   import Tooltip from '../Tooltip.svelte';
   import SavedColorLabel from '../actions and widgets/SavedColorLabel.svelte';
+  import { currentIndexedColor } from '../../stores/colorStore';
 
   export let color = '#FFFFFF';
   export let id: number;
@@ -43,15 +44,17 @@
   bind:this={colorButton}
   on:click={handleColorClick}
   class="color-palette-widget"
+  class:active={$currentIndexedColor.index === id}
   style="background-color: {color};">
   <SavedColorLabel {id} {color} />
 </span>
 
 {#if colorButton}
-  <Tooltip element={colorButton} let:showContent settings={{trigger:'dblclick'}}>
+  <!-- one click both draws with this color and opens it to edit -->
+  <Tooltip element={colorButton} let:showContent>
     {#if showContent}
       <!-- <SimpleColorPicker value={color} on:valueChange={handleColorChange} /> -->
-      <ColorPicker value={color} showSavedColors={false} on:valueChange={handleColorChange} />
+      <ColorPicker value={color} paletteLetter={id} showSavedColors={false} on:valueChange={handleColorChange} />
     {/if}
   </Tooltip>
 {/if}
@@ -80,6 +83,16 @@
   cursor: pointer;
   box-shadow: 0 0 5px 0 rgba(0,0,0,0.1);
   transform: scale(1.2) translateY(-0.1em);
+}
+
+/* the color the brush is drawing with: a circle with a glow, like the selected color in the color pickers
+   (after :hover, so the glow stays while hovering) */
+.color-palette-widget.active {
+  -webkit-mask-image: none;
+  mask-image: none;
+  width: 22px;
+  height: 22px;
+  box-shadow: 0 0 5px 1px gray;
 }
 
 .color-picker {

@@ -2,7 +2,7 @@
 import { writable, get, derived } from 'svelte/store';
 import spectral from 'spectral.js';
 import tinyColor from 'tinycolor2';
-import { curatedRandomHexColor } from '../utils/color-utils';
+import { curatedRandomHexColor, colorDifference } from '../utils/color-utils';
 
 export interface Palette {
   [name: string]: string[];
@@ -48,14 +48,20 @@ const samplePalettes: Palette = {
 // Each has one color for each palette letter, a to l.
 export const palettePresets = {
   starting: samplePalettes.paint,
+  // soft rainbow order, with muted greens and a dusty purple dark enough to outline with
   pastel: [
-    '#F7A8A8', '#FAC3A0', '#FCE49E', '#DDF0A4', '#B6E6B4', '#A7E3DC',
-    '#A9CFF2', '#B6BDF0', '#CDB6EE', '#F2B6DC', '#FFF7EC', '#77738C',
+    '#F3A6AB', '#F6C3A0', '#F3D38E', '#F5EEB0', '#C8E3B8', '#A9D8C3',
+    '#A3DCE3', '#A6C2EE', '#B4B2EE', '#9493C2', '#D7B8F0', '#F2BCE3',
   ],
-  // the grass, wood, stone, water and ore colors of a world built from blocks
+  // neon stage colors in rainbow order: hot pinks and violets, electric blues and glows, with gold
+  neon: [
+    '#E5243B', '#FF6B2C', '#FFC531', '#38C49A', '#19D3E6', '#2F7BFF',
+    '#3A3BD9', '#2A1A6E', '#8A3CF0', '#C08CFF', '#E63BD6', '#FF3E9A',
+  ],
+  // the earth tones of a world built from blocks: grass, wood, sand, stone, sky, copper and ores
   blocks: [
     '#7CBD4B', '#3B7A23', '#8B5E3C', '#B8945F', '#DBD3A0', '#8F8F8F',
-    '#3A3A3A', '#3F76E4', '#4DE0D6', '#F2CD3F', '#E8701A', '#B31C1C',
+    '#3A3A3A', '#7DB9E8', '#5E9C8C', '#F2CD3F', '#E8701A', '#B31C1C',
   ],
   // from bleached to raw indigo, then black denim, thread and a copper rivet
   denim: [
@@ -150,6 +156,24 @@ export function setCurrentColor(color:string, index:number=-1) {
   currentIndexedColor.set({color, index});
 }
 
+// Whether the brush draws with a lettered palette color, so that changing the palette changes it too.
+export const usePaletteColors = writable(true);
+
+// Turning palette colors on moves the brush to the palette letter that looks closest to its color;
+// turning them off keeps the brush's color but no longer ties it to a letter.
+export function setUsePaletteColors(on: boolean) {
+  usePaletteColors.set(on);
+  const { index } = get(currentIndexedColor);
+  const color = get(currentColor);
+  if (on && index < 0) {
+    const palette = get(activePalette);
+    const nearest = palette.reduce((best, c, i) => (colorDifference(color, c) < colorDifference(color, palette[best]) ? i : best), 0);
+    setCurrentColor(palette[nearest], nearest);
+  } else if (!on && index >= 0) {
+    setCurrentColor(color, -1);
+  }
+}
+
 export let showSavedColors = writable(false);
 
 interface PaintColor {
@@ -236,11 +260,13 @@ export function randomColorFromPalette() {
   return { color: get(activePalette)[randomIndex], lockedIndex: randomIndex };
 }
 
+// Surprise colors: a new color for the brush, either a random letter from the palette (with palette
+// colors on) or any bright color.
 export function randomizeCurrentColor() {
-  //a nice hex color with possible translucency
-  // setCurrentColor(curatedRandomHexColor());
-
-  //a random color from the active palette
-  let randomIndex = Math.floor(Math.random() * get(activePalette).length);
-  setCurrentColor(get(activePalette)[randomIndex], randomIndex); 
+  if (get(usePaletteColors)) {
+    const { color, lockedIndex } = randomColorFromPalette();
+    setCurrentColor(color, lockedIndex);
+  } else {
+    setCurrentColor(curatedRandomHexColor());
+  }
 }

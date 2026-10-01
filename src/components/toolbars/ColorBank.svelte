@@ -5,7 +5,7 @@
   import ColorWidget from '../actions and widgets/ColorWidget.svelte';
   import { writable } from 'svelte/store';
   import { createEventDispatcher } from "svelte";
-  import { setCurrentColor, updateColorInPalette } from '../../stores/colorStore';
+  import { setCurrentColor, updateColorInPalette, usePaletteColors } from '../../stores/colorStore';
   import { shouldRandomizeColor } from '../../stores/dataStore';
   import ActionItem from '../actions and widgets/ActionItem.svelte';
   import { help } from '../help';
@@ -25,6 +25,7 @@
     activeColor = color;
     // console.log("color clicked", color, id);
     setCurrentColor(color, id);
+    usePaletteColors.set(true);
     shouldRandomizeColor.set(false);
   }
 

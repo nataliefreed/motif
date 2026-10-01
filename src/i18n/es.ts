@@ -24,6 +24,7 @@ export const es: Messages = {
     draw: 'dibujar',
   },
 
+  paletteColors: 'colores de la paleta',
   randomColors: 'colores sorpresa',
 
   categories: {
@@ -155,6 +156,7 @@ export const es: Messages = {
     presets: {
       starting: 'colores iniciales',
       pastel: 'arcoíris pastel',
+      neon: 'neón pop',
       blocks: 'bloques',
       denim: 'mezclilla',
     },
@@ -212,10 +214,11 @@ export const es: Messages = {
     draw: 'Convierte el paso seleccionado en tu pincel, para que puedas dibujar más de él',
     selectFirst: '\nEmpieza por hacer clic en un paso de la receta para seleccionarlo',
 
-    palette: 'Estos son los colores de tu combinación. Haz clic en uno para dibujar con él.\nHaz doble clic en un color para cambiarlo. Cada paso que usa esa letra también cambia',
+    palette: 'Estos son los colores de tu combinación. Haz clic en uno para dibujar con él y para cambiarlo.\nCada paso que usa esa letra también cambia',
     paletteMenu: 'Elige una nueva combinación de colores para tu paleta o guarda y abre la tuya. Todo lo que dibujaste con un color con letra también cambia',
     savePalette: 'Guarda tus colores como una imagen, para usarlos otra vez o compartirlos',
-    openPalette: 'Usa los colores más comunes de cualquier imagen',
-    randomColors: 'Cuando está encendido, tu pincel cambia a un color al azar cada vez que dibujas',
+    openPalette: 'Crea una paleta de colores a partir de una imagen',
+    paletteColors: 'Cuando está encendido, tu pincel usa los colores con letra de tu paleta',
+    randomColors: 'Cuando está encendido, tu pincel cambia de color cada vez que dibujas. Con los colores de la paleta encendidos, elige una nueva letra de tu paleta',
   },
 };
