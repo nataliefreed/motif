@@ -16,7 +16,7 @@
       return;
     }
 
-    const regex = /^[a-zA-Z0-9 .,!?'"-]+$/; // Regex to allow alphanumeric characters and spaces
+    const regex = /^[\p{L}\p{M}\p{N} .,!?¡¿'"-]+$/u; // letters in any language (like á and ñ), numbers, spaces and punctuation
 
     //event.key.length > 1 are control characters
     if (event.key.length === 1 && !regex.test(event.key)) {

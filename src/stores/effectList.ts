@@ -7,7 +7,6 @@ export const effectList = [
   {
     name: 'circle',
     textLabel: 'Circle',
-    help: 'Click to stamp a circle. Drag to make it bigger or smaller.',
     category: 'shapes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -34,7 +33,6 @@ export const effectList = [
   {
     name: 'square',
     textLabel: 'Square',
-    help: 'Click to stamp a square. Drag to change its size and turn it.',
     category: 'shapes',
     tags: 'drawing',
     thumbnail: 'square.png',
@@ -50,7 +48,6 @@ export const effectList = [
   {
     name: 'solid fill', //TODO: rename name and textLabel and also the effect name in actions. dropdown name is button name, name is type of effect (eg. tile which has subtypes in params)
     textLabel: 'Solid Fill',
-    help: 'Click to fill the whole canvas with one color.',
     category: 'backgrounds',
     tags: 'drawing',
     cursor: '/assets/cursors/fill-drip-solid.svg',
@@ -64,7 +61,6 @@ export const effectList = [
   {
     name: 'straight line',
     textLabel: 'Line',
-    help: 'Click where the line starts, drag, and let go where it ends.',
     category: 'lines',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -81,7 +77,6 @@ export const effectList = [
   {
     name: 'polygon',
     textLabel: 'Polygon',
-    help: 'Click to stamp a shape with straight sides. Drag to change its size and turn it. Change the number of sides in its step!',
     category: 'shapes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -98,7 +93,6 @@ export const effectList = [
   {
     name: 'star',
     textLabel: 'Star',
-    help: 'Click to stamp a star. Drag up or down to change its size, and sideways to add more points.',
     category: 'shapes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -116,7 +110,6 @@ export const effectList = [
   {
     name: 'spiro',
     textLabel: 'Spiro',
-    help: 'Click and hold still to draw a spiro swirl. Hold longer to draw more of it. Drag to change its shape in surprising ways!',
     category: 'shapes',
     tags: 'drawing',
     cursor: './assets/cursors/spiro-cursor.svg',
@@ -136,7 +129,6 @@ export const effectList = [
   {
     name: 'heart',
     textLabel: 'Heart',
-    help: 'Click to stamp a heart. Drag to change its size.',
     category: 'shapes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -152,14 +144,13 @@ export const effectList = [
   {
     name: 'rectangle',
     textLabel: 'Rectangle',
-    help: 'Click to stamp a rectangle. Drag to stretch it wider or taller.',
     category: 'shapes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
     thumbnail: 'rectangle.png',
     mouseActionType: 'drag',
     params: {
-      width: 50,  
+      width: 50,
       height: 30,
       color: '#52bf67',
       angle: 0,
@@ -169,7 +160,6 @@ export const effectList = [
   {
     name: 'triangle',
     textLabel: 'Triangle',
-    help: 'Click to stamp a triangle. Drag to stretch it wider or taller.',
     category: 'shapes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -186,7 +176,6 @@ export const effectList = [
   {
     name: 'text',
     textLabel: 'text',
-    help: 'Click to stamp words. Drag to change their size, and change what they say in the step.',
     category: 'shapes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -203,7 +192,6 @@ export const effectList = [
   {
     name: 'stripes',
     textLabel: 'Stripes',
-    help: 'Click to fill the canvas with stripes. Drag to change how wide they are and which way they go.',
     category: 'backgrounds',
     tags: 'drawing',
     cursor: '/assets/cursors/fill-drip-solid.svg',
@@ -219,7 +207,6 @@ export const effectList = [
   {
     name: 'gradient',
     textLabel: 'Gradient',
-    help: 'Click to fill the canvas with two colors that blend together. Drag up or down to change the direction.',
     category: 'backgrounds',
     tags: 'drawing',
     cursor: '/assets/cursors/fill-drip-solid.svg',
@@ -250,7 +237,6 @@ export const effectList = [
   {
     name: 'along path',
     textLabel: 'Dot brush',
-    help: 'Click and drag to draw a dotted line that follows your mouse.',
     category: 'lines',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -289,7 +275,6 @@ export const effectList = [
   {
     name: 'along path',
     textLabel: 'Line Brush',
-    help: 'Click and drag to draw a smooth line that follows your mouse.',
     category: 'brushes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -330,7 +315,6 @@ export const effectList = [
   {
     name: 'along path',
     textLabel: 'Connected Line',
-    help: 'Click, click, click to connect the dots with straight lines. Double-click to finish.',
     category: 'lines',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -371,7 +355,6 @@ export const effectList = [
   {
     name: 'along path',
     textLabel: 'Pattern Maker',
-    help: 'Click around the canvas to lay out a pattern of shapes. Double-click to finish. Then open it up in the recipe to change the shapes inside!',
     category: 'lines',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -447,7 +430,6 @@ export const effectList = [
   {
     name: 'along path',
     textLabel: 'Mosaic Brush',
-    help: "Click and drag to paint with a rainbow of little shapes. Open it up in the recipe to see what it's made of!",
     category: 'brushes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -562,7 +544,6 @@ export const effectList = [
   {
     name: 'along path',
     textLabel: 'Heart brush',
-    help: 'Click and drag to paint a trail of hearts.',
     category: 'brushes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -615,7 +596,6 @@ export const effectList = [
   {
     name: 'along path',
     textLabel: 'Star Brush',
-    help: 'Click and drag to paint a trail of stars.',
     category: 'brushes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -683,7 +663,6 @@ export const effectList = [
   {
     name: 'along path',
     textLabel: 'Letter Brush',
-    help: 'Click and drag to paint a trail of letters. Change the letters inside the brush to spell something!',
     category: 'brushes',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -751,7 +730,6 @@ export const effectList = [
   {
     name: 'bounce',
     textLabel: 'Rainbow Bounce',
-    help: 'Click and drag to aim, then hold still: rainbow dots bounce off the edges until you let go.',
     category: 'lines',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -767,7 +745,6 @@ export const effectList = [
   {
     name: 'speckles',
     textLabel: 'Speckles',
-    help: 'Click and hold to sprinkle speckles over the canvas. Hold longer for more!',
     category: 'backgrounds',
     tags: 'drawing',
     cursor: '/assets/cursors/fill-drip-solid.svg',
@@ -783,7 +760,6 @@ export const effectList = [
   {
     name: 'along path',
     textLabel: 'Multi Stripe',
-    help: 'Click and drag to paint tall stripes that follow your mouse.',
     category: 'backgrounds',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -854,7 +830,7 @@ export const effectList = [
   /*
   how drawing with this effect works:
 
-  capture the points in Canvas.svelte, 
+  capture the points in Canvas.svelte,
 
   - show turtle cursor on hover
   - on click, draw a turtle at the start position
@@ -888,7 +864,6 @@ export const effectList = [
   {
     name: 'tile',
     textLabel: 'Straight Grid',
-    help: 'Click on part of your drawing to repeat it in a grid. Drag to change how big the repeating piece is.',
     category: 'patterns',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -904,7 +879,6 @@ export const effectList = [
   {
     name: 'tile',
     textLabel: 'Brick Pattern',
-    help: 'Click on part of your drawing to repeat it in rows, like bricks in a wall. Drag to change how big the repeating piece is.',
     category: 'patterns',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -920,7 +894,6 @@ export const effectList = [
   {
     name: 'tile',
     textLabel: 'Half Drop',
-    help: 'Click on part of your drawing to repeat it in columns, with every other column shifted down. Drag to change how big the repeating piece is.',
     category: 'patterns',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -936,7 +909,6 @@ export const effectList = [
   {
     name: 'tile',
     textLabel: 'Checkerboard',
-    help: 'Click on part of your drawing to repeat it like a checkerboard. Drag to change how big the repeating piece is.',
     category: 'patterns',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -952,7 +924,6 @@ export const effectList = [
   {
     name: 'tile',
     textLabel: 'Radial',
-    help: 'Click on part of your drawing to repeat it in rings around that spot. Drag to change how big the repeating piece is.',
     category: 'patterns',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -970,7 +941,6 @@ export const effectList = [
   {
     name: 'tile',
     textLabel: 'Mirror',
-    help: 'Click on part of your drawing to reflect it all around, like mirrors. Drag to change how big the reflected piece is.',
     category: 'patterns',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -1001,7 +971,6 @@ export const effectList = [
   {
     name: 'filter',
     textLabel: 'Invert',
-    help: 'Click to flip every color in your design to its opposite.',
     category: 'effects',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -1014,7 +983,6 @@ export const effectList = [
   {
     name: 'filter',
     textLabel: 'Grayscale',
-    help: 'Click to turn your design gray, like an old photo.',
     category: 'effects',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -1027,7 +995,6 @@ export const effectList = [
   {
     name: 'filter',
     textLabel: 'Threshold',
-    help: 'Click to turn your design into just black and white.',
     category: 'effects',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -1040,7 +1007,6 @@ export const effectList = [
   {
     name: 'grow',
     textLabel: 'Grow',
-    help: 'Click on part of your drawing to make it bigger. Drag to choose how much of it grows.',
     category: 'effects',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -1056,7 +1022,6 @@ export const effectList = [
   {
     name: 'shrink',
     textLabel: 'Shrink',
-    help: 'Click on part of your drawing to make it smaller. Drag to choose how much of it shrinks.',
     category: 'effects',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -1072,7 +1037,6 @@ export const effectList = [
   {
     name: 'shift',
     textLabel: 'Shift',
-    help: 'Click to slice your design into strips and slide every other one. Drag to change how wide the strips are and how far they slide.',
     category: 'effects',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -1087,7 +1051,6 @@ export const effectList = [
   {
     name: 'move cutout',
     textLabel: 'Move',
-    help: 'Move part of your drawing: click and hold, drag it somewhere new, then let go. Change "move" to "copy" in its step to make a copy instead.',
     category: 'effects',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -1257,7 +1220,7 @@ export const effectList = [
   //     my.target.snapshot(my.data.image);
   //   }
   // },
-  
+
   // {
   //   name: 'mosaic brush',
   //   textLabel: 'mosaic brush',
@@ -1304,12 +1267,12 @@ export const effectList = [
   //       let color = colors[i];
   //       initActions.push(toJoyDataFormat(shape, {color: color, x: 0, y: 0, size: size, width: width, height: height, radius: radius }));
   //     }
-      
+
   //     // let initActions = [
   //     //   toJoyDataFormat('motif/star', {color: [200, 0.8, 1], x: 0, y: 0, r1: 10, r2: 7, npoints: 5}),
   //     //   toJoyDataFormat('motif/star', {color: [50, 0.8, 1], x: 0, y: 0, r1: 12, r2: 6, npoints: 7}),
-  //     //   toJoyDataFormat('motif/star', {color: [100, 0.8, 1], x: 0, y: 0, r1: 12, r2: 5, npoints: 15})];        
-      
+  //     //   toJoyDataFormat('motif/star', {color: [100, 0.8, 1], x: 0, y: 0, r1: 12, r2: 5, npoints: 15})];
+
   //     let alongpathOption = parseResult.actorOptions.find(obj  => obj.id === 'alongpath');
   //     if(alongpathOption) {
   //       alongpathOption.initActions = initActions; //pass in the starter actions
@@ -1325,7 +1288,6 @@ export const effectList = [
   {
     name: 'box',
     textLabel: 'Paper Box',
-    help: 'Add the outline of a paper box around your design. Print it, cut it out and fold it up!',
     category: 'stencils',
     tags: 'stencils',
     cursor: './assets/cursors/star-solid.svg',
@@ -1343,7 +1305,6 @@ export const effectList = [
   {
     name: 'paper doll',
     textLabel: 'Paper Doll',
-    help: 'Add a paper doll outline to dress up with your design. Change its hair and outfit in its step, then print it and cut it out!',
     category: 'stencils',
     tags: 'stencils',
     cursor: './assets/cursors/star-solid.svg',
@@ -1401,7 +1362,7 @@ export const effectList = [
   //   textLabel: 'Doll',
   //   category: 'Stencils',
   //   tag: 'stencils',
-  //   init: `Paper doll with skin tone 
+  //   init: `Paper doll with skin tone
   //   {id:'skinTone', type:'color',
   //   colorOptions: [
   //     '#552E1F','#60311F','#A16F4C','#BB815C','#BC8F68','#CA9978',

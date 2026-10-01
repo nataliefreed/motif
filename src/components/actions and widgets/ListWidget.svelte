@@ -1,7 +1,7 @@
 <script lang="ts">
   
   import { help } from '../help';
-  import { helpText } from '../help-text';
+  import { t } from '../../i18n';
   import type { SortableEvent } from 'sortablejs';
   import Sortable from 'sortablejs';
   import { onMount, createEventDispatcher } from 'svelte';
@@ -311,7 +311,7 @@ function getDynamicStyle(id:string) {
         <span class="action-item-content" class:no-angle-widget={!('angle' in action.params)}><ActionItem {action} {depth} /></span>
       {:else}
       {#key $stagedAction.params.lastChanged}
-        <div class="staged-item" out:fly={{ y: 100, duration: 100, delay: 0 }} in:scale={{ duration: 400, delay: 400 }} use:help={{ text: helpText.nextStep, placement: 'right' }}></div>
+        <div class="staged-item" out:fly={{ y: 100, duration: 100, delay: 0 }} in:scale={{ duration: 400, delay: 400 }} use:help={{ text: $t.help.nextStep, placement: 'right' }}></div>
       {/key}
         <!-- &#8674;&#8674;&#8674;&#8674;&#8674; -->
       

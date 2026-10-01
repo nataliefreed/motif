@@ -1,5 +1,7 @@
 <script lang="ts">
   import NumberWidget from "../NumberWidget.svelte";
+  import Words from "../Words.svelte";
+  import { t, phraseWords } from "../../../i18n";
   import ColorWidget from "../ColorWidget.svelte";
   import ChooserWidget from "../ChooserWidget.svelte";
   import CoordinateWidget from "../CoordinateWidget.svelte";
@@ -17,18 +19,22 @@
   // <NumberWidget id="threshold" min={0} max={100}/>% 
 </script>
 
+<!-- Words come from `steps` in i18n/en.ts: words[i] goes before setting {i}. -->
+
 {#if name === 'box'}
-<span class="tool-name">box</span> with length 
-  <NumberWidget id="length" min={20} value={params.length || 120} on:valueChange={handleValueChange}/>, 
-  width <NumberWidget id="width" min={20} value={params.width || 120} on:valueChange={handleValueChange}/>, 
-  height <NumberWidget id="height" min={20} value={params.height || 120} on:valueChange={handleValueChange}/>
-  at <CoordinateWidget id="position" value={params.position} on:valueChange={handleValueChange}/>
+  {@const words = phraseWords($t.steps.box)}
+  <Words text={words[0]}/><NumberWidget id="length" min={20} value={params.length || 120}
+    on:valueChange={handleValueChange}/><Words text={words[1]}/><NumberWidget id="width" min={20} value={params.width || 120}
+    on:valueChange={handleValueChange}/><Words text={words[2]}/><NumberWidget id="height" min={20} value={params.height || 120}
+    on:valueChange={handleValueChange}/><Words text={words[3]}/><CoordinateWidget id="position" value={params.position}
+    on:valueChange={handleValueChange}/><Words text={words[4]}/>
   <!-- in <ColorWidget id="color" value={params.color} on:valueChange={handleValueChange}/> -->
 {:else if name === 'paper doll'}
-<span class="tool-name">paper doll</span> with skin tone 
-  <ColorWidget id="skintone" value={params.skintone} on:valueChange={handleValueChange}/>
-  hairstyle <ChooserWidget id="hairstyle" options={['1', '2', '3']} selected={params.hairstyle || '1'} on:valueChange={handleValueChange}/>
-  outfit set <ChooserWidget id="outfit" options={['1', '2']} selected={params.outfit || '2'} on:valueChange={handleValueChange}/>
+  {@const words = phraseWords($t.steps.paperDoll)}
+  <Words text={words[0]}/><ColorWidget id="skintone" value={params.skintone}
+    on:valueChange={handleValueChange}/><Words text={words[1]}/><ChooserWidget id="hairstyle" options={['1', '2', '3']} selected={params.hairstyle || '1'}
+    on:valueChange={handleValueChange}/><Words text={words[2]}/><ChooserWidget id="outfit" options={['1', '2']} selected={params.outfit || '2'}
+    on:valueChange={handleValueChange}/><Words text={words[3]}/>
   <!-- {:else if name === 'trace'}
   Trace -->
 {/if}

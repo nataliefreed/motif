@@ -9,7 +9,7 @@
   import ActionItem from '../actions and widgets/ActionItem.svelte';
     import { saveToHistory } from '../../stores/history';
   import { help } from '../help';
-  import { helpText } from '../help-text';
+  import { t } from '../../i18n';
 
   let activeColor: string;
   let activeIndex: number;
@@ -65,7 +65,7 @@
   <summary id="saved-colors-toggle"></summary> -->
   <div class="color-bank-container">
 
-    <div class="color-palette" use:help={{ text: helpText.palette, placement: 'left' }}>
+    <div class="color-palette" use:help={{ text: $t.help.palette, placement: 'left' }}>
       {#each $palettes[$activePaletteName].slice(0, 12) as color, index}
       <!-- <ColorWidget id="color" value={color} lockedIndex={index} on:click={handleClick.bind(null, color)}/> -->
         <ColorBankWidget bind:color={color} id={index} on:clickColor={setGlobalColor} on:valueChange={saveColor}/>

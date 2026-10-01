@@ -1,8 +1,9 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
+  import { t, entry } from '../../i18n';
 
   export let id = '';
-  export let options: string[] = []; // The options for the chooser
+  export let options: string[] = []; // The options for the chooser: values saved in the drawing
   export let selected = ''; // The currently selected option
 
   const dispatch = createEventDispatcher();
@@ -16,7 +17,7 @@
 
 <select id={id} bind:value={selected} on:change={handleChange}>
   {#each options as option}
-    <option value={option}>{option}</option>
+    <option value={option}>{entry($t.options, option) ?? option}</option>
   {/each}
 </select>
 

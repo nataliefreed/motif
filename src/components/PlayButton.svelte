@@ -2,7 +2,7 @@
   import { togglePlay } from '../components/action-utils';
   import { isPlaying }  from '../stores/dataStore';
   import { help } from './help';
-  import { helpText } from './help-text';
+  import { t } from '../i18n';
 
   function handleClick() {
     togglePlay();
@@ -20,7 +20,7 @@
 
 </script>
 
-<button class="instabutton" id="playPauseButton" on:click={handleClick} use:help={{ text: $isPlaying ? helpText.pause : helpText.play, placement: 'bottom' }}>
+<button class="instabutton" id="playPauseButton" on:click={handleClick} use:help={{ text: $isPlaying ? $t.help.pause : $t.help.play, placement: 'bottom' }}>
   {@html $isPlaying ? pauseIcon : playIcon}
 </button>
 

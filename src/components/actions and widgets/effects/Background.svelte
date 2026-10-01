@@ -4,6 +4,8 @@
   import AngleWidget from "../AngleWidget.svelte";
   import CoordinateWidget from "../CoordinateWidget.svelte";
     import { p5CanvasSize } from "../../../stores/canvasStore";
+  import Words from "../Words.svelte";
+  import { t, phraseWords } from "../../../i18n";
 
   export let name = '';
   export let params: any = {};
@@ -16,25 +18,28 @@
 
 </script>
 
+<!-- Words come from `steps` in i18n/en.ts: words[i] goes before setting {i}. -->
+
 {#if name === 'solid fill'}
- <span class="tool-name">fill</span> with <ColorWidget id="color" value={params.color} lockedIndex={params.lockedIndex} on:valueChange={handleValueChange}/>
+  {@const words = phraseWords($t.steps.fill)}
+  <Words text={words[0]}/><ColorWidget id="color" value={params.color} lockedIndex={params.lockedIndex}
+    on:valueChange={handleValueChange}/><Words text={words[1]}/>
 {:else if name === 'gradient'}
-<span class="tool-name">gradient</span> from 
-  <ColorWidget id="color" value={params.color} lockedIndex={params.lockedIndex} on:valueChange={handleValueChange}/>
-  to 
-  <ColorWidget id="color2" value={params.color2} lockedIndex={params.lockedIndex2} on:valueChange={handleValueChange}/>
+  {@const words = phraseWords($t.steps.gradient)}
+  <Words text={words[0]}/><ColorWidget id="color" value={params.color} lockedIndex={params.lockedIndex}
+    on:valueChange={handleValueChange}/><Words text={words[1]}/><ColorWidget id="color2" value={params.color2} lockedIndex={params.lockedIndex2}
+    on:valueChange={handleValueChange}/><Words text={words[2]}/>
   <AngleWidget id="angle" min={0} max={360} value={params.angle} on:valueChange={handleValueChange}/>
 {:else if name === 'stripes'}
-<span class="tool-name">stripes</span> of width
-  <NumberWidget id="stripeWidth" min={1} max={300} value={params.stripeWidth} on:valueChange={handleValueChange}/>
-  in 
-  <ColorWidget id="color" value={params.color} lockedIndex={params.lockedIndex} on:valueChange={handleValueChange}/>
+  {@const words = phraseWords($t.steps.stripes)}
+  <Words text={words[0]}/><NumberWidget id="stripeWidth" min={1} max={300} value={params.stripeWidth}
+    on:valueChange={handleValueChange}/><Words text={words[1]}/><ColorWidget id="color" value={params.color} lockedIndex={params.lockedIndex}
+    on:valueChange={handleValueChange}/><Words text={words[2]}/>
   <AngleWidget id="angle" min={0} max={360} value={params.angle} on:valueChange={handleValueChange}/>
 {:else if name === 'speckles'}
-<span class="tool-name">speckles</span> for time
-  <NumberWidget id="progress" min={0} max={100} value={params.progress} on:valueChange={handleValueChange}/>
-  at
-  <CoordinateWidget id="position" value={params.position} on:valueChange={handleValueChange}/>
-  in
-  <ColorWidget id="color" value={params.color} lockedIndex={params.lockedIndex} on:valueChange={handleValueChange}/>
+  {@const words = phraseWords($t.steps.speckles)}
+  <Words text={words[0]}/><NumberWidget id="progress" min={0} max={100} value={params.progress}
+    on:valueChange={handleValueChange}/><Words text={words[1]}/><CoordinateWidget id="position" value={params.position}
+    on:valueChange={handleValueChange}/><Words text={words[2]}/><ColorWidget id="color" value={params.color} lockedIndex={params.lockedIndex}
+    on:valueChange={handleValueChange}/><Words text={words[3]}/>
 {/if}

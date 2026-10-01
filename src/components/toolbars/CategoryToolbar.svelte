@@ -6,7 +6,7 @@
   import { scale, fly, slide } from 'svelte/transition';
   import { cubicInOut } from 'svelte/easing';
   import { help } from '../help';
-  import { helpText } from '../help-text';
+  import { t, entry } from '../../i18n';
 
   export let categories: string[];
   let visibleCategory = '';
@@ -65,7 +65,7 @@
       on:click={() => handleEffectClick(moveEffect)}
       class:selected={$selectedEffect === moveEffect}
       style:background-image={`url(/assets/icons/move.svg)`}
-      use:help={{ text: moveEffect.help, placement: 'right' }}>
+      use:help={{ text: entry($t.tools, moveEffect.textLabel)?.help, placement: 'right' }}>
       <!-- <span class="effect-label">Move</span> -->
     </button>
   {/if}
@@ -79,8 +79,8 @@
         class="category-button" class:selected={$activeCategory === category}
         style:background-image="{$activeCategory === category ? `url(/assets/effect-thumbnails/${$selectedEffect.thumbnail})` : ''}"
         disabled={disabled}
-        use:help={{ text: helpText.categories[category], placement: 'right' }}>
-        <img class="category-img" src="/assets/icons/{category}.svg" alt="{category}">
+        use:help={{ text: entry($t.help.categories, category), placement: 'right' }}>
+        <img class="category-img" src="/assets/icons/{category}.svg" alt={entry($t.categories, category) ?? category}>
         <!-- {category} -->
       </button>
       {:else}
@@ -100,9 +100,9 @@
               class="effect-button"
               class:selected={$selectedEffect === effect}
               style:background-image={`url(/assets/effect-thumbnails/${effect.thumbnail})`}
-              use:help={{ text: effect.help }}
+              use:help={{ text: entry($t.tools, effect.textLabel)?.help }}
               >
-              <span class="effect-label">{effect.textLabel}</span>
+              <span class="effect-label">{entry($t.tools, effect.textLabel)?.label ?? effect.textLabel}</span>
             </button>
           {/each}
         </div>

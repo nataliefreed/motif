@@ -6,6 +6,7 @@
     import tinycolor from 'tinycolor2';
     import { get } from 'svelte/store';
     import { paintColors, updatePaintStore } from '../../stores/colorStore';
+    import { t } from '../../i18n';
   
     let colors = {
       red: 0,
@@ -158,12 +159,12 @@
       
       <div class="color-preview" style="background-color: {tinycolor(mixedColor).toHexString()=='#ffffff'? '#fcfcfc' : mixedColor};">
         {#if !hasPaintColor(mixedColor) || isBlankColor(colors)}
-            <div>new color!</div>
+            <div>{$t.colorPicker.newColor}</div>
         {/if}
       </div>
       <div class="action-buttons">
-        <button class="instabutton" on:click={clearColor}>Clear</button>
-        <button class="instabutton" on:click={saveColor}>Save</button>
+        <button class="instabutton" on:click={clearColor}>{$t.colorPicker.clear}</button>
+        <button class="instabutton" on:click={saveColor}>{$t.colorPicker.save}</button>
         <!-- <button class="instabutton" on:click={resetColor}>Reset</button> -->
       </div>
     </div>

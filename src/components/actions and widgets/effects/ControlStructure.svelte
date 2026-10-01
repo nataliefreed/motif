@@ -6,8 +6,9 @@
   import NumberWidget from "../NumberWidget.svelte";
   import AngleWidget from "../AngleWidget.svelte";
     import repeat from "svelte-awesome/icons/repeat";
+  import Words from "../Words.svelte";
   import { help } from "../../help";
-  import { helpText } from "../../help-text";
+  import { t, phraseWords, displayTitle } from "../../../i18n";
 
   export let name = '';
   export let params: any = {};
@@ -23,6 +24,8 @@
     // console.log("handling value change in control structure", id, value);
   }
 
+  $: drawWithWords = phraseWords($t.steps.drawWith); // see `steps` in i18n/en.ts
+
   function toggle() {
     // console.log("toggling");
       isOpen = !isOpen;
@@ -31,7 +34,7 @@
 </script>
 
 {#if name === 'do each'}
-  <span class="list-title" use:help={{ text: isRecipe ? helpText.recipe : undefined, placement: 'right' }}><StringWidget id='title' value={params.title} on:valueChange={handleValueChange}/></span>
+  <span class="list-title" use:help={{ text: isRecipe ? $t.help.recipe : undefined, placement: 'right' }}><StringWidget id='title' value={$displayTitle(params.title)} on:valueChange={handleValueChange}/></span>
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <span class="toggle-arrow" on:click={toggle}> {isOpen ? '▼' : '▶'}</span>
@@ -47,13 +50,13 @@
 <div class="along-path-widget" class:expanded={isOpen}>
   <div class="brush-definition">
     <span class="brush-name-and-preview-widget">
-      draw with
-      <StringWidget id='title' value={params.title} on:valueChange={handleValueChange}/>
+      <Words text={drawWithWords[0]}/><StringWidget id='title' value={$displayTitle(params.title)}
+        on:valueChange={handleValueChange}/><Words text={drawWithWords[1]}/>
     </span>
     <!-- svelte-ignore a11y-click-events-have-key-events -->
 
     <div class="arrow-and-definition">
-    <span class="toggle-arrow" on:click={toggle} use:help={{ text: helpText.brushInside }}> {isOpen ? '▼' : '▶'}</span>
+    <span class="toggle-arrow" on:click={toggle} use:help={{ text: $t.help.brushInside }}> {isOpen ? '▼' : '▶'}</span>
       <ChildrenWidget id='children' on:miniActionClick={toggle} value={params.children}/>
   </div>
       <!-- {#if isOpen} -->

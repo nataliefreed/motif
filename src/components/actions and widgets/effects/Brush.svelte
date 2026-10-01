@@ -1,5 +1,7 @@
 <script lang="ts">
   import CoordinateWidget from "../CoordinateWidget.svelte";
+  import Words from "../Words.svelte";
+  import { t, phraseWords } from "../../../i18n";
   import ColorWidget from "../ColorWidget.svelte";
   import NumberWidget from "../NumberWidget.svelte";
   import { isChildOfAlongPath } from "../../action-utils";
@@ -25,9 +27,12 @@
 
 </script>
 
-{#if name === 'bounce'}
-  bounce from <CoordinateWidget id="start" value={params.start} on:valueChange={handleValueChange}/>
-  to <CoordinateWidget id="end" value={params.end} on:valueChange={handleValueChange}/> for time
-  <NumberWidget id="progress" value={params.progress} min={0} max={600} on:valueChange={handleValueChange}/>
-{/if}
+<!-- Words come from `steps` in i18n/en.ts: words[i] goes before setting {i}. -->
 
+{#if name === 'bounce'}
+  {@const words = phraseWords($t.steps.bounce)}
+  <Words text={words[0]}/><CoordinateWidget id="start" value={params.start}
+    on:valueChange={handleValueChange}/><Words text={words[1]}/><CoordinateWidget id="end" value={params.end}
+    on:valueChange={handleValueChange}/><Words text={words[2]}/><NumberWidget id="progress" value={params.progress} min={0} max={600}
+    on:valueChange={handleValueChange}/><Words text={words[3]}/>
+{/if}

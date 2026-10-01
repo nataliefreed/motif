@@ -6,6 +6,7 @@
   import { getReadableColor } from '../../utils/color-utils';
   import PaintColorMixer from './PaintColorMixer.svelte';
   import SavedColorLabel from './SavedColorLabel.svelte';
+  import { t, entry } from '../../i18n';
 
   const dispatch = createEventDispatcher();
 
@@ -189,11 +190,11 @@
 
 <div class="top-line">
   <div>
-    color mixer:
+    {$t.colorPicker.mixer}
     <select bind:value={activeMode} class="mode-selector"
       on:change={handleModeChange}>
       {#each modes as mode}
-        <option value={mode}>{mode}</option>
+        <option value={mode}>{entry($t.colorPicker.modes, mode) ?? mode}</option>
       {/each}
     </select>
   </div>
@@ -206,25 +207,25 @@
   {#if activeMode === 'RGB'}
   <div class="sliders">
     <div class="slider">
-      <label class="color-label" for="red" style="color:red">Red</label>
+      <label class="color-label" for="red" style="color:red">{$t.colorPicker.red}</label>
       <input class="color-label" type="number" min="0" max="255" bind:value={red} on:input={dispatchRGB} style="color:red">
       <input class="color-label" type="range" id="red" min="0" max="255" bind:value={red} on:input={dispatchRGB} style="--slider-gradient: {gradientRed};">
     </div>
     <div class="slider">
-      <label for="green" style="color:green">Green</label>
+      <label for="green" style="color:green">{$t.colorPicker.green}</label>
       <input type="number" min="0" max="255" bind:value={green} on:input={dispatchRGB} style="color:green">
       <input type="range" id="green" min="0" max="255" bind:value={green} on:input={dispatchRGB} style="--slider-gradient: {gradientGreen};">
       
     </div>
     <div class="slider">
-      <label for="blue" style="color:blue">Blue</label>
+      <label for="blue" style="color:blue">{$t.colorPicker.blue}</label>
       <input type="number" min="0" max="255" bind:value={blue} on:input={dispatchRGB} style="color:blue">
       <input type="range" id="blue" min="0" max="255" bind:value={blue} on:input={dispatchRGB} style="--slider-gradient: {gradientBlue};">
     </div>
 
     
   <div class="slider">
-      <label for="opacity" style="color:black">Opacity</label>
+      <label for="opacity" style="color:black">{$t.colorPicker.opacity}</label>
       <input type="number" min="0" max="100" step="1" bind:value={alphaPercentage} on:input={updateAlphaFromPercentage}>%
       <input type="range" id="opacity" min="0" max="100" step="1" bind:value={alphaPercentage} on:input={updateAlphaFromPercentage} style="--slider-gradient: {gradientAlpha};">
     </div>
@@ -258,7 +259,7 @@
 
 
         <div class="slider">
-          <label for="opacity" style="color:black">Opacity</label>
+          <label for="opacity" style="color:black">{$t.colorPicker.opacity}</label>
           <input type="number" min="0" max="100" step="1" bind:value={alphaPercentage} on:input={updateAlphaFromPercentage}>%
           <input type="range" id="opacity" min="0" max="100" step="1" bind:value={alphaPercentage} on:input={updateAlphaFromPercentage} style="--slider-gradient: {gradientAlpha};">
         </div>
