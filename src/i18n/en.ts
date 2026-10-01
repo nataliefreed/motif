@@ -1,5 +1,5 @@
 // English text for the MOTIF interface.
-// Each language has a file like this one with the same keys (es.ts is Spanish); to add a language,
+// Each language has a file like this one with the same keys (es.ts is Spanish, fr.ts is French); to add a language,
 // copy this file, translate the text, and list the language in index.ts.
 //
 // Recipe steps (`steps`) are phrases around a step's editable settings: {0}, {1}, ... stand for the

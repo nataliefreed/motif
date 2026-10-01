@@ -1,18 +1,19 @@
 import { derived, writable } from 'svelte/store';
 import { en, type Messages } from './en';
 import { es } from './es';
+import { fr } from './fr';
 
 // The interface language. Components read text from `$t`, e.g. `$t.toolbar.save`,
 // so everything on screen follows the language picker.
 
-export const languages = { en: 'English', es: 'Español' };
+export const languages = { en: 'English', es: 'Español', fr: 'Français' };
 export type Language = keyof typeof languages;
 export type { Messages };
 
-const messages: Record<Language, Messages> = { en, es };
+const messages: Record<Language, Messages> = { en, es, fr };
 
 // Help for the language picker is in every language at once, so anyone can find it.
-export const languagePickerHelp = 'Language · Idioma';
+export const languagePickerHelp = 'Language · Idioma · Langue';
 
 const savedLanguageKey = 'motif-language';
 

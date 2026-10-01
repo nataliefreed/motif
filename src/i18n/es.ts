@@ -131,7 +131,7 @@ export const es: Messages = {
   },
 
   titles: {
-    'How To Make My Design': 'Cómo Hacer Mi Diseño',
+    'How To Make My Design': 'La receta de mi diseño',
     'dot brush': 'pincel de puntos',
     'line brush': 'pincel de línea',
     'connected line': 'línea conectada',

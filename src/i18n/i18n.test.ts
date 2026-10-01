@@ -3,9 +3,10 @@ import { get } from 'svelte/store';
 import { effectList } from '../stores/effectList';
 import { en } from './en';
 import { es } from './es';
+import { fr } from './fr';
 import { displayTitle, entry, language, phraseWords } from './index';
 
-const translations = { es };
+const translations = { es, fr };
 
 // the settings placeholders in a recipe step phrase, in the order they appear
 function placeholders(phrase: string): string[] {
@@ -49,7 +50,7 @@ describe('interface text', () => {
 describe('displayTitle', () => {
   it('shows default names in the current language, whichever language they were saved in', () => {
     language.set('es');
-    expect(get(displayTitle)('How To Make My Design')).toBe('Cómo Hacer Mi Diseño');
+    expect(get(displayTitle)('How To Make My Design')).toBe('La receta de mi diseño');
     language.set('en');
     expect(get(displayTitle)('pincel de puntos')).toBe('dot brush');
   });
