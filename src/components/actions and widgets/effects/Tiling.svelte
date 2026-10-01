@@ -3,6 +3,7 @@
   import Words from "../Words.svelte";
   import { t, phraseWords } from "../../../i18n";
   import ChooserWidget from "../ChooserWidget.svelte";
+  import ColorWidget from "../ColorWidget.svelte";
 
   export let name = '';
   export let params: any = {};
@@ -13,20 +14,19 @@
     onUpdate({[id]: value });
   }
 
-  $: radial = (params.tiling || name) === 'radial';
-  $: words = phraseWords(radial ? $t.steps.radialPattern : $t.steps.pattern); // "radial with 8 around and 3 rings" or "straight grid 9 x 7"
+  // "straight grid 9 x 7", "checkerboard 4 x 4 with (color)" or "rosette with 8 around and 3 rings on (color)"
+  $: tiling = params.tiling || name;
+  $: radial = tiling === 'radial';
+  $: withColor = tiling === 'radial' || tiling === 'checkerboard';
+  $: words = phraseWords(radial ? $t.steps.radialPattern : tiling === 'checkerboard' ? $t.steps.checkerboardPattern : $t.steps.pattern);
 </script>
 
 <!-- Words come from `steps` in i18n/en.ts: words[i] goes before setting {i}. -->
 
-{#if radial}
-<Words text={words[0]}/><ChooserWidget id="tiling" options={['straight grid', 'brick', 'half drop', 'checkerboard', 'radial', 'mirror']} selected={params.tiling || name}
-  on:valueChange={handleValueChange}/><Words text={words[1]}/><NumberWidget id="around" min={3} max={30} value={params.around ?? 8}
+<Words text={words[0]}/><ChooserWidget id="tiling" options={['straight grid', 'brick', 'half drop', 'checkerboard', 'radial', 'mirror']} selected={tiling}
+  on:valueChange={handleValueChange}/><Words text={words[1]}/>{#if radial}<NumberWidget id="around" min={3} max={30} value={params.around ?? 8}
   on:valueChange={handleValueChange}/><Words text={words[2]}/><NumberWidget id="rings" min={1} max={8} value={params.rings ?? params.numRings ?? 3}
-  on:valueChange={handleValueChange}/><Words text={words[3]}/>
-{:else}
-<Words text={words[0]}/><ChooserWidget id="tiling" options={['straight grid', 'brick', 'half drop', 'checkerboard', 'radial', 'mirror']} selected={params.tiling || name}
-  on:valueChange={handleValueChange}/><Words text={words[1]}/><NumberWidget id="columns" min={1} max={30} value={params.columns ?? 4}
+  on:valueChange={handleValueChange}/>{:else}<NumberWidget id="columns" min={1} max={30} value={params.columns ?? 4}
   on:valueChange={handleValueChange}/><Words text={words[2]}/><NumberWidget id="rows" min={1} max={30} value={params.rows ?? 4}
-  on:valueChange={handleValueChange}/><Words text={words[3]}/>
-{/if}
+  on:valueChange={handleValueChange}/>{/if}<Words text={words[3]}/>{#if withColor}<ColorWidget id="color" value={params.color ?? '#FFFFFF00'} lockedIndex={params.lockedIndex}
+  on:valueChange={handleValueChange}/><Words text={words[4]}/>{/if}

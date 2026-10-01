@@ -914,7 +914,8 @@ export const effectList = [
     params: {
       tiling: 'checkerboard',
       columns: 4,
-      rows: 4
+      rows: 4,
+      color: '#FFFFFF'
     }
   },
   {
@@ -928,7 +929,8 @@ export const effectList = [
     params: {
       tiling: 'radial',
       around: 8,
-      rings: 3
+      rings: 3,
+      color: '#FFFFFF'
     }
   },
   {

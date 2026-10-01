@@ -959,11 +959,17 @@ function canvasCopy(p5) {
   return canvasCopyBuffer;
 }
 
-// Draws the whole copy of the canvas, shrunk, into the cell at (x, y), w by h. The cell's edges are rounded
-// to whole pixels, so neighboring copies meet exactly and nothing underneath shows through between them.
-function drawCell(p, snapshot, x, y, w, h) {
+// The cell at (x, y), w by h, with its edges rounded to whole pixels, so neighboring cells meet exactly and
+// nothing underneath shows through between them.
+function cellRect(x, y, w, h) {
   const left = Math.round(x), top = Math.round(y);
-  p.image(snapshot, left, top, Math.round(x + w) - left, Math.round(y + h) - top);
+  return { left, top, width: Math.round(x + w) - left, height: Math.round(y + h) - top };
+}
+
+// Draws the whole copy of the canvas, shrunk, into a cell.
+function drawCell(p, snapshot, x, y, w, h) {
+  const cell = cellRect(x, y, w, h);
+  p.image(snapshot, cell.left, cell.top, cell.width, cell.height);
 }
 
 // Tile: the whole canvas, shrunk and repeated. Radial repeats it in rings around a copy in the middle;
@@ -972,8 +978,9 @@ function drawCell(p, snapshot, x, y, w, h) {
 function tile(p, params, p5) {
   const snapshot = canvasCopy(p5);
   p.push();
+  const color = params.color ?? 'rgba(0, 0, 0, 0)'; // see-through, as checkerboards were before they had a color
   if (params.tiling === 'radial') {
-    radial(p, snapshot, params.around ?? 8, params.rings ?? params.numRings ?? 3);
+    radial(p, snapshot, params.around ?? 8, params.rings ?? params.numRings ?? 3, color);
   } else {
     const columns = params.columns ?? (params.width ? Math.max(1, Math.round(p.width / params.width)) : 4);
     const rows = params.rows ?? (params.height ? Math.max(1, Math.round(p.height / params.height)) : 4);
@@ -990,7 +997,7 @@ function tile(p, params, p5) {
         halfDrop(p, snapshot, w, h);
         break;
       case 'checkerboard':
-        checkerboard(p, snapshot, w, h);
+        checkerboard(p, snapshot, w, h, color);
         break;
       case 'mirror':
         mirrorGrid(p, snapshot, w, h);
@@ -1031,12 +1038,17 @@ function halfDrop(p, snapshot, w, h) {
   }
 }
 
-// copies in every other cell
-function checkerboard(p, snapshot, w, h) {
+// copies in every other cell, and `color` in the cells between
+function checkerboard(p, snapshot, w, h, color) {
+  p.noStroke();
+  p.fill(color);
   for (let row = 0; row * h < p.height - 0.5; row++) {
     for (let column = 0; column * w < p.width - 0.5; column++) {
       if ((row + column) % 2 === 1) {
         drawCell(p, snapshot, column * w, row * h, w, h);
+      } else {
+        const cell = cellRect(column * w, row * h, w, h);
+        p.rect(cell.left, cell.top, cell.width, cell.height);
       }
     }
   }
@@ -1061,9 +1073,12 @@ function checkerboard(p, snapshot, w, h) {
 //   }
 // }
 
-// a rosette: one copy in the middle, then rings of copies turned to face outward. Each copy is cut to a
-// circle, so copies in a ring and neighboring rings meet without covering each other.
-function radial(p, snapshot, around, rings) {
+// a rosette on `color`: one copy in the middle, then rings of copies turned to face outward. Each copy is
+// cut to a circle, so copies in a ring and neighboring rings meet without covering each other.
+function radial(p, snapshot, around, rings, color) {
+  p.noStroke();
+  p.fill(color);
+  p.rect(0, 0, p.width, p.height);
   const context = p.drawingContext;
   for (const copy of radialCopies(around, rings, p.width)) {
     p.push();
@@ -1114,13 +1129,12 @@ export function radialCopies(around, rings, size) {
 function mirrorGrid(p, snapshot, w, h) {
   for (let row = 0; row * h < p.height - 0.5; row++) {
     for (let column = 0; column * w < p.width - 0.5; column++) {
-      const left = Math.round(column * w), top = Math.round(row * h);
-      const right = Math.round((column + 1) * w), bottom = Math.round((row + 1) * h);
+      const cell = cellRect(column * w, row * h, w, h);
       const flipX = column % 2 === 1, flipY = row % 2 === 1;
       p.push();
-      p.translate(flipX ? right : left, flipY ? bottom : top);
+      p.translate(flipX ? cell.left + cell.width : cell.left, flipY ? cell.top + cell.height : cell.top);
       p.scale(flipX ? -1 : 1, flipY ? -1 : 1);
-      p.image(snapshot, 0, 0, right - left, bottom - top);
+      p.image(snapshot, 0, 0, cell.width, cell.height);
       p.pop();
     }
   }
