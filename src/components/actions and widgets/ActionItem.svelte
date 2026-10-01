@@ -8,7 +8,7 @@
   import ControlStructure from './effects/ControlStructure.svelte';
   import Shape from './effects/Shape.svelte';
   import Movement from './effects/Movement.svelte';
-  import { stagedActionID } from '../../stores/dataStore';
+  import { stagedActionID, actionRootID } from '../../stores/dataStore';
   import { onMount, createEventDispatcher } from 'svelte';
   import { updateActionParams, selectAction, actionToEffect } from '../action-utils';
   import { saveToHistory } from '../../stores/history';
@@ -93,7 +93,7 @@
     >
 
       {#if action.category === 'control'}
-        <ControlStructure name={action.name} params={action.params} {isOpen} onUpdate={handleUpdate} depth={depth+1} on:saveChange={handleSaveChange}/>
+        <ControlStructure name={action.name} params={action.params} {isOpen} isRecipe={action.uuid === $actionRootID} onUpdate={handleUpdate} depth={depth+1} on:saveChange={handleSaveChange}/>
       {:else if action.type === 'effect'}
         <div class="action-item-inner">
         {#if action.category !== 'shapes'}

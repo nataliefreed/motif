@@ -23,6 +23,7 @@ export interface Action {
 export type Effect = {
   name: string;
   textLabel: string;
+  help?: string; // hover help for the tool's button
   category: string;
   tags: string,
   init?: string;

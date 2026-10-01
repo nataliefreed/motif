@@ -6,12 +6,15 @@
   import NumberWidget from "../NumberWidget.svelte";
   import AngleWidget from "../AngleWidget.svelte";
     import repeat from "svelte-awesome/icons/repeat";
+  import { help } from "../../help";
+  import { helpText } from "../../help-text";
 
   export let name = '';
   export let params: any = {};
   export let onUpdate: (params: any) => void; // callback to update the actionStore
   export let depth = 0;
   export let isOpen = false;
+  export let isRecipe = false; // the top-level list: "How To Make My Design"
   
 
   function handleValueChange(event: CustomEvent) {
@@ -28,7 +31,7 @@
 </script>
 
 {#if name === 'do each'}
-  <span class="list-title"><StringWidget id='title' value={params.title} on:valueChange={handleValueChange}/></span>
+  <span class="list-title" use:help={{ text: isRecipe ? helpText.recipe : undefined, placement: 'right' }}><StringWidget id='title' value={params.title} on:valueChange={handleValueChange}/></span>
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <span class="toggle-arrow" on:click={toggle}> {isOpen ? '▼' : '▶'}</span>
@@ -50,7 +53,7 @@
     <!-- svelte-ignore a11y-click-events-have-key-events -->
 
     <div class="arrow-and-definition">
-    <span class="toggle-arrow" on:click={toggle}> {isOpen ? '▼' : '▶'}</span>
+    <span class="toggle-arrow" on:click={toggle} use:help={{ text: helpText.brushInside }}> {isOpen ? '▼' : '▶'}</span>
       <ChildrenWidget id='children' on:miniActionClick={toggle} value={params.children}/>
   </div>
       <!-- {#if isOpen} -->

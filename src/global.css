@@ -160,3 +160,15 @@
       outline: 3px solid #808080;
       outline-offset: 0.125rem;
     }
+  /* hover help (components/help.ts) */
+  .tippy-box[data-theme~='help'] {
+    font-size: 15px;
+    line-height: 1.35;
+    white-space: pre-line;
+  }
+
+  /* Browsers send no mouse events to a disabled button, so a button that can be disabled
+     gets its help from a wrapper. Let the pointer pass through to the wrapper. */
+  .help-target > button:disabled {
+    pointer-events: none;
+  }
