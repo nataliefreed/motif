@@ -945,17 +945,25 @@ function rotateRegion(p, params, p5) {
   let angle = params.angle;
 }
 
-// One reusable buffer for the shrunk copy of the canvas that patterns repeat. Making and removing a
-// p5 graphics buffer for every repeat doesn't work: in p5 1.11, removing one throws before it is cleaned up.
-let shrunkCanvasBuffer, shrunkCanvasOwner;
-function shrunkCanvas(p5, w, h) {
-  if (shrunkCanvasOwner !== p5) {
-    shrunkCanvasBuffer = p5.createGraphics(p5.width, p5.height);
-    shrunkCanvasOwner = p5;
+// One reusable buffer holding a copy of the canvas for patterns to repeat, since they draw onto the canvas
+// they copy. (Making and removing a p5 graphics buffer for every repeat doesn't work: in p5 1.11, removing
+// one throws before it is cleaned up.)
+let canvasCopyBuffer, canvasCopyOwner;
+function canvasCopy(p5) {
+  if (canvasCopyOwner !== p5) {
+    canvasCopyBuffer = p5.createGraphics(p5.width, p5.height);
+    canvasCopyOwner = p5;
   }
-  shrunkCanvasBuffer.clear();
-  shrunkCanvasBuffer.image(p5.getStaticCanvas(), 0, 0, w, h); // in the top-left w x h, where the layouts read it
-  return shrunkCanvasBuffer;
+  canvasCopyBuffer.clear();
+  canvasCopyBuffer.image(p5.getStaticCanvas(), 0, 0);
+  return canvasCopyBuffer;
+}
+
+// Draws the whole copy of the canvas, shrunk, into the cell at (x, y), w by h. The cell's edges are rounded
+// to whole pixels, so neighboring copies meet exactly and nothing underneath shows through between them.
+function drawCell(p, snapshot, x, y, w, h) {
+  const left = Math.round(x), top = Math.round(y);
+  p.image(snapshot, left, top, Math.round(x + w) - left, Math.round(y + h) - top);
 }
 
 // Tile: the whole canvas, shrunk into one cell of a grid `columns` wide and `rows` high, then laid out
@@ -967,7 +975,7 @@ function tile(p, params, p5) {
   const w = p.width / columns;
   const h = p.height / rows;
 
-  const snapshot = shrunkCanvas(p5, w, h);
+  const snapshot = canvasCopy(p5);
 
   p.push();
   switch (params.tiling) {
@@ -995,43 +1003,41 @@ function tile(p, params, p5) {
   p.pop();
 }
 
+// The layouts fill the canvas with cells w by h; w and h need not be whole numbers, so cells are counted.
 function straightGrid(p, snapshot, w, h) {
-  for (let dx = 0; dx < p.width; dx += w) {
-    for (let dy = 0; dy < p.height; dy += h) {
-      p.image(snapshot, dx, dy, w, h, 0, 0, w, h);
+  for (let row = 0; row * h < p.height - 0.5; row++) {
+    for (let column = 0; column * w < p.width - 0.5; column++) {
+      drawCell(p, snapshot, column * w, row * h, w, h);
     }
   }
 }
 
+// every other row shifted left by half a cell
 function brick(p, snapshot, w, h) {
-  let shiftRow = false;
-  for (let dy = 0; dy < p.height; dy += h) {
-    let startX = shiftRow ? - w / 2 : 0;
-    for (let dx = startX; dx < p.width; dx += w) {
-      p.image(snapshot, dx, dy, w, h, 0, 0, w, h);
+  for (let row = 0; row * h < p.height - 0.5; row++) {
+    const shift = row % 2 === 1 ? -w / 2 : 0;
+    for (let column = 0; shift + column * w < p.width - 0.5; column++) {
+      drawCell(p, snapshot, shift + column * w, row * h, w, h);
     }
-    shiftRow = !shiftRow;
   }
 }
 
+// every other column shifted up by half a cell
 function halfDrop(p, snapshot, w, h) {
-  let halfColumnHeight = h / 2;
-  let shiftColumn = false;
-  for (let dx = 0; dx < p.width; dx += w) {
-    let startY = shiftColumn ? -halfColumnHeight : 0;
-    for (let dy = startY; dy < p.height; dy += h) {
-      p.image(snapshot, dx, dy, w, h, 0, 0, w, h);
+  for (let column = 0; column * w < p.width - 0.5; column++) {
+    const shift = column % 2 === 1 ? -h / 2 : 0;
+    for (let row = 0; shift + row * h < p.height - 0.5; row++) {
+      drawCell(p, snapshot, column * w, shift + row * h, w, h);
     }
-    shiftColumn = !shiftColumn;
   }
 }
 
-// copies in every other cell; cells are counted, since w and h need not be whole numbers
+// copies in every other cell
 function checkerboard(p, snapshot, w, h) {
   for (let row = 0; row * h < p.height - 0.5; row++) {
     for (let column = 0; column * w < p.width - 0.5; column++) {
       if ((row + column) % 2 === 1) {
-        p.image(snapshot, column * w, row * h, w, h, 0, 0, w, h);
+        drawCell(p, snapshot, column * w, row * h, w, h);
       }
     }
   }
@@ -1074,7 +1080,7 @@ function radial(p, snapshot, w, h, numRings, centerX, centerY) {
       p.translate(dx + w / 2, dy + h / 2);
       p.rotate(angle + ring * 0.1); // Adjust rotation amount as needed
       // Draw the image, centered on the translation point
-      p.image(snapshot, -w / 2, -h / 2, w, h, 0, 0, w, h);
+      p.image(snapshot, -w / 2, -h / 2, w, h);
       // Restore the original transformation state
       p.pop();
     }
@@ -1089,11 +1095,13 @@ function radial(p, snapshot, w, h, numRings, centerX, centerY) {
 function mirrorGrid(p, snapshot, w, h) {
   for (let row = 0; row * h < p.height - 0.5; row++) {
     for (let column = 0; column * w < p.width - 0.5; column++) {
+      const left = Math.round(column * w), top = Math.round(row * h);
+      const right = Math.round((column + 1) * w), bottom = Math.round((row + 1) * h);
       const flipX = column % 2 === 1, flipY = row % 2 === 1;
       p.push();
-      p.translate(column * w + (flipX ? w : 0), row * h + (flipY ? h : 0));
+      p.translate(flipX ? right : left, flipY ? bottom : top);
       p.scale(flipX ? -1 : 1, flipY ? -1 : 1);
-      p.image(snapshot, 0, 0, w, h, 0, 0, w, h);
+      p.image(snapshot, 0, 0, right - left, bottom - top);
       p.pop();
     }
   }
