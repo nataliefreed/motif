@@ -26,7 +26,7 @@ export const en = {
     draw: 'draw',
   },
 
-  switchColors: 'switch colors',
+  randomColors: 'surprise colors',
 
   // tool categories, keyed by the `category` of tools in stores/effectList.ts
   categories: {
@@ -154,6 +154,29 @@ export const en = {
     'a brush without a name': 'a brush without a name',
   },
 
+  // the palette menu below the palette: built-in color schemes, and saving and opening palette files
+  palettes: {
+    menu: 'palettes',
+    yours: 'your colors',
+    save: 'save colors',
+    open: 'open colors',
+    noColors: 'Couldn’t get colors from that picture',
+    // names of the built-in schemes, keyed like `palettePresets` in stores/colorStore.ts. The menu shows
+    // them as swatches; the names are for screen readers.
+    presets: {
+      starting: 'starting colors',
+      pastel: 'pastel rainbow',
+      blocks: 'blocks',
+      denim: 'denim',
+    },
+  },
+
+  // names for downloaded files, without the .png
+  files: {
+    design: 'my design',
+    palette: 'my colors',
+  },
+
   colorPicker: {
     mixer: 'color mixer:',
     modes: { paint: 'paint', RGB: 'RGB', HSL: 'HSL' },
@@ -207,8 +230,11 @@ export const en = {
     selectFirst: '\nStart by clicking a step in the recipe to select it',
 
     // colors
-    palette: 'These are your color scheme colors! Click one to draw with it.\nDouble-click a color to change it. Every step that uses that letter changes too!',
-    switchColors: 'When this is on, your brush gets a new random color every time you draw. Pick a color to turn it off',
+    palette: 'These are your color scheme colors. Click one to draw with it.\nDouble-click a color to change it. Every step that uses that letter changes too',
+    paletteMenu: 'Pick a new set of colors for your palette or save and open your own. Everything drawn with a lettered color changes too',
+    savePalette: 'Save your colors as a picture, so you can use them again or share them',
+    openPalette: 'Use the most common colors from any picture',
+    randomColors: 'When this is on, your brush gets a new random color every time you draw',
   },
 };
 

@@ -7,6 +7,8 @@ import { deepCopy } from '../utils/utils';
 import { getDescendantIDs, addCurrentEffectAsStagedAction } from './action-utils';
 import type { ActionStore } from '../types/types';
 import { palettes } from '../stores/colorStore';
+import { mostCommonColors } from '../utils/color-utils';
+import { t } from '../i18n';
 
 export function exportCodeWithImage() {
   const canvas = document.getElementById('defaultCanvas0') as HTMLCanvasElement;
@@ -34,15 +36,7 @@ export function exportCodeWithImage() {
 
     try {
       const modifiedDataURI = addMetadataFromBase64DataURI(dataURI, 'exportData', JSON.stringify(exportData));
-
-      // Create a temporary anchor element to trigger download
-      const a = document.createElement('a');
-      a.href = modifiedDataURI;
-      a.download = 'my design.png';
-      document.body.appendChild(a);
-      a.click();
-
-      document.body.removeChild(a);
+      downloadDataURI(modifiedDataURI, `${get(t).files.design}.png`);
     } catch (error) {
       console.error('Error adding metadata:', error);
     }
@@ -222,5 +216,55 @@ function importCode() {
   };
 
   // Trigger the file input
+  input.click();
+}
+function downloadDataURI(dataURI: string, fileName: string) {
+  const a = document.createElement('a');
+  a.href = dataURI;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+// A palette file is a picture of the palette's colors: equal tiles in letter order, a to l, with nothing
+// else in it, so opening it with importPalette gives back the same colors for the same letters.
+export function exportPalette(colors: string[]) {
+  const tile = 60, columns = 6;
+  const canvas = document.createElement('canvas');
+  canvas.width = columns * tile;
+  canvas.height = Math.ceil(colors.length / columns) * tile;
+  const g = canvas.getContext('2d')!;
+  colors.forEach((color, i) => {
+    g.fillStyle = color;
+    g.fillRect((i % columns) * tile, Math.floor(i / columns) * tile, tile, tile);
+  });
+  downloadDataURI(canvas.toDataURL('image/png'), `${get(t).files.palette}.png`);
+}
+
+// Asks for any picture and passes on its most common colors, one for each palette letter,
+// or calls `noColors` if it can't be read or has no visible pixels.
+export function importPalette(paletteSize: number, useColors: (colors: string[]) => void, noColors: () => void) {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = async () => {
+    const file = input.files?.[0];
+    if (!file) return;
+    try {
+      const image = await createImageBitmap(file);
+      const scale = Math.min(1, 400 / Math.max(image.width, image.height)); // big photos: fewer pixels to count, same colors
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(image.width * scale));
+      canvas.height = Math.max(1, Math.round(image.height * scale));
+      const g = canvas.getContext('2d')!;
+      g.drawImage(image, 0, 0, canvas.width, canvas.height);
+      const colors = mostCommonColors(g.getImageData(0, 0, canvas.width, canvas.height).data, paletteSize);
+      if (colors.length > 0) useColors(colors);
+      else noColors();
+    } catch {
+      noColors(); // not a picture the browser can read
+    }
+  };
   input.click();
 }

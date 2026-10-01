@@ -305,24 +305,25 @@
       </div> <!-- code-toolbar -->
       <div class="color-bank">
         <ColorBank/>
-        
-          <div class="toggle-with-label" use:help={{ text: $t.help.switchColors, placement: 'left' }}>
-            <label class="toggle-switch">
-              <input
-                type="checkbox"
-                class="toggle dont-deselect"
-                bind:checked={$shouldRandomizeColor}
-              >
-              <span class="slider round"></span>
-            </label>
-            {$t.switchColors}
-          </div>
         </div>
       </div> <!-- right-sidebar -->
 
     <!-- <div class="footer"></div> -->
 
     <!-- <div class="footer-center"> -->
+      <div class="bottom-left-corner">
+        <div class="toggle-with-label" use:help={{ text: $t.help.randomColors, placement: 'top' }}>
+          <label class="toggle-switch">
+            <input
+              type="checkbox"
+              class="toggle dont-deselect"
+              bind:checked={$shouldRandomizeColor}
+            >
+            <span class="slider round"></span>
+          </label>
+          {$t.randomColors}
+        </div>
+      </div>
       <div class="effect-buttons-bottom" use:shrinkToFit={[$activeCategory, $language]}>
         {#if $activeCategory }
           <CategoryToolbar categories={[$activeCategory]} effectMode={true}/>
@@ -756,6 +757,20 @@
     width: 100%;
     overflow-y: auto;
     padding: 1em 0;
+  }
+
+  .bottom-left-corner {
+    grid-row: 4;
+    grid-column: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+  }
+
+  .bottom-left-corner .toggle-with-label {
+    gap: 0;
+    line-height: 0.85em; /* switch and two lines of label in one toolbar-sized square */
   }
 
   .effect-buttons-bottom {

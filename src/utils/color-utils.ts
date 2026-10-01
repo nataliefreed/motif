@@ -71,3 +71,53 @@ export function mixPaintColors(colors) {
     }
   }
 }
+
+// The most common colors in an image, most common first, from its RGBA pixels (as from getImageData).
+// Pixels are grouped by shade (16 levels per channel) so a photo's thousands of slightly different pixels
+// count together, then groups whose average colors are nearly the same are joined, since a shade can fall
+// on either side of a group boundary. Transparent pixels are skipped. Colors that are equally common keep
+// the order they first appear in, reading left to right.
+export function mostCommonColors(pixels: Uint8ClampedArray, count: number): string[] {
+	type Group = { pixels: number; r: number; g: number; b: number };
+	const sameColorDistance = 12; // closer than any two colors in the built-in palettes
+	const byPixels = (a: Group, b: Group) => b.pixels - a.pixels;
+	const average = (group: Group) => [group.r / group.pixels, group.g / group.pixels, group.b / group.pixels];
+
+	const groups = new Map<number, Group>();
+	for (let i = 0; i < pixels.length; i += 4) {
+		if (pixels[i + 3] < 128) continue;
+		const r = pixels[i], g = pixels[i + 1], b = pixels[i + 2];
+		const key = ((r >> 4) << 8) | ((g >> 4) << 4) | (b >> 4);
+		const group = groups.get(key) ?? { pixels: 0, r: 0, g: 0, b: 0 };
+		group.pixels++;
+		group.r += r;
+		group.g += g;
+		group.b += b;
+		groups.set(key, group);
+	}
+
+	const colors: Group[] = [];
+	for (const group of [...groups.values()].sort(byPixels)) {
+		const [r, g, b] = average(group);
+		const same = colors.find(color => {
+			const [cr, cg, cb] = average(color);
+			return Math.hypot(r - cr, g - cg, b - cb) < sameColorDistance;
+		});
+		if (same) {
+			same.pixels += group.pixels;
+			same.r += group.r;
+			same.g += group.g;
+			same.b += group.b;
+		} else {
+			colors.push({ ...group });
+		}
+	}
+
+	return colors
+		.sort(byPixels)
+		.slice(0, count)
+		.map(color => {
+			const [r, g, b] = average(color);
+			return tinycolor({ r, g, b }).toHexString();
+		});
+}

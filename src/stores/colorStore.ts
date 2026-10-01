@@ -44,6 +44,33 @@ const samplePalettes: Palette = {
   ]
 };
 
+// Built-in color schemes to start a palette from, shown as swatches rather than names.
+// Each has one color for each palette letter, a to l.
+export const palettePresets = {
+  starting: samplePalettes.paint,
+  pastel: [
+    '#F7A8A8', '#FAC3A0', '#FCE49E', '#DDF0A4', '#B6E6B4', '#A7E3DC',
+    '#A9CFF2', '#B6BDF0', '#CDB6EE', '#F2B6DC', '#FFF7EC', '#77738C',
+  ],
+  // the grass, wood, stone, water and ore colors of a world built from blocks
+  blocks: [
+    '#7CBD4B', '#3B7A23', '#8B5E3C', '#B8945F', '#DBD3A0', '#8F8F8F',
+    '#3A3A3A', '#3F76E4', '#4DE0D6', '#F2CD3F', '#E8701A', '#B31C1C',
+  ],
+  // from bleached to raw indigo, then black denim, thread and a copper rivet
+  denim: [
+    '#D7E1EC', '#B4C7DC', '#8FAACB', '#7090B8', '#577BA6', '#416592',
+    '#304F7B', '#233C64', '#1A2C4C', '#25282E', '#D9A13B', '#B26B3C',
+  ],
+};
+export type PalettePreset = keyof typeof palettePresets;
+
+// A palette has one color for each letter. Colors from a file fill the letters in order,
+// and any letter the file has no color for keeps its current color.
+export function fillPalette(colors: string[], current: string[]): string[] {
+  return current.map((color, i) => colors[i] ?? color);
+}
+
 export const palettes = writable<Palette>(samplePalettes);
 export const originalPalettes = writable<Palette>(JSON.parse(JSON.stringify(samplePalettes))); //save a copy of the original palettes
 export const activePaletteName = writable('myPalette');
@@ -52,6 +79,19 @@ export const activePalette = derived(
   [palettes, activePaletteName],
   ([$palettes, $activePaletteName]) => $palettes[$activePaletteName]
 );
+
+export function samePalette(a: string[], b: string[]) {
+  return a.length === b.length && a.every((color, i) => color.toLowerCase() === b[i].toLowerCase());
+}
+
+// The palette's colors whenever they are not one of the built-in palettes: edited, opened from a picture,
+// or loaded with a design. The palette menu lists them first, so they can be saved or chosen again.
+export const customPalette = writable<string[] | null>(null);
+activePalette.subscribe(colors => {
+  if (colors && !Object.values(palettePresets).some(preset => samePalette(preset, colors))) {
+    customPalette.set([...colors]);
+  }
+});
 
 export const pickerPalette = samplePalettes.paint;
 

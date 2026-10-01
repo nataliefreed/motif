@@ -23,7 +23,7 @@ export const fr: Messages = {
     draw: 'dessiner',
   },
 
-  switchColors: 'couleurs variées',
+  randomColors: 'couleurs surprise',
 
   categories: {
     shapes: 'formes',
@@ -145,6 +145,25 @@ export const fr: Messages = {
     'a brush without a name': 'un pinceau sans nom',
   },
 
+  palettes: {
+    menu: 'palettes',
+    yours: 'tes couleurs',
+    save: 'enregistrer les couleurs',
+    open: 'ouvrir des couleurs',
+    noColors: 'Impossible de prendre les couleurs de cette image',
+    presets: {
+      starting: 'couleurs de départ',
+      pastel: 'arc-en-ciel pastel',
+      blocks: 'blocs',
+      denim: 'denim',
+    },
+  },
+
+  files: {
+    design: 'mon dessin',
+    palette: 'mes couleurs',
+  },
+
   colorPicker: {
     mixer: 'mélanger les couleurs :',
     modes: { paint: 'peinture', RGB: 'RVB', HSL: 'TSL' },
@@ -192,7 +211,10 @@ export const fr: Messages = {
     draw: 'Transforme l’étape sélectionnée en pinceau, pour pouvoir en dessiner encore',
     selectFirst: '\nCommence par cliquer sur une étape de la recette pour la sélectionner',
 
-    palette: 'Voici les couleurs de ta palette ! Clique sur une couleur pour dessiner avec.\nDouble-clique sur une couleur pour la changer. Toutes les étapes qui utilisent cette lettre changent aussi !',
-    switchColors: 'Quand c’est activé, ton pinceau prend une nouvelle couleur au hasard chaque fois que tu dessines. Choisis une couleur pour le désactiver',
+    palette: 'Voici les couleurs de ta palette. Clique sur une couleur pour dessiner avec.\nDouble-clique sur une couleur pour la changer. Toutes les étapes qui utilisent cette lettre changent aussi',
+    paletteMenu: 'Choisis une nouvelle palette de couleurs ou enregistre et ouvre la tienne. Tout ce que tu as dessiné avec une couleur à lettre change aussi',
+    savePalette: 'Enregistre tes couleurs comme une image, pour les réutiliser ou les partager',
+    openPalette: 'Utilise les couleurs les plus fréquentes de n’importe quelle image',
+    randomColors: 'Quand c’est activé, ton pinceau prend une nouvelle couleur au hasard chaque fois que tu dessines',
   },
 };

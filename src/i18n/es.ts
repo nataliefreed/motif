@@ -24,7 +24,7 @@ export const es: Messages = {
     draw: 'dibujar',
   },
 
-  switchColors: 'cambiar colores',
+  randomColors: 'colores sorpresa',
 
   categories: {
     shapes: 'figuras',
@@ -146,6 +146,25 @@ export const es: Messages = {
     'a brush without a name': 'un pincel sin nombre',
   },
 
+  palettes: {
+    menu: 'paletas',
+    yours: 'tus colores',
+    save: 'guardar colores',
+    open: 'abrir colores',
+    noColors: 'No se pudieron sacar colores de esa imagen',
+    presets: {
+      starting: 'colores iniciales',
+      pastel: 'arcoíris pastel',
+      blocks: 'bloques',
+      denim: 'mezclilla',
+    },
+  },
+
+  files: {
+    design: 'mi diseño',
+    palette: 'mis colores',
+  },
+
   colorPicker: {
     mixer: 'mezclar color:',
     modes: { paint: 'pintura', RGB: 'RGB', HSL: 'HSL' },
@@ -193,7 +212,10 @@ export const es: Messages = {
     draw: 'Convierte el paso seleccionado en tu pincel, para que puedas dibujar más de él',
     selectFirst: '\nEmpieza por hacer clic en un paso de la receta para seleccionarlo',
 
-    palette: '¡Estos son los colores de tu combinación! Haz clic en uno para dibujar con él.\nHaz doble clic en un color para cambiarlo. ¡Cada paso que usa esa letra también cambia!',
-    switchColors: 'Cuando está encendido, tu pincel cambia a un color al azar cada vez que dibujas. Elige un color para apagarlo',
+    palette: 'Estos son los colores de tu combinación. Haz clic en uno para dibujar con él.\nHaz doble clic en un color para cambiarlo. Cada paso que usa esa letra también cambia',
+    paletteMenu: 'Elige una nueva combinación de colores para tu paleta o guarda y abre la tuya. Todo lo que dibujaste con un color con letra también cambia',
+    savePalette: 'Guarda tus colores como una imagen, para usarlos otra vez o compartirlos',
+    openPalette: 'Usa los colores más comunes de cualquier imagen',
+    randomColors: 'Cuando está encendido, tu pincel cambia a un color al azar cada vez que dibujas',
   },
 };
