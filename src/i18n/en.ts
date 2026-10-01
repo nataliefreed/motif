@@ -70,7 +70,7 @@ export const en = {
     'Brick Pattern': { label: 'Brick Pattern', help: 'Click to repeat your whole drawing in small copies, in rows like bricks in a wall. Drag to choose how many' },
     'Half Drop': { label: 'Half Drop', help: 'Click to repeat your whole drawing in small copies, with every other column shifted down. Drag to choose how many' },
     'Checkerboard': { label: 'Checkerboard', help: 'Click to put small copies of your whole drawing in every other square, like a checkerboard. Drag to choose how many' },
-    'Radial': { label: 'Radial', help: 'Click to repeat your whole drawing in small copies, in rings around the middle. Drag to choose how many' },
+    'Radial': { label: 'Radial', help: 'Click to repeat your whole drawing in rings around a copy in the middle, like a flower. Drag to choose how many' },
     'Mirror': { label: 'Mirror', help: 'Click to repeat your whole drawing in small copies, each one a mirror image of the next. Drag to choose how many' },
     'Invert': { label: 'Invert', help: 'Click to flip every color in your design to its opposite' },
     'Grayscale': { label: 'Grayscale', help: 'Click to turn your design gray, like an old photo' },
@@ -109,6 +109,7 @@ export const en = {
     drawWith: 'draw with {0}',
     // patterns
     pattern: '{0} {1} x {2}',
+    radialPattern: '{0} with {1} around and {2} rings',
     // special effects
     scale: '**scale** by {0}% width {1} and height {2} at {3}',
     shift: '{0} **shift** with width {1} and offset {2}',

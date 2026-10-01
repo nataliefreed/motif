@@ -65,7 +65,7 @@ export const fr: Messages = {
     'Brick Pattern': { label: 'Briques', help: 'Clique pour répéter tout ton dessin en petites copies, en rangées comme les briques d’un mur. Fais glisser pour choisir combien' },
     'Half Drop': { label: 'Escalier', help: 'Clique pour répéter tout ton dessin en petites copies, en colonnes décalées une sur deux. Fais glisser pour choisir combien' },
     'Checkerboard': { label: 'Damier', help: 'Clique pour mettre de petites copies de tout ton dessin une case sur deux, comme un damier. Fais glisser pour choisir combien' },
-    'Radial': { label: 'Rosace', help: 'Clique pour répéter tout ton dessin en petites copies, en cercles autour du milieu. Fais glisser pour choisir combien' },
+    'Radial': { label: 'Rosace', help: 'Clique pour répéter tout ton dessin en anneaux autour d’une copie au milieu, comme une fleur. Fais glisser pour choisir combien' },
     'Mirror': { label: 'Miroir', help: 'Clique pour répéter tout ton dessin en petites copies, chacune le reflet de sa voisine. Fais glisser pour choisir combien' },
     'Invert': { label: 'Inverser', help: 'Clique pour remplacer chaque couleur de ton dessin par son opposée' },
     'Grayscale': { label: 'Gris', help: 'Clique pour mettre ton dessin en gris, comme une vieille photo' },
@@ -103,6 +103,7 @@ export const fr: Messages = {
     drawWith: 'dessiner avec {0}',
     // motifs
     pattern: '{0} {1} x {2}',
+    radialPattern: '{0} avec {1} autour et {2} anneaux',
     // effets spéciaux
     scale: '**redimensionner** à {0} %, largeur {1} et hauteur {2} à {3}',
     shift: '**décaler** {0} avec une largeur de {1} et un décalage de {2}',

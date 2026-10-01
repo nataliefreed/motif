@@ -966,39 +966,38 @@ function drawCell(p, snapshot, x, y, w, h) {
   p.image(snapshot, left, top, Math.round(x + w) - left, Math.round(y + h) - top);
 }
 
-// Tile: the whole canvas, shrunk into one cell of a grid `columns` wide and `rows` high, then laid out
-// in that grid in one of several ways. (Patterns saved before this kept the size of a piece of the canvas
-// instead; they become the grid that size makes.)
+// Tile: the whole canvas, shrunk and repeated. Radial repeats it in rings around a copy in the middle;
+// the other layouts shrink it into the cells of a grid `columns` wide and `rows` high. (Patterns saved
+// before kept the size of a piece of the canvas instead; they become the grid that size makes.)
 function tile(p, params, p5) {
-  const columns = params.columns ?? Math.max(1, Math.round(p.width / params.width));
-  const rows = params.rows ?? Math.max(1, Math.round(p.height / params.height));
-  const w = p.width / columns;
-  const h = p.height / rows;
-
   const snapshot = canvasCopy(p5);
-
   p.push();
-  switch (params.tiling) {
-    case 'straight grid':
-      straightGrid(p, snapshot, w, h);
-      break;
-    case 'brick':
-      brick(p, snapshot, w, h);
-      break;
-    case 'half drop':
-      halfDrop(p, snapshot, w, h);
-      break;
-    case 'checkerboard':
-      checkerboard(p, snapshot, w, h);
-      break;
-    case 'radial': // rings around the middle, as many as it takes to reach the corners
-      radial(p, snapshot, w, h, Math.ceil(Math.hypot(p.width, p.height) / 2 / h), p.width / 2, p.height / 2);
-      break;
-    case 'mirror':
-      mirrorGrid(p, snapshot, w, h);
-      break;
-    default:
-      break;
+  if (params.tiling === 'radial') {
+    radial(p, snapshot, params.around ?? 8, params.rings ?? params.numRings ?? 3);
+  } else {
+    const columns = params.columns ?? (params.width ? Math.max(1, Math.round(p.width / params.width)) : 4);
+    const rows = params.rows ?? (params.height ? Math.max(1, Math.round(p.height / params.height)) : 4);
+    const w = p.width / columns;
+    const h = p.height / rows;
+    switch (params.tiling) {
+      case 'straight grid':
+        straightGrid(p, snapshot, w, h);
+        break;
+      case 'brick':
+        brick(p, snapshot, w, h);
+        break;
+      case 'half drop':
+        halfDrop(p, snapshot, w, h);
+        break;
+      case 'checkerboard':
+        checkerboard(p, snapshot, w, h);
+        break;
+      case 'mirror':
+        mirrorGrid(p, snapshot, w, h);
+        break;
+      default:
+        break;
+    }
   }
   p.pop();
 }
@@ -1062,29 +1061,49 @@ function checkerboard(p, snapshot, w, h) {
 //   }
 // }
 
-function radial(p, snapshot, w, h, numRings, centerX, centerY) {
-  for (let ring = 0; ring < numRings; ring++) {
-    // Calculate the radius and circumference for the current ring
-    let radius = (ring + 1) * 1 * h;
-    let circumference = 2 * Math.PI * radius;
-    let numTiles = Math.floor(circumference / w);
+// a rosette: one copy in the middle, then rings of copies turned to face outward. Each copy is cut to a
+// circle, so copies in a ring and neighboring rings meet without covering each other.
+function radial(p, snapshot, around, rings) {
+  const context = p.drawingContext;
+  for (const copy of radialCopies(around, rings, p.width)) {
+    p.push();
+    p.translate(copy.x, copy.y);
+    p.rotate(copy.angle);
+    context.save();
+    context.beginPath();
+    context.arc(0, 0, copy.size / 2, 0, 2 * Math.PI);
+    context.clip();
+    p.image(snapshot, -copy.size / 2, -copy.size / 2, copy.size, copy.size);
+    context.restore();
+    p.pop();
+  }
+}
 
-    for (let i = 0; i < numTiles; i++) {
-      let angle = (i / numTiles) * 2 * Math.PI;
-      let dx = centerX + radius * Math.cos(angle) - w / 2;
-      let dy = centerY + radius * Math.sin(angle) - h / 2;
+// Where a rosette's copies go on a square canvas `size` wide: one in the middle, then `rings` rings of
+// `around` round copies each (at least 3), every other ring turned half a step. A ring's copies nearly fill
+// its circle without overlapping, so each ring's copies are bigger than the last ring's; each ring touches
+// the next, and the whole
+// rosette is scaled so the outermost ring reaches the corners. Copies are { x, y, size, angle }: centered
+// at (x, y), turned by `angle` radians so their tops face outward, and listed outermost first, so inner
+// rings are drawn on top.
+export function radialCopies(around, rings, size) {
+  const sizeOverRadius = Math.min(1, (2 * Math.PI / around) * 0.9);
+  const growth = (1 + sizeOverRadius / 2) / (1 - sizeOverRadius / 2); // touching rings: r - s/2 = r' + s'/2
+  const radii = Array.from({ length: rings }, (_, i) => growth ** i); // in units of the first ring's radius
+  const outermost = radii[rings - 1] * (1 + sizeOverRadius / 2);
+  const scale = (size / 2) * Math.SQRT2 / outermost;
+  const center = size / 2;
 
-      // Save the current transformation state
-      p.push();
-      // Move to the tile's position and rotate
-      p.translate(dx + w / 2, dy + h / 2);
-      p.rotate(angle + ring * 0.1); // Adjust rotation amount as needed
-      // Draw the image, centered on the translation point
-      p.image(snapshot, -w / 2, -h / 2, w, h);
-      // Restore the original transformation state
-      p.pop();
+  const copies = [];
+  for (let ring = rings - 1; ring >= 0; ring--) {
+    const radius = radii[ring] * scale;
+    for (let i = 0; i < around; i++) {
+      const angle = (i + (ring % 2) / 2) * 2 * Math.PI / around;
+      copies.push({ x: center + radius * Math.cos(angle), y: center + radius * Math.sin(angle), size: sizeOverRadius * radius, angle: angle + Math.PI / 2 });
     }
   }
+  copies.push({ x: center, y: center, size: (2 - sizeOverRadius) * scale, angle: 0 }); // the middle fills the first ring's hole
+  return copies;
 }
 
 

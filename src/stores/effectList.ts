@@ -927,8 +927,8 @@ export const effectList = [
     mouseActionType: 'drag',
     params: {
       tiling: 'radial',
-      columns: 6,
-      rows: 6
+      around: 8,
+      rings: 3
     }
   },
   {
