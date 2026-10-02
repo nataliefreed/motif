@@ -1,7 +1,7 @@
 import type { Action, Effect, ActionStore } from '../types/types';
 import { v4 as uuidv4 } from 'uuid';
 import { followedBy, movePoint, turnAndMove, type Point, type Transform } from '../utils/transform';
-import { actionRootID, activeIDs, actionStore, myTools, toolStore, selectedActionID, selectedEffect, changedActionID, flatActionStore, actionRoot, stagedAction, stagedActionID, shouldRandomizeColor, playheadID, hoveredActionID, renderRequested, isPlaying, renderDelay, currentlyRenderingActionID, playSpeed, hasPlayed } from '../stores/dataStore'
+import { actionRootID, activeIDs, actionStore, myTools, toolStore, selectedActionID, selectedRun, selectedEffect, changedActionID, flatActionStore, actionRoot, stagedAction, stagedActionID, shouldRandomizeColor, playheadID, hoveredActionID, renderRequested, isPlaying, renderDelay, currentlyRenderingActionID, playSpeed, hasPlayed } from '../stores/dataStore'
 import { currentColor, currentIndexedColor, randomColorFromPalette, activePalette, replaceActivePalette } from '../stores/colorStore';
 import { saveToHistory } from '../stores/history';
 import { p5CanvasSize } from '../stores/canvasStore';
@@ -638,6 +638,24 @@ export function selectAction(id:string) {
   // console.log("selecting action", id);
 }
 
+// The selected steps: a run selected with shift-click, or the one selected step, or none
+export function selectedSteps(): string[] {
+  const run = get(selectedRun);
+  if (run.length > 1) return run;
+  const id = get(selectedActionID);
+  return id ? [id] : [];
+}
+
+// Shift-click: selects the steps from the selected one to `id`, if they're in the same list (otherwise just
+// `id`). The next step's box can be among them, but it's never part of the run.
+export function selectRunTo(id: string) {
+  const anchor = get(selectedActionID);
+  const siblings = anchor ? getSiblings(anchor) : undefined;
+  if (!siblings || !siblings.includes(id) || id === anchor) return selectAction(id);
+  const [from, to] = [siblings.indexOf(anchor), siblings.indexOf(id)].sort((a, b) => a - b);
+  selectedRun.set(siblings.slice(from, to + 1).filter(step => step !== get(stagedActionID)));
+}
+
 export function deselect() {
   selectedActionID.set('');
   // console.log("deselect");
@@ -662,14 +680,13 @@ export function hoverAction(id:string) {
   }
 }
 
-// remove action initiated from UI
+// remove the selected steps, initiated from UI
 export function removeSelectedAction() {
-  let id = get(selectedActionID);
-  if(id.length < 1 || !id || !get(flatActionStore)[id] || id == get(stagedActionID)) return;
-  //get new selection
-  actionManager.delete(id);
+  const steps = selectedSteps().filter(id => get(flatActionStore)[id] && id !== get(stagedActionID));
+  if (steps.length < 1) return;
+  selectedActionID.set(steps[0]); // so the selection moves to the step before them
+  for (const id of steps) actionManager.delete(id);
   saveToHistory("remove selected action");
-  // if deleted, select new selection
 }
 
 export function clearAllActions() {
@@ -938,6 +955,40 @@ export function remixDuplicate(id:string) {
   saveToHistory("duplicate action end");
 }
 
+// Copies the selected steps, together and in order, right after them; the copies become the selection.
+export function duplicateSelected(): string[] {
+  const steps = selectedSteps().filter(id => get(flatActionStore)[id]);
+  let after = steps[steps.length - 1];
+  const copies: string[] = [];
+  for (const id of steps) {
+    const newActions = copyAction(id);
+    const root = getRoot(newActions);
+    if (!root) continue;
+    actionManager.append(newActions);
+    actionManager.insertAfter(root, after);
+    after = root;
+    copies.push(root);
+  }
+  if (copies.length > 0) {
+    selectedActionID.set(copies[0]);
+    selectedRun.set(copies.length > 1 ? copies : []);
+    saveToHistory("duplicate action");
+  }
+  return copies;
+}
+
+export function remixSelected() {
+  saveToHistory("remix action start");
+  for (const id of selectedSteps()) remixActionWithoutHistory(id);
+  saveToHistory("remix action end");
+}
+
+export function remixDuplicateSelected() {
+  saveToHistory("duplicate action start");
+  for (const id of duplicateSelected()) remixActionWithoutHistory(id);
+  saveToHistory("duplicate action end");
+}
+
 // pick a parameter at random and change it
 export function remixAction(id:string) {
   saveToHistory("remix action start");
@@ -1021,24 +1072,22 @@ export function wiggleAction(id:string) {
   // previewAction.params.color = changeOptions.color(params.color);
 }
 
-// put action inside a group / do each
+// put the selected steps inside a group / do each
 export function wrapSelectedInGroup() {
-  let selected = get(selectedActionID);
-  if(selected.length < 1) return;
-
-  let selectedAction = actionManager.getAction(selected);
-  if (!selectedAction) return;
-
-  let newGroup = createGroupAction([selected]);
-
-  let added = actionManager.append(newGroup);
-
-  // Replace the selected action with the new grouped action
-  actionManager.replaceId(selected, added);
-  selectedActionID.set(added); // Update the selected action ID
-
+  const steps = selectedSteps().filter(id => get(flatActionStore)[id]);
+  if (steps.length < 1) return;
+  selectedActionID.set(wrapInGroup(steps));
   saveToHistory('Group selected action');
+}
 
+// Puts steps of one list into a new group, in order, where the first of them was; returns the group's ID.
+// The group starts empty, so each step is only ever in one list while they move.
+function wrapInGroup(steps: string[]): string {
+  const group = actionManager.append(createGroupAction([]))!;
+  actionManager.replaceId(steps[0], group);
+  for (const id of steps.slice(1)) actionManager.detach(id);
+  actionManager.updateParams(group, { children: steps });
+  return group;
 }
 
 function createGroupAction(children: string[]) {
@@ -1059,10 +1108,11 @@ function createGroupAction(children: string[]) {
   return { [action.uuid]: action };
 }
 
-// put action inside a repeat along path
+// put action inside a repeat along path; several selected steps are grouped first, so they repeat together
 export function repeatSelectedActionAlongPath() {
-  let selected = get(selectedActionID);
-  if(selected.length < 1) return;
+  const steps = selectedSteps().filter(id => get(flatActionStore)[id]);
+  if (steps.length < 1) return;
+  const selected = steps.length > 1 ? wrapInGroup(steps) : steps[0];
 
   let selectedAction = actionManager.getAction(selected);
   if (!selectedAction) return;
@@ -1076,8 +1126,8 @@ export function repeatSelectedActionAlongPath() {
   // } else { //todo: make sure it's not a child of an along path
 
     // Create a new "repeat along path" action with the selected action as a child
-    let x = selectedAction.params.position ? selectedAction.params.position.x : 0;
-    let y = selectedAction.params.position ? selectedAction.params.position.y : 0;
+    // the grid starts where the step (or group) is, so the first repeat stays in place
+    let { x, y } = getOrigin(selectedAction) ?? { x: 0, y: 0 };
     let angle = 0;
     let newPath = getRandomGridPath(x, y);
     // let newPath = [[x, y], [x + 20, y + 20]];

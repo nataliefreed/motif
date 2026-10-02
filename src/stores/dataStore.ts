@@ -26,6 +26,10 @@ export const activeCategory = derived(selectedEffect, $selectedEffect =>
 export const selectedCodeEffect = writable('point');
 
 export const selectedActionID = writable('');
+// Steps selected together with shift-click: consecutive steps of one list, in order, including the selected
+// step (empty when one step or none is selected). Selecting a step outside the run ends it.
+export const selectedRun = writable<string[]>([]);
+selectedActionID.subscribe(id => { if (!get(selectedRun).includes(id)) selectedRun.set([]); });
 
 export const hoveredActionID = writable('');
 

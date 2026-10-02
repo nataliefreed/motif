@@ -23,7 +23,7 @@ export const es: Messages = {
     copy: 'copiar',
     remixCopy: 'copiar y mezclar',
     randomRepeat: 'repetir al azar',
-    label: 'nombrar',
+    group: 'agrupar',
     draw: 'dibujar',
   },
 
@@ -219,9 +219,10 @@ export const es: Messages = {
     copy: 'Haz una copia del paso seleccionado.',
     remixCopy: 'Haz una copia del paso seleccionado con ajustes nuevos al azar.',
     randomRepeat: 'Repite el paso seleccionado una y otra vez en una cuadrícula de tamaño al azar.',
-    label: 'Ponle nombre al paso seleccionado. Luego puedes arrastrar otros pasos adentro para agruparlos.',
+    group: 'Pon los pasos seleccionados en un grupo que puedes nombrar, mover y girar. Haz clic con Mayús en un paso para seleccionar todos los pasos hasta él.',
     draw: 'Convierte el paso seleccionado en tu pincel para que puedas dibujar más de él.',
     selectFirst: '\nPara usar esto, primero selecciona un paso de la receta.',
+    selectOne: '\nPara usar esto, selecciona un solo paso.',
 
     palette: 'Estos son los colores de tu combinación. Haz clic en uno para dibujar con él y para cambiarlo.\nCada paso que usa esa letra también cambia.',
     paletteMenu: 'Elige una nueva combinación de colores para tu paleta o guarda y abre la tuya. Todo lo que dibujaste con un color con letra también cambia.',

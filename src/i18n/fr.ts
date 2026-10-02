@@ -22,7 +22,7 @@ export const fr: Messages = {
     copy: 'copier',
     remixCopy: 'copie remixée',
     randomRepeat: 'répéter',
-    label: 'nommer',
+    group: 'grouper',
     draw: 'dessiner',
   },
 
@@ -218,9 +218,10 @@ export const fr: Messages = {
     copy: 'Fais une copie de l’étape sélectionnée.',
     remixCopy: 'Fais une copie de l’étape sélectionnée avec de nouveaux réglages au hasard.',
     randomRepeat: 'Répète l’étape sélectionnée encore et encore dans une grille de taille choisie au hasard.',
-    label: 'Donne un nom à l’étape sélectionnée. Ensuite, tu peux faire glisser d’autres étapes dedans pour les regrouper.',
+    group: 'Mets les étapes sélectionnées dans un groupe que tu peux nommer, déplacer et faire tourner. Clique avec Maj sur une étape pour sélectionner toutes les étapes jusqu’à elle.',
     draw: 'Transforme l’étape sélectionnée en pinceau pour pouvoir en dessiner encore.',
     selectFirst: '\nPour l’utiliser, commence par sélectionner une étape de la recette.',
+    selectOne: '\nPour l’utiliser, sélectionne une seule étape.',
 
     palette: 'Voici les couleurs de ta palette. Clique sur une couleur pour dessiner avec et pour la changer.\nToutes les étapes qui utilisent cette lettre changent aussi.',
     paletteMenu: 'Choisis une nouvelle palette de couleurs ou enregistre et ouvre la tienne. Tout ce que tu as dessiné avec une couleur à lettre change aussi.',

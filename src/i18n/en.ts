@@ -25,7 +25,7 @@ export const en = {
     copy: 'copy',
     remixCopy: 'remix a copy',
     randomRepeat: 'random repeat',
-    label: 'label',
+    group: 'group',
     draw: 'draw',
   },
 
@@ -236,9 +236,10 @@ export const en = {
     copy: 'Make a copy of the selected step.',
     remixCopy: 'Make a copy of the selected step with random new settings.',
     randomRepeat: 'Repeat the selected step over and over in a grid of a random size.',
-    label: 'Give the selected step a name. Then you can drag other steps inside it to group them.',
+    group: 'Put the selected steps in a group you can name, move and turn. Shift-click a step to select all the steps up to it.',
     draw: 'Turn the selected step into your brush so you can draw more of it.',
     selectFirst: '\nTo use this, start by selecting a step in the recipe.',
+    selectOne: '\nTo use this, select just one step.',
 
     // colors
     palette: 'These are your color scheme colors. Click one to draw with it and to change it.\nEvery step that uses that letter changes too.',

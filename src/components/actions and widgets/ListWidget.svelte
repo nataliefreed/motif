@@ -5,11 +5,11 @@
   import type { SortableEvent } from 'sortablejs';
   import Sortable from 'sortablejs';
   import { onMount, createEventDispatcher } from 'svelte';
-  import { selectedActionID, activeIDs, flatActionStore, stagedActionID, changedActionID, hoveredActionID, stagedAction } from '../../stores/dataStore';
+  import { selectedActionID, selectedRun, activeIDs, flatActionStore, stagedActionID, changedActionID, hoveredActionID, stagedAction } from '../../stores/dataStore';
   import ActionItem from './ActionItem.svelte';
   import { scale, fade, fly } from 'svelte/transition';
   import { deepCopy } from '../../utils/utils';
-  import { selectAction, hoverAction, copyStagedActionToActionStore, addCurrentEffectAsStagedAction, toggleHidden } from '../action-utils';
+  import { selectAction, selectRunTo, hoverAction, copyStagedActionToActionStore, addCurrentEffectAsStagedAction, toggleHidden } from '../action-utils';
   import tinycolor from 'tinycolor2';
   import { v4 as uuidv4 } from 'uuid';
     import PathWidget from './PathWidget.svelte';
@@ -123,7 +123,8 @@
     const target = event.target as Element;
     if(target && target.classList.contains('drag-handle') || target.classList.contains('action-item-outer') || target.classList.contains('along-path') || target.classList.contains('along-path-widget') || target.classList.contains('brush-name-and-preview-widget') || target.classList.contains('tool-name') || target.classList.contains('action-item-inner') || target.classList.contains('alpha-style') || target.classList.contains('category-img') || target.classList.contains('arrow-and-definition') || target.classList.contains('action-item-content') || target === event.currentTarget) { //if not a widget, select the action
         //   console.log("selecting");
-      selectAction(actionId);
+      if (event instanceof MouseEvent && event.shiftKey) selectRunTo(actionId); // a run of steps
+      else selectAction(actionId);
     }
     // else {
     //   dispatch('codeEffect', { actionId, codeEffect: $selectedCodeEffect });
@@ -297,7 +298,7 @@ function getDynamicStyle(id:string) {
     <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
     <!-- svelte-ignore a11y-mouse-events-have-key-events -->
     <li
-      class:selected={$selectedActionID === action.uuid}
+      class:selected={$selectedActionID === action.uuid || $selectedRun.includes(action.uuid)}
       class:staged={$stagedActionID === action.uuid}
       class:obscured={action.obscured}
       class:hidden={action.hidden}
