@@ -298,6 +298,7 @@ function getDynamicStyle(id:string) {
       class:hidden={action.hidden}
       class:draggable={!action.pinned}
       class:inactive={!$activeIDs.includes(action.uuid)}
+      class:with-angle-tab={'angle' in action.params}
       class:hovered={$hoveredActionID === action.uuid}
       class="action-list-item scale-from-left"
       on:mouseover={e => handleItemMouseover(e, action.uuid)}
@@ -341,7 +342,7 @@ function getDynamicStyle(id:string) {
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-start;
-    width: 100%;
+    width: calc(100% - 0.4em); /* fits exactly inside its margins, so the recipe doesn't scroll sideways */
     margin: 0.2em;
   }
 
@@ -376,6 +377,13 @@ function getDynamicStyle(id:string) {
 
   .no-angle-widget {
     border-radius: 10px;
+  }
+
+  /* A step's angle is a tab sticking out past the right side of its row (AngleWidget sits 3.9em past the
+  edge), so leave room for the tab: a step that fills the recipe's width otherwise pushes it out of sight
+  and makes the recipe scroll sideways. */
+  .with-angle-tab {
+    margin-right: 3.9em;
   }
 
   .hovered.selected {
