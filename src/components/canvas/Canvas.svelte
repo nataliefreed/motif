@@ -663,8 +663,8 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       if('path' in params && !continuousPathStarted) {
         updateStagedAction({path: getAntPath(path, $stagedAction.params.pathSpacing)}); // calc path spacing
       }
-      if($stagedAction.name === 'bounce' || $stagedAction.name === 'spiro' && 'progress' in params) {
-        mousePressedTime = Date.now(); //reset whenever moved
+      if($stagedAction.name === 'spiro' && 'progress' in params) {
+        mousePressedTime = Date.now(); // moving starts the spiro over; rainbow bounce keeps bouncing while you aim
       }
 
       clearTempCanvases();
@@ -750,8 +750,21 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     }
   }
 
+  // How long the mouse has been held, in tenths of a second at full speed
   function getProgress() {
-    return (Date.now() - mousePressedTime) / 100;
+    const seconds = (Date.now() - mousePressedTime) / 1000;
+    return $stagedAction.name === 'bounce' ? 10 * bounceSeconds(seconds) : 10 * seconds;
+  }
+
+  // Rainbow bounce starts at a fifth of full speed and speeds up evenly over its first four seconds, so you
+  // can watch where the first dots go while you aim. Returns how many seconds' worth of full speed it has
+  // covered after being held for `seconds`.
+  function bounceSeconds(seconds) {
+    const startSpeed = 0.2, rampSeconds = 4;
+    const ramping = Math.min(seconds, rampSeconds);
+    const speedAfterRamping = startSpeed + (1 - startSpeed) * ramping / rampSeconds;
+    // while the speed rises evenly, the distance covered is the average speed times the time
+    return ramping * (startSpeed + speedAfterRamping) / 2 + Math.max(0, seconds - rampSeconds);
   }
 
 /*
