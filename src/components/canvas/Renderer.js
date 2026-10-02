@@ -971,43 +971,52 @@ function cellRect(x, y, w, h) {
   return { left, top, width: Math.round(x + w) - left, height: Math.round(y + h) - top };
 }
 
-// Draws the whole copy of the canvas, shrunk, into a cell, and returns the cell.
+// Draws the whole copy of the canvas, shrunk, into a cell.
 function drawCell(p, snapshot, x, y, w, h) {
   const cell = cellRect(x, y, w, h);
   p.image(snapshot, cell.left, cell.top, cell.width, cell.height);
-  return cell;
 }
 
-// While previewing a pattern, a line around each copy shows where the whole canvas went. Copies are cells
-// ({ left, top, width, height }) or round ({ x, y, size }).
-function outlineCopies(p, copies) {
+// While previewing a pattern, a line around a copy shows that each copy is the whole canvas: a cell of a grid
+// ({ left, top, width, height }), or the honeycomb's middle hexagon ({ x, y, size, shape }).
+function outlineCopy(p, copy) {
   p.push();
   p.noFill();
   for (const [weight, shade] of [[3, 255], [1, 60]]) { // a dark line on a light one shows up on any colors
     p.strokeWeight(weight);
     p.stroke(shade, 200);
-    for (const copy of copies) {
-      if ('size' in copy) p.circle(copy.x, copy.y, copy.size);
-      else p.rect(copy.left + 0.5, copy.top + 0.5, copy.width, copy.height);
+    if ('shape' in copy) {
+      p.push();
+      p.translate(copy.x, copy.y);
+      traceCopyShape(p.drawingContext, copy);
+      p.drawingContext.stroke();
+      p.pop();
+    } else {
+      p.rect(copy.left + 0.5, copy.top + 0.5, copy.width, copy.height);
     }
   }
   p.pop();
 }
 
 // Tile: the whole canvas, shrunk and repeated. The rosette (saved as 'radial') and the honeycomb repeat it
-// as round copies in rings around one in the middle; the other layouts shrink it into the cells of a grid
+// in rings of copies around one in the middle; the other layouts shrink it into the cells of a grid
 // `columns` wide and `rows` high. (Patterns saved before kept the size of a piece of the canvas instead;
 // they become the grid that size makes.)
 function tile(p, params, p5) {
   const snapshot = canvasCopy(p5);
+  const previewing = p === p5.getHoverCanvas() || p === p5.getDragCanvas();
   p.push();
   const color = params.color ?? 'rgba(0, 0, 0, 0)'; // see-through, as checkerboards were before they had a color
   const rings = params.rings ?? params.numRings ?? 3;
-  let copies = [];
   if (params.tiling === 'radial') {
-    copies = roundCopies(p, snapshot, rosetteCopies(rings, p.width), color);
+    p.noStroke();
+    p.fill(color); // shows between the circles
+    p.rect(0, 0, p.width, p.height);
+    copiesInRings(p, snapshot, rosetteCopies(rings, p.width));
   } else if (params.tiling === 'honeycomb') {
-    copies = roundCopies(p, snapshot, honeycombCopies(rings, p.width), color);
+    const copies = honeycombCopies(rings, p.width); // the hexagons cover the whole canvas
+    copiesInRings(p, snapshot, copies);
+    if (previewing) outlineCopy(p, copies[0]);
   } else {
     const columns = params.columns ?? (params.width ? Math.max(1, Math.round(p.width / params.width)) : 4);
     const rows = params.rows ?? (params.height ? Math.max(1, Math.round(p.height / params.height)) : 4);
@@ -1015,80 +1024,74 @@ function tile(p, params, p5) {
     const h = p.height / rows;
     switch (params.tiling) {
       case 'straight grid':
-        copies = straightGrid(p, snapshot, w, h);
+        straightGrid(p, snapshot, w, h);
         break;
       case 'brick':
-        copies = brick(p, snapshot, w, h);
+        brick(p, snapshot, w, h);
         break;
       case 'half drop':
-        copies = halfDrop(p, snapshot, w, h);
+        halfDrop(p, snapshot, w, h);
         break;
       case 'checkerboard':
-        copies = checkerboard(p, snapshot, w, h, color);
+        checkerboard(p, snapshot, w, h, color);
         break;
       case 'mirror':
-        copies = mirrorGrid(p, snapshot, w, h);
+        mirrorGrid(p, snapshot, w, h);
         break;
       default:
         break;
     }
+    // the copies to outline: the whole, unflipped copy in the upper-left cell, and for brick and half drop
+    // also the shifted copy diagonally below and to the right of it, to show the shift
+    const outlined = { 'straight grid': [[0, 0]], 'brick': [[0, 0], [w / 2, h]], 'half drop': [[0, 0], [w, h / 2]], 'mirror': [[0, 0]] };
+    if (previewing) for (const [x, y] of outlined[params.tiling] ?? []) outlineCopy(p, cellRect(x, y, w, h));
   }
-  if (p === p5.getHoverCanvas() || p === p5.getDragCanvas()) outlineCopies(p, copies);
   p.pop();
 }
 
 // The layouts fill the canvas with cells w by h; w and h need not be whole numbers, so cells are counted.
-// Each returns the cells it put copies in.
 function straightGrid(p, snapshot, w, h) {
-  const cells = [];
   for (let row = 0; row * h < p.height - 0.5; row++) {
     for (let column = 0; column * w < p.width - 0.5; column++) {
-      cells.push(drawCell(p, snapshot, column * w, row * h, w, h));
+      drawCell(p, snapshot, column * w, row * h, w, h);
     }
   }
-  return cells;
 }
 
 // every other row shifted left by half a cell
 function brick(p, snapshot, w, h) {
-  const cells = [];
   for (let row = 0; row * h < p.height - 0.5; row++) {
     const shift = row % 2 === 1 ? -w / 2 : 0;
     for (let column = 0; shift + column * w < p.width - 0.5; column++) {
-      cells.push(drawCell(p, snapshot, shift + column * w, row * h, w, h));
+      drawCell(p, snapshot, shift + column * w, row * h, w, h);
     }
   }
-  return cells;
 }
 
 // every other column shifted up by half a cell
 function halfDrop(p, snapshot, w, h) {
-  const cells = [];
   for (let column = 0; column * w < p.width - 0.5; column++) {
     const shift = column % 2 === 1 ? -h / 2 : 0;
     for (let row = 0; shift + row * h < p.height - 0.5; row++) {
-      cells.push(drawCell(p, snapshot, column * w, shift + row * h, w, h));
+      drawCell(p, snapshot, column * w, shift + row * h, w, h);
     }
   }
-  return cells;
 }
 
 // copies in every other cell, and `color` in the cells between
 function checkerboard(p, snapshot, w, h, color) {
-  const cells = [];
   p.noStroke();
   p.fill(color);
   for (let row = 0; row * h < p.height - 0.5; row++) {
     for (let column = 0; column * w < p.width - 0.5; column++) {
       if ((row + column) % 2 === 1) {
-        cells.push(drawCell(p, snapshot, column * w, row * h, w, h));
+        drawCell(p, snapshot, column * w, row * h, w, h);
       } else {
         const cell = cellRect(column * w, row * h, w, h);
         p.rect(cell.left, cell.top, cell.width, cell.height);
       }
     }
   }
-  return cells;
 }
 
 // function radial(p, snapshot, w, h, numTiles, numRings) {
@@ -1110,75 +1113,118 @@ function checkerboard(p, snapshot, w, h, color) {
 //   }
 // }
 
-// round copies on `color`: each copy is cut to a circle and turned to face outward. Returns the copies.
-function roundCopies(p, snapshot, copies, color) {
-  p.noStroke();
-  p.fill(color);
-  p.rect(0, 0, p.width, p.height);
+// Copies in rings. Each copy is cut to its shape, which stays upright so hexagons fit together, and the
+// drawing inside it is turned to face outward.
+function copiesInRings(p, snapshot, copies) {
   const context = p.drawingContext;
   for (const copy of copies) {
+    // the drawing is a square as wide as the circle around the shape, so it fills the shape however it's turned
+    const across = copy.shape === 'hexagon' ? copy.size * 2 / Math.sqrt(3) : copy.size;
     p.push();
     p.translate(copy.x, copy.y);
-    p.rotate(copy.angle);
     context.save();
-    context.beginPath();
-    context.arc(0, 0, copy.size / 2, 0, 2 * Math.PI);
+    traceCopyShape(context, copy);
     context.clip();
-    p.image(snapshot, -copy.size / 2, -copy.size / 2, copy.size, copy.size);
+    p.rotate(copy.angle);
+    p.image(snapshot, -across / 2, -across / 2, across, across);
     context.restore();
     p.pop();
   }
-  return copies;
 }
 
-// Where a rosette's copies go on a square canvas `size` wide: a flower, with one copy in the middle and then
-// `rings` round rings around it, holding 8, 12, 16... copies. Every copy touches its neighbors in its ring
-// and the rings on either side, so each ring's copies come out a little bigger than the last ring's. The
-// whole flower is scaled so the outermost ring reaches the corners. Copies are { x, y, size, angle }.
-export function rosetteCopies(rings, size) {
-  // in units of the middle copy's size: ring k has n copies of size s at radius r, where touching within
-  // the ring means s = 2 r sin(pi / n), and touching the ring inside means r - s/2 = (last r) + (last s)/2
-  const layout = [];
-  let reach = 0.5; // how far out the copies so far reach
-  for (let ring = 1; ring <= rings; ring++) {
-    const around = 4 + 4 * ring;
-    const sine = Math.sin(Math.PI / around);
-    const radius = reach / (1 - sine);
-    layout.push({ around, radius, size: 2 * sine * radius });
-    reach = radius * (1 + sine);
-  }
-  const scale = (size / 2) * Math.SQRT2 / reach;
-  const center = size / 2;
-
-  const copies = [{ x: center, y: center, size: scale, angle: 0 }];
-  layout.forEach(({ around, radius, size: copySize }, i) => {
-    for (let j = 0; j < around; j++) {
-      const angle = (j + (i % 2) / 2) * 2 * Math.PI / around; // every other ring turned half a step
-      copies.push({ x: center + radius * scale * Math.cos(angle), y: center + radius * scale * Math.sin(angle), size: copySize * scale, angle: angle + Math.PI / 2 });
+// Traces a copy's outline around (0, 0): a circle `size` across, or a hexagon `size` across from flat side
+// to flat side, standing on a corner so hexagons fit together in rows.
+function traceCopyShape(context, copy) {
+  context.beginPath();
+  if (copy.shape === 'hexagon') {
+    const corner = copy.size / Math.sqrt(3); // from the middle to each corner
+    for (let i = 0; i < 6; i++) {
+      const angle = Math.PI / 6 + i * Math.PI / 3;
+      context.lineTo(corner * Math.cos(angle), corner * Math.sin(angle));
     }
-  });
+    context.closePath();
+  } else {
+    context.arc(0, 0, copy.size / 2, 0, 2 * Math.PI);
+  }
+}
+
+// Where a rosette's copies go on a square canvas `size` wide: a flower of round copies, with one in the
+// middle, six the same size around it, then rings of 9, 12, 15... (ring k holds 3k + 3). Each ring's copies
+// touch each other and sit as close in as they can without covering the ring inside, so each ring's copies
+// come out bigger than the last ring's. The whole flower is scaled so the outermost ring reaches the
+// corners. Copies are { x, y, size, angle, shape }: centered at (x, y), `size` across, turned by `angle`
+// radians so their tops face outward.
+export function rosetteCopies(rings, size) {
+  const layout = [{ around: 1, radius: 0, size: 1, turn: 0 }]; // in units of the middle copy's size
+  for (let ring = 1; ring <= rings; ring++) layout.push(rosetteRing(layout[layout.length - 1], 3 * ring + 3));
+  const outermost = layout[layout.length - 1];
+  const scale = (size / 2) * Math.SQRT2 / (outermost.radius + outermost.size / 2);
+  const center = size / 2;
+
+  const copies = [{ x: center, y: center, size: scale, angle: 0, shape: 'circle' }];
+  for (const { around, radius, size: copySize, turn } of layout.slice(1)) {
+    for (let i = 0; i < around; i++) {
+      const angle = turn + i * 2 * Math.PI / around;
+      copies.push({ x: center + radius * scale * Math.cos(angle), y: center + radius * scale * Math.sin(angle), size: copySize * scale, angle: angle + Math.PI / 2, shape: 'circle' });
+    }
+  }
   return copies;
 }
 
-// Where a honeycomb's copies go on a square canvas `size` wide: one in the middle, then `rings` rings around
-// it on a honeycomb grid, so every copy touches its neighbors. Ring k is a hexagon of 6k copies. All copies
-// are the same size, chosen so the outermost ring reaches the corners: more rings make smaller copies.
-// Copies are { x, y, size, angle }: centered at (x, y), turned by `angle` radians so their tops face outward.
-export function honeycombCopies(rings, size) {
-  // the hexagon reaches k copies out toward its points, and only cos 30° / cos 15° of that toward the corners
-  const reachTowardCorners = Math.cos(Math.PI / 6) / Math.cos(Math.PI / 12);
-  const copySize = (size / 2) * Math.SQRT2 / (rings * reachTowardCorners + 0.5);
-  const center = size / 2;
-  const at = (q, r) => ({ x: center + copySize * (q + r / 2), y: center + copySize * (r * Math.sqrt(3) / 2) });
+// The ring of `around` round copies just outside the ring `inner`. Touching each other, copies at radius r are
+// 2 r sin(pi / around) across, and r is as small as it can be without any of them covering a copy of the
+// ring inside. The ring is turned whichever of 32 ways (within one step between copies) leaves the largest
+// gap between a copy and the ring inside smallest, so the gaps come out as even as they can.
+function rosetteRing(inner, around) {
+  const sine = Math.sin(Math.PI / around);
+  const anglesOf = ({ around, turn }) => Array.from({ length: around }, (_, i) => turn + i * 2 * Math.PI / around);
+  const innerAngles = anglesOf(inner);
+  // the smallest radius at which a copy `apart` radians around from a copy of the ring inside doesn't cover
+  // it: where the distance between their centers, squared, r² + R² - 2 r R cos(apart), reaches
+  // (r sine + S/2)², the sum of their half sizes squared
+  const closestRadius = apart => {
+    const a = 1 - sine * sine;
+    const b = 2 * inner.radius * Math.cos(apart) + sine * inner.size;
+    const c = inner.radius ** 2 - inner.size ** 2 / 4;
+    const discriminant = b * b - 4 * a * c;
+    return discriminant < 0 ? 0 : (b + Math.sqrt(discriminant)) / (2 * a); // below 0, they never meet
+  };
+  let best;
+  for (let t = 0; t < 32; t++) {
+    const turn = (t / 32) * 2 * Math.PI / around;
+    const angles = anglesOf({ around, turn });
+    const radius = Math.max(...angles.flatMap(a => innerAngles.map(b => closestRadius(a - b))));
+    const ring = { around, radius, size: 2 * sine * radius, turn };
+    const gapToRingInside = a => Math.min(...innerAngles.map(b =>
+      Math.sqrt(radius ** 2 + inner.radius ** 2 - 2 * radius * inner.radius * Math.cos(a - b)) - (ring.size + inner.size) / 2));
+    const largestGap = Math.max(...angles.map(gapToRingInside));
+    if (!best || largestGap < best.largestGap) best = { ring, largestGap };
+  }
+  return best.ring;
+}
 
-  const copies = [{ ...at(0, 0), size: copySize, angle: 0 }];
+// Where a honeycomb's copies go on a square canvas `size` wide: hexagons fitting together in rows, one in the
+// middle and `rings` rings around it (ring k is a hexagon of 6k copies). All are the same size, chosen so
+// the outermost ring just covers the corners: more rings make smaller copies. Copies are { x, y, size, angle, shape }: centered at (x, y), `size` across from flat
+// side to flat side, turned by `angle` radians so their tops face outward.
+export function honeycombCopies(rings, size) {
+  // Hexagons `spacing` apart. Their middles out to ring k fill a big hexagon whose sides are k spacing √3/2
+  // from the middle, and the hexagons along those sides stick out past them by at least half a corner,
+  // spacing / (2√3). A canvas corner, at 45°, is 15° away from the nearest side's direction (30°), where
+  // the big hexagon reaches 1 / cos 15° as far.
+  const reachTowardSides = rings * Math.sqrt(3) / 2 + 1 / (2 * Math.sqrt(3)); // in spacings
+  const spacing = (size / 2) * Math.SQRT2 * Math.cos(Math.PI / 12) / reachTowardSides;
+  const center = size / 2;
+  const at = (q, r) => ({ x: center + spacing * (q + r / 2), y: center + spacing * (r * Math.sqrt(3) / 2) });
+
+  const copies = [{ ...at(0, 0), size: spacing, angle: 0, shape: 'hexagon' }];
   const steps = [[1, 0], [1, -1], [0, -1], [-1, 0], [-1, 1], [0, 1]]; // the six neighbors on the grid
   for (let ring = 1; ring <= rings; ring++) {
     let [q, r] = [-ring, ring]; // start at a corner of the hexagon, then walk its six sides
     for (const [dq, dr] of steps) {
       for (let i = 0; i < ring; i++) {
         const { x, y } = at(q, r);
-        copies.push({ x, y, size: copySize, angle: Math.atan2(y - center, x - center) + Math.PI / 2 });
+        copies.push({ x, y, size: spacing, angle: Math.atan2(y - center, x - center) + Math.PI / 2, shape: 'hexagon' });
         [q, r] = [q + dq, r + dr];
       }
     }
@@ -1192,11 +1238,9 @@ export function honeycombCopies(rings, size) {
 // a grid where every other column is flipped sideways and every other row upside down,
 // so each copy is the mirror image of its neighbors
 function mirrorGrid(p, snapshot, w, h) {
-  const cells = [];
   for (let row = 0; row * h < p.height - 0.5; row++) {
     for (let column = 0; column * w < p.width - 0.5; column++) {
       const cell = cellRect(column * w, row * h, w, h);
-      cells.push(cell);
       const flipX = column % 2 === 1, flipY = row % 2 === 1;
       p.push();
       p.translate(flipX ? cell.left + cell.width : cell.left, flipY ? cell.top + cell.height : cell.top);
@@ -1205,7 +1249,6 @@ function mirrorGrid(p, snapshot, w, h) {
       p.pop();
     }
   }
-  return cells;
 }
 
   

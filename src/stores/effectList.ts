@@ -920,20 +920,6 @@ export const effectList = [
   },
   {
     name: 'tile',
-    textLabel: 'Radial',
-    category: 'patterns',
-    tags: 'drawing',
-    cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'rosette.png',
-    mouseActionType: 'drag',
-    params: {
-      tiling: 'radial',
-      rings: 3,
-      color: '#FFFFFF'
-    }
-  },
-  {
-    name: 'tile',
     textLabel: 'Honeycomb',
     category: 'patterns',
     tags: 'drawing',
@@ -942,8 +928,7 @@ export const effectList = [
     mouseActionType: 'drag',
     params: {
       tiling: 'honeycomb',
-      rings: 3,
-      color: '#FFFFFF'
+      rings: 3
     }
   },
   {
@@ -958,6 +943,20 @@ export const effectList = [
       tiling: 'mirror',
       columns: 2,
       rows: 2
+    }
+  },
+  {
+    name: 'tile',
+    textLabel: 'Radial',
+    category: 'patterns',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'rosette.png',
+    mouseActionType: 'drag',
+    params: {
+      tiling: 'radial',
+      rings: 6,
+      color: '#FFFFFF'
     }
   },
   // {
