@@ -756,9 +756,9 @@ export const renderers = {
     }
 
     // Create a new graphics object to draw the paper doll and its outfit and hairstyle fills
-    let dollCanvas = p5.createGraphics(p.width, p.height);
-    let outfitCanvas = p5.createGraphics(p.width, p.height);
-    let hairstyleCanvas = p5.createGraphics(p.width, p.height);
+    let dollCanvas = scratchBuffer(p5, 'doll');
+    let outfitCanvas = scratchBuffer(p5, 'outfit');
+    let hairstyleCanvas = scratchBuffer(p5, 'hairstyle');
 
       //Tint and then draw the doll fill
       // dollCanvas.tint(skinTone);
@@ -773,7 +773,7 @@ export const renderers = {
       // Use doll fill as a mask for the skin tone
       dollCanvas.image(paperdolls.dollFill, 0, 0, p.width, p.height);
       dollCanvas.drawingContext.globalCompositeOperation = 'source-in';
-      let skinToneCanvas = p5.createGraphics(p.width, p.height);
+      let skinToneCanvas = scratchBuffer(p5, 'skin tone');
       skinToneCanvas.background(skinTone);
       dollCanvas.image(skinToneCanvas, 0, 0);
 
@@ -811,11 +811,6 @@ export const renderers = {
       if(hairstyle.outline){
         p.image(hairstyle.outline, 0, 0, p.width, p.height);
       }
-
-      dollCanvas.remove();
-      outfitCanvas.remove();
-      hairstyleCanvas.remove();
-      skinToneCanvas.remove();
 
       p.pop();
     }
@@ -894,19 +889,20 @@ function moveRectangularRegion(p, params, p5) {
     let dx = endX - w / 2;
     let dy = endY - h / 2;
 
-    let snapshot = p5.createGraphics(w, h); // to store captured rectangle
-    snapshot.image(p5.getStaticCanvas(), 0, 0, w, h, sx, sy, w, h); // w * h rectangle centered at x, y 
-    
-    p.image(snapshot, dx, dy, w, h, 0, 0, w, h);
-    snapshot.remove();
-    
+    const snapshot = canvasCopy(p5);
+
+    // clear where it was before putting it down, so a move that overlaps itself doesn't erase part of it
     if(p===p5.getStaticCanvas() && params.mode == 'move') {
+      p.push();
       p.erase();
       p.fill(255);
       p.rectMode(p5.CENTER);
       p.rect(startX, startY, w, h);
       p.noErase();
+      p.pop();
     }
+
+    p.image(snapshot, dx, dy, w, h, sx, sy, w, h); // w * h rectangle centered at x, y
   }
 
   if(p===p5.getHoverCanvas() || p===p5.getDragCanvas()) {
@@ -945,18 +941,27 @@ function rotateRegion(p, params, p5) {
   let angle = params.angle;
 }
 
-// One reusable buffer holding a copy of the canvas for patterns to repeat, since they draw onto the canvas
-// they copy. (Making and removing a p5 graphics buffer for every repeat doesn't work: in p5 1.11, removing
-// one throws before it is cleaned up.)
-let canvasCopyBuffer, canvasCopyOwner;
-function canvasCopy(p5) {
-  if (canvasCopyOwner !== p5) {
-    canvasCopyBuffer = p5.createGraphics(p5.width, p5.height);
-    canvasCopyOwner = p5;
+// Reusable buffers the size of the canvas, by name, for drawing that needs a scratch canvas. (Making and
+// removing a p5 graphics buffer each time doesn't work: in p5 1.11, removing one throws before it is
+// cleaned up, and the drawing after it never happens.)
+const scratchBuffers = new Map();
+function scratchBuffer(p5, name) {
+  let buffer = scratchBuffers.get(name);
+  if (!buffer || buffer.owner !== p5 || buffer.width !== p5.width || buffer.height !== p5.height) {
+    buffer = { owner: p5, width: p5.width, height: p5.height, graphics: p5.createGraphics(p5.width, p5.height) };
+    scratchBuffers.set(name, buffer);
   }
-  canvasCopyBuffer.clear();
-  canvasCopyBuffer.image(p5.getStaticCanvas(), 0, 0);
-  return canvasCopyBuffer;
+  const graphics = buffer.graphics;
+  graphics.drawingContext.globalCompositeOperation = 'source-over';
+  graphics.clear();
+  return graphics;
+}
+
+// A copy of the canvas, for tools that draw onto the canvas they copy (patterns, grow and shrink, move).
+function canvasCopy(p5) {
+  const copy = scratchBuffer(p5, 'canvas copy');
+  copy.image(p5.getStaticCanvas(), 0, 0);
+  return copy;
 }
 
 // The cell at (x, y), w by h, with its edges rounded to whole pixels, so neighboring cells meet exactly and
@@ -1221,8 +1226,7 @@ function scaleRect(p, params, p5) {
   p.noFill();
   p.stroke(100);
 
-  let snapshot = p5.createGraphics(w, h);
-  snapshot.image(p5.getStaticCanvas(), 0, 0, w, h, sx, sy, w, h);
+  const snapshot = canvasCopy(p5);
 
   let scaledWidth = w * scaleFactor;
   let scaledHeight = h * scaleFactor;
@@ -1232,12 +1236,10 @@ function scaleRect(p, params, p5) {
 
   if(p === p5.getHoverCanvas()) {
     // p.tint(255, 100); // semi-transparent
-    p.image(snapshot, dx, dy, scaledWidth, scaledHeight, 0, 0, w, h);
+    p.image(snapshot, dx, dy, scaledWidth, scaledHeight, sx, sy, w, h);
   } else {
-    p.image(snapshot, dx, dy, scaledWidth, scaledHeight, 0, 0, w, h);
+    p.image(snapshot, dx, dy, scaledWidth, scaledHeight, sx, sy, w, h);
   }
-
-  snapshot.remove();
 
   // Draw the outline if it's on the hover or drag canvas
   if(p === p5.getHoverCanvas() || p === p5.getDragCanvas()) {

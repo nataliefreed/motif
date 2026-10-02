@@ -534,10 +534,22 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
   
   */
 
+  // Where the mouse or finger is on the canvas, worked out the way p5 does. (p5.mouseX and mouseY are a
+  // step behind here: p5 updates them from its own listener on the window, which hears about each event
+  // after this container does, so they still hold the last position.)
+  function canvasPoint(event) {
+    const point = event.touches?.[0] ?? event;
+    const canvas = p5.canvas;
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: Math.round((point.clientX - rect.left) / (canvas.scrollWidth / p5.width || 1)),
+      y: Math.round((point.clientY - rect.top) / (canvas.scrollHeight / p5.height || 1))
+    };
+  }
+
   function handleMouseMove(event) {
     if (p5) {
-      x = Math.round(p5.mouseX);
-      y = Math.round(p5.mouseY);
+      ({ x, y } = canvasPoint(event));
       mousePos.set({x: x, y: p5.height-y});
       if(!continuousPathStarted) {
         path.push([x, y]);
@@ -687,8 +699,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
         animationFrameId = requestAnimationFrame(updateMouseHoldTime);
       }
 
-      startX = Math.round(p5.mouseX);
-      startY = Math.round(p5.mouseY);
+      ({ x: startX, y: startY } = canvasPoint(event));
 
       // console.log("staged action", $stagedAction);
       if($stagedAction.mouseActionType === "continuous-path") {
