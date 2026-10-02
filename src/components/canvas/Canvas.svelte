@@ -109,7 +109,7 @@
       if(value) {
         clearTempCanvases();
         renderActionsUntilStaged();
-        renderStagedAction(p5.getHoverCanvas());
+        if(!$isPlaying) renderStagedAction(p5.getHoverCanvas()); // a replay shows only the recipe, not the next step
         renderRequested.set(false);
       }
     });
@@ -200,11 +200,28 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
   function renderActionsUntilStaged(delay = 0) {
     if(!p5) return;
     actionQueue = compileActionsBeforeStaged();
+    strokeSizes = countBy(actionQueue, action => action.stroke);
     // console.log("action queue has", actionQueue.length, "actions");
     // actionQueue.splice(0, 0, { effect:'clear', params: {} } );
     currentActionIndex = 0;
     // clearAllCanvases();
     renderFromQueue();
+  }
+
+  // While playing, each step of the recipe takes one beat ($renderDelay). The shapes a brush stroke draws
+  // along its path share `strokeBeats` beats between them, so a stroke draws itself in the time of that
+  // many steps.
+  const strokeBeats = 2;
+  let strokeSizes = new Map(); // how many actions in the queue are drawn along each stroke
+  function beatShare(action) {
+    if (!renderers[action.effect]) return 0; // markers for groups and brushes draw nothing
+    return action.stroke ? strokeBeats * $renderDelay / (strokeSizes.get(action.stroke) ?? 1) : $renderDelay;
+  }
+
+  function countBy(items, key) {
+    const counts = new Map();
+    for (const item of items) counts.set(key(item), (counts.get(key(item)) ?? 0) + 1);
+    return counts;
   }
 
   let isRendering = false;
@@ -221,14 +238,17 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     // let delays = actions.map(action => action.parentID === $changedActionID ? delay : 0);
     // delays[0] = 0; //first action renders immediately
 
+    // When each drawing is due while playing. One already due is drawn straight away rather than waiting for
+    // a timer (which can't wait less than a few milliseconds), so even a beat shared by hundreds of points
+    // keeps time.
+    let due = performance.now();
     while (currentActionIndex < actionQueue.length) {
       const action = actionQueue[currentActionIndex];
+      const share = beatShare(action);
+      due = share > 0 ? due + share : performance.now();
       // console.log("rendering action", action.actionID, action.effect, action.params);
       // console.log("which is action", currentActionIndex + 1, "of", actionQueue.length);
-      // this used to use indexedID - basically we want to know if parent is alongPath
-      // let delay = action.parentEffect === 'along path'? $renderDelay / 30 : $renderDelay;
-      let delay = $renderDelay;
-      // let delay = $renderDelay;
+      let delay = due - performance.now();
       if(action.effect === 'clear') { delay = 0; }
       await renderAction(action, p5.getStaticCanvas(), delay);
       currentActionIndex++;
@@ -250,7 +270,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
 
     if (p5) {
       const renderFunction = renderers[action.effect];
-      currentlyRenderingActionID.set(action.actionID);
+      currentlyRenderingActionID.set(action.stroke ?? action.actionID); // the recipe step: for a brush stroke's shapes, the brush
       if(renderFunction) {
         if (delay > 0) {
           // console.log("rendering", action.actionID, "with delay of", delay);

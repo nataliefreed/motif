@@ -34,7 +34,7 @@ export const shouldRandomizeColor = writable(true);
 export const playheadID = writable('');
 
 export const isPlaying = writable(false);
-export const firstPlay = writable(false);
+export const hasPlayed = writable(false); // whether a replay has started yet: the speed box shows from then on
 
 export const renderRequested = writable(false);
 export const renderDelay = writable(0);

@@ -1,6 +1,6 @@
 import type { Action, Effect, ActionStore } from '../types/types';
 import { v4 as uuidv4 } from 'uuid';
-import { actionRootID, activeIDs, actionStore, myTools, toolStore, selectedActionID, selectedEffect, changedActionID, flatActionStore, actionRoot, stagedAction, stagedActionID, shouldRandomizeColor, playheadID, hoveredActionID, renderRequested, isPlaying, renderDelay, currentlyRenderingActionID, playSpeed, firstPlay } from '../stores/dataStore'
+import { actionRootID, activeIDs, actionStore, myTools, toolStore, selectedActionID, selectedEffect, changedActionID, flatActionStore, actionRoot, stagedAction, stagedActionID, shouldRandomizeColor, playheadID, hoveredActionID, renderRequested, isPlaying, renderDelay, currentlyRenderingActionID, playSpeed, hasPlayed } from '../stores/dataStore'
 import { currentColor, currentIndexedColor, randomColorFromPalette, activePalette, replaceActivePalette } from '../stores/colorStore';
 import { saveToHistory } from '../stores/history';
 import { get } from 'svelte/store';
@@ -544,15 +544,8 @@ export function stepBackward() {
 
 // let playInterval: Timeout | null = null;
 
-let firstPlayDone = false;
-
 export function play() {
-  if(firstPlayDone) {
-    firstPlay.set(true);
-  }
-  else {
-    firstPlayDone = true;
-  }
+  hasPlayed.set(true);
   moveStagedActionToEnd();
   scrollToTop();
   
@@ -1256,6 +1249,7 @@ type CompiledAction = {
   indexedID?: string; // action id with loop index appended
   parentID?: string; // parent control structure id eg. do each or repeat
   parentEffect?: string; // parent control structure effect
+  stroke?: string; // the brush stroke ('along path') it's drawn along, if any
   effect: string;
   params: { [key: string]: any };
 };
@@ -1311,6 +1305,7 @@ export function compileActionsBefore(id: string) {
 type OverrideParams = {
   offset?: { x: number, y: number },
   nextOffset?: { x: number, y: number }|null,
+  stroke?: string, // the brush stroke whose path the actions are drawn along
 };
 
 function add(point1: { x: number, y: number }, point2: { x: number, y: number }) {
@@ -1464,7 +1459,7 @@ export function compileActions(action: Action, parentID?: string, overrides:Over
           // }
 
           // Merge the basePoint and nextPoint with the existing overrides
-          let modifiedOverrides = {...overrides, offset: currOffset, nextOffset: nextOffset};
+          let modifiedOverrides = {...overrides, offset: currOffset, nextOffset: nextOffset, stroke: action.uuid};
 
           // Compile the actions for the child action with the modified overrides
           actions.push(...compileActions(childAction, action.uuid, modifiedOverrides));
@@ -1511,6 +1506,7 @@ export function compileActions(action: Action, parentID?: string, overrides:Over
           // indexedID: action.uuid, // TODO: + `__${index}`,
           parentID: action.uuid,
           // parentEffect: action.effect,
+          stroke: overrides.stroke,
           effect: action.effect,
           params: modifiedParams
         });

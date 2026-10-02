@@ -13,6 +13,8 @@
   export let min = 0;
   export let max = 300;
   export let value: number = 0;
+  // Hovering a setting previews it 10 higher; the playback speed is not part of the design, so it doesn't
+  export let previewOnHover = true;
 
   let numberWidget: HTMLElement;
   let sliderElement: HTMLInputElement;
@@ -38,6 +40,7 @@
   let timeoutId: NodeJS.Timeout | undefined;
 
   function handleMouseOver(event: Event) {
+    if (!previewOnHover) return;
     savedValue = value;
     let newValue = value+10;
     previewEnd = false;

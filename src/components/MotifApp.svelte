@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { actionStore, toolStore, selectedEffect, activeCategory, stagedAction, stagedActionID, changedActionID, selectedActionID, selectedCodeEffect, actionRoot, flatActionStore, playSpeed, renderDelay, isPlaying, firstPlay, drawingLocked, shouldRandomizeColor } from '../stores/dataStore';
+  import { actionStore, toolStore, selectedEffect, activeCategory, stagedAction, stagedActionID, changedActionID, selectedActionID, selectedCodeEffect, actionRoot, flatActionStore, playSpeed, renderDelay, isPlaying, hasPlayed, drawingLocked, shouldRandomizeColor } from '../stores/dataStore';
   import { exportCodeWithImage, importCodeFromImage } from './export-utils';
   import LinedPaper from './LinedPaper.svelte';
   import ActionItem from './actions and widgets/ActionItem.svelte';
@@ -220,7 +220,7 @@
         <button class="top-menu-button dont-deselect" id="stepBackwardButton" on:click={stepBackward} use:help={{ text: $t.help.stepBackward, placement: 'bottom' }}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" height="16" width="16" style="vertical-align: middle; transform: translateY(-2px);"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M267.5 440.6c9.5 7.9 22.8 9.7 34.1 4.4s18.4-16.6 18.4-29V96c0-12.4-7.2-23.7-18.4-29s-24.5-3.6-34.1 4.4l-192 160L64 241V96c0-17.7-14.3-32-32-32S0 78.3 0 96V416c0 17.7 14.3 32 32 32s32-14.3 32-32V271l11.5 9.6 192 160z"/></svg></button>
         <PlayButton />        
         <button class="top-menu-button dont-deselect" id="stepForwardButton" on:click={stepForward} use:help={{ text: $t.help.stepForward, placement: 'bottom' }}><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" height="16" width="16" style="vertical-align: middle; transform: translateY(-2px);"><!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M52.5 440.6c-9.5 7.9-22.8 9.7-34.1 4.4S0 428.4 0 416V96C0 83.6 7.2 72.3 18.4 67s24.5-3.6 34.1 4.4l192 160L256 241V96c0-17.7 14.3-32 32-32s32 14.3 32 32V416c0 17.7-14.3 32-32 32s-32-14.3-32-32V271l-11.5 9.6-192 160z"/></svg></button>
-        {#if $firstPlay}<span><NumberWidget id="speed" min={1} max={50} value={5} on:valueChange={handleSpeedChange}/></span>{$playSpeed > 1 ? $t.toolbar.stepsPerSecond : $t.toolbar.stepPerSecond}{/if}
+        {#if $hasPlayed}<span class="speed"><NumberWidget id="speed" min={1} max={50} value={$playSpeed} previewOnHover={false} on:valueChange={handleSpeedChange}/>{$playSpeed > 1 ? $t.toolbar.stepsPerSecond : $t.toolbar.stepPerSecond}</span>{/if}
         <!-- <input type="number" id="speed" min={1} max={100} value={10} on:input={handleSpeedChange}/>steps per second -->
       </div> <!-- playback-controls -->
     </div> <!-- above canvas -->
@@ -510,6 +510,13 @@
 
   .above-canvas > *:last-child {
     flex-grow: 2; /* Adds twice as much space at the end */
+  }
+
+  /* the replay buttons and speed, centered on one line (a space's width apart, as the buttons were) */
+  .playback-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.3em;
   }
 
   .doc-controls {
