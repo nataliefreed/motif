@@ -93,7 +93,7 @@
     >
 
       {#if action.category === 'control'}
-        <ControlStructure name={action.name} params={action.params} {isOpen} isRecipe={action.uuid === $actionRootID} onUpdate={handleUpdate} depth={depth+1} on:saveChange={handleSaveChange}/>
+        <ControlStructure uuid={action.uuid} name={action.name} params={action.params} {isOpen} isRecipe={action.uuid === $actionRootID} onUpdate={handleUpdate} depth={depth+1} on:saveChange={handleSaveChange}/>
       {:else if action.type === 'effect'}
         <div class="action-item-inner">
         {#if action.category !== 'shapes'}

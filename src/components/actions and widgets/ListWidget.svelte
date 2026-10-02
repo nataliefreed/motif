@@ -34,6 +34,11 @@
 
   $: listStyleClass = depth % 2 === 0 ? 'alpha-style' : 'decimal-style';
 
+  // steps with an angle setting show it as a tab on their right; groups always do (older ones may not have one yet)
+  function hasAngleTab(action: { effect: string; params: { [key: string]: any } }) {
+    return 'angle' in action.params || action.effect === 'do each';
+  }
+
   onMount(() => {
     const sortable = new Sortable(listElement, {
       group: '.alltheitems',
@@ -298,7 +303,7 @@ function getDynamicStyle(id:string) {
       class:hidden={action.hidden}
       class:draggable={!action.pinned}
       class:inactive={!$activeIDs.includes(action.uuid)}
-      class:with-angle-tab={'angle' in action.params}
+      class:with-angle-tab={hasAngleTab(action)}
       class:hovered={$hoveredActionID === action.uuid}
       class="action-list-item scale-from-left"
       on:mouseover={e => handleItemMouseover(e, action.uuid)}
@@ -309,7 +314,7 @@ function getDynamicStyle(id:string) {
     >
       {#if $stagedActionID !== action.uuid}
       <span class="drag-handle" on:dblclick={e => handleDoubleClick(e, action.uuid)}></span>
-        <span class="action-item-content" class:no-angle-widget={!('angle' in action.params)}><ActionItem {action} {depth} /></span>
+        <span class="action-item-content" class:no-angle-widget={!hasAngleTab(action)}><ActionItem {action} {depth} /></span>
       {:else}
       {#key $stagedAction.params.lastChanged}
         <div class="staged-item" out:fly={{ y: 100, duration: 100, delay: 0 }} in:scale={{ duration: 400, delay: 400 }} use:help={{ text: $t.help.nextStep, placement: 'right' }}></div>

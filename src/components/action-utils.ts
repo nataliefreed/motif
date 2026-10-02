@@ -1,8 +1,10 @@
 import type { Action, Effect, ActionStore } from '../types/types';
 import { v4 as uuidv4 } from 'uuid';
+import { followedBy, movePoint, turnAndMove, type Point, type Transform } from '../utils/transform';
 import { actionRootID, activeIDs, actionStore, myTools, toolStore, selectedActionID, selectedEffect, changedActionID, flatActionStore, actionRoot, stagedAction, stagedActionID, shouldRandomizeColor, playheadID, hoveredActionID, renderRequested, isPlaying, renderDelay, currentlyRenderingActionID, playSpeed, hasPlayed } from '../stores/dataStore'
 import { currentColor, currentIndexedColor, randomColorFromPalette, activePalette, replaceActivePalette } from '../stores/colorStore';
 import { saveToHistory } from '../stores/history';
+import { p5CanvasSize } from '../stores/canvasStore';
 import { get } from 'svelte/store';
 import { deepCopy, merge, randomWithinRange, arrayToKeyedObj } from '../utils/utils';
 import { tick } from 'svelte';
@@ -1048,7 +1050,9 @@ function createGroupAction(children: string[]) {
     effect: 'do each',
     params: {
       title: "what does this draw?",
-      children: children
+      children: children,
+      moveBy: { x: 0, y: 0 }, // a group can be moved and turned (see moveWithGroup)
+      angle: 0
     },
     hidden: false,
   };
@@ -1253,6 +1257,7 @@ type CompiledAction = {
   parentID?: string; // parent control structure id eg. do each or repeat
   parentEffect?: string; // parent control structure effect
   stroke?: string; // the brush stroke ('along path') it's drawn along, if any
+  transform?: Transform; // how the groups it's in move and turn it
   effect: string;
   params: { [key: string]: any };
 };
@@ -1372,6 +1377,48 @@ function getOrigin(action: Action): { x: number; y: number } | null {
   return null;
 }
 
+// A group (made with "label") can be moved and turned, carrying everything drawn inside it along. (A solid
+// fill still covers the whole canvas, since p5's background() isn't moved.)
+
+// The points that place what an action draws (its position, line ends and path points), moved by any groups
+// it's in
+function placingPoints(action: CompiledAction): Point[] {
+  const { position, start, end, path } = action.params;
+  const points: Point[] = [position, start, end].filter(point => point && typeof point.x === 'number');
+  if (Array.isArray(path)) points.push(...path.map(([x, y]: [number, number]) => ({ x, y })));
+  return action.transform ? points.map(point => movePoint(action.transform!, point)) : points;
+}
+
+// The middle of what a group draws: the middle of the box around its placing points, to the nearest pixel
+// (like every position setting), or null if none of its steps is placed anywhere (a fill, say). A group
+// turns around it.
+function contentsMiddle(actions: CompiledAction[]): Point | null {
+  const points = actions.flatMap(placingPoints);
+  if (points.length === 0) return null;
+  const xs = points.map(p => p.x), ys = points.map(p => p.y);
+  return { x: Math.round((Math.min(...xs) + Math.max(...xs)) / 2), y: Math.round((Math.min(...ys) + Math.max(...ys)) / 2) };
+}
+
+// Where the middle of a group's steps is before the group moves; its position setting shows it moved.
+export function groupMiddle(children: string[]): Point {
+  const actions = children.flatMap(id => compileActions(get(flatActionStore)[id]));
+  const { width, height } = get(p5CanvasSize);
+  return contentsMiddle(actions) ?? { x: width / 2, y: height / 2 };
+}
+
+// Moves and turns the actions drawn in a group by its `moveBy` and `angle`, around their middle
+function moveWithGroup(actions: CompiledAction[], params: { moveBy?: Point, angle?: number }) {
+  const moveBy = params.moveBy ?? { x: 0, y: 0 };
+  const angle = params.angle ?? 0;
+  if (!moveBy.x && !moveBy.y && !angle) return;
+  const { width, height } = get(p5CanvasSize);
+  const middle = contentsMiddle(actions) ?? { x: width / 2, y: height / 2 };
+  const transform = turnAndMove(middle, angle, moveBy);
+  for (const action of actions) {
+    action.transform = action.transform ? followedBy(action.transform, transform) : transform;
+  }
+}
+
 // Recursively compile information about actions for rendering
 export function compileActions(action: Action, parentID?: string, overrides:OverrideParams = {}): CompiledAction[] {
   // Return empty arrays if the action is undefined or null
@@ -1385,7 +1432,7 @@ export function compileActions(action: Action, parentID?: string, overrides:Over
   }
 
   switch (action.effect) {
-    case 'do each':
+    case 'do each': {
       actions.push({ // add parent action to the list also, to make sure outer blocks are shown as active 
         actionID: action.uuid,
         parentID: parentID,
@@ -1393,12 +1440,15 @@ export function compileActions(action: Action, parentID?: string, overrides:Over
         params: {}
       });
       // For each child action, recursively compile its actions
+      const childActions: CompiledAction[] = [];
       for (let childID of action.params.children) {
         const childAction = get(flatActionStore)[childID];
-        const childActions = compileActions(childAction, action.uuid, overrides);
-        actions.push(...childActions);
+        childActions.push(...compileActions(childAction, action.uuid, overrides));
       }
+      if (action.uuid !== get(actionRootID)) moveWithGroup(childActions, action.params); // not the recipe itself
+      actions.push(...childActions);
       break;
+    }
       
     case 'along path':
         actions.push({ // add parent action to the list also, to make sure outer blocks are shown as active 

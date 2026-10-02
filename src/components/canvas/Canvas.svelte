@@ -266,7 +266,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     canvas.clear();
     for (const action of queue) {
       for (; frames * frameTime < time; frames++) gif.add(picture(), frameTime);
-      renderers[action.effect]?.(canvas, action.params, p5, turtle);
+      draw(action, canvas);
       time += beatShare(action, beat, sizes);
     }
     gif.add(picture(), holdMilliseconds);
@@ -315,6 +315,17 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     // console.log("finished render");
   }
 
+  // Draws a compiled action on a canvas, moved and turned with any groups it's in
+  function draw(action, canvas) {
+    const renderFunction = renderers[action.effect];
+    if (!renderFunction) return;
+    if (!action.transform) return renderFunction(canvas, action.params, p5, turtle);
+    canvas.push();
+    canvas.applyMatrix(...action.transform);
+    renderFunction(canvas, action.params, p5, turtle);
+    canvas.pop();
+  }
+
   // Call the render function for an action
   function renderAction(action, canvas, delay = 0) {
   return new Promise(resolve => {
@@ -328,7 +339,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
           setTimeout(() => {
               if($isPlaying) {
                 scrollToAction(action.actionID);
-                renderFunction(canvas, action.params, p5, turtle);
+                draw(action, canvas);
                 p5.image(canvas, 0, 0);
                 updateRenderedActions(action, canvas); // Update the active actions
               }
@@ -337,7 +348,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
           } else {
             // Render immediately
             // console.log("rendering", action.actionID, "immediately");
-            renderFunction(canvas, action.params, p5, turtle);
+            draw(action, canvas);
             updateRenderedActions(action, canvas); // Update the active actions
             resolve(); // Resolve the promise after rendering
           }
