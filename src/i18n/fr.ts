@@ -7,6 +7,9 @@ import type { Messages } from './en';
 export const fr: Messages = {
   toolbar: {
     save: 'enregistrer',
+    saveImage: 'image',
+    saveGif: 'GIF animé',
+    makingGif: 'création du GIF…',
     open: 'ouvrir',
     clear: 'effacer',
     stepPerSecond: 'étape par seconde',
@@ -185,7 +188,7 @@ export const fr: Messages = {
   },
 
   help: {
-    save: 'Enregistre ton dessin comme une image. La recette pour le faire est enregistrée dedans, pour que tu puisses le rouvrir plus tard et continuer à le modifier.',
+    save: 'Enregistre ton dessin comme une image ou un GIF animé. La recette pour le faire est enregistrée dedans, pour que tu puisses le rouvrir et le modifier plus tard.',
     open: 'Ouvre un dessin enregistré pour voir la recette qui a servi à le faire, et remixe-le !',
     clear: 'Efface tout et recommence. Tu as changé d’avis ? Clique sur annuler pour le récupérer.',
     undo: 'Annule ta dernière modification',

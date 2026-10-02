@@ -10,33 +10,24 @@ import { palettes } from '../stores/colorStore';
 import { p5CanvasSize } from '../stores/canvasStore';
 import { distinctColors, withShades } from '../utils/color-utils';
 import { t } from '../i18n';
+import { addDesignToGif, designFromGif, isGif } from '../utils/gif';
+
+// What a saved design keeps so it can be opened again: its recipe without the next step, and its palette
+function designData() {
+  const storeWithoutStagedAction = removeAction(get(flatActionStore), get(stagedActionID));
+  const savedColors = get(palettes)['myPalette'];
+  return JSON.stringify({ store: storeWithoutStagedAction, colors: savedColors });
+}
 
 export function exportCodeWithImage() {
   const canvas = document.getElementById('defaultCanvas0') as HTMLCanvasElement;
-
-// Create store without the 'stagedAction'
-  const storeWithoutStagedAction = removeAction(get(flatActionStore), get(stagedActionID));
-  // const storeWithoutStagedAction = Object.keys(store).reduce((newStore, key) => {
-  //   if (store[key].uuid !== 'stagedAction') {
-  //     newStore[key] = store[key];
-  //   }
-  //   return newStore;
-  // }, {} as ActionStore);
-
-  
-  //add saved colors
-  const savedColors = get(palettes)['myPalette'];
-  const exportData = {
-    store: storeWithoutStagedAction,
-    colors: savedColors
-  };
 
   // Convert canvas to Data URI
   if(canvas) {
       const dataURI = canvas.toDataURL('image/png');
 
     try {
-      const modifiedDataURI = addMetadataFromBase64DataURI(dataURI, 'exportData', JSON.stringify(exportData));
+      const modifiedDataURI = addMetadataFromBase64DataURI(dataURI, 'exportData', designData());
       downloadDataURI(modifiedDataURI, `${get(t).files.design}.png`);
     } catch (error) {
       console.error('Error adding metadata:', error);
@@ -44,10 +35,18 @@ export function exportCodeWithImage() {
   }
 }
 
+// Saves an animated GIF of the design (see GifFrames), with the design inside it so it can be opened again.
+export function exportGif(gif: Uint8Array) {
+  const url = URL.createObjectURL(new Blob([addDesignToGif(gif, designData())], { type: 'image/gif' }));
+  downloadDataURI(url, `${get(t).files.design}.gif`);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+// Opens a design saved as a picture or an animated GIF
 export function importCodeFromImage() {
   const input = document.createElement('input');
   input.type = 'file';
-  input.accept = 'image/png';
+  input.accept = 'image/png,image/gif';
 
   input.onchange = async (e) => {
     let target = e.target as HTMLInputElement;
@@ -63,8 +62,8 @@ export function importCodeFromImage() {
         const result = target.result;
 
         try {
-          const pngUint8Array = new Uint8Array(await file.arrayBuffer());
-          const jsonData = getMetadata(pngUint8Array, 'exportData');
+          const bytes = new Uint8Array(await file.arrayBuffer());
+          const jsonData = isGif(bytes) ? designFromGif(bytes) : getMetadata(bytes, 'exportData');
           
           if (jsonData) {
             const data = JSON.parse(jsonData);

@@ -1,11 +1,13 @@
 <script>
   import { addEffectAsStagedAction, moveStagedActionToEnd, compileActionsBefore, compileActionsBeforeStaged, updateStagedAction, updateStagedActionColor, copyStagedActionToActionStore, addCurrentEffectAsStagedAction, compileActions, hideAction, showAction, updateActiveActions, resetSpecialStagedActionParams, stopPlaying, play, pause, scrollToAction } from '../action-utils';
 	import P5 from 'p5-svelte';
-  import { stagedAction, activeIDs, stagedActionID, actionRootID, activeCategory, selectedEffect, shouldRandomizeColor, changedActionID, flatActionStore, actionRoot, hoveredActionID, renderRequested, isPlaying, renderDelay, currentlyRenderingActionID, mousePos, drawingLocked } from '../../stores/dataStore';
+  import { stagedAction, activeIDs, stagedActionID, actionRootID, activeCategory, selectedEffect, shouldRandomizeColor, changedActionID, flatActionStore, actionRoot, hoveredActionID, renderRequested, isPlaying, renderDelay, currentlyRenderingActionID, mousePos, drawingLocked, playSpeed, gifExport } from '../../stores/dataStore';
   import { renderers, loadStencils, loadFonts } from './Renderer.js';
   import { onMount, onDestroy, tick } from 'svelte';
   import { getAntPath, mapValue } from '../../utils/utils.ts';
   import { turtle } from './Turtle.js';
+  import { GifFrames } from '../../utils/gif';
+  import { exportGif } from '../export-utils';
   import { saveToHistory } from '../../stores/history';
   import { page } from '$app/stores';
   import { paintColors, activePalette, currentColor, currentIndexedColor, setCurrentColor, randomizeCurrentColor } from '../../stores/colorStore';
@@ -101,6 +103,19 @@
             renderActionsUntilStaged();
           }
         }, 100);
+      }
+    });
+
+    // saving an animated GIF: half the canvas's size, 15 frames a second, holding the finished design 2 seconds
+    gifExport.subscribe(async state => {
+      if (state !== 'requested' || !p5) return;
+      gifExport.set('making');
+      try {
+        if ($isPlaying) stopPlaying();
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))); // show "making GIF" first
+        exportGif(await recordReplay(p5.width / 2, 15, 2000));
+      } finally {
+        gifExport.set('idle');
       }
     });
 
@@ -208,20 +223,54 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     renderFromQueue();
   }
 
-  // While playing, each step of the recipe takes one beat ($renderDelay). The shapes a brush stroke draws
-  // along its path share `strokeBeats` beats between them, so a stroke draws itself in the time of that
-  // many steps.
+  // While playing, each step of the recipe takes one beat. The shapes a brush stroke draws along its path
+  // share `strokeBeats` beats between them, so a stroke draws itself in the time of that many steps.
+  // `sizes` says how many actions are drawn along each stroke.
   const strokeBeats = 2;
-  let strokeSizes = new Map(); // how many actions in the queue are drawn along each stroke
-  function beatShare(action) {
+  let strokeSizes = new Map(); // for the actions in the queue
+  function beatShare(action, beat, sizes) {
     if (!renderers[action.effect]) return 0; // markers for groups and brushes draw nothing
-    return action.stroke ? strokeBeats * $renderDelay / (strokeSizes.get(action.stroke) ?? 1) : $renderDelay;
+    return action.stroke ? strokeBeats * beat / (sizes.get(action.stroke) ?? 1) : beat;
   }
 
   function countBy(items, key) {
     const counts = new Map();
     for (const item of items) counts.set(key(item), (counts.get(key(item)) ?? 0) + 1);
     return counts;
+  }
+
+  // An animated GIF of the steps before the next step being drawn, `size` pixels square: timed like a replay
+  // at the replay speed, sampled `framesPerSecond` times a second, and ending on the finished design for
+  // `holdMilliseconds`. It draws on the static canvas without showing it, ending with the design as it was.
+  async function recordReplay(size, framesPerSecond, holdMilliseconds) {
+    while (isRendering) await new Promise(resolve => setTimeout(resolve, 20));
+    const queue = compileActionsBeforeStaged();
+    const sizes = countBy(queue, action => action.stroke);
+    const beat = 1000 / $playSpeed;
+    const canvas = p5.getStaticCanvas();
+    const frame = document.createElement('canvas');
+    frame.width = frame.height = size;
+    const context = frame.getContext('2d', { willReadFrequently: true });
+    context.imageSmoothingQuality = 'high';
+    const picture = () => {
+      context.fillStyle = 'white'; // see-through parts of the design are white in the GIF
+      context.fillRect(0, 0, size, size);
+      context.drawImage(canvas.elt, 0, 0, size, size);
+      return context.getImageData(0, 0, size, size).data;
+    };
+
+    const gif = new GifFrames(size, size);
+    const frameTime = 1000 / framesPerSecond;
+    let time = 0; // when the next step is drawn
+    let frames = 0; // frame k shows the canvas as it is at time k × frameTime
+    canvas.clear();
+    for (const action of queue) {
+      for (; frames * frameTime < time; frames++) gif.add(picture(), frameTime);
+      renderers[action.effect]?.(canvas, action.params, p5, turtle);
+      time += beatShare(action, beat, sizes);
+    }
+    gif.add(picture(), holdMilliseconds);
+    return gif.finish();
   }
 
   let isRendering = false;
@@ -251,7 +300,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       if(action.effect === 'clear') { delay = 0; }
       await renderAction(action, p5.getStaticCanvas(), delay);
       if($isPlaying) p5.image(p5.getStaticCanvas(), 0, 0); // show it, even if it was drawn straight away
-      const share = beatShare(action);
+      const share = beatShare(action, $renderDelay, strokeSizes);
       due = share > 0 ? due + share : Math.max(due, performance.now());
       currentActionIndex++;
     }

@@ -42,6 +42,10 @@ export const currentlyRenderingActionID = writable('');
 
 export const playSpeed = writable(10);
 
+// Saving an animated GIF: the save menu asks for one ('requested'), and the canvas records the replay and
+// saves it ('making') before going back to 'idle'.
+export const gifExport = writable<'idle' | 'requested' | 'making'>('idle');
+
 export const mousePos = writable({x: 0, y: 0});
 
 export const drawingLocked = writable(false);

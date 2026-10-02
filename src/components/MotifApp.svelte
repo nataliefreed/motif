@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { actionStore, toolStore, selectedEffect, activeCategory, stagedAction, stagedActionID, changedActionID, selectedActionID, selectedCodeEffect, actionRoot, flatActionStore, playSpeed, renderDelay, isPlaying, hasPlayed, drawingLocked, shouldRandomizeColor } from '../stores/dataStore';
+  import { actionStore, toolStore, selectedEffect, activeCategory, stagedAction, stagedActionID, changedActionID, selectedActionID, selectedCodeEffect, actionRoot, flatActionStore, playSpeed, renderDelay, isPlaying, hasPlayed, drawingLocked, shouldRandomizeColor, gifExport } from '../stores/dataStore';
   import { exportCodeWithImage, importCodeFromImage } from './export-utils';
   import LinedPaper from './LinedPaper.svelte';
   import ActionItem from './actions and widgets/ActionItem.svelte';
@@ -24,6 +24,8 @@
   import ColorPicker from './actions and widgets/ColorPicker.svelte';
   import { scale, fade } from 'svelte/transition';
   import DebugPaintStore from './DebugPaintStore.svelte';
+
+  let saveButton: HTMLElement;
 
   let allCategories:string[] = [];
   let value = '#FFFFFF';
@@ -203,7 +205,27 @@
 
     <div class="above-canvas">
       <div class="doc-controls">
-        <button class="top-menu-button" id="exportButton" on:click={exportCodeWithImage} use:help={{ text: $t.help.save, placement: 'bottom' }}>{$t.toolbar.save}</button>
+        <!-- save opens a menu: a picture of the design, or an animated GIF of it being drawn -->
+        <span class="help-target" use:help={{ text: $t.help.save, placement: 'bottom' }}>
+          <button class="top-menu-button" id="exportButton" bind:this={saveButton} disabled={$gifExport !== 'idle'}>{$gifExport === 'idle' ? $t.toolbar.save : $t.toolbar.makingGif}</button>
+        </span>
+        {#if saveButton}
+          <Tooltip element={saveButton} settings={{ placement: 'bottom' }} let:showContent let:hide>
+            {#if showContent}
+              <div class="save-menu">
+                {#each [
+                  { id: 'saveImageButton', label: $t.toolbar.saveImage, save: exportCodeWithImage },
+                  { id: 'saveGifButton', label: $t.toolbar.saveGif, save: () => gifExport.set('requested') },
+                ] as choice}
+                  <button class="save-choice" id={choice.id} on:click={() => { hide(); choice.save(); }}>
+                    {choice.label}
+                    <span class="download-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" aria-hidden="true"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M64 0C28.7 0 0 28.7 0 64V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V160H256c-17.7 0-32-14.3-32-32V0H64zM256 0V128H384L256 0zM216 232V334.1l31-31c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-72 72c-9.4 9.4-24.6 9.4-33.9 0l-72-72c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l31 31V232c0-13.3 10.7-24 24-24s24 10.7 24 24z"/></svg></span>
+                  </button>
+                {/each}
+              </div>
+            {/if}
+          </Tooltip>
+        {/if}
         <button class="top-menu-button" id="importButton" on:click={importCodeFromImage} use:help={{ text: $t.help.open, placement: 'bottom' }}>{$t.toolbar.open}</button>
         <button class="top-menu-button" id="clearAllButton" on:click={clearAllActions} use:help={{ text: $t.help.clear, placement: 'bottom' }}>{$t.toolbar.clear}</button>
       </div>
@@ -935,6 +957,45 @@
     -webkit-user-select: none; /* Safari */
     -ms-user-select: none; /* IE 10 and IE 11 */
     user-select: none; /* Standard */
+  }
+
+  .save-menu {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0.2em 0.1em;
+  }
+
+  .save-choice {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.7em;
+    font-family: 'Fandango';
+    font-size: 1.5rem;
+    text-align: left;
+    border: none;
+    border-radius: 6px;
+    background: none;
+    cursor: pointer;
+    padding: 0.1em 0.4em;
+    color: rgba(0, 0, 0, 0.9);
+  }
+
+  /* the download icon looks like the palette menu's save and open buttons */
+  .download-icon {
+    display: flex;
+    padding: 4px 6px;
+  }
+
+  .download-icon svg {
+    height: 20px;
+    width: auto;
+    fill: rgba(0, 0, 0, 0.85);
+  }
+
+  .save-choice:hover {
+    background-color: #eeeeee;
   }
 
   .top-menu-button:hover {

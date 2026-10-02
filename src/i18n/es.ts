@@ -8,6 +8,9 @@ import type { Messages } from './en';
 export const es: Messages = {
   toolbar: {
     save: 'guardar',
+    saveImage: 'imagen',
+    saveGif: 'GIF animado',
+    makingGif: 'haciendo el GIF…',
     open: 'abrir',
     clear: 'borrar',
     stepPerSecond: 'paso por segundo',
@@ -186,7 +189,7 @@ export const es: Messages = {
   },
 
   help: {
-    save: 'Guarda tu diseño como una imagen. La receta para hacerlo se guarda adentro, así que puedes abrirlo más tarde y seguir cambiándolo.',
+    save: 'Guarda tu diseño como una imagen o un GIF animado. La receta para hacerlo se guarda adentro, así que puedes abrirlo y cambiarlo más tarde.',
     open: 'Abre un diseño guardado para ver la receta de cómo se hizo, ¡y mézclalo!',
     clear: 'Borra todo y empieza de nuevo. ¿Cambiaste de idea? Haz clic en deshacer para recuperarlo.',
     undo: 'Deshaz tu último cambio',

@@ -42,6 +42,7 @@
 		"@fortawesome/free-regular-svg-icons": "^6.4.2",
 		"@melloware/coloris": "^0.22.0",
 		"deep-equal": "^2.2.3",
+		"gifenc": "^1.0.3",
 		"immer": "^10.0.3",
 		"lodash": "^4.17.21",
 		"meta-png": "^1.0.6",

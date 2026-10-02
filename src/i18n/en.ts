@@ -9,6 +9,9 @@
 export const en = {
   toolbar: {
     save: 'save',
+    saveImage: 'image',
+    saveGif: 'animated GIF',
+    makingGif: 'making GIF…',
     open: 'open',
     clear: 'clear',
     stepPerSecond: 'step per second',
@@ -200,7 +203,7 @@ export const en = {
   // hover help (see components/help.ts); "\n" starts a new line
   help: {
     // top toolbar
-    save: 'Save your design as a picture. The recipe for making it is saved inside, so you can open it again later and keep changing it.',
+    save: 'Save your design as a picture or an animated GIF. The recipe for making it is saved inside, so you can open and change it again later.',
     open: 'Open a saved design to see the recipe for how it was made and remix it!',
     clear: 'Clear everything and start over. Changed your mind? Click undo to bring it back.',
     undo: 'Undo your last change',

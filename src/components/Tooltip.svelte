@@ -95,5 +95,5 @@
 
 <!-- Hold the tooltip content -->
 <div bind:this={contentElement} class="not-deselect">
-    <slot {showContent}></slot>
+    <slot {showContent} hide={() => tooltip?.hide()}></slot>
 </div>
