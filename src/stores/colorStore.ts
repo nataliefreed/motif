@@ -255,17 +255,45 @@ function getColor(colorName: string) {
   }
 }
 
-export function randomColorFromPalette() {
-  let randomIndex = Math.floor(Math.random() * get(activePalette).length);
-  return { color: get(activePalette)[randomIndex], lockedIndex: randomIndex };
+// Random palette letters are dealt like cards from a shuffled deck of all the letters, so every letter
+// comes up once before any comes up again.
+let paletteDeck: number[] = [];
+let lastDealtLetter = -1;
+
+function shuffledLetters(count: number) {
+  const letters = Array.from({ length: count }, (_, letter) => letter);
+  for (let i = count - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [letters[i], letters[j]] = [letters[j], letters[i]];
+  }
+  return letters;
 }
 
-// Surprise colors: a new color for the brush, either a random letter from the palette (with palette
-// colors on) or any bright color.
+// The next letter in the deck other than `skip`, which stays in the deck for later. A new deck is shuffled
+// when this one runs out; skipping the last letter dealt means no letter comes up twice in a row.
+export function dealPaletteLetter(skip = lastDealtLetter) {
+  const count = get(activePalette).length;
+  let next = paletteDeck.findIndex(letter => letter !== skip && letter < count);
+  if (next < 0) {
+    paletteDeck = shuffledLetters(count);
+    next = Math.max(0, paletteDeck.findIndex(letter => letter !== skip));
+  }
+  lastDealtLetter = paletteDeck.splice(next, 1)[0];
+  return lastDealtLetter;
+}
+
+export function randomColorFromPalette() {
+  const letter = dealPaletteLetter();
+  return { color: get(activePalette)[letter], lockedIndex: letter };
+}
+
+// Surprise colors: a new color for the brush, either the next palette letter from the deck that isn't the
+// brush's letter already (with palette colors on) or any bright color.
 export function randomizeCurrentColor() {
   if (get(usePaletteColors)) {
-    const { color, lockedIndex } = randomColorFromPalette();
-    setCurrentColor(color, lockedIndex);
+    const { index } = get(currentIndexedColor);
+    const letter = dealPaletteLetter(index >= 0 ? index : lastDealtLetter);
+    setCurrentColor(get(activePalette)[letter], letter);
   } else {
     setCurrentColor(curatedRandomHexColor());
   }
