@@ -238,19 +238,21 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     // let delays = actions.map(action => action.parentID === $changedActionID ? delay : 0);
     // delays[0] = 0; //first action renders immediately
 
-    // When each drawing is due while playing. One already due is drawn straight away rather than waiting for
-    // a timer (which can't wait less than a few milliseconds), so even a beat shared by hundreds of points
-    // keeps time.
+    // When the next drawing is due while playing. Each drawing stays on screen for its share of a beat before
+    // the next, so a replay starts with the first step already drawn rather than a blank canvas. One already
+    // due is drawn straight away rather than waiting for a timer (which can't wait less than a few
+    // milliseconds), so even a beat shared by hundreds of points keeps time.
     let due = performance.now();
     while (currentActionIndex < actionQueue.length) {
       const action = actionQueue[currentActionIndex];
-      const share = beatShare(action);
-      due = share > 0 ? due + share : performance.now();
       // console.log("rendering action", action.actionID, action.effect, action.params);
       // console.log("which is action", currentActionIndex + 1, "of", actionQueue.length);
       let delay = due - performance.now();
       if(action.effect === 'clear') { delay = 0; }
       await renderAction(action, p5.getStaticCanvas(), delay);
+      if($isPlaying) p5.image(p5.getStaticCanvas(), 0, 0); // show it, even if it was drawn straight away
+      const share = beatShare(action);
+      due = share > 0 ? due + share : Math.max(due, performance.now());
       currentActionIndex++;
     }
 

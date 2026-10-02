@@ -495,7 +495,7 @@ export function fastForwardToEnd() {
 }
 
 export function stepForward() {
-  isPlaying.set(false);
+  stopPlaying(); // stop a replay fully, so the steps before the new spot are drawn
   let stagedID = get(stagedActionID);
   if (!stagedID) return;
 
@@ -522,7 +522,7 @@ export function stepForward() {
 }
 
 export function stepBackward() {
-  isPlaying.set(false);
+  stopPlaying(); // stop a replay fully, so the steps before the new spot are drawn
   let stagedID = get(stagedActionID);
   if(!stagedID) return;
 
@@ -597,9 +597,12 @@ export function stopPlaying() {
   // stop the delayed render
   // leave staged action where it is
   // clearInterval(playInterval);
+  const wasPlaying = get(isPlaying);
   isPlaying.set(false);
   renderDelay.set(0);
-  // actionManager.refresh();
+  // a step the replay was still waiting to draw is dropped once it stops, so draw everything before the
+  // staged action again
+  if (wasPlaying) actionManager.refresh();
 }
 
 export function toggleHidden(id: string) {
