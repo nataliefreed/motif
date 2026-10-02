@@ -1000,14 +1000,13 @@ function outlineCopy(p, copy) {
 
 // Tile: the whole canvas, shrunk and repeated. The rosette (saved as 'radial') and the honeycomb repeat it
 // in rings of copies around one in the middle; the other layouts shrink it into the cells of a grid
-// `columns` wide and `rows` high. (Patterns saved before kept the size of a piece of the canvas instead;
-// they become the grid that size makes.)
+// `columns` wide and `rows` high. (Patterns saved in the older format are updated when they're opened.)
 function tile(p, params, p5) {
   const snapshot = canvasCopy(p5);
   const previewing = p === p5.getHoverCanvas() || p === p5.getDragCanvas();
   p.push();
   const color = params.color ?? 'rgba(0, 0, 0, 0)'; // see-through, as checkerboards were before they had a color
-  const rings = params.rings ?? params.numRings ?? 3;
+  const rings = params.rings ?? 3;
   if (params.tiling === 'radial') {
     p.noStroke();
     p.fill(color); // shows between the circles
@@ -1018,8 +1017,8 @@ function tile(p, params, p5) {
     copiesInRings(p, snapshot, copies);
     if (previewing) outlineCopy(p, copies[0]);
   } else {
-    const columns = params.columns ?? (params.width ? Math.max(1, Math.round(p.width / params.width)) : 4);
-    const rows = params.rows ?? (params.height ? Math.max(1, Math.round(p.height / params.height)) : 4);
+    const columns = params.columns ?? 4;
+    const rows = params.rows ?? 4;
     const w = p.width / columns;
     const h = p.height / rows;
     switch (params.tiling) {

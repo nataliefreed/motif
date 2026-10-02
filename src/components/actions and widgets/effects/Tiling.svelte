@@ -19,7 +19,7 @@
   $: tiling = params.tiling || name;
   $: inRings = tiling === 'radial' || tiling === 'honeycomb';
   $: withColor = tiling === 'radial' || tiling === 'checkerboard';
-  $: rings = params.rings ?? params.numRings ?? 3;
+  $: rings = params.rings ?? 3;
   $: words = phraseWords(
     tiling === 'radial' ? (rings === 1 ? $t.steps.rosettePatternOneRing : $t.steps.rosettePattern)
     : tiling === 'honeycomb' ? (rings === 1 ? $t.steps.honeycombPatternOneRing : $t.steps.honeycombPattern)

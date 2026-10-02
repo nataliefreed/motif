@@ -7,6 +7,7 @@ import { deepCopy } from '../utils/utils';
 import { getDescendantIDs, addCurrentEffectAsStagedAction } from './action-utils';
 import type { ActionStore } from '../types/types';
 import { palettes } from '../stores/colorStore';
+import { p5CanvasSize } from '../stores/canvasStore';
 import { distinctColors, withShades } from '../utils/color-utils';
 import { t } from '../i18n';
 
@@ -71,6 +72,7 @@ export function importCodeFromImage() {
             if(data) { drawingLocked.set(false); }; //importing a design can be set to start in parameter setting mode
             if(data.store) {
               // console.log('imported data:', data.store);
+              updateOldPatterns(data.store);
               flatActionStore.update(store => { return data.store; });
               addCurrentEffectAsStagedAction();
             }
@@ -93,6 +95,24 @@ export function importCodeFromImage() {
     };
 
   input.click();
+}
+
+// Patterns saved before they repeated the whole canvas kept the size of the piece they repeated (width and
+// height, sampled at a position), and a rosette kept its rings as numRings. They become the grid that
+// piece's size makes, and rings, so the steps show what they draw.
+function updateOldPatterns(store: ActionStore) {
+  const canvas = get(p5CanvasSize);
+  for (const action of Object.values(store)) {
+    const params = action.params;
+    if (action.effect !== 'tile' || 'columns' in params || 'rings' in params) continue;
+    if (params.tiling === 'radial') {
+      params.rings = params.numRings ?? 3;
+    } else {
+      params.columns = params.width ? Math.max(1, Math.round(canvas.width / params.width)) : 4;
+      params.rows = params.height ? Math.max(1, Math.round(canvas.height / params.height)) : 4;
+    }
+    for (const old of ['width', 'height', 'position', 'numRings', 'numTiles']) delete params[old];
+  }
 }
 
 export function removeAction(store: ActionStore, id:string) {
