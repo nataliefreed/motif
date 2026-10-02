@@ -925,7 +925,6 @@ let changeOptions = {
   'height': (value:number) => randomWithinRange(value, 5, 600, 20),
   'columns': (value:number) => randomWithinRange(value, 1, 20, 3),
   'rows': (value:number) => randomWithinRange(value, 1, 20, 3),
-  'around': (value:number) => randomWithinRange(value, 3, 24, 3),
   'rings': (value:number) => randomWithinRange(value, 1, 6, 1),
   'angle': (value:number) => randomWithinRange(value, 0, 360, 20),
   'outer': (value:number) => randomWithinRange(value, 5, 300, 20),

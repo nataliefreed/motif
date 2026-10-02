@@ -66,6 +66,7 @@ export const fr: Messages = {
     'Half Drop': { label: 'Escalier', help: 'Clique pour répéter tout ton dessin en petites copies, en colonnes décalées une sur deux. Fais glisser pour choisir combien' },
     'Checkerboard': { label: 'Damier', help: 'Clique pour mettre de petites copies de tout ton dessin une case sur deux, comme un damier, avec une couleur dans les autres cases. Fais glisser pour choisir combien' },
     'Radial': { label: 'Rosace', help: 'Clique pour répéter tout ton dessin en anneaux autour d’une copie au milieu, comme une fleur, sur une couleur. Fais glisser pour choisir combien' },
+    'Honeycomb': { label: 'Nid d’abeilles', help: 'Clique pour répéter tout ton dessin en copies rondes qui se touchent, comme un nid d’abeilles, sur une couleur. Fais glisser pour choisir combien' },
     'Mirror': { label: 'Miroir', help: 'Clique pour répéter tout ton dessin en petites copies, chacune le reflet de sa voisine. Fais glisser pour choisir combien' },
     'Invert': { label: 'Inverser', help: 'Clique pour remplacer chaque couleur de ton dessin par son opposée' },
     'Grayscale': { label: 'Gris', help: 'Clique pour mettre ton dessin en gris, comme une vieille photo' },
@@ -103,7 +104,8 @@ export const fr: Messages = {
     drawWith: 'dessiner avec {0}',
     // motifs
     pattern: '{0} {1} x {2}',
-    radialPattern: '{0} avec {1} autour et {2} anneaux sur {3}',
+    ringsPattern: '{0} avec {1} anneaux sur {2}',
+    ringsPatternOneRing: '{0} avec {1} anneau sur {2}',
     checkerboardPattern: '{0} {1} x {2} avec {3}',
     // effets spéciaux
     scale: '**redimensionner** à {0} %, largeur {1} et hauteur {2} à {3}',
@@ -128,6 +130,7 @@ export const fr: Messages = {
     'half drop': 'escalier',
     'checkerboard': 'damier',
     'radial': 'rosace',
+    'honeycomb': 'nid d’abeilles',
     'mirror': 'miroir',
   },
 

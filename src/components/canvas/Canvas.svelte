@@ -638,8 +638,8 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
           let offset = Math.round(mapValue(y, 0, 500, 10, 100));
           updateStagedAction({ offset: offset });
         }
-        if('around' in params) { // radial: drag sideways for more copies around, down for more rings
-          updateStagedAction({ around: 3 + Math.floor(Math.abs(x - startX) / 25), rings: 1 + Math.floor(Math.abs(y - startY) / 40) });
+        if('rings' in params) { // rosette and honeycomb: drag farther for more rings
+          updateStagedAction({ rings: 1 + Math.floor(distance / 40) });
         }
         if('columns' in params) { // patterns: drag sideways for more columns, down for more rows
           updateStagedAction({ columns: 1 + Math.floor(Math.abs(x - startX) / 25), rows: 1 + Math.floor(Math.abs(y - startY) / 25) });

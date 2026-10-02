@@ -924,11 +924,24 @@ export const effectList = [
     category: 'patterns',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'radial.jpg',
+    thumbnail: 'rosette.png',
     mouseActionType: 'drag',
     params: {
       tiling: 'radial',
-      around: 8,
+      rings: 3,
+      color: '#FFFFFF'
+    }
+  },
+  {
+    name: 'tile',
+    textLabel: 'Honeycomb',
+    category: 'patterns',
+    tags: 'drawing',
+    cursor: './assets/cursors/star-solid.svg',
+    thumbnail: 'honeycomb.png',
+    mouseActionType: 'drag',
+    params: {
+      tiling: 'honeycomb',
       rings: 3,
       color: '#FFFFFF'
     }
@@ -939,7 +952,7 @@ export const effectList = [
     category: 'patterns',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
-    thumbnail: 'radial.jpg',
+    thumbnail: 'mirror.png',
     mouseActionType: 'drag',
     params: {
       tiling: 'mirror',

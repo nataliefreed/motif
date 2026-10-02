@@ -67,6 +67,7 @@ export const es: Messages = {
     'Half Drop': { label: 'Escalonado', help: 'Haz clic para repetir todo tu dibujo en copias chiquitas, en columnas escalonadas. Arrastra para elegir cuántas' },
     'Checkerboard': { label: 'Ajedrez', help: 'Haz clic para poner copias chiquitas de todo tu dibujo en un cuadro sí y otro no, como un tablero de ajedrez, con un color en los cuadros de en medio. Arrastra para elegir cuántas' },
     'Radial': { label: 'Roseta', help: 'Haz clic para repetir todo tu dibujo en anillos alrededor de una copia en el centro, como una flor, sobre un color. Arrastra para elegir cuántas' },
+    'Honeycomb': { label: 'Panal', help: 'Haz clic para repetir todo tu dibujo en copias redondas que se tocan, como un panal, sobre un color. Arrastra para elegir cuántas' },
     'Mirror': { label: 'Espejo', help: 'Haz clic para repetir todo tu dibujo en copias chiquitas, cada una reflejada como en un espejo. Arrastra para elegir cuántas' },
     'Invert': { label: 'Invertir', help: 'Haz clic para cambiar cada color de tu diseño a su opuesto' },
     'Grayscale': { label: 'Gris', help: 'Haz clic para poner tu diseño en gris, como una foto antigua' },
@@ -104,7 +105,8 @@ export const es: Messages = {
     drawWith: 'dibujar con {0}',
     // patrones
     pattern: '{0} {1} x {2}',
-    radialPattern: '{0} con {1} alrededor y {2} anillos sobre {3}',
+    ringsPattern: '{0} con {1} anillos sobre {2}',
+    ringsPatternOneRing: '{0} con {1} anillo sobre {2}',
     checkerboardPattern: '{0} {1} x {2} con {3}',
     // efectos especiales
     scale: '**escalar** al {0}% ancho {1} y alto {2} en {3}',
@@ -129,6 +131,7 @@ export const es: Messages = {
     'half drop': 'escalonado',
     'checkerboard': 'ajedrez',
     'radial': 'roseta',
+    'honeycomb': 'panal',
     'mirror': 'espejo',
   },
 
