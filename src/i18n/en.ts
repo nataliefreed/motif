@@ -63,7 +63,7 @@ export const en = {
     'Heart brush': { label: 'Heart brush', help: 'Click and drag to paint a trail of hearts' },
     'Star Brush': { label: 'Star Brush', help: 'Click and drag to paint a trail of stars' },
     'Letter Brush': { label: 'Letter Brush', help: 'Click and drag to paint a trail of letters. Change the letters inside the brush to spell something!' },
-    'Rainbow Bounce': { label: 'Rainbow Bounce', help: 'Click and drag to aim, then hold still: rainbow dots bounce off the edges until you let go' },
+    'Rainbow Bounce': { label: 'Rainbow Bounce', help: 'Click and drag to aim, hold to keep bouncing' },
     'Speckles': { label: 'Speckles', help: 'Click and hold to sprinkle speckles over the canvas. Hold longer for more!' },
     'Multi Stripe': { label: 'Multi Stripe', help: 'Click and drag to paint tall stripes that follow your mouse' },
     'Straight Grid': { label: 'Straight Grid', help: 'Click to repeat your whole drawing in a grid of small copies. Drag to choose how many' },

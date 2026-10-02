@@ -58,7 +58,7 @@ export const fr: Messages = {
     'Heart brush': { label: 'Pinceau cœurs', help: 'Clique et fais glisser pour peindre une traînée de cœurs' },
     'Star Brush': { label: 'Pinceau étoiles', help: 'Clique et fais glisser pour peindre une traînée d’étoiles' },
     'Letter Brush': { label: 'Pinceau lettres', help: 'Clique et fais glisser pour peindre une traînée de lettres. Change les lettres dans le pinceau pour écrire quelque chose !' },
-    'Rainbow Bounce': { label: 'Rebond arc-en-ciel', help: 'Clique et fais glisser pour viser, puis ne bouge plus : des points arc-en-ciel rebondissent sur les bords jusqu’à ce que tu relâches' },
+    'Rainbow Bounce': { label: 'Rebond arc-en-ciel', help: 'Clique et fais glisser pour viser, maintiens appuyé pour continuer à rebondir' },
     'Speckles': { label: 'Petits points', help: 'Clique et maintiens pour saupoudrer de petits points sur la toile. Plus tu maintiens, plus il y en a !' },
     'Multi Stripe': { label: 'Multi-rayures', help: 'Clique et fais glisser pour peindre de hautes rayures qui suivent ta souris' },
     'Straight Grid': { label: 'Grille', help: 'Clique pour répéter tout ton dessin en une grille de petites copies. Fais glisser pour choisir combien' },

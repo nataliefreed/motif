@@ -59,7 +59,7 @@ export const es: Messages = {
     'Heart brush': { label: 'Pincel de corazones', help: 'Haz clic y arrastra para pintar un camino de corazones' },
     'Star Brush': { label: 'Pincel de estrellas', help: 'Haz clic y arrastra para pintar un camino de estrellas' },
     'Letter Brush': { label: 'Pincel de letras', help: 'Haz clic y arrastra para pintar un camino de letras. ¡Cambia las letras dentro del pincel para escribir algo!' },
-    'Rainbow Bounce': { label: 'Arcoíris rebotón', help: 'Haz clic y arrastra para apuntar, luego mantén el mouse quieto: los puntos de arcoíris rebotan en las orillas hasta que sueltes' },
+    'Rainbow Bounce': { label: 'Arcoíris rebotón', help: 'Haz clic y arrastra para apuntar, mantén presionado para seguir rebotando' },
     'Speckles': { label: 'Motitas', help: 'Haz clic y mantén presionado para espolvorear motitas en el lienzo. ¡Mientras más lo mantengas, más motitas!' },
     'Multi Stripe': { label: 'Rayas múltiples', help: 'Haz clic y arrastra para pintar rayas altas que siguen tu mouse' },
     'Straight Grid': { label: 'Cuadrícula', help: 'Haz clic para repetir todo tu dibujo en una cuadrícula de copias chiquitas. Arrastra para elegir cuántas' },
