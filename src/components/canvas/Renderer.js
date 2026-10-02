@@ -646,12 +646,6 @@ export const renderers = {
 
     p.translate(params.position.x, params.position.y);
 
-    // let maskCanvas = p.createGraphics(p.width, p.height)
-
-    p.noFill();
-    p.stroke(50);
-    p.strokeWeight(2);
-
     const calculatePoints = (initial, dimensions) => {
       const points = [initial];
       for (const d of dimensions) {
@@ -662,12 +656,19 @@ export const renderers = {
 
     const r = calculatePoints(0, [l, h, l]);
     const c = calculatePoints(0, [l, w, l, w]);
-    
+
+    // The outline to cut along, as a list of points: straight cuts, and tabs to glue down
+    const outline = [];
     const cut = (r0, c0, r1, c1) => {
-      p.stroke(50);
-      p.vertex(r[r0], c[c0]);
-      p.vertex(r[r1], c[c1]);
-      p.line(r[r0], c[c0], r[r1], c[c1]);
+      outline.push([r[r0], c[c0]], [r[r1], c[c1]]);
+    }
+
+    const tab = (r0, c0, r1, c1) => {
+      const u = [r[r1] - r[r0], c[c1] - c[c0]];
+      const v = [-u[1], u[0]];
+      for (const [du, dv] of [[0, 0], [0.1, 0.2], [0.9, 0.2], [1.0, 0.0]]) {
+        outline.push([r[r0] + u[0] * du + v[0] * dv, c[c0] + u[1] * du + v[1] * dv]);
+      }
     }
 
     const fold = (r0, c0, r1, c1) => {
@@ -675,33 +676,6 @@ export const renderers = {
       p.line(r[r0], c[c0], r[r1], c[c1]);
     }
 
-    const tab = (r0, c0, r1, c1) => {
-      p.stroke(50);
-      const u = [r[r1] - r[r0], c[c1] - c[c0]];
-      const v = [-u[1], u[0]];
-      let prev = [0, 0]; 
-
-      for (const [du, dv] of [
-        [0.1, 0.2],
-        [0.9, 0.2],
-        [1.0, 0.0]
-      ]) {
-        // p.line(r[r0] + u[0] * prev[0] + v[0] * prev[1],
-        //   c[c0] + u[1] * prev[0] + v[1] * prev[1],
-        //   r[r0] + u[0] * du + v[0] * dv,
-        //   c[c0] + u[1] * du + v[1] * dv
-        // );
-        p.vertex(r[r0] + u[0] * prev[0] + v[0] * prev[1],
-             c[c0] + u[1] * prev[0] + v[1] * prev[1]);
-        p.vertex(r[r0] + u[0] * du + v[0] * dv,
-            c[c0] + u[1] * du + v[1] * dv);
-        prev = [du, dv];
-      }
-    
-      // fold(r0, c0, r1, c1);
-    }
-    // p.fill(params.color);
-    p.beginShape();
     // Proceeds counterclockwise from top left corner
     cut(1, 0, 1, 1);   // Top face's left edge
 
@@ -724,6 +698,22 @@ export const renderers = {
     cut(2, 1, 2, 0);   // Top face's right edge
     tab(2, 0, 1, 0);   // Top face's top edge
 
+    // Lighten everything outside the box, like the paper doll, so printing it uses less ink: the whole
+    // canvas with the outline as a hole in it, filled by the even-odd rule
+    const context = p.drawingContext;
+    p.noStroke();
+    p.fill(255, 220);
+    context.beginPath();
+    context.rect(-params.position.x, -params.position.y, p.width, p.height);
+    outline.forEach(([x, y], i) => (i === 0 ? context.moveTo(x, y) : context.lineTo(x, y)));
+    context.closePath();
+    context.fill('evenodd');
+
+    p.noFill();
+    p.stroke(50);
+    p.strokeWeight(2);
+    p.beginShape();
+    for (const [x, y] of outline) p.vertex(x, y);
     p.endShape(p5.CLOSE);
 
     // Extra folds that aren't for tabs
