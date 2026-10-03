@@ -56,7 +56,8 @@ export function phraseWords(phrase: string): string[] {
 // they were saved in. Any other name is the person's own, and is shown as they wrote it.
 export const displayTitle = derived(language, $language => (title: string) => {
   for (const [english, current] of Object.entries(messages[$language].titles)) {
-    const isThisDefault = Object.values(messages).some(m => entry(m.titles, english) === title);
+    // saved as the English key (as MOTIF names things), or as it was shown in any language
+    const isThisDefault = title === english || Object.values(messages).some(m => entry(m.titles, english) === title);
     if (isThisDefault) return current;
   }
   return title;

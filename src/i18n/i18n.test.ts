@@ -42,7 +42,7 @@ describe('interface text', () => {
     const brushTitles = effectList.flatMap(tool =>
       Object.values(tool.nestedActions ?? {}).map(action => action.params.title).filter(Boolean));
     for (const title of brushTitles) {
-      expect(entry(en.titles, title), title).toBe(title);
+      expect(entry(en.titles, title), title).toBeDefined();
     }
   });
 });
@@ -52,7 +52,14 @@ describe('displayTitle', () => {
     language.set('es');
     expect(get(displayTitle)('How To Make My Design')).toBe('La receta de mi diseño');
     language.set('en');
-    expect(get(displayTitle)('pincel de puntos')).toBe('dot brush');
+    expect(get(displayTitle)('punto')).toBe('dot');
+  });
+
+  it('shows names saved as their English key, as MOTIF saves them, in the current language', () => {
+    language.set('es');
+    expect(get(displayTitle)('mosaic brush')).toBe('mosaico');
+    language.set('en');
+    expect(get(displayTitle)('mosaic brush')).toBe('mosaic');
   });
 
   it('leaves names people wrote themselves as they are', () => {
