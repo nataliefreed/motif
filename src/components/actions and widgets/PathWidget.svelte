@@ -59,7 +59,7 @@
 
       // Set the viewBox to the expanded bounding box
       zoomedViewBox = `${centerX} ${centerY} ${newWidth} ${newHeight}`;
-      zoomedPointScale = Math.min(newWidth, newHeight) / 540;
+      zoomedPointScale = Math.max(newWidth, newHeight) / 540; // the picture fits its longer side, so dots scale with it
       viewBox = zoomedViewBox;
       pointScale = zoomedPointScale;
     }
