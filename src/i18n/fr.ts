@@ -151,8 +151,10 @@ export const fr: Messages = {
     'star brush': 'étoiles',
     'letter brush': 'lettres',
     'stripe stripe stripe': 'rayure rayure rayure',
-    'what does this draw?': 'qu’est-ce que ça dessine ?',
-    'a brush without a name': 'un pinceau sans nom',
+    'untitled': 'sans titre', // new groups and brushes, until they're named
+    // what they were called before, in older drawings
+    'what does this draw?': 'sans titre',
+    'a brush without a name': 'sans titre',
   },
 
   palettes: {

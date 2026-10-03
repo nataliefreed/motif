@@ -152,8 +152,10 @@ export const es: Messages = {
     'star brush': 'estrellas',
     'letter brush': 'letras',
     'stripe stripe stripe': 'raya raya raya',
-    'what does this draw?': '¿qué dibuja esto?',
-    'a brush without a name': 'un pincel sin nombre',
+    'untitled': 'sin título', // new groups and brushes, until they're named
+    // what they were called before, in older drawings
+    'what does this draw?': 'sin título',
+    'a brush without a name': 'sin título',
   },
 
   palettes: {

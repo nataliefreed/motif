@@ -160,8 +160,10 @@ export const en = {
     'star brush': 'stars',
     'letter brush': 'letters',
     'stripe stripe stripe': 'stripe stripe stripe',
-    'what does this draw?': 'what does this draw?',
-    'a brush without a name': 'a brush without a name',
+    'untitled': 'untitled', // new groups and brushes, until they're named
+    // what they were called before, in older drawings
+    'what does this draw?': 'untitled',
+    'a brush without a name': 'untitled',
   },
 
   // the palette menu below the palette: built-in color schemes, and saving and opening palette files

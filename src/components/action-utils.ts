@@ -1108,7 +1108,7 @@ function wrapInGroup(steps: string[], title?: string): string {
   return group;
 }
 
-function createGroupAction(children: string[], title = "what does this draw?") {
+function createGroupAction(children: string[], title = "untitled") {
   let action: Action = {
     uuid: uuidv4(),
     name: 'do each',
@@ -1242,7 +1242,7 @@ function createAlongPathAction(children: string[], path: number[][], angle: numb
     category: 'control',
     effect: 'along path',
     params: {
-      title: title || "a brush without a name",
+      title: title || "untitled",
       children: children,
       path: path,
       angle: angle,

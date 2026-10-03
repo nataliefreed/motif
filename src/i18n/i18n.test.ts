@@ -62,6 +62,14 @@ describe('displayTitle', () => {
     expect(get(displayTitle)('mosaic brush')).toBe('mosaic');
   });
 
+  it('shows what new groups and brushes used to be called, in older drawings, as untitled', () => {
+    language.set('fr');
+    expect(get(displayTitle)('what does this draw?')).toBe('sans titre');
+    expect(get(displayTitle)('a brush without a name')).toBe('sans titre');
+    expect(get(displayTitle)('untitled')).toBe('sans titre');
+    language.set('en');
+  });
+
   it('leaves names people wrote themselves as they are', () => {
     language.set('es');
     expect(get(displayTitle)('my cat brush')).toBe('my cat brush');
