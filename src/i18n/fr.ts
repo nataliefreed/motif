@@ -77,7 +77,7 @@ export const fr: Messages = {
     'Grow': { label: 'Agrandir', help: 'Clique sur une partie de ton dessin pour l’agrandir. Fais glisser pour choisir la taille de la partie qui grandit.' },
     'Shrink': { label: 'Rétrécir', help: 'Clique sur une partie de ton dessin pour la rétrécir. Fais glisser pour choisir la taille de la partie qui rétrécit.' },
     'Shift': { label: 'Décaler', help: 'Clique pour découper ton dessin en bandes et décaler une bande sur deux. Fais glisser pour changer la largeur des bandes et leur décalage.' },
-    'Move': { label: 'Déplacer', help: 'Déplace une partie de ton dessin : clique et maintiens, fais-la glisser ailleurs, puis relâche. Change « déplacer » en « copier » dans son étape pour déplacer une copie.' },
+    'Copy': { label: 'Copier', help: 'Copie une partie de ton dessin : clique et maintiens, fais glisser la copie ailleurs, puis relâche. Change « copier » en « déplacer » dans son étape pour la déplacer.' },
     'Paper Box': { label: 'Boîte en papier', help: 'Ajoute le contour d’une boîte en papier autour de ton dessin. Imprime-la, découpe-la et plie-la !' },
     'Paper Doll': { label: 'Poupée en papier', help: 'Ajoute le contour d’une poupée en papier à habiller avec ton dessin' },
   },

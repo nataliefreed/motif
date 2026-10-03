@@ -1056,7 +1056,7 @@ export const effectList = [
   },
   {
     name: 'move cutout',
-    textLabel: 'Move',
+    textLabel: 'Copy',
     category: 'effects',
     tags: 'drawing',
     cursor: './assets/cursors/star-solid.svg',
@@ -1067,7 +1067,7 @@ export const effectList = [
       end: {x:300, y:300},
       w: 100, //don't change when mouse dragging
       h: 100,
-      mode: 'move'
+      mode: 'copy' // or 'move', which leaves a hole where it was
     }
   },
   // {

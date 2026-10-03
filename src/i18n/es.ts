@@ -78,7 +78,7 @@ export const es: Messages = {
     'Grow': { label: 'Agrandar', help: 'Haz clic en una parte de tu dibujo para hacerla más grande. Arrastra para elegir qué tan grande es la parte que crece.' },
     'Shrink': { label: 'Encoger', help: 'Haz clic en una parte de tu dibujo para hacerla más chica. Arrastra para elegir qué tan grande es la parte que se encoge.' },
     'Shift': { label: 'Desplazar', help: 'Haz clic para cortar tu diseño en tiras y deslizar una sí y una no. Arrastra para cambiar qué tan anchas son las tiras y cuánto se deslizan.' },
-    'Move': { label: 'Mover', help: 'Mueve una parte de tu dibujo: haz clic y mantén presionado, arrástrala a otro lugar y suelta. Cambia "mover" por "copiar" en su paso para mover una copia.' },
+    'Copy': { label: 'Copiar', help: 'Copia una parte de tu dibujo: haz clic y mantén presionado, arrastra la copia a otro lugar y suelta. Cambia "copiar" por "mover" en su paso para moverla.' },
     'Paper Box': { label: 'Caja de papel', help: 'Agrega el contorno de una caja de papel alrededor de tu diseño. ¡Imprímelo, recórtalo y dóblalo!' },
     'Paper Doll': { label: 'Muñeca de papel', help: 'Agrega el contorno de una muñeca de papel para vestirla con tu diseño' },
   },

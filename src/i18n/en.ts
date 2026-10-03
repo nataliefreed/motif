@@ -82,7 +82,7 @@ export const en = {
     'Grow': { label: 'Grow', help: 'Click on part of your drawing to make it bigger. Drag to choose how much of it grows.' },
     'Shrink': { label: 'Shrink', help: 'Click on part of your drawing to make it smaller. Drag to choose how much of it shrinks.' },
     'Shift': { label: 'Shift', help: 'Click to slice your design into strips and slide every other one. Drag to change how wide the strips are and how far they slide.' },
-    'Move': { label: 'Move', help: 'Move part of your drawing: click and hold, drag it somewhere new, then let go. Change "move" to "copy" in its step to move a copy instead.' },
+    'Copy': { label: 'Copy', help: 'Copy part of your drawing: click and hold, drag the copy somewhere new, then let go. Change "copy" to "move" in its step to move it instead.' },
     'Paper Box': { label: 'Paper Box', help: 'Add the outline of a paper box around your design. Print it, cut it out, and fold it up!' },
     'Paper Doll': { label: 'Paper Doll', help: 'Add a paper doll outline to dress up with your design' },
   },
