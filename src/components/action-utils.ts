@@ -4,14 +4,13 @@ import { followedBy, movePoint, turnAndMove, type Point, type Transform } from '
 import { randomPattern, type PatternKind } from '../utils/random-patterns';
 import { t, entry, displayTitle } from '../i18n';
 import { actionRootID, activeIDs, actionStore, myTools, toolStore, selectedActionID, selectedRun, selectedEffect, changedActionID, flatActionStore, actionRoot, stagedAction, stagedActionID, shouldRandomizeColor, playheadID, hoveredActionID, renderRequested, isPlaying, renderDelay, currentlyRenderingActionID, playSpeed, hasPlayed } from '../stores/dataStore'
-import { currentColor, currentIndexedColor, randomColorFromPalette, activePalette, replaceActivePalette } from '../stores/colorStore';
-import { saveToHistory } from '../stores/history';
+import { currentColor, currentIndexedColor, setCurrentColor, randomColorFromPalette, activePalette, replaceActivePalette } from '../stores/colorStore';
+import { saveToHistory, undoSnapshot, redoSnapshot, drawingWithBrush, type Snapshot } from '../stores/history';
 import { p5CanvasSize } from '../stores/canvasStore';
 import { get } from 'svelte/store';
 import { deepCopy, merge, randomWithinRange, arrayToKeyedObj } from '../utils/utils';
 import { tick } from 'svelte';
 import { curatedRandomHexColor } from '../utils/color-utils';
-import { historyStore } from '../stores/history';
 import tinycolor from "tinycolor2";
 import { getSpiroPoints, getSpecklesPoints } from './canvas/Renderer.js'
 
@@ -365,23 +364,25 @@ replaceWithCopy(id: string) {
   }
 
   undo() {
-    let undoState = historyStore.pop();
-    if(!undoState) return;
-    this.#modifyActionStore(null, (store) => {
-      Object.assign(store, undoState.actionStore);
-    });
-    replaceActivePalette(undoState.colorPalette);
-    stagedActionID.set(undoState.stagedActionID);
+    const snapshot = undoSnapshot();
+    if (snapshot) this.#restore(snapshot);
   }
 
   redo() {
-    let redoState = historyStore.redo();
-    if (!redoState) return;
-    stagedActionID.set(redoState.stagedActionID);
-    this.#modifyActionStore(null, (store: ActionStore) => {
-      Object.assign(store, redoState.actionStore);
-    });
-    replaceActivePalette(redoState.colorPalette);
+    const snapshot = redoSnapshot();
+    if (snapshot) this.#restore(snapshot);
+  }
+
+  // Puts back the drawing a snapshot holds, and the brush's settings and color if it's the brush held now
+  // (see history.ts)
+  #restore(snapshot: Snapshot) {
+    const stagedID = get(stagedActionID);
+    if (snapshot.brush?.id === stagedID) { // first, since choosing a color recolors the brush
+      setCurrentColor(snapshot.brush.color.color, snapshot.brush.color.index);
+    }
+    this.#updateActionStore(store => drawingWithBrush(snapshot, store, stagedID, get(actionRootID)));
+    changedActionID.set(get(actionRootID));
+    replaceActivePalette(snapshot.palette);
   }
 
   refresh() {
@@ -817,6 +818,8 @@ export function duplicateAction(id:string) {
 //   });
 // }
 
+// Adds a copy of the staged action to the drawing, before it. (Whatever does this saves to history when it's
+// done, so that a stroke's undo step includes what happens to the brush after it, like a surprise color.)
 export function copyStagedActionToActionStore() {
   let stagedID = get(stagedActionID);
   let newActions = copyAction(stagedID);
@@ -838,8 +841,6 @@ export function copyStagedActionToActionStore() {
   // playheadID.set(newActionRoot);
 
   changedActionID.set(newActionRoot);
-
-  saveToHistory("add action from staged action end");
 
   actionManager.updateParams(stagedID, { lastChanged: Date.now() });
 

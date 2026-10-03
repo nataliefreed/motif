@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { actionStore, toolStore, selectedEffect, activeCategory, stagedAction, stagedActionID, changedActionID, selectedActionID, selectedCodeEffect, actionRoot, flatActionStore, playSpeed, renderDelay, isPlaying, hasPlayed, drawingLocked, shouldRandomizeColor, gifExport, selectedRun } from '../stores/dataStore';
   import { exportCodeWithImage, importCodeFromImage } from './export-utils';
   import LinedPaper from './LinedPaper.svelte';
@@ -114,8 +114,10 @@
     selectActionByIndex(1);
   }
 
-  function toggleRandomizeColor() {
+  async function toggleRandomizeColor() {
     shouldRandomizeColor.set(!$shouldRandomizeColor);
+    await tick(); // turning surprise colors on picks one for the brush (see Canvas.svelte)
+    saveToHistory('surprise colors');
   }
 
   function handleEffectClick(effectName: string) {
@@ -350,7 +352,7 @@
         <label class="switch-with-label" use:help={{ text: $t.help.paletteColors, placement: 'bottom' }}>
           <span class="toggle-switch">
             <input type="checkbox" class="toggle dont-deselect"
-              checked={$usePaletteColors} on:change={event => setUsePaletteColors(event.currentTarget.checked)}>
+              checked={$usePaletteColors} on:change={event => { setUsePaletteColors(event.currentTarget.checked); saveToHistory('palette colors'); }}>
             <span class="slider round"></span>
           </span>
           {$t.paletteColors}

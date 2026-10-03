@@ -7,6 +7,7 @@
   import { createEventDispatcher } from "svelte";
   import { setCurrentColor, updateColorInPalette, usePaletteColors } from '../../stores/colorStore';
   import { shouldRandomizeColor } from '../../stores/dataStore';
+  import { saveToHistory } from '../../stores/history';
   import ActionItem from '../actions and widgets/ActionItem.svelte';
   import { help } from '../help';
   import { t } from '../../i18n';
@@ -27,6 +28,7 @@
     setCurrentColor(color, id);
     usePaletteColors.set(true);
     shouldRandomizeColor.set(false);
+    saveToHistory('picked a color'); // the brush has it now
   }
 
   function saveColor(event: CustomEvent) {

@@ -49,6 +49,12 @@
     // console.log('dispatching value change in string widget', value);
   }
 
+  // done typing: leaving the text, or pressing Enter or Escape (which leave it)
+  function handleDone() {
+    handleChange();
+    dispatch('saveChange', { description: `typed ${id}` });
+  }
+
 </script>
 
 <!-- note: with the wrapper div using flex layout, moves arrow to new line
@@ -61,7 +67,7 @@
       bind:innerText={value}
       on:keydown={restrictInput}
       on:input={handleChange}
-      on:blur={handleChange}
+      on:blur={handleDone}
       on:paste={handleChange}
       contenteditable="true"
       spellcheck="false">
@@ -72,7 +78,7 @@
       bind:innerText={value}
       on:keydown={restrictInput}
       on:input={handleChange}
-      on:blur={handleChange}
+      on:blur={handleDone}
       on:paste={handleChange}
       contenteditable="true"
       spellcheck="false">

@@ -103,21 +103,21 @@
         {/if}
 
         {#if action.category === 'shapes' || action.effect === 'straight line'}
-          <Shape uuid={action.uuid} name={action.effect} params={action.params} onUpdate={handleUpdate} on:saveChange />
+          <Shape uuid={action.uuid} name={action.effect} params={action.params} onUpdate={handleUpdate} on:saveChange={handleSaveChange} />
           {:else if action.category === 'backgrounds'}
-              <Background name={action.effect} params={action.params} onUpdate={handleUpdate} on:saveChange />
+              <Background name={action.effect} params={action.params} onUpdate={handleUpdate} on:saveChange={handleSaveChange} />
           {:else if action.category === 'effects'}
-              <Eggbeater name={action.effect} params={action.params} onUpdate={handleUpdate} on:saveChange/>
+              <Eggbeater name={action.effect} params={action.params} onUpdate={handleUpdate} on:saveChange={handleSaveChange}/>
           {:else if action.effect === 'checkerboard'}
-              <Checkerboard uuid={action.uuid} params={action.params} onUpdate={handleUpdate} depth={depth+1} on:saveChange />
+              <Checkerboard uuid={action.uuid} params={action.params} onUpdate={handleUpdate} depth={depth+1} on:saveChange={handleSaveChange} />
           {:else if action.category === 'patterns'}
-              <Tiling name={action.effect} params={action.params} onUpdate={handleUpdate} on:saveChange />
+              <Tiling name={action.effect} params={action.params} onUpdate={handleUpdate} on:saveChange={handleSaveChange} />
           {:else if action.category === 'stencils'}
-              <Stencil name={action.effect} params={action.params} onUpdate={handleUpdate} on:saveChange />
+              <Stencil name={action.effect} params={action.params} onUpdate={handleUpdate} on:saveChange={handleSaveChange} />
           {:else if action.category === 'brushes' || action.effect === 'bounce'}
-              <Brush name={action.effect} params={action.params} onUpdate={handleUpdate} on:saveChange />
+              <Brush name={action.effect} params={action.params} onUpdate={handleUpdate} on:saveChange={handleSaveChange} />
           {:else if action.category === 'move'}
-              <Movement name={action.effect} params={action.params} onUpdate={handleUpdate} on:saveChange />
+              <Movement name={action.effect} params={action.params} onUpdate={handleUpdate} on:saveChange={handleSaveChange} />
           {/if}
         </div>
         {/if}

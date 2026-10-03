@@ -28,7 +28,7 @@
      Settings and words sit side by side with no space between tags; the words carry their own spaces. -->
 
 {#if name === 'shape'}
-  <ChooserWidget id="shape" options={['ellipse','rectangle','triangle']} selected={params.shape || 'rectangle'} on:valueChange={handleValueChange}/>
+  <ChooserWidget id="shape" options={['ellipse','rectangle','triangle']} selected={params.shape || 'rectangle'} on:valueChange={handleValueChange} on:saveChange/>
 {:else}
   {#if name === 'circle'}
     {@const words = phraseWords($t.steps.circle)}
@@ -66,7 +66,7 @@
   {:else if name === 'text'}
     {@const words = phraseWords($t.steps.text)}
     <Words text={words[0]}/><StringWidget id='text' showQuotes={true} value={params.text}
-      on:valueChange={handleValueChange}/><Words text={words[1]}/><NumberWidget id="size" min={5} max={600} value={params.size}
+      on:valueChange={handleValueChange} on:saveChange/><Words text={words[1]}/><NumberWidget id="size" min={5} max={600} value={params.size}
       on:valueChange={handleValueChange}/><Words text={words[2]}/>
   {:else if name === 'spiro'}
     {@const words = phraseWords($t.steps.spiro)}

@@ -53,7 +53,7 @@
 </script>
 
 {#if name === 'do each'}
-  <span class="list-title" use:help={{ text: isRecipe ? $t.help.recipe : undefined, placement: 'right' }}><StringWidget id='title' value={$displayTitle(params.title)} on:valueChange={handleValueChange}/></span>
+  <span class="list-title" use:help={{ text: isRecipe ? $t.help.recipe : undefined, placement: 'right' }}><StringWidget id='title' value={$displayTitle(params.title)} on:valueChange={handleValueChange} on:saveChange/></span>
   {#if middle}<Words text={atWords[0]}/><CoordinateWidget id="position" value={{ x: middle.x + moveBy.x, y: middle.y + moveBy.y }}
     on:valueChange={handleMove}/><Words text={atWords[1]}/>{/if}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -73,7 +73,7 @@
     <!-- "stamp {name} along {path}", with a small picture of the path -->
     <span class="brush-name-and-preview-widget">
       <Words text={stampWords[0]}/><StringWidget id='title' value={$displayTitle(params.title)}
-        on:valueChange={handleValueChange}/><Words text={stampWords[1]}/><PathWidget id='path' size={2} path={params.path} angle={params.angle}
+        on:valueChange={handleValueChange} on:saveChange/><Words text={stampWords[1]}/><PathWidget id='path' size={2} path={params.path} angle={params.angle}
         on:valueChange={handleValueChange}/><Words text={stampWords[2]}/>
     </span>
     <!-- svelte-ignore a11y-click-events-have-key-events -->

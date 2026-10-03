@@ -17,7 +17,7 @@
   Go to
   <CoordinateWidget id="position" value={params.position || []} on:valueChange={handleValueChange}/>
 {:else if name === 'move'}
-  <ChooserWidget id="direction" options={['forward','back']} selected={params.direction || 'forward'} on:valueChange={handleValueChange}/>
+  <ChooserWidget id="direction" options={['forward','back']} selected={params.direction || 'forward'} on:valueChange={handleValueChange} on:saveChange/>
   <NumberWidget id="distance" min={0} max={600} value={params.distance || 20} on:valueChange={handleValueChange}/>
   steps
 {:else if name === 'stamp'}

@@ -11,7 +11,7 @@
   function handleChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     dispatch('valueChange', { id, value: target.value });
-    // console.log("dispatching valueChange event ", target.value);
+    dispatch('saveChange', { description: `chose ${id}` }); // choosing is done at once
   }
 </script>
 

@@ -945,6 +945,7 @@ function endAction() {
   p5.getHoverCanvas().reset();
 
   if($shouldRandomizeColor) randomizeCurrentColor();
+  saveToHistory('drew a step'); // with the brush as it is for the next one
 }
 
 /*

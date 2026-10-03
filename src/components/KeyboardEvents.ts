@@ -1,6 +1,6 @@
 import { addCurrentEffectAsStagedAction, addEffectToActionStore, copyStagedActionToActionStore, removeSelectedAction, setCurrentEffect, undo, updateSelectedAction } from "./action-utils";
 import { toolStore, selectedActionID, selectedEffect } from "../stores/dataStore";
-import { historyStore } from "../stores/history";
+import { saveToHistory } from "../stores/history";
 import { get } from "svelte/store";
 import type { Effect } from "../types/types";
 
@@ -39,6 +39,7 @@ function keydownHandler(event: KeyboardEvent) {
       break;
     case 's':
       copyStagedActionToActionStore();
+      saveToHistory('added the next step');
       break;
     case 'ArrowLeft':
       updateSelectedAction({

@@ -28,17 +28,17 @@
 {:else if name === 'shift'}
   {@const words = phraseWords($t.steps.shift)}
   <Words text={words[0]}/><ChooserWidget id="orientation" options={['vertical','horizontal']} selected={params.orientation || 'vertical'}
-    on:valueChange={handleValueChange}/><Words text={words[1]}/><NumberWidget id="stripeWidth" min={1} max={600} value={params.stripeWidth || 50}
+    on:valueChange={handleValueChange} on:saveChange/><Words text={words[1]}/><NumberWidget id="stripeWidth" min={1} max={600} value={params.stripeWidth || 50}
     on:valueChange={handleValueChange}/><Words text={words[2]}/><NumberWidget id="offset" min={1} max={600} value={params.offset || 20}
     on:valueChange={handleValueChange}/><Words text={words[3]}/>
 {:else if name === 'filter'}
   {@const words = phraseWords($t.steps.filter)}
   <Words text={words[0]}/><ChooserWidget id="filter" options={['invert','threshold', 'gray']} selected={params.filter || 'invert'}
-    on:valueChange={handleValueChange}/><Words text={words[1]}/>
+    on:valueChange={handleValueChange} on:saveChange/><Words text={words[1]}/>
 {:else if name === 'move cutout'}
   {@const words = phraseWords($t.steps.moveCutout)}
   <Words text={words[0]}/><ChooserWidget id="mode" options={['move','copy']} selected={params.mode || 'move'}
-    on:valueChange={handleValueChange}/><Words text={words[1]}/><NumberWidget id="w" min={1} max={600} value={params.w || 100}
+    on:valueChange={handleValueChange} on:saveChange/><Words text={words[1]}/><NumberWidget id="w" min={1} max={600} value={params.w || 100}
     on:valueChange={handleValueChange}/><Words text={words[2]}/><NumberWidget id="h" min={1} max={600} value={params.h || 100}
     on:valueChange={handleValueChange}/><Words text={words[3]}/><CoordinateWidget id="start" value={params.start || []}
     on:valueChange={handleValueChange}/><Words text={words[4]}/><CoordinateWidget id="end" value={params.end || []}

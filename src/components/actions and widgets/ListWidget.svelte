@@ -9,6 +9,7 @@
   import ActionItem from './ActionItem.svelte';
   import { scale, fade, fly } from 'svelte/transition';
   import { deepCopy } from '../../utils/utils';
+  import { saveToHistory } from '../../stores/history';
   import { selectAction, selectRunTo, hoverAction, copyStagedActionToActionStore, addCurrentEffectAsStagedAction, toggleHidden } from '../action-utils';
   import tinycolor from 'tinycolor2';
   import { v4 as uuidv4 } from 'uuid';
@@ -155,6 +156,7 @@
 
   function handleAddButton(event: Event) {
     copyStagedActionToActionStore();
+    saveToHistory('added the next step');
   }
 
   function handleDoubleClick(event: Event, actionId: string) {

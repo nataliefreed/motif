@@ -33,8 +33,8 @@
   {@const words = phraseWords($t.steps.paperDoll)}
   <Words text={words[0]}/><ColorWidget id="skintone" value={params.skintone}
     on:valueChange={handleValueChange}/><Words text={words[1]}/><ChooserWidget id="hairstyle" options={['1', '2', '3']} selected={params.hairstyle || '1'}
-    on:valueChange={handleValueChange}/><Words text={words[2]}/><ChooserWidget id="outfit" options={['1', '2']} selected={params.outfit || '2'}
-    on:valueChange={handleValueChange}/><Words text={words[3]}/>
+    on:valueChange={handleValueChange} on:saveChange/><Words text={words[2]}/><ChooserWidget id="outfit" options={['1', '2']} selected={params.outfit || '2'}
+    on:valueChange={handleValueChange} on:saveChange/><Words text={words[3]}/>
   <!-- {:else if name === 'trace'}
   Trace -->
 {/if}
