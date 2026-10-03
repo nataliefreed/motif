@@ -2,6 +2,7 @@ import type { Action, Effect, ActionStore } from '../types/types';
 import { v4 as uuidv4 } from 'uuid';
 import { followedBy, movePoint, turnAndMove, type Point, type Transform } from '../utils/transform';
 import { randomPattern, type PatternKind } from '../utils/random-patterns';
+import { t, entry, displayTitle } from '../i18n';
 import { actionRootID, activeIDs, actionStore, myTools, toolStore, selectedActionID, selectedRun, selectedEffect, changedActionID, flatActionStore, actionRoot, stagedAction, stagedActionID, shouldRandomizeColor, playheadID, hoveredActionID, renderRequested, isPlaying, renderDelay, currentlyRenderingActionID, playSpeed, hasPlayed } from '../stores/dataStore'
 import { currentColor, currentIndexedColor, randomColorFromPalette, activePalette, replaceActivePalette } from '../stores/colorStore';
 import { saveToHistory } from '../stores/history';
@@ -1081,17 +1082,33 @@ export function wrapSelectedInGroup() {
   saveToHistory('Group selected action');
 }
 
+// What steps are called, for naming something made from them: a group or brush by its own name, any other
+// step by its tool's name, and several steps by their names joined: "circle & square", "circle, square & star".
+function nameOf(steps: string[]): string {
+  const store = get(flatActionStore);
+  if (steps.length === 1 && store[steps[0]]?.type === 'list') return store[steps[0]].params.title;
+  const names = [...new Set(steps.map(id => store[id]).filter(Boolean).map(action =>
+    action.type === 'list' ? get(displayTitle)(action.params.title) : toolName(action)))];
+  return names.length < 2 ? names[0] ?? '' : `${names.slice(0, -1).join(', ')} & ${names[names.length - 1]}`;
+}
+
+// the name of the tool that made a step, in the interface's language: "circle", "straight grid"
+function toolName(action: Action): string {
+  const tool = get(toolStore).find(tool => tool.name === action.name && (!tool.params?.tiling || tool.params.tiling === action.params.tiling));
+  return (tool ? entry(get(t).tools, tool.textLabel)?.label ?? tool.textLabel : action.name).toLowerCase();
+}
+
 // Puts steps of one list into a new group, in order, where the first of them was; returns the group's ID.
 // The group starts empty, so each step is only ever in one list while they move.
-function wrapInGroup(steps: string[]): string {
-  const group = actionManager.append(createGroupAction([]))!;
+function wrapInGroup(steps: string[], title?: string): string {
+  const group = actionManager.append(createGroupAction([], title))!;
   actionManager.replaceId(steps[0], group);
   for (const id of steps.slice(1)) actionManager.detach(id);
   actionManager.updateParams(group, { children: steps });
   return group;
 }
 
-function createGroupAction(children: string[]) {
+function createGroupAction(children: string[], title = "what does this draw?") {
   let action: Action = {
     uuid: uuidv4(),
     name: 'do each',
@@ -1099,7 +1116,7 @@ function createGroupAction(children: string[]) {
     category: 'control',
     effect: 'do each',
     params: {
-      title: "what does this draw?",
+      title,
       children: children,
       moveBy: { x: 0, y: 0 }, // a group can be moved and turned (see moveWithGroup)
       angle: 0
@@ -1119,14 +1136,14 @@ export function randomPatternForSelected() {
   if (steps.length === 1 && first?.effect === 'along path' && first.params.pattern) {
     const [x, y] = first.params.path[0];
     const { kind, path } = randomPattern({ x, y }, get(p5CanvasSize), first.params.pattern);
-    const renamed = first.params.title !== first.params.pattern; // keep a name someone gave it
-    actionManager.updateParams(steps[0], { pattern: kind, path, ...(renamed ? {} : { title: kind }) });
+    actionManager.updateParams(steps[0], { pattern: kind, path });
   } else {
-    const selected = steps.length > 1 ? wrapInGroup(steps) : steps[0];
+    const name = nameOf(steps);
+    const selected = steps.length > 1 ? wrapInGroup(steps, name) : steps[0];
     const selectedAction = actionManager.getAction(selected);
     if (!selectedAction) return;
     const { kind, path } = randomPattern(getOrigin(selectedAction) ?? { x: 0, y: 0 }, get(p5CanvasSize));
-    const added = actionManager.append(createAlongPathAction([selected], path, 0, kind))!;
+    const added = actionManager.append(createAlongPathAction([selected], path, 0, { pattern: kind, title: name }))!;
     actionManager.replaceId(selected, added);
     selectedActionID.set(added);
   }
@@ -1216,8 +1233,8 @@ export function isChildOfDoEach(id:string) {
 }
 
 
-// `pattern`: the kind of random pattern its path is, if it's one (see randomPatternForSelected); it's named after it
-function createAlongPathAction(children: string[], path: number[][], angle: number = 0, pattern?: PatternKind) {
+// `pattern`: the kind of random pattern its path is, if it's one (see randomPatternForSelected)
+function createAlongPathAction(children: string[], path: number[][], angle: number = 0, { pattern, title }: { pattern?: PatternKind, title?: string } = {}) {
   let action: Action = {
     uuid: uuidv4(),
     name: 'along path',
@@ -1225,7 +1242,7 @@ function createAlongPathAction(children: string[], path: number[][], angle: numb
     category: 'control',
     effect: 'along path',
     params: {
-      title: pattern ?? "a brush without a name",
+      title: title || "a brush without a name",
       children: children,
       path: path,
       angle: angle,

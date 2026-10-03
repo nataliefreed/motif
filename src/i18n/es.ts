@@ -105,7 +105,7 @@ export const es: Messages = {
     speckles: '**motitas** durante {0} en {1} de color {2}',
     // líneas y pinceles
     bounce: 'rebote de {0} a {1} durante {2}',
-    drawWith: 'dibujar con {0}',
+    stampAlong: 'estampar {0} a lo largo de {1}',
     // patrones
     pattern: '{0} {1} x {2}',
     rosettePattern: '{0} con {1} anillos sobre {2}',
@@ -154,13 +154,6 @@ export const es: Messages = {
     'stripe stripe stripe': 'raya raya raya',
     'what does this draw?': '¿qué dibuja esto?',
     'a brush without a name': 'un pincel sin nombre',
-    // random patterns, named after their kind
-    'sprinkles': 'chispitas',
-    'grid': 'cuadrícula',
-    'bricks': 'ladrillos',
-    'ring': 'anillo',
-    'spiral': 'espiral',
-    'wave': 'ola',
   },
 
   palettes: {

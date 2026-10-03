@@ -104,7 +104,7 @@ export const fr: Messages = {
     speckles: '**petits points** pendant {0} à {1} en {2}',
     // lignes et pinceaux
     bounce: 'rebond de {0} à {1} pendant {2}',
-    drawWith: 'dessiner avec {0}',
+    stampAlong: 'tamponner {0} le long de {1}',
     // motifs
     pattern: '{0} {1} x {2}',
     rosettePattern: '{0} avec {1} anneaux sur {2}',
@@ -153,13 +153,6 @@ export const fr: Messages = {
     'stripe stripe stripe': 'rayure rayure rayure',
     'what does this draw?': 'qu’est-ce que ça dessine ?',
     'a brush without a name': 'un pinceau sans nom',
-    // random patterns, named after their kind
-    'sprinkles': 'confettis',
-    'grid': 'grille',
-    'bricks': 'briques',
-    'ring': 'anneau',
-    'spiral': 'spirale',
-    'wave': 'vague',
   },
 
   palettes: {

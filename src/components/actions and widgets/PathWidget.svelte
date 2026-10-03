@@ -10,7 +10,7 @@
   let cumulativeAngle = 0;
   let shouldUpdateView = true;
 
-  let size = 3;
+  export let size = 3; // in em
 
   let domElement: SVGElement;
 
@@ -92,28 +92,25 @@
     dispatch('valueChange', { id: 'path', value: newPath });
   }
 
-  let previewEnd = false;
+  let previewEnd = true;
   let savedValue = path;
+  let hovered = false; // hovering makes the dots bolder
 
+  // Hovering previews the path shifted up a little, as hovering a position does, so you can see on the canvas
+  // what it draws; leaving puts it back.
   function handleMouseOver(event: MouseEvent) {
-    // savedValue = path;
-    // let newValue = path.map(point => [point[0] + (Math.random() - 0.5) * 10, point[1] + (Math.random() - 0.5) * 10]);
+    hovered = true;
+    if (!previewEnd) return;
+    savedValue = path;
     previewEnd = false;
-    // dispatch('valueChange', { id: 'path', value: newValue });
-
-    viewBox = originalViewBox;
-    pointScale = 1;
+    dispatch('valueChange', { id: 'path', value: path.map(([x, y]) => [x, y - 10]) });
   }
 
   function handleMouseOut(event: MouseEvent) {
+    hovered = false;
     if(!previewEnd) {
-      // dispatch('valueChange', { id: 'path', value: savedValue });
+      dispatch('valueChange', { id: 'path', value: savedValue });
       previewEnd = true;
-    }
-    
-    if(shouldUpdateView) {
-      viewBox = zoomedViewBox;
-      pointScale = zoomedPointScale;
     }
   }
 
@@ -146,21 +143,19 @@
     });
   }
 
-
 </script>
 
   <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <!-- svelte-ignore a11y-mouse-events-have-key-events -->
   <svg bind:this={domElement} class="path-widget" width="{size}em" height="{size}em" viewBox={viewBox}
-    on:mouseover={handleMouseOver}
-    on:mouseout={handleMouseOut}
+    on:mouseenter={handleMouseOver}
+    on:mouseleave={handleMouseOut}
   >
     <path d={pathData} stroke="black" fill="none" />
     {#each path as point, index}
       {#if index > 0}
         <!-- <line x1={path[index - 1][0]} y1={path[index - 1][1]} x2={point[0]} y2={point[1]} stroke="black" /> -->
       {/if}
-      <circle cx={point[0]} cy={point[1]} r={10*pointScale} fill="black" />
+      <circle cx={point[0]} cy={point[1]} r={(hovered ? 24 : 10) * pointScale} fill="black" />
     {/each}
   </svg>
   <!-- {#if path.length > 0} -->
@@ -189,9 +184,4 @@
     /* transform: translateY(-0.5em); */
   }
 
-  .path-widget:hover {
-    border: 1px solid black;
-    
-    /* transform: scale(1.5); */
-  }
 </style>

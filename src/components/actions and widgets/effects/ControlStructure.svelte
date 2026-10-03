@@ -11,6 +11,7 @@
     import repeat from "svelte-awesome/icons/repeat";
   import Words from "../Words.svelte";
   import { help } from "../../help";
+  import { shrinkToFit } from "../../shrink-to-fit";
   import { t, phraseWords, displayTitle } from "../../../i18n";
 
   export let uuid = '';
@@ -28,7 +29,7 @@
     // console.log("handling value change in control structure", id, value);
   }
 
-  $: drawWithWords = phraseWords($t.steps.drawWith); // see `steps` in i18n/en.ts
+  $: stampWords = phraseWords($t.steps.stampAlong); // "stamp {name} along {path}": see `steps` in i18n/en.ts
   $: atWords = phraseWords($t.steps.at);
 
   // A group (made with "label") can be moved and turned, carrying its steps along (see moveWithGroup in
@@ -69,15 +70,18 @@
 {:else if name === 'along path'}
 <div class="along-path-widget" class:expanded={isOpen}>
   <div class="brush-definition">
+    <!-- "stamp {name} along {path}", with a small picture of the path -->
     <span class="brush-name-and-preview-widget">
-      <Words text={drawWithWords[0]}/><StringWidget id='title' value={$displayTitle(params.title)}
-        on:valueChange={handleValueChange}/><Words text={drawWithWords[1]}/>
+      <Words text={stampWords[0]}/><StringWidget id='title' value={$displayTitle(params.title)}
+        on:valueChange={handleValueChange}/><Words text={stampWords[1]}/><PathWidget id='path' size={2} path={params.path} angle={params.angle}
+        on:valueChange={handleValueChange}/><Words text={stampWords[2]}/>
     </span>
     <!-- svelte-ignore a11y-click-events-have-key-events -->
 
+    <!-- the shapes inside take the width of the line above, shrinking to fit it when there are many -->
     <div class="arrow-and-definition">
     <span class="toggle-arrow" on:click={toggle} use:help={{ text: $t.help.brushInside }}> {isOpen ? '▼' : '▶'}</span>
-      <ChildrenWidget id='children' on:miniActionClick={toggle} value={params.children}/>
+      <div class="brush-shapes" use:shrinkToFit={params.children}><ChildrenWidget id='children' on:miniActionClick={toggle} value={params.children}/></div>
   </div>
       <!-- {#if isOpen} -->
         <div hidden={!isOpen}>
@@ -85,11 +89,6 @@
         </div>
       <!-- {/if} -->
 
-  </div>
-
-  <div class="along-path">
-    <!-- <span>along</span> -->
-    <PathWidget id='path' path={params.path} angle={params.angle} on:valueChange={handleValueChange}/>
   </div>
 
   <AngleWidget id='angle' min={0} max={360} value={params.angle} on:valueChange={handleValueChange}/>
@@ -115,13 +114,20 @@
     display: flex;
     flex-direction: row;
     gap: 0.5em;
+    width: 0;
+    min-width: 100%; /* as wide as the line above, without making it wider */
+  }
+
+  .brush-shapes {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
   }
 
   .along-path-widget {
     /* border: 1px solid red; */
     display: flex;
     flex-direction: row;
-    gap: 0.5em;
   }
 
   /* .along-path-widget.expanded {
@@ -137,14 +143,7 @@
     /* padding-left: 0.5em; */
   }
 
-  .along-path {
-    /* border: 1px solid green; */
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: flex-end;
-    margin-left: 0.5em;
-  }
+
 
   .brush-name-and-preview-widget {
     /* border: 1px solid purple; */

@@ -50,6 +50,12 @@
   margin-right: 0.5em;
 } */
 
+/* the shapes stay on one line; a brush's step shrinks them to fit instead */
+.iteration {
+  display: flex;
+  flex-shrink: 0;
+}
+
 .thumbnail {
   width: 2em;
   height: 2em;

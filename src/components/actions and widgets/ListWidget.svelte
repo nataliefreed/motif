@@ -121,7 +121,7 @@
     // console.log("clicking on item", event.target);
     event.stopPropagation();
     const target = event.target as Element;
-    if(target && target.classList.contains('drag-handle') || target.classList.contains('action-item-outer') || target.classList.contains('along-path') || target.classList.contains('along-path-widget') || target.classList.contains('brush-name-and-preview-widget') || target.classList.contains('tool-name') || target.classList.contains('action-item-inner') || target.classList.contains('alpha-style') || target.classList.contains('category-img') || target.classList.contains('arrow-and-definition') || target.classList.contains('action-item-content') || target === event.currentTarget) { //if not a widget, select the action
+    if(target && target.classList.contains('drag-handle') || target.classList.contains('action-item-outer') || target.classList.contains('along-path') || target.classList.contains('along-path-widget') || target.classList.contains('brush-name-and-preview-widget') || target.classList.contains('tool-name') || target.classList.contains('action-item-inner') || target.classList.contains('alpha-style') || target.classList.contains('category-img') || target.classList.contains('arrow-and-definition') || target.classList.contains('brush-shapes') || target.classList.contains('action-item-content') || target === event.currentTarget) { //if not a widget, select the action
         //   console.log("selecting");
       if (event instanceof MouseEvent && event.shiftKey) selectRunTo(actionId); // a run of steps
       else selectAction(actionId);

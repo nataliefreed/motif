@@ -110,7 +110,7 @@ export const en = {
     speckles: '**speckles** for time {0} at {1} in {2}',
     // lines and brushes
     bounce: 'bounce from {0} to {1} for time {2}',
-    drawWith: 'draw with {0}',
+    stampAlong: 'stamp {0} along {1}',
     // patterns
     pattern: '{0} {1} x {2}',
     rosettePattern: '{0} with {1} rings on {2}',
@@ -162,13 +162,6 @@ export const en = {
     'stripe stripe stripe': 'stripe stripe stripe',
     'what does this draw?': 'what does this draw?',
     'a brush without a name': 'a brush without a name',
-    // random patterns, named after their kind
-    'sprinkles': 'sprinkles',
-    'grid': 'grid',
-    'bricks': 'bricks',
-    'ring': 'ring',
-    'spiral': 'spiral',
-    'wave': 'wave',
   },
 
   // the palette menu below the palette: built-in color schemes, and saving and opening palette files
