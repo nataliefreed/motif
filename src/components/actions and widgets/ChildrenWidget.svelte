@@ -26,8 +26,8 @@
 </script>
 
 {#if children.length > 0}
+<!-- each step inside once: a dot brush shows one dot, a mosaic its eleven shapes -->
 <span bind:this={listElement} class="child-widget">
-  {#each Array(Math.ceil(3/children.length)) as _}
     <div class="iteration">
     {#each children.map(checkAction) as action (action.uuid)}
       {#if action}
@@ -40,7 +40,6 @@
       {/if} -->
     {/each}
   </div>
-  {/each}
 </span>
 {/if}
 
