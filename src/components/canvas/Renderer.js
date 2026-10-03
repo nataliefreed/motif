@@ -775,12 +775,12 @@ export const renderers = {
       outfitCanvas.image(outfit.fill, 0, 0, p.width, p.height);
       outfitCanvas.image(paperdolls.underlayerFill, 0, 0, p.width, p.height); // underwear!
       outfitCanvas.drawingContext.globalCompositeOperation = 'source-in';
-      outfitCanvas.image(p5.getStaticCanvas(), 0, 0, p.width, p.height);
+      outfitCanvas.image(drawingSoFar(p, p5), 0, 0, p.width, p.height);
 
       // Prepare the hairstyle fill as a mask
       hairstyleCanvas.image(hairstyle.fill, 0, 0, p.width, p.height);
       hairstyleCanvas.drawingContext.globalCompositeOperation = 'source-in';
-      hairstyleCanvas.image(p5.getStaticCanvas(), 0, 0, p.width, p.height);
+      hairstyleCanvas.image(drawingSoFar(p, p5), 0, 0, p.width, p.height);
 
       // Lighten the original painting
       p.noStroke();
@@ -883,10 +883,11 @@ function moveRectangularRegion(p, params, p5) {
     let dx = endX - w / 2;
     let dy = endY - h / 2;
 
-    const snapshot = canvasCopy(p5);
+    const snapshot = canvasCopy(p, p5);
 
-    // clear where it was before putting it down, so a move that overlaps itself doesn't erase part of it
-    if(p===p5.getStaticCanvas() && params.mode == 'move') {
+    // clear where it was before putting it down, so a move that overlaps itself doesn't erase part of it (the
+    // drag preview shows the hole its own way, below)
+    if(p!==p5.getDragCanvas() && params.mode == 'move') {
       p.push();
       p.erase();
       p.fill(255);
@@ -962,10 +963,17 @@ function scratchBuffer(p5, name) {
   return graphics;
 }
 
-// A copy of the canvas, for tools that draw onto the canvas they copy (patterns, grow and shrink, move).
-function canvasCopy(p5) {
+// The drawing so far, for a step drawn on `p` that works from it: `p` itself, except for previews, which are
+// drawn on canvases of their own over the drawing (the static canvas). A checkerboard's squares are drawn on a
+// canvas of their own too (see squaresPicture), so a pattern inside them repeats what's in the squares so far.
+function drawingSoFar(p, p5) {
+  return p === p5.getHoverCanvas() || p === p5.getDragCanvas() ? p5.getStaticCanvas() : p;
+}
+
+// A copy of the drawing so far, for tools that draw onto the canvas they copy (patterns, grow and shrink, move).
+function canvasCopy(p, p5) {
   const copy = scratchBuffer(p5, 'canvas copy');
-  copy.image(p5.getStaticCanvas(), 0, 0);
+  copy.image(drawingSoFar(p, p5), 0, 0);
   return copy;
 }
 
@@ -1007,7 +1015,7 @@ function outlineCopy(p, copy) {
 // in rings of copies around one in the middle; the other layouts shrink it into the cells of a grid
 // `columns` wide and `rows` high. (Patterns saved in the older format are updated when they're opened.)
 function tile(p, params, p5) {
-  const snapshot = canvasCopy(p5);
+  const snapshot = canvasCopy(p, p5);
   const previewing = p === p5.getHoverCanvas() || p === p5.getDragCanvas();
   p.push();
   const rings = params.rings ?? 3;
@@ -1082,7 +1090,7 @@ function halfDrop(p, snapshot, w, h) {
 // the picture its squares draw (see squaresPicture) shrunk into the cells between
 function checkerboard(p, params, p5, turtle) {
   const squares = squaresPicture(params.squares, p5, turtle);
-  const snapshot = canvasCopy(p5); // after the squares, which may copy the canvas too
+  const snapshot = canvasCopy(p, p5); // after the squares, which may copy the canvas too
   const w = p.width / params.columns;
   const h = p.height / params.rows;
   for (let row = 0; row * h < p.height - 0.5; row++) {
@@ -1282,7 +1290,7 @@ function scaleRect(p, params, p5) {
   p.noFill();
   p.stroke(100);
 
-  const snapshot = canvasCopy(p5);
+  const snapshot = canvasCopy(p, p5);
 
   let scaledWidth = w * scaleFactor;
   let scaledHeight = h * scaleFactor;
