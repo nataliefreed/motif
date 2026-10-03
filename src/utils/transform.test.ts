@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { followedBy, movePoint, rotation, translation, turnAndMove } from './transform';
+import { followedBy, movePoint, rotation, translation, turnAndMove, turnPath } from './transform';
 
 const close = (p: { x: number; y: number }, q: { x: number; y: number }) => { expect(p.x).toBeCloseTo(q.x); expect(p.y).toBeCloseTo(q.y); };
 
@@ -21,5 +21,17 @@ describe('transforms', () => {
     close(movePoint(t, middle), { x: 250, y: 180 }); // the middle only moves
     close(movePoint(t, { x: 230, y: 200 }), { x: 250, y: 210 }); // 30 right of it turns to 30 below it
     close(movePoint(turnAndMove(middle, 0, { x: 0, y: 0 }), { x: 7, y: 9 }), { x: 7, y: 9 });
+  });
+
+  it('turn a path around the average of its points, so turning it back puts it where it was', () => {
+    const path: [number, number][] = [[100, 100], [300, 120], [180, 400], [420, 260], [90, 330]];
+    let turned = path;
+    for (let i = 0; i < 100; i++) turned = turnPath(turnPath(turned, 10), -10); // a hundred hovers over an angle
+    turned.forEach(([x, y], i) => { expect(x).toBeCloseTo(path[i][0], 6); expect(y).toBeCloseTo(path[i][1], 6); });
+    const once = turnPath(path, 37);
+    const average = (points: [number, number][]) => points.reduce(([sx, sy], [x, y]) => [sx + x / points.length, sy + y / points.length], [0, 0]);
+    expect(average(once)[0]).toBeCloseTo(average(path)[0]);
+    expect(average(once)[1]).toBeCloseTo(average(path)[1]);
+    expect(turnPath(path, 0)).toBe(path);
   });
 });

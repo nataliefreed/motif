@@ -3,11 +3,12 @@
   import Tooltip from '../Tooltip.svelte';
   import PathEditor from './PathEditor.svelte';
   import CoordinateWidget from './CoordinateWidget.svelte';
+  import { turnPath } from '../../utils/transform';
 
   export let id = '';
   export let path:[number, number][] = [];
   export let angle:number = 0;
-  let cumulativeAngle = 0;
+  let turnedTo = angle; // the angle the path's points are turned to: the step's angle when it appears
   let shouldUpdateView = true;
 
   export let size = 3; // in em
@@ -84,10 +85,11 @@
     updatePathView(path);
   }
 
+  // A brush's angle turns its path's points; changing the angle turns them by the difference.
   function handleAngleChange(newAngle: number) {
-    let incrementalAngle = newAngle - cumulativeAngle;
-    cumulativeAngle = newAngle;
-    let newPath = rotatePath(path, incrementalAngle);
+    if (newAngle === turnedTo) return;
+    const newPath = turnPath(path, newAngle - turnedTo);
+    turnedTo = newAngle;
     path = newPath;
     dispatch('valueChange', { id: 'path', value: newPath });
   }
@@ -112,35 +114,6 @@
       dispatch('valueChange', { id: 'path', value: savedValue });
       previewEnd = true;
     }
-  }
-
-  function degreesToRadians(degrees) {
-    return degrees * Math.PI / 180;
-  }
-
-  function getBoundingBoxCenter(points) {
-    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-    points.forEach(point => {
-      minX = Math.min(minX, point[0]);
-      maxX = Math.max(maxX, point[0]);
-      minY = Math.min(minY, point[1]);
-      maxY = Math.max(maxY, point[1]);
-    });
-    return [(minX + maxX) / 2, (minY + maxY) / 2]; // Center of the bounding box
-  }
-
-  function rotatePath(points, angle) {
-    let radians = degreesToRadians(angle);
-    let cos = Math.cos(radians);
-    let sin = Math.sin(radians);
-    let [cx, cy] = getBoundingBoxCenter(points); // Center of bounding box
-    return points.map(point => {
-      let x = point[0] - cx;
-      let y = point[1] - cy;
-      let newX = cos * x - sin * y + cx;
-      let newY = sin * x + cos * y + cy;
-      return [newX, newY]; // New position of the point after rotation
-    });
   }
 
 </script>

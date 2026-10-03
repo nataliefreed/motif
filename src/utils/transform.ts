@@ -33,3 +33,18 @@ export function movePoint([a, b, c, d, e, f]: Transform, { x, y }: Point): Point
 export function turnAndMove(middle: Point, degrees: number, moveBy: Point): Transform {
   return followedBy(followedBy(translation(-middle.x, -middle.y), rotation(degrees)), translation(middle.x + moveBy.x, middle.y + moveBy.y));
 }
+
+// Turns a path by `degrees` around the average of its points. Turning never moves that point, so turning a
+// path one way and then back puts every point where it was.
+export function turnPath(points: [number, number][], degrees: number): [number, number][] {
+  if (points.length === 0 || !degrees) return points;
+  const middle = {
+    x: points.reduce((sum, [x]) => sum + x, 0) / points.length,
+    y: points.reduce((sum, [, y]) => sum + y, 0) / points.length,
+  };
+  const turn = turnAndMove(middle, degrees, { x: 0, y: 0 });
+  return points.map(([x, y]) => {
+    const moved = movePoint(turn, { x, y });
+    return [moved.x, moved.y];
+  });
+}
