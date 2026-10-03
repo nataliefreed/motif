@@ -1,6 +1,7 @@
 import type { Action, Effect, ActionStore } from '../types/types';
 import { v4 as uuidv4 } from 'uuid';
 import { followedBy, movePoint, turnAndMove, type Point, type Transform } from '../utils/transform';
+import { randomPattern, type PatternKind } from '../utils/random-patterns';
 import { actionRootID, activeIDs, actionStore, myTools, toolStore, selectedActionID, selectedRun, selectedEffect, changedActionID, flatActionStore, actionRoot, stagedAction, stagedActionID, shouldRandomizeColor, playheadID, hoveredActionID, renderRequested, isPlaying, renderDelay, currentlyRenderingActionID, playSpeed, hasPlayed } from '../stores/dataStore'
 import { currentColor, currentIndexedColor, randomColorFromPalette, activePalette, replaceActivePalette } from '../stores/colorStore';
 import { saveToHistory } from '../stores/history';
@@ -1108,63 +1109,28 @@ function createGroupAction(children: string[]) {
   return { [action.uuid]: action };
 }
 
-// put action inside a repeat along path; several selected steps are grouped first, so they repeat together
-export function repeatSelectedActionAlongPath() {
+// "random pattern": repeats the selected steps in a random pattern (sprinkles, a grid, a ring, a spiral...)
+// starting where they are; several steps are grouped first, so they repeat together. Choosing it again on a
+// pattern made this way gives it a different pattern instead.
+export function randomPatternForSelected() {
   const steps = selectedSteps().filter(id => get(flatActionStore)[id]);
   if (steps.length < 1) return;
-  const selected = steps.length > 1 ? wrapInGroup(steps) : steps[0];
-
-  let selectedAction = actionManager.getAction(selected);
-  if (!selectedAction) return;
-
-  // Check if the selected action is already a repeat along path
-  // if (selectedAction.effect === 'along path') {
-    // If it is, add another point along the path
-    // let lastPoint = selectedAction.params.path[selectedAction.params.path.length - 1];
-    // selectedAction.params.path.push([lastPoint[0] + 20, lastPoint[1] + 20]);
-    // actionManager.updateParams(selected, { path: selectedAction.params.path });
-  // } else { //todo: make sure it's not a child of an along path
-
-    // Create a new "repeat along path" action with the selected action as a child
-    // the grid starts where the step (or group) is, so the first repeat stays in place
-    let { x, y } = getOrigin(selectedAction) ?? { x: 0, y: 0 };
-    let angle = 0;
-    let newPath = getRandomGridPath(x, y);
-    // let newPath = [[x, y], [x + 20, y + 20]];
-
-    // Create a new "repeat along path" action with the selected action as a child
-    let newAlongPath = createAlongPathAction([selected], newPath, angle);
-    let added = actionManager.append(newAlongPath);
-
-    // Replace the selected action with the new "repeat along path" action
+  const first = actionManager.getAction(steps[0]);
+  if (steps.length === 1 && first?.effect === 'along path' && first.params.pattern) {
+    const [x, y] = first.params.path[0];
+    const { kind, path } = randomPattern({ x, y }, get(p5CanvasSize), first.params.pattern);
+    const renamed = first.params.title !== first.params.pattern; // keep a name someone gave it
+    actionManager.updateParams(steps[0], { pattern: kind, path, ...(renamed ? {} : { title: kind }) });
+  } else {
+    const selected = steps.length > 1 ? wrapInGroup(steps) : steps[0];
+    const selectedAction = actionManager.getAction(selected);
+    if (!selectedAction) return;
+    const { kind, path } = randomPattern(getOrigin(selectedAction) ?? { x: 0, y: 0 }, get(p5CanvasSize));
+    const added = actionManager.append(createAlongPathAction([selected], path, 0, kind))!;
     actionManager.replaceId(selected, added);
-    selectedActionID.set(added); // Update the selected action ID
-  // }
-
-  saveToHistory('Repeat selected action along path');
-}
-
-
-
-function getRandomGridPath(x:number, y:number) {
-  let path = [];
-  let w = 500-x; //starting at x, y
-  let h = 500-y;
-  
-  let numRows = Math.ceil(Math.random() * 9);
-  let numCols = Math.ceil(Math.random() * 9);
-
-  let rowSpacing = w / numRows;
-  let colSpacing = h / numCols;
-
-  for(let i = 0; i < numRows; i++) {
-    for(let j = 0; j < numCols; j++) {
-      path.push([x + i * rowSpacing, y + j * colSpacing]);
-    }
+    selectedActionID.set(added);
   }
-
-  return path;
-
+  saveToHistory('Random pattern');
 }
 
 //this is a weird but awesome one
@@ -1250,7 +1216,8 @@ export function isChildOfDoEach(id:string) {
 }
 
 
-function createAlongPathAction(children: string[], path: number[][], angle: number = 0) {
+// `pattern`: the kind of random pattern its path is, if it's one (see randomPatternForSelected); it's named after it
+function createAlongPathAction(children: string[], path: number[][], angle: number = 0, pattern?: PatternKind) {
   let action: Action = {
     uuid: uuidv4(),
     name: 'along path',
@@ -1258,10 +1225,11 @@ function createAlongPathAction(children: string[], path: number[][], angle: numb
     category: 'control',
     effect: 'along path',
     params: {
-      title: "a brush without a name",
+      title: pattern ?? "a brush without a name",
       children: children,
       path: path,
-      angle: angle
+      angle: angle,
+      ...(pattern ? { pattern } : {})
     },
     hidden: false,
   };

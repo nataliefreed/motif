@@ -21,7 +21,7 @@ export const fr: Messages = {
     remix: 'remixer',
     copy: 'copier',
     remixCopy: 'copie remixée',
-    randomRepeat: 'répéter',
+    randomPattern: 'motif au hasard',
     group: 'grouper',
     draw: 'dessiner',
   },
@@ -153,6 +153,13 @@ export const fr: Messages = {
     'stripe stripe stripe': 'rayure rayure rayure',
     'what does this draw?': 'qu’est-ce que ça dessine ?',
     'a brush without a name': 'un pinceau sans nom',
+    // random patterns, named after their kind
+    'sprinkles': 'confettis',
+    'grid': 'grille',
+    'bricks': 'briques',
+    'ring': 'anneau',
+    'spiral': 'spirale',
+    'wave': 'vague',
   },
 
   palettes: {
@@ -217,7 +224,7 @@ export const fr: Messages = {
     remix: 'Remixer : donne à l’étape sélectionnée de nouveaux réglages au hasard. Continue à cliquer pour plus de surprises !',
     copy: 'Fais une copie de l’étape sélectionnée.',
     remixCopy: 'Fais une copie de l’étape sélectionnée avec de nouveaux réglages au hasard.',
-    randomRepeat: 'Répète l’étape sélectionnée encore et encore dans une grille de taille choisie au hasard.',
+    randomPattern: 'Répète les étapes sélectionnées dans un motif au hasard : éparpillées, en grille, en anneau, en spirale ou en vague. Clique encore pour en avoir un autre !',
     group: 'Mets les étapes sélectionnées dans un groupe que tu peux nommer, déplacer et faire tourner. Clique avec Maj sur une étape pour sélectionner toutes les étapes jusqu’à elle.',
     draw: 'Transforme l’étape sélectionnée en pinceau pour pouvoir en dessiner encore.',
     selectFirst: '\nPour l’utiliser, commence par sélectionner une étape de la recette.',

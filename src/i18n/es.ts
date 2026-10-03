@@ -22,7 +22,7 @@ export const es: Messages = {
     remix: 'mezclar',
     copy: 'copiar',
     remixCopy: 'copiar y mezclar',
-    randomRepeat: 'repetir al azar',
+    randomPattern: 'patrón al azar',
     group: 'agrupar',
     draw: 'dibujar',
   },
@@ -154,6 +154,13 @@ export const es: Messages = {
     'stripe stripe stripe': 'raya raya raya',
     'what does this draw?': '¿qué dibuja esto?',
     'a brush without a name': 'un pincel sin nombre',
+    // random patterns, named after their kind
+    'sprinkles': 'chispitas',
+    'grid': 'cuadrícula',
+    'bricks': 'ladrillos',
+    'ring': 'anillo',
+    'spiral': 'espiral',
+    'wave': 'ola',
   },
 
   palettes: {
@@ -218,7 +225,7 @@ export const es: Messages = {
     remix: 'Mezclar: dale al paso seleccionado ajustes nuevos al azar. ¡Sigue haciendo clic para más sorpresas!',
     copy: 'Haz una copia del paso seleccionado.',
     remixCopy: 'Haz una copia del paso seleccionado con ajustes nuevos al azar.',
-    randomRepeat: 'Repite el paso seleccionado una y otra vez en una cuadrícula de tamaño al azar.',
+    randomPattern: 'Repite los pasos seleccionados en un patrón al azar: salpicados, en una cuadrícula, un anillo, una espiral o una ola. ¡Haz clic otra vez para otro diferente!',
     group: 'Pon los pasos seleccionados en un grupo que puedes nombrar, mover y girar. Haz clic con Mayús en un paso para seleccionar todos los pasos hasta él.',
     draw: 'Convierte el paso seleccionado en tu pincel para que puedas dibujar más de él.',
     selectFirst: '\nPara usar esto, primero selecciona un paso de la receta.',

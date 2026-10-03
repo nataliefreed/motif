@@ -24,7 +24,7 @@ export const en = {
     remix: 'remix',
     copy: 'copy',
     remixCopy: 'remix a copy',
-    randomRepeat: 'random repeat',
+    randomPattern: 'random pattern',
     group: 'group',
     draw: 'draw',
   },
@@ -162,6 +162,13 @@ export const en = {
     'stripe stripe stripe': 'stripe stripe stripe',
     'what does this draw?': 'what does this draw?',
     'a brush without a name': 'a brush without a name',
+    // random patterns, named after their kind
+    'sprinkles': 'sprinkles',
+    'grid': 'grid',
+    'bricks': 'bricks',
+    'ring': 'ring',
+    'spiral': 'spiral',
+    'wave': 'wave',
   },
 
   // the palette menu below the palette: built-in color schemes, and saving and opening palette files
@@ -235,7 +242,7 @@ export const en = {
     remix: 'Remix: give the selected step random new settings. Keep clicking for more surprises!',
     copy: 'Make a copy of the selected step.',
     remixCopy: 'Make a copy of the selected step with random new settings.',
-    randomRepeat: 'Repeat the selected step over and over in a grid of a random size.',
+    randomPattern: 'Repeat the selected steps in a random pattern: sprinkled around, in a grid, a ring, a spiral or a wave. Click again for a different one!',
     group: 'Put the selected steps in a group you can name, move and turn. Shift-click a step to select all the steps up to it.',
     draw: 'Turn the selected step into your brush so you can draw more of it.',
     selectFirst: '\nTo use this, start by selecting a step in the recipe.',
