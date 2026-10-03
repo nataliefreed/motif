@@ -5,6 +5,7 @@ import { get } from 'svelte/store';
 import type { Action } from '../types/types';
 import { deepCopy } from '../utils/utils';
 import { getDescendantIDs, addCurrentEffectAsStagedAction } from './action-utils';
+import { v4 as uuidv4 } from 'uuid';
 import type { ActionStore } from '../types/types';
 import { palettes } from '../stores/colorStore';
 import { p5CanvasSize } from '../stores/canvasStore';
@@ -98,19 +99,30 @@ export function importCodeFromImage() {
 
 // Patterns saved before they repeated the whole canvas kept the size of the piece they repeated (width and
 // height, sampled at a position), and a rosette kept its rings as numRings. They become the grid that
-// piece's size makes, and rings, so the steps show what they draw.
-function updateOldPatterns(store: ActionStore) {
+// piece's size makes, and rings, so the steps show what they draw. And a checkerboard, saved as a kind of
+// tile with a color in its squares, becomes the tool of its own whose squares run steps: a fill in that color.
+export function updateOldPatterns(store: ActionStore) {
   const canvas = get(p5CanvasSize);
   for (const action of Object.values(store)) {
     const params = action.params;
-    if (action.effect !== 'tile' || 'columns' in params || 'rings' in params) continue;
-    if (params.tiling === 'radial') {
-      params.rings = params.numRings ?? 3;
-    } else {
-      params.columns = params.width ? Math.max(1, Math.round(canvas.width / params.width)) : 4;
-      params.rows = params.height ? Math.max(1, Math.round(canvas.height / params.height)) : 4;
+    if (action.effect !== 'tile') continue;
+    if (!('columns' in params) && !('rings' in params)) {
+      if (params.tiling === 'radial') {
+        params.rings = params.numRings ?? 3;
+      } else {
+        params.columns = params.width ? Math.max(1, Math.round(canvas.width / params.width)) : 4;
+        params.rows = params.height ? Math.max(1, Math.round(canvas.height / params.height)) : 4;
+      }
+      for (const old of ['width', 'height', 'position', 'numRings', 'numTiles']) delete params[old];
     }
-    for (const old of ['width', 'height', 'position', 'numRings', 'numTiles']) delete params[old];
+    if (params.tiling === 'checkerboard') {
+      // one without a color left its squares see-through, showing the drawing under them
+      const fill = { uuid: uuidv4(), name: 'solid fill', type: 'effect', category: 'backgrounds', effect: 'solid fill', hidden: false,
+        params: { color: params.color ?? 'rgba(0, 0, 0, 0)', ...('lockedIndex' in params ? { lockedIndex: params.lockedIndex } : {}) } } as Action;
+      store[fill.uuid] = fill;
+      store[action.uuid] = { ...action, name: 'checkerboard', effect: 'checkerboard', type: 'list',
+        params: { columns: params.columns, rows: params.rows, children: [fill.uuid] } };
+    }
   }
 }
 

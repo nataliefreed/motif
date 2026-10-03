@@ -378,6 +378,10 @@ export const renderers = {
     tile(p, params, p5);
   },
 
+  'checkerboard': (p, params, p5, turtle) => {
+    checkerboard(p, params, p5, turtle);
+  },
+
   // 'straight grid': (p, params, p5) => {
   //   tile(p, {...params, tiling: 'straight grid'}, p5);
   // },
@@ -931,6 +935,17 @@ function rotateRegion(p, params, p5) {
   let angle = params.angle;
 }
 
+// Draws a compiled action (see compileActions), moved and turned with any groups it's in
+export function drawAction(p, action, p5, turtle) {
+  const renderFunction = renderers[action.effect];
+  if (!renderFunction) return;
+  if (!action.transform) return renderFunction(p, action.params, p5, turtle);
+  p.push();
+  p.applyMatrix(...action.transform);
+  renderFunction(p, action.params, p5, turtle);
+  p.pop();
+}
+
 // Reusable buffers the size of the canvas, by name, for drawing that needs a scratch canvas. (Making and
 // removing a p5 graphics buffer each time doesn't work: in p5 1.11, removing one throws before it is
 // cleaned up, and the drawing after it never happens.)
@@ -995,11 +1010,10 @@ function tile(p, params, p5) {
   const snapshot = canvasCopy(p5);
   const previewing = p === p5.getHoverCanvas() || p === p5.getDragCanvas();
   p.push();
-  const color = params.color ?? 'rgba(0, 0, 0, 0)'; // see-through, as checkerboards were before they had a color
   const rings = params.rings ?? 3;
   if (params.tiling === 'radial') {
     p.noStroke();
-    p.fill(color); // shows between the circles
+    p.fill(params.color ?? 'rgba(0, 0, 0, 0)'); // shows between the circles
     p.rect(0, 0, p.width, p.height);
     copiesInRings(p, snapshot, rosetteCopies(rings, p.width));
   } else if (params.tiling === 'honeycomb') {
@@ -1020,9 +1034,6 @@ function tile(p, params, p5) {
         break;
       case 'half drop':
         halfDrop(p, snapshot, w, h);
-        break;
-      case 'checkerboard':
-        checkerboard(p, snapshot, w, h, color);
         break;
       case 'mirror':
         mirrorGrid(p, snapshot, w, h);
@@ -1067,20 +1078,33 @@ function halfDrop(p, snapshot, w, h) {
   }
 }
 
-// copies in every other cell, and `color` in the cells between
-function checkerboard(p, snapshot, w, h, color) {
-  p.noStroke();
-  p.fill(color);
+// Checkerboard: the whole canvas, shrunk into every other cell of a grid `columns` wide and `rows` high, and
+// the picture its squares draw (see squaresPicture) shrunk into the cells between
+function checkerboard(p, params, p5, turtle) {
+  const squares = squaresPicture(params.squares, p5, turtle);
+  const snapshot = canvasCopy(p5); // after the squares, which may copy the canvas too
+  const w = p.width / params.columns;
+  const h = p.height / params.rows;
   for (let row = 0; row * h < p.height - 0.5; row++) {
     for (let column = 0; column * w < p.width - 0.5; column++) {
-      if ((row + column) % 2 === 1) {
-        drawCell(p, snapshot, column * w, row * h, w, h);
-      } else {
-        const cell = cellRect(column * w, row * h, w, h);
-        p.rect(cell.left, cell.top, cell.width, cell.height);
-      }
+      drawCell(p, (row + column) % 2 === 1 ? snapshot : squares, column * w, row * h, w, h);
     }
   }
+}
+
+// What a checkerboard's squares show: their own steps, drawn on a canvas of their own as if it were the whole
+// canvas, to be shrunk into each square like the copies, and into the recipe's picture of them. (A checkerboard
+// inside another's squares gets a canvas of its own too.)
+let squaresDepth = 0;
+export function squaresPicture(steps, p5, turtle) {
+  const picture = scratchBuffer(p5, `checkerboard squares ${squaresDepth}`);
+  squaresDepth++;
+  try {
+    for (const step of steps) drawAction(picture, step, p5, turtle);
+  } finally {
+    squaresDepth--;
+  }
+  return picture;
 }
 
 // function radial(p, snapshot, w, h, numTiles, numRings) {

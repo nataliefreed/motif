@@ -3,6 +3,7 @@
   import Background from './effects/Background.svelte';
   import Eggbeater from './effects/Eggbeater.svelte';
   import Tiling from './effects/Tiling.svelte';
+  import Checkerboard from './effects/Checkerboard.svelte';
   import Stencil from './effects/Stencil.svelte';
   import Brush from './effects/Brush.svelte';
   import ControlStructure from './effects/ControlStructure.svelte';
@@ -94,7 +95,7 @@
 
       {#if action.category === 'control'}
         <ControlStructure uuid={action.uuid} name={action.name} params={action.params} {isOpen} isRecipe={action.uuid === $actionRootID} onUpdate={handleUpdate} depth={depth+1} on:saveChange={handleSaveChange}/>
-      {:else if action.type === 'effect'}
+      {:else if action.type} <!-- a tool's step, plain or a list (a checkerboard's holds the steps for its squares); not a stand-in for a missing step -->
         <div class="action-item-inner">
         {#if action.category !== 'shapes'}
         <img class="category-img" src="/assets/icons/{action.category}.svg" alt="{action.category}">
@@ -107,6 +108,8 @@
               <Background name={action.effect} params={action.params} onUpdate={handleUpdate} on:saveChange />
           {:else if action.category === 'effects'}
               <Eggbeater name={action.effect} params={action.params} onUpdate={handleUpdate} on:saveChange/>
+          {:else if action.effect === 'checkerboard'}
+              <Checkerboard uuid={action.uuid} params={action.params} onUpdate={handleUpdate} depth={depth+1} on:saveChange />
           {:else if action.category === 'patterns'}
               <Tiling name={action.effect} params={action.params} onUpdate={handleUpdate} on:saveChange />
           {:else if action.category === 'stencils'}

@@ -2,7 +2,7 @@
   import { addEffectAsStagedAction, moveStagedActionToEnd, compileActionsBefore, compileActionsBeforeStaged, updateStagedAction, updateStagedActionColor, copyStagedActionToActionStore, addCurrentEffectAsStagedAction, compileActions, hideAction, showAction, updateActiveActions, resetSpecialStagedActionParams, stopPlaying, play, pause, scrollToAction } from '../action-utils';
 	import P5 from 'p5-svelte';
   import { stagedAction, activeIDs, stagedActionID, actionRootID, activeCategory, selectedEffect, shouldRandomizeColor, changedActionID, flatActionStore, actionRoot, hoveredActionID, renderRequested, isPlaying, renderDelay, currentlyRenderingActionID, mousePos, drawingLocked, playSpeed, gifExport } from '../../stores/dataStore';
-  import { renderers, loadStencils, loadFonts } from './Renderer.js';
+  import { renderers, loadStencils, loadFonts, drawAction } from './Renderer.js';
   import { onMount, onDestroy, tick } from 'svelte';
   import { getAntPath, mapValue } from '../../utils/utils.ts';
   import { turtle } from './Turtle.js';
@@ -10,6 +10,7 @@
   import { exportGif } from '../export-utils';
   import { saveToHistory } from '../../stores/history';
   import { page } from '$app/stores';
+  import { p5Instance } from '../../stores/canvasStore';
   import { paintColors, activePalette, currentColor, currentIndexedColor, setCurrentColor, randomizeCurrentColor } from '../../stores/colorStore';
 	
   let x = 55;
@@ -199,6 +200,11 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
 
   async function renderActionsIncludingHovered() {
     if(!p5) return;
+    // a step inside a checkerboard's squares isn't drawn on its own, so there's nothing to preview it with
+    if(!compileActions($flatActionStore[$actionRootID]).some(action => action.actionID === $hoveredActionID)) {
+      renderActionsUntilStaged();
+      return;
+    }
     let actions = compileActionsBefore($hoveredActionID);
     clearAllCanvases();
     actions.forEach((action, i) => {
@@ -315,15 +321,8 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     // console.log("finished render");
   }
 
-  // Draws a compiled action on a canvas, moved and turned with any groups it's in
   function draw(action, canvas) {
-    const renderFunction = renderers[action.effect];
-    if (!renderFunction) return;
-    if (!action.transform) return renderFunction(canvas, action.params, p5, turtle);
-    canvas.push();
-    canvas.applyMatrix(...action.transform);
-    renderFunction(canvas, action.params, p5, turtle);
-    canvas.pop();
+    drawAction(canvas, action, p5, turtle);
   }
 
   // Call the render function for an action
@@ -404,16 +403,21 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
     }
   }
 
+// the steps an action draws: itself, and the steps in a checkerboard's squares
+function stepsDrawnBy(action) {
+  return [action.actionID, ...(action.params?.squares ?? []).flatMap(stepsDrawnBy)];
+}
+
 function updateRenderedActions(action, canvas) {
   switch (canvas) {
     case p5.getStaticCanvas():
-      renderedActions.static.push(action.actionID);
+      renderedActions.static.push(...stepsDrawnBy(action));
       break;
     case p5.getDragCanvas():
-      renderedActions.drag.push(action.actionID);
+      renderedActions.drag.push(...stepsDrawnBy(action));
       break;
     case p5.getHoverCanvas():
-      renderedActions.hover.push(action.actionID);
+      renderedActions.hover.push(...stepsDrawnBy(action));
       break;
   }
   renderedActions = renderedActions; // Trigger update
@@ -570,6 +574,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
 
   function cleanupP5() {
     if (p5) {
+      p5Instance.set(null);
       p5.cleanup();
       p5.remove();
       p5 = undefined;
@@ -584,6 +589,7 @@ _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
       waitForCanvases().then(() => {
         loadStencils(p5);
         loadFonts(p5);
+        p5Instance.set(p5);
         console.log("p5 instance created");
         renderActionsUntilStaged();
         console.log("initial render");

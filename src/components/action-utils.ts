@@ -1340,6 +1340,7 @@ export function compileActionsBefore(id: string) {
   if(!actions) return [];
   if(renderAll) return actions;
   let actionIndex = actions.findIndex(action => action.actionID === id);
+  if(actionIndex < 0) return actions; // not drawn on its own (it's in a checkerboard's squares): nothing to cut
   let actionsBefore = actions.slice(0, actionIndex);
   return actionsBefore;
 }
@@ -1586,6 +1587,10 @@ export function compileActions(action: Action, parentID?: string, overrides:Over
         }
       }
 
+      if (action.effect === 'checkerboard') {
+        modifiedParams.squares = compileSquares(action);
+      }
+
       // console.log("modified params", modifiedParams);
       // Push the compiled action with the modified parameters
       if(!skipAction) {
@@ -1602,6 +1607,13 @@ export function compileActions(action: Action, parentID?: string, overrides:Over
   }
   // debugger;
   return actions;
+}
+
+// What a checkerboard's squares draw: their own steps, compiled into the checkerboard rather than drawn on their
+// own, since they're drawn as if they had the whole canvas and then shrunk into each square (see checkerboard
+// in Renderer.js)
+export function compileSquares(checkerboard: Action): CompiledAction[] {
+  return checkerboard.params.children.flatMap((id: string) => compileActions(get(flatActionStore)[id], checkerboard.uuid));
 }
 
 
@@ -1717,20 +1729,18 @@ function effectToActions(effect: Effect, params: { [key: string]: any } = {}) {
 
   if(!effect) return;
 
-  // nested types
-  if(effect.name === 'along path' || effect.name === 'do each') {
-    if(effect.nestedActions) {
-      let mergedParams = merge(deepCopy(effect.nestedActions['uuid_parent'].params), deepCopy(params)); // just top level action params
-      let newActions = deepCopy(effect.nestedActions);
-      newActions['uuid_parent'].params = mergedParams;
+  // nested types: brushes, groups, and checkerboards with steps for their squares
+  if(effect.nestedActions) {
+    let mergedParams = merge(deepCopy(effect.nestedActions['uuid_parent'].params), deepCopy(params)); // just top level action params
+    let newActions = deepCopy(effect.nestedActions);
+    newActions['uuid_parent'].params = mergedParams;
 
-      newActions['uuid_parent'].textLabel = effect.textLabel;
-      newActions['uuid_parent'].hidden = false;
-      newActions['uuid_parent'].mouseActionType = effect.mouseActionType;
+    newActions['uuid_parent'].textLabel = effect.textLabel;
+    newActions['uuid_parent'].hidden = false;
+    newActions['uuid_parent'].mouseActionType = effect.mouseActionType;
 
-      newActions = updateUUIDsPreservingHierarchy(newActions);
-      actions = newActions;
-    }
+    newActions = updateUUIDsPreservingHierarchy(newActions);
+    actions = newActions;
   }
   else {  // TODO: actions could just be effects with a UUID to make this all less confusing
     let mergedParams = merge(deepCopy(effect.params), deepCopy(params));

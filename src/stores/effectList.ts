@@ -904,7 +904,7 @@ export const effectList = [
     }
   },
   {
-    name: 'tile',
+    name: 'checkerboard',
     textLabel: 'Checkerboard',
     category: 'patterns',
     tags: 'drawing',
@@ -912,10 +912,33 @@ export const effectList = [
     thumbnail: 'checkerboard.jpg',
     mouseActionType: 'single-click',
     params: {
-      tiling: 'checkerboard',
       columns: 4,
-      rows: 4,
-      color: '#FFFFFF'
+      rows: 4
+    },
+    // the squares between the copies run their own steps, starting with a fill in a color
+    nestedActions: {
+      'uuid_parent': {
+        uuid: 'uuid_parent',
+        name: 'checkerboard',
+        type: 'list' as const,
+        category: 'patterns',
+        effect: 'checkerboard',
+        params: { /* no color, so the fill gets the current color */
+          columns: 4,
+          rows: 4,
+          children: ['squares_fill']
+        }
+      },
+      'squares_fill': {
+        uuid: 'squares_fill',
+        name: 'solid fill',
+        type: 'effect',
+        category: 'backgrounds',
+        effect: 'solid fill',
+        params: {
+          color: '#FFFFFF'
+        }
+      },
     }
   },
   {
