@@ -348,7 +348,8 @@ function getDynamicStyle(id:string) {
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-start;
-    width: calc(100% - 0.4em); /* fits exactly inside its margins, so the recipe doesn't scroll sideways */
+    /* width: auto fills the space inside its margins, so the recipe doesn't scroll sideways, and (unlike a percentage)
+       still lets a list inside a brush or group widen its step to fit */
     margin: 0.2em;
   }
 
